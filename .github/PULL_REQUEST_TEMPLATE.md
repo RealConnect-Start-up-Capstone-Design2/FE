@@ -3,15 +3,15 @@
 - 어떤 작업이 이루어졌는지, 왜 변경이 필요한지에 대한 핵심적인 내용을 담습니다.
 
 ### 🛠 PR Type
-- [ ] **Feature**
-- [ ] **Bugfix**
-- [ ] **Refactoring**
-- [ ] **Code style changes** (formatting, variable name, comments)
-- [ ] **Documentation content changes**
-- [ ] **Test related changes**
-- [ ] **Build related changes**
-- [ ] **Delete or rename a file or folder**
-- [ ] **Other:** [내용을 적어주세요]
+- [ ] **추가**
+- [ ] **버그 수정**
+- [ ] **코드 리팩토링**
+- [ ] **코드 스타일 변경** (포멧팅, 변수 이름, 주석)
+- [ ] **파일 요소 변경**
+- [ ] **테스트 관련 수정**
+- [ ] **빌드 관련 변경**
+- [ ] **파일 이름 삭제 및 수정**
+- [ ] **기타:** [내용을 적어주세요]
 
 ### ✅ Checklist
 - [ ] 커밋 메시지 규칙을 따랐는지
