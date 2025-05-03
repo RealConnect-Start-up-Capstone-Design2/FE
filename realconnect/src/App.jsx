@@ -7,7 +7,7 @@ import Layout from "./components/Layout";
 
 // 페이지 컴포넌트
 import Dashboard from "./pages/dashboard";
-import Properties from "./pages/properties";
+import Properties from "./pages/propertiesManage";
 import Inquiries from "./pages/inquiries";
 import Contracts from "./pages/contracts";
 import SharedInquiries from "./pages/sharedInquiries";
