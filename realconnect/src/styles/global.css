@@ -3,3 +3,147 @@
     font-size: 15px;
   }
 }
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* 앱 레이아웃 */
+.app_layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+/* 메인 콘텐츠 영역 */
+.main_content {
+  width: 100%;
+  flex-grow: 1;
+  background-color: #fdfefe;
+  font-family: "Pretendard-Regular";
+  margin: 3rem 3.8rem 5.5rem;
+}
+
+/* 속성 페이지 */
+.properties_page {
+  width: 100%;
+  padding-bottom: 2rem;
+}
+
+/* 속성 페이지 헤더 */
+.properties_header {
+  display: flex;
+  position: relative;
+  margin-bottom: 3rem;
+}
+
+.header_left {
+  width: 300px;
+}
+
+/* 페이지 제목 */
+.page_title {
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: #1c2882;
+}
+
+/* 페이지 설명 */
+.page_description {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #989898;
+  margin-top: 0.5rem;
+}
+
+/* 뷰 선택기 컨테이너 */
+.properties_view_selector {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1.5rem;
+}
+
+/* 뷰 선택기 버튼 */
+.properties_view_option {
+  padding: 0.5rem 0;
+  font-size: 1.2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666666;
+  font-weight: 600;
+  position: relative;
+  transition: color 0.2s ease;
+  text-align: center;
+}
+
+.properties_view_option:hover {
+  color: #1b1b1b;
+}
+
+.properties_view_option--active {
+  color: #1b1b1b;
+  font-weight: 600;
+}
+
+/* 활성화된 탭에 밑줄 효과 */
+.properties_view_option--active::after {
+  content: "";
+  position: absolute;
+  bottom: -0.5rem;
+  left: 0;
+  width: 100%;
+  height: 0.2rem;
+  background-color: #1b1b1b;
+  z-index: 1;
+}
+
+/* 프로퍼티 콘텐츠 영역 */
+.properties_content {
+  margin-top: 1.5rem;
+}
+
+/* 미디어 쿼리 */
+@media screen and (max-width: 768px) {
+  .main_content {
+    margin: 2rem 1.5rem;
+  }
+
+  .properties_header {
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 120px; /* 선택기를 위한 충분한 공간 확보 */
+  }
+
+  .header_left {
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  .properties_view_selector {
+    position: relative;
+    left: 0;
+    transform: none;
+    width: 100%;
+    margin-top: 1rem;
+    justify-content: center;
+  }
+
+  .properties_view_option {
+    padding: 0.7rem 1rem;
+  }
+}
