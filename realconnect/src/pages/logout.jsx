@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 
 const Logout = () => {
-  // 여기에 로그아웃 로직을 구현할 수 있습니다.
-  // 예: 토큰 삭제, 서버에 로그아웃 요청 등
+  useEffect(() => {
+    // authentication token 삭제해서 로그인 상태 지우기
+    localStorage.removeItem("isAuthenticated");
+  }, []);
 
-  // 로그아웃 후 홈으로 리디렉션
-  return <Navigate to="/" replace />;
+  // 로그아웃 후 홈으로 리다이렉션
+  return <Navigate to="/login" replace />;
 };
 
 export default Logout;
