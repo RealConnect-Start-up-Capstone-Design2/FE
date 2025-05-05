@@ -37,13 +37,15 @@ body,
 }
 
 /* 속성 페이지 */
-.properties_page {
+.page_section {
   width: 100%;
+  display: flex;
+  flex-direction: column;
   padding-bottom: 2rem;
 }
 
 /* 속성 페이지 헤더 */
-.properties_header {
+.page_header {
   display: flex;
   position: relative;
   margin-bottom: 3rem;
@@ -58,6 +60,7 @@ body,
   font-size: 2.1rem;
   font-weight: 700;
   color: #1c2882;
+  line-height: 1.2;
 }
 
 /* 페이지 설명 */
@@ -69,7 +72,7 @@ body,
 }
 
 /* 뷰 선택기 컨테이너 */
-.properties_view_selector {
+.view_selector {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -78,7 +81,7 @@ body,
 }
 
 /* 뷰 선택기 버튼 */
-.properties_view_option {
+.view_option {
   padding: 0.5rem 0;
   font-size: 1.2rem;
   background: none;
@@ -91,17 +94,17 @@ body,
   text-align: center;
 }
 
-.properties_view_option:hover {
+.view_option:hover {
   color: #1b1b1b;
 }
 
-.properties_view_option--active {
+.view_option--active {
   color: #1b1b1b;
   font-weight: 600;
 }
 
 /* 활성화된 탭에 밑줄 효과 */
-.properties_view_option--active::after {
+.view_option--active::after {
   content: "";
   position: absolute;
   bottom: -0.5rem;
@@ -113,8 +116,9 @@ body,
 }
 
 /* 프로퍼티 콘텐츠 영역 */
-.properties_content {
+.page_content {
   margin-top: 1.5rem;
+  display: flex;
 }
 
 /* 미디어 쿼리 */
