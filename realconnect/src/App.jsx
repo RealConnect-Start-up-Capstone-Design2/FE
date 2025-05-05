@@ -7,7 +7,7 @@ import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // 페이지 컴포넌트
-import Dashboard from "./pages/dashboard";
+import Dashboard from "./pages/dashboard/dashboard";
 import Properties from "./pages/propertiesManage";
 import Inquiries from "./pages/inquiries";
 import Contracts from "./pages/contracts";
