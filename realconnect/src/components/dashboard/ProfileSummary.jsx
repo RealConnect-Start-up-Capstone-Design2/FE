@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./ProfileSummary.css";
 import "./DashboardShared.css";
 
@@ -10,6 +11,12 @@ import Location from "../../assets/icons/location.svg";
 import IntoArrow from "../../assets/icons/intoArrow.svg";
 
 const ProfileSummary = () => {
+  const navigate = useNavigate();
+
+  const handleProfileManagement = () => {
+    navigate("/profile");
+  };
+
   return (
     <div className="section_box_shadow">
       <p className="section_title">프로필 요약</p>
@@ -58,7 +65,7 @@ const ProfileSummary = () => {
           <p>서울특별시 강남구 테헤란로 1234</p>
         </div>
         <div className="edit_button_container">
-          <button className="edit_button">
+          <button className="edit_button" onClick={handleProfileManagement}>
             프로필 관리
             <img src={IntoArrow} alt="intoArrow" />
           </button>

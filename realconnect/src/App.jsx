@@ -15,6 +15,7 @@ import SharedInquiries from "./pages/sharedInquiries";
 import Settings from "./pages/settings";
 import Logout from "./pages/logout";
 import OnboardingLogin from "./pages/onboardingLogin/onboardingLogin";
+import Profile from "./pages/profile/profile";
 
 function App() {
   return (
@@ -70,6 +71,16 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <SharedInquiries />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Profile />
               </Layout>
             </ProtectedRoute>
           }
