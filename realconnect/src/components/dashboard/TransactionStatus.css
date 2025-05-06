@@ -1,0 +1,163 @@
+/* 이번 달 거래 현황 컨테이너 */
+.transaction_status_container {
+  display: flex;
+  flex-direction: column;
+  padding-top: 2rem;
+}
+
+.status_subtitle {
+  padding-bottom: 1.3rem;
+  font-weight: 500;
+}
+
+.transaction_status_row {
+  display: flex;
+  flex-direction: row;
+  gap: 0.6rem;
+  width: 100%;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.before_contract_container,
+.ongoing_contract_container,
+.completed_contract_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.2rem 0;
+  border-radius: 0.4rem;
+  flex: 1;
+  white-space: nowrap;
+}
+
+.before_contract_container {
+  background-color: #defcdc;
+}
+
+.before_contract_container p {
+  font-size: 1rem;
+  color: #189554;
+}
+
+.ongoing_contract_container {
+  background-color: #fff8b8;
+}
+
+.ongoing_contract_container p {
+  font-size: 1rem;
+  color: #c38b11;
+}
+
+.completed_contract_container {
+  background-color: #fcdcdc;
+}
+
+.completed_contract_container p {
+  font-size: 1rem;
+  color: #b72525;
+}
+
+.contract_number {
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+}
+
+/* 거래 유형 컨테이너 */
+.transaction_types_container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.transaction_type_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.transaction_type_label {
+  min-width: 3rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.transaction_bar_container {
+  flex: 1;
+  height: 0.6rem;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  margin: 0 1rem;
+}
+
+.transaction_bar {
+  height: 100%;
+  border-radius: 10px;
+}
+
+.transaction_bar.trade {
+  background-color: #2343c0;
+}
+
+.transaction_bar.jeonse {
+  background-color: #3366e6;
+}
+
+.transaction_bar.monthly {
+  background-color: #4d7ce0;
+}
+
+.transaction_type_count {
+  min-width: 3rem;
+  text-align: right;
+  font-weight: 500;
+}
+
+.transaction_total {
+  text-align: center;
+  color: #666;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+/* 총 거래 금액 컨테이너 */
+.transaction_amount_container {
+  border: 1px solid #e0e0e0;
+  border-radius: 0.4rem;
+  padding: 1.5rem;
+}
+
+.transaction_amount_content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.transaction_amount_label {
+  color: #666;
+  font-size: 1rem;
+}
+
+.transaction_amount_row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.transaction_amount_value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.transaction_amount_change {
+  color: #189554;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.increase_arrow {
+  font-weight: bold;
+}
