@@ -6,7 +6,7 @@ const editProperty = () => {
   return (
     <div className="edit-property">
       <img src={edit} alt="edit" className="edit-property-img" />
-      <span className="edit-property-text">프로필 수정정</span>
+      <span className="edit-property-text">프로필 수정</span>
     </div>
   );
 };
