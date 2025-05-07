@@ -6,6 +6,7 @@ import userIcon from "../../assets/icons/user.svg";
 import lockIcon from "../../assets/icons/lock.svg";
 import kakaoIcon from "../../assets/icons/kakao.svg";
 import naverIcon from "../../assets/icons/naver.svg";
+import orIcon from "../../assets/icons/or.svg";
 
 const OnboardingLogin = () => {
   const [form, setForm] = useState({
@@ -33,9 +34,11 @@ const OnboardingLogin = () => {
       return;
     }
     setError("");
-    // TODO: 실제 API 연동 부분
-    // 예시: await loginApi(form)
+    // 이제 API를 통해 로그인 요청을 실제로 해야 함
+    // 데모 버전에선 그냥 로컬 스토리지에 토큰 저장만 한 상태임.
     localStorage.setItem("isAuthenticated", "true");
+
+    // 로그인 성공 후 대시보드로 리다이렉트
     navigate("/");
   };
 
@@ -113,9 +116,7 @@ const OnboardingLogin = () => {
             </button>
           </form>
           <div className="login-or-wrap">
-            <div className="login-or-line" />
-            <span className="login-or-text">또는</span>
-            <div className="login-or-line" />
+            <img src={orIcon} alt="또는" className="login-or-img" />
           </div>
           <div className="login-socials">
             <button className="login-social kakao">
