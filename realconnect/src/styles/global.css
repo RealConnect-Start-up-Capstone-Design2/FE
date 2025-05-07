@@ -1,6 +1,6 @@
-@media screen and (min-width: 1920px) {
+@media screen {
   :root {
-    font-size: 15px;
+    font-size: calc(100vw / 128); /* 1920px 기준: 1920 / 128 = 15px */
   }
 }
 
