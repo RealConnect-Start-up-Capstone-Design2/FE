@@ -1,8 +1,9 @@
 import React from "react";
 import "../../styles/global.css";
 import "./profile.css";
+import EditPropertyButton from "../../components/editProperty/editProperty";
 
-import editProperty from "../../components/editProperty/editProperty";
+
 
 const Profile = () => {
   return (
@@ -13,88 +14,97 @@ const Profile = () => {
           <p className="page_description">
             부동산 및 내 사업자 정보 등을 프로필로 보여줍니다.
           </p>
-          
-        </div>
-      </div>
-
-    <div className="page_section profile-page-layout">
-      {/* 왼쪽: 프로필 요약 */}
-      <div className="profile-summary-container">
-      <div>
-      <div>
-        <p className="profile-section-title">프로필 요약</p>
-        <p className="profile-section-sub">개인 및 사무실 정보</p>
-      </div>
-
-      <div className="profile-photo" />
-
-      <p className="profile-name">최정현</p>
-      <p className="profile-company">리얼커넥트 부동산</p>
-
-      <div className="profile-divider" />
-      <div className="profile-info-table">
-        <div className="profile-row">
-          <span className="profile-label">연락처</span>
-          <span className="profile-value">010-1234-2334</span>
-        </div>
-        <div className="profile-row">
-          <span className="profile-label">이메일</span>
-          <span className="profile-value">kim@example.com</span>
-        </div>
-        <div className="profile-row">
-          <span className="profile-label">사무실 이름</span>
-          <span className="profile-value">리얼커넥트 부동산</span>
-        </div>
-        <div className="profile-row">
-          <span className="profile-label">사무실 주소</span>
-          <span className="profile-value">서울특별시 강남구 테헤란로 1234</span>
-        </div>
-        <div className="profile-row">
-          <span className="profile-label">사업자 등록번호</span>
-          <span className="profile-value">123-45-67890</span>
-        </div>
-      </div>
-    </div>
-      </div>
-
-      {/* 오른쪽: 자기소개 + 사무실 정보 */}
-      <div className="profile-right-section">
-        <div className="profile-intro-box">
-          <p className="profile-section-title">자기 소개</p>
-          <p className="profile-section-sub">고객에게 보여질 자기 소개를 작성하세요</p>
-          <p className="profile-intro-description">
-            10년 이상의 경력을 보유한 부동산 전문가입니다.
-          </p>
-        </div>
-
-        <div className="profile-office-box">
-          <p className="profile-section-title">사무실 정보</p>
-
-          <div className="profile-info-row">
-            <span className="profile-label">사무실 주소</span>
-            <span className="profile-value">서울특별시 강남구 테헤란로 1234</span>
+          <div className="edit-property-button">
+            <EditPropertyButton />
           </div>
 
-          <div className="profile-info-row">
-            <span className="profile-label">사무실 전화번호</span>
-            <span className="profile-value">031-123-1234</span>
-          </div>
-
-          <div className="profile-info-row">
-            <span className="profile-label">사무실 사진</span>
-            <div className="profile-office-photos">
-              <div className="profile-photo-placeholder" />
-              <div className="profile-photo-placeholder" />
-            </div>
-          </div>
         </div>
       </div>
-    </div>
+      <div className="profile-container">
+        <div className="profile-summary">
+          <ProfileSummary />
+        </div>
+        <div className="profile-details">
+          <ProfileIntroduce />
+          <ProfileCompany />
+        </div>
+      </div>
     </div>
   );
 };
 
+const ProfileSummary = () => {
+  return (
+    <div className="profile-summary-box">
+      <div className="profile-summary-title">프로필 요약</div>
+      <div className="profile-summary-sub">개인 및 사무실 정보</div>
 
+      <div className="profile-summary-photo"/>
 
+      <div className="profile-summary-name">최정현</div>
+      <div className="profile-summary-company">리얼커넥트 부동산</div>
 
+      <div className="profile-summary-divider"></div>
+      <div className="profile-summary-frame">
+        <div className="profile-summary-label">연락처</div>
+        <div className="profile-summary-value">010-1234-2334</div>
+      </div>
+
+      <div className="profile-summary-frame">
+        <div className="profile-summary-label">이메일</div>
+        <div className="profile-summary-value">kim@example.com</div>
+      </div>
+
+      <div className="profile-summary-frame">
+        <div className="profile-summary-label">사무실 이름</div>
+        <div className="profile-summary-value">리얼커넥트 부동산</div>
+      </div>
+
+      <div className="profile-summary-frame">
+        <div className="profile-summary-label">사무실 주소</div>
+        <div className="profile-summary-value">서울특별시 강남구 테헤란로 1234</div>
+      </div>
+
+      <div className="profile-summary-frame">
+        <div className="profile-summary-label">사업자 등록 번호</div>
+        <div className="profile-summary-value">123-45-67890</div>
+      </div>
+    </div>
+  );
+};
+
+const ProfileIntroduce = () => {
+  return (
+    <div className="profile-introduce-box">
+      <div className="profile-introduce-title">자기 소개</div>
+      <div className="profile-introduce-sub">고객에게 보여질 자기 소개를 작성하세요</div>
+      <p className="profile-introduce-text">10년 이상의 경력을 보유한 부동산 전문가입니다.</p>
+    </div>
+  );
+};
+
+const ProfileCompany = () => {
+  return (
+    <div className="profile-company-box">
+      <div className="profile-company-title">사무실 정보</div>
+      <div className="profile-company-frame">
+        <span className = "profile-company-label">사무실 주소</span>
+        <span className = "profile-company-value">서울특별시 강남구 테헤란로 1234</span>
+      </div>
+
+      <div className="profile-company-frame">
+        <div className = "profile-company-label">사무실 전화번호</div>
+        <div className = "profile-company-value">031-123-1234</div>
+      </div>
+
+        <div className = "profile-company-label">사무실 사진</div>
+        <div className = "profile-photo-frame">
+          <div className = "profile-company-img"></div>
+          <div className = "profile-company-img"></div>
+        </div>
+      
+    </div>
+
+  );
+};
 export default Profile;
