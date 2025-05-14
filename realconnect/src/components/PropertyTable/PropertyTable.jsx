@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import "./PropertyTable.css";
 
-const PropertyTable = ({ properties }) => {
+const PropertyTable = ({ properties, onPropertySelect }) => {
   const [selectedItems, setSelectedItems] = useState([]);
 
-  // Toggle selection of all items
   const toggleSelectAll = (e) => {
     if (e.target.checked) {
       setSelectedItems(properties.map((property) => property.id));
@@ -13,8 +12,8 @@ const PropertyTable = ({ properties }) => {
     }
   };
 
-  // Toggle selection of a single item
-  const toggleSelect = (id) => {
+  const toggleSelect = (e, id) => {
+    e.stopPropagation(); // Prevent row click when checkbox is clicked
     setSelectedItems((prevSelected) => {
       if (prevSelected.includes(id)) {
         return prevSelected.filter((item) => item !== id);
@@ -24,7 +23,10 @@ const PropertyTable = ({ properties }) => {
     });
   };
 
-  // If there are no properties, display an empty state
+  const handleRowClick = (property) => {
+    onPropertySelect(property);
+  };
+
   if (!properties || properties.length === 0) {
     return (
       <div className="property-table-empty">
@@ -48,7 +50,6 @@ const PropertyTable = ({ properties }) => {
                 }
               />
             </th>
-            <th className="image-column">이미지</th>
             <th>단지</th>
             <th>동</th>
             <th>호수</th>
@@ -59,27 +60,25 @@ const PropertyTable = ({ properties }) => {
             <th>거래 유형</th>
             <th>소유자</th>
             <th>연락처</th>
-            <th>거래 상태</th>
+            <th className="status-column">거래 상태</th>
           </tr>
         </thead>
         <tbody>
           {properties.map((property) => (
-            <tr key={property.id}>
-              <td className="checkbox-column">
+            <tr
+              key={property.id}
+              onClick={() => handleRowClick(property)}
+              className="property-row"
+            >
+              <td
+                className="checkbox-column"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <input
                   type="checkbox"
                   checked={selectedItems.includes(property.id)}
-                  onChange={() => toggleSelect(property.id)}
+                  onChange={(e) => toggleSelect(e, property.id)}
                 />
-              </td>
-              <td className="image-column">
-                <div className="property-image">
-                  {property.image ? (
-                    <img src={property.image} alt={property.complex} />
-                  ) : (
-                    <div className="no-image"></div>
-                  )}
-                </div>
               </td>
               <td>{property.complex}</td>
               <td>{property.building}</td>
@@ -99,7 +98,7 @@ const PropertyTable = ({ properties }) => {
               </td>
               <td>{property.owner}</td>
               <td>{property.contact}</td>
-              <td>
+              <td className="status-column">
                 <button className={`status-button ${property.status}`}>
                   {property.status}
                 </button>
