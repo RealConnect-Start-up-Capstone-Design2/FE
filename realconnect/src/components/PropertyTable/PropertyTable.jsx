@@ -99,9 +99,11 @@ const PropertyTable = ({ properties, onPropertySelect }) => {
               <td>{property.owner}</td>
               <td>{property.contact}</td>
               <td className="status-column">
-                <button className={`status-button ${property.status}`}>
+                <div
+                  className={`status-button ${property.status.replace(/\s+/g, "")}`}
+                >
                   {property.status}
-                </button>
+                </div>
               </td>
             </tr>
           ))}
