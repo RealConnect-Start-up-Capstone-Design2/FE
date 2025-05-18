@@ -106,8 +106,8 @@
 
 /* 계약 중 */
 .contract-status-tag p.계약-중 {
-  background-color: #ffc107;
-  color: #7e5f00;
+  background-color: #fff8b8;
+  color: #c38b11;
 }
 
 /* 계약 정보 영역 */
