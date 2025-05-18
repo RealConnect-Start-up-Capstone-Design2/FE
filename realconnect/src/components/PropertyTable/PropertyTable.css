@@ -101,13 +101,13 @@
 }
 
 .transaction-type.sale {
-  background-color: #e8f0fe;
-  color: #1a73e8;
+  background-color: #e8edff;
+  color: #1c2882;
 }
 
 .transaction-type.rent {
-  background-color: #e8f0fe;
-  color: #1a73e8;
+  background-color: #e8edff;
+  color: #1c2882;
 }
 
 .status-button {
@@ -128,6 +128,11 @@
 .status-button.개약전 {
   background-color: #defcdc;
   color: #189554;
+}
+
+.status-button.개약중 {
+  background-color: #fff8b8;
+  color: #c38b11;
 }
 
 .status-button.개약완료 {
