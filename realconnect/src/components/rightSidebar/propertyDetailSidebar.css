@@ -4,7 +4,7 @@
   right: 0;
   width: 33rem;
   height: 100vh;
-  background-color: white;
+  background-color: #f8f8f8;
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
   z-index: 100;
   overflow-y: auto;
@@ -49,7 +49,7 @@
   align-items: center;
   padding-bottom: 1rem;
   border-bottom: 1px solid #eee;
-  background-color: white;
+  background-color: #f8f8f8;
 }
 
 .close-button {
@@ -142,7 +142,6 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 24px;
 }
 
 /* 가격 정보 */
