@@ -1,10 +1,10 @@
-.property-detail-sidebar {
+.contract-detail-sidebar {
   position: fixed;
   top: 0;
   right: 0;
   width: 33rem;
   height: 100vh;
-  background-color: white;
+  background-color: #f8f8f8;
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
   z-index: 100;
   overflow-y: auto;
@@ -15,12 +15,7 @@
   flex-direction: column;
 }
 
-.sidebar-header-title {
-  font-size: 1.6rem;
-  font-weight: 600;
-}
-
-.property-detail-sidebar.closing {
+.contract-detail-sidebar.closing {
   animation: slideout 0.3s ease-in-out forwards;
 }
 
@@ -48,8 +43,12 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #eee;
-  background-color: white;
+  background-color: #f8f8f8;
+}
+
+.sidebar-header-title {
+  font-size: 1.6rem;
+  font-weight: 600;
 }
 
 .close-button {
@@ -60,57 +59,30 @@
   color: #333;
 }
 
-/* 이미지 플레이스홀더 */
-.property-image-placeholder {
-  position: relative;
+/* 속성 요약 영역 */
+.property-summary {
+  display: flex;
   width: 100%;
-  height: 16.66rem;
-  background-color: #f5f5f5;
+  height: 6.5rem;
+  background-color: #ffffff;
+  border: 1px solid #dde2f2;
+  border-radius: 0.4rem;
 }
 
-.floor-plan-placeholder {
-  width: 100%;
-  height: 16.66rem;
-  background-color: #f0f0f0;
+.property-summary-item {
+  display: flex;
+  flex-direction: column;
+  padding: 0.667rem 0.8rem;
 }
 
-.image-control-buttons {
-  position: absolute;
-  bottom: 0;
-  right: 0;
+/* 계약 상태 영역 */
+.contract-status-section {
   display: flex;
   justify-content: flex-end;
-  z-index: 100;
-}
-
-.control-button {
-  padding: 0.3rem 0.5rem;
-  text-align: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.66rem;
-  color: #fff;
-  background-color: #707482;
-}
-
-.control-button.active {
-  background-color: #1b1b1b;
-}
-
-/* 매물 특징, 거래 상태 영역 */
-.property-features {
-  display: flex;
-  flex-direction: row;
   margin: 1rem 0;
 }
 
-.property-status {
-  flex: 1;
-  text-align: right;
-}
-
-.property-status p {
+.contract-status-tag p {
   display: inline-block;
   padding: 0.4rem 1rem;
   border-radius: 2rem;
@@ -120,29 +92,29 @@
   margin: 0;
 }
 
+/* 계약 완료 */
+.contract-status-tag p.계약-완료 {
+  background-color: #fcdcdc;
+  color: #b72525;
+}
+
 /* 계약 전 */
-.property-status p.개약전 {
+.contract-status-tag p.계약-전 {
   background-color: #defcdc;
   color: #189554;
 }
 
 /* 계약 중 */
-.property-status p.계약중 {
+.contract-status-tag p.계약-중 {
   background-color: #ffc107;
+  color: #7e5f00;
 }
 
-/* 계약 완료 */
-.property-status p.개약완료 {
-  background-color: #fcdcdc;
-  color: #b72525;
-}
-
-/* 매물 정보 영역 */
-.property-info {
+/* 계약 정보 영역 */
+.contract-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 24px;
 }
 
 /* 가격 정보 */
@@ -150,6 +122,13 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 2rem 0;
+}
+
+.price-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.667rem;
 }
 
 .price-item p {
@@ -162,35 +141,116 @@
 .contact-info {
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
 .info-row {
   display: flex;
-  gap: 12px;
+  gap: 1rem;
 }
 
 .info-box {
   flex: 1;
-  background-color: #f5f7ff;
-  padding: 12px;
-  border-radius: 8px;
+  background-color: #e8edff;
+  padding: 0.8rem;
+  border-radius: 0.4rem;
 }
 
 .info-box h4 {
-  margin: 0 0 4px 0;
-  font-size: 14px;
+  margin: 0 0 0.33rem 0;
+  font-size: 0.9rem;
   color: #666;
   font-weight: normal;
 }
 
 .info-box p {
   margin: 0;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 계약서 파일 섹션 */
+.contract-file-section {
+  margin-top: 12px;
+}
+
+.contract-file-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.contract-file-info {
+  display: flex;
+  align-items: center;
+  padding: 1.2rem 0.8rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #b1b6c7;
+}
+
+.file-icon {
+  margin-right: 12px;
+}
+
+.file-icon-placeholder {
+  width: 40px;
+  height: 50px;
+  background-color: #e5e9f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a4cab;
+  border-radius: 4px;
+}
+
+.file-details {
+  flex: 1;
+}
+
+.file-name {
+  margin: 0;
+  font-weight: 500;
+  color: #1a4cab;
+}
+
+.file-meta {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: #8d8d8d;
+}
+
+.download-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.download-button:hover {
+  background-color: #e5e9f8;
+}
+
+.download-icon {
+  font-size: 16px;
+  color: #1a4cab;
+}
+
+.no-file-message {
+  padding: 16px;
+  text-align: center;
+  color: #8d8d8d;
+  background-color: #f5f7ff;
+  border-radius: 8px;
 }
 
 /* 상담 내용 */
@@ -234,10 +294,5 @@
 
 .primary-button {
   background-color: #1a4cab;
-  color: white;
-}
-
-.secondary-button {
-  background-color: #111;
   color: white;
 }

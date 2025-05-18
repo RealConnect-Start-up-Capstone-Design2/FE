@@ -1,0 +1,41 @@
+/* 계약 관리 페이지 스타일 */
+.page_section {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden; /* 가로 스크롤 방지 */
+  transition: padding-right 0.3s ease-in-out;
+}
+
+/* 사이드바가 열릴 때 페이지 전체에 패딩 적용 */
+.page_section.with-sidebar {
+  padding-right: 33rem;
+}
+
+.page_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.header_left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.page_content {
+  position: relative;
+  width: 100%;
+}
+
+/* 사이드바 위치 조정 */
+.contract-detail-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 33rem;
+  z-index: 100;
+}
