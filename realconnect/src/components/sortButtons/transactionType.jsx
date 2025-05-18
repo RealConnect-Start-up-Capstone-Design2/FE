@@ -5,14 +5,12 @@ import "./transactionType.css";
 const TransactionType = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState({
-    "매매/전세/월세": false,
-    "매매/전세": false,
-    "매매/월세": false,
-    "전세/월세": false,
+    전체: true,
     매매: false,
     전세: false,
     월세: false,
   });
+  const [hasUserSelected, setHasUserSelected] = useState(false);
 
   const dropdownRef = useRef(null);
 
@@ -41,16 +39,21 @@ const TransactionType = () => {
       ),
       [option]: true,
     });
+    setHasUserSelected(true);
     // Close dropdown after option is selected
     setIsOpen(false);
   };
 
-  // Get the selected option name
-  const getSelectedOption = () => {
+  // Get the display text for the dropdown button
+  const getButtonText = () => {
+    if (!hasUserSelected) {
+      return "거래 유형";
+    }
+
     for (const [option, isSelected] of Object.entries(selectedOptions)) {
       if (isSelected) return option;
     }
-    return "거래유형";
+    return "거래 유형";
   };
 
   return (
@@ -71,7 +74,7 @@ const TransactionType = () => {
             d="M19 9l-7 7-7-7"
           ></path>
         </svg>
-        <span className="transaction-button-text">{getSelectedOption()}</span>
+        <span className="transaction-button-text">{getButtonText()}</span>
       </button>
 
       {/* Dropdown menu */}
