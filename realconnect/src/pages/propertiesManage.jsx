@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import "./propertiesManage.css";
 
 // 컴포넌트 불러오기
 import Search from "../components/search/search";
@@ -7,34 +8,38 @@ import TransactionType from "../components/sortButtons/transactionType";
 import AddProperty from "../components/addProperrty/addProperty";
 import DeleteProperty from "../components/deleteProperty/deleteProperty";
 import PropertyTable from "../components/PropertyTable/PropertyTable";
+import PropertyDetailSidebar from "../components/rightSidebar/propertyDetailSidebar";
 
 const Properties = () => {
   const [activeView, setActiveView] = useState("전체");
+  const [selectedProperty, setSelectedProperty] = useState(null);
+  const [isClosingSidebar, setIsClosingSidebar] = useState(false);
+  const closingSidebarRef = useRef(false);
 
   // 샘플 데이터
   const allProperties = [
     {
       id: 1,
-      image: null,
       complex: "파크리오",
       building: "101동",
-      unit: "1312호",
+      unit: "101호",
       area: "151 m²",
       sellPrice: "24억 5000",
       deposit: "2억",
       rentDeposit: "500",
       monthlyRent: "60",
-      transactionType: "매매",
+      transactionType: "매매/전세/월세",
       owner: "김규식",
       contact: "010-1234-2334",
+      tenant: "김민채",
+      tenantContact: "010-1234-2334",
       status: "개약전",
     },
     {
       id: 2,
-      image: null,
       complex: "파크리오",
       building: "101동",
-      unit: "1312호",
+      unit: "102호",
       area: "151 m²",
       sellPrice: "24억 5000",
       deposit: "2억",
@@ -43,14 +48,15 @@ const Properties = () => {
       transactionType: "매매",
       owner: "김규식",
       contact: "010-1234-2334",
+      tenant: "김민채",
+      tenantContact: "010-1234-2334",
       status: "개약완료",
     },
     {
       id: 3,
-      image: null,
       complex: "파크리오",
       building: "101동",
-      unit: "1312호",
+      unit: "103호",
       area: "151 m²",
       sellPrice: "24억 5000",
       deposit: "2억",
@@ -59,14 +65,15 @@ const Properties = () => {
       transactionType: "매매",
       owner: "김규식",
       contact: "010-1234-2334",
+      tenant: "김민채",
+      tenantContact: "010-1234-2334",
       status: "개약전",
     },
     {
       id: 4,
-      image: null,
       complex: "파크리오",
       building: "101동",
-      unit: "1312호",
+      unit: "104호",
       area: "151 m²",
       sellPrice: "24억 5000",
       deposit: "2억",
@@ -75,14 +82,15 @@ const Properties = () => {
       transactionType: "매매",
       owner: "김규식",
       contact: "010-1234-2334",
+      tenant: "김민채",
+      tenantContact: "010-1234-2334",
       status: "개약전",
     },
     {
       id: 5,
-      image: null,
       complex: "파크리오",
       building: "101동",
-      unit: "1312호",
+      unit: "105호",
       area: "151 m²",
       sellPrice: "24억 5000",
       deposit: "2억",
@@ -91,14 +99,15 @@ const Properties = () => {
       transactionType: "매매",
       owner: "김규식",
       contact: "010-1234-2334",
+      tenant: "김민채",
+      tenantContact: "010-1234-2334",
       status: "개약전",
     },
     {
       id: 6,
-      image: null,
       complex: "파크리오",
       building: "101동",
-      unit: "1312호",
+      unit: "106호",
       area: "151 m²",
       sellPrice: "24억 5000",
       deposit: "2억",
@@ -107,14 +116,15 @@ const Properties = () => {
       transactionType: "매매",
       owner: "김규식",
       contact: "010-1234-2334",
+      tenant: "신진범",
+      tenantContact: "010-1234-2334",
       status: "개약완료",
     },
     {
       id: 7,
-      image: null,
       complex: "파크리오",
       building: "101동",
-      unit: "1312호",
+      unit: "107호",
       area: "151 m²",
       sellPrice: "24억 5000",
       deposit: "2억",
@@ -123,14 +133,15 @@ const Properties = () => {
       transactionType: "매매",
       owner: "김규식",
       contact: "010-1234-2334",
+      tenant: "김민채",
+      tenantContact: "010-1234-2334",
       status: "개약완료",
     },
     {
       id: 8,
-      image: null,
       complex: "파크리오",
       building: "101동",
-      unit: "1312호",
+      unit: "108호",
       area: "151 m²",
       sellPrice: "24억 5000",
       deposit: "2억",
@@ -139,6 +150,8 @@ const Properties = () => {
       transactionType: "매매",
       owner: "김규식",
       contact: "010-1234-2334",
+      tenant: "김민채",
+      tenantContact: "010-1234-2334",
       status: "개약완료",
     },
   ];
@@ -154,8 +167,40 @@ const Properties = () => {
     console.log(searchTerm);
   };
 
+  const handlePropertySelect = (property) => {
+    if (closingSidebarRef.current) {
+      // 닫히는 애니메이션 중이면 무시
+      return;
+    }
+
+    // 동일한 행을 다시 클릭하면 사이드바 닫기
+    if (selectedProperty && selectedProperty.id === property.id) {
+      // 사이드바를 닫으려면 handleCloseSidebar 실행
+      closeSidebar();
+    } else {
+      // 다른 행을 클릭하면 새로운 프로퍼티 설정
+      setIsClosingSidebar(false);
+      setSelectedProperty(property);
+    }
+  };
+
+  const closeSidebar = () => {
+    // 닫기 애니메이션 시작
+    setIsClosingSidebar(true);
+
+    // 사이드바가 닫힐 때 상태 업데이트하지 않기 위한 플래그
+    closingSidebarRef.current = true;
+
+    // 애니메이션 시간 후에 선택된 프로퍼티 null로 설정
+    setTimeout(() => {
+      setSelectedProperty(null);
+      setIsClosingSidebar(false);
+      closingSidebarRef.current = false;
+    }, 300);
+  };
+
   return (
-    <div className="page_section">
+    <div className={`page_section ${selectedProperty ? "with-sidebar" : ""}`}>
       {/* 페이지 헤더 영역 (수평 레이아웃) */}
       <div className="page_header">
         <div className="header_left">
@@ -195,12 +240,27 @@ const Properties = () => {
           <DeleteProperty />
         </div>
       </div>
+
       {/* 매물 컨텐츠 */}
       <div className="page_content">
         {activeView === "전체" ? (
-          <PropertyTable properties={allProperties} />
+          <PropertyTable
+            properties={allProperties}
+            onPropertySelect={handlePropertySelect}
+          />
         ) : (
-          <PropertyTable properties={myProperties} />
+          <PropertyTable
+            properties={myProperties}
+            onPropertySelect={handlePropertySelect}
+          />
+        )}
+
+        {selectedProperty && (
+          <PropertyDetailSidebar
+            property={selectedProperty}
+            onClose={closeSidebar}
+            isClosing={isClosingSidebar}
+          />
         )}
       </div>
     </div>

@@ -6,6 +6,8 @@
   overflow: auto;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   max-height: calc(100vh - 250px);
+  overflow-x: auto;
+  transition: width 0.3s ease-in-out;
 }
 
 .property-table-empty {
@@ -19,6 +21,7 @@
   border-radius: 8px;
   color: #6b7280;
   font-size: 16px;
+  text-align: center;
 }
 
 .property-table {
@@ -43,6 +46,7 @@
   color: #333;
   white-space: nowrap;
   border-bottom: 1px solid #eaeaea;
+  transition: padding 0.3s ease-in-out;
 }
 
 .property-table tbody {
@@ -65,6 +69,13 @@
   font-size: 14px;
   color: #333;
   vertical-align: middle;
+  transition: padding 0.3s ease-in-out;
+}
+
+/* 사이드바가 열렸을 때 테이블 패딩 절반으로 줄이기 */
+.page_section.with-sidebar .property-table th,
+.page_section.with-sidebar .property-table td {
+  padding: 7px 8px;
 }
 
 .checkbox-column {
@@ -110,8 +121,8 @@
 }
 
 .transaction-type.rent {
-  background-color: #fef7e0;
-  color: #ea8600;
+  background-color: #e8f0fe;
+  color: #1a73e8;
 }
 
 .status-button {
@@ -124,6 +135,7 @@
   cursor: pointer;
   background-color: #f1f8ff;
   color: #0077ff;
+  white-space: nowrap;
 }
 
 .status-button.개약전 {
@@ -151,6 +163,11 @@
     padding: 10px 12px;
     font-size: 13px;
   }
+
+  .page_section.with-sidebar .property-table th,
+  .page_section.with-sidebar .property-table td {
+    padding: 5px 6px;
+  }
 }
 
 /* 드롭다운이 테이블 헤더에 가려지지 않도록 설정 */
@@ -165,4 +182,9 @@
 [role="listbox"],
 [role="menu"] {
   z-index: var(--dropdown-z-index) !important;
+}
+
+.status-column {
+  min-width: 80px;
+  white-space: nowrap;
 }
