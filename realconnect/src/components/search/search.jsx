@@ -16,7 +16,7 @@ const Search = ({ onSearch }) => {
     <div className="search-container">
       <div className="search-input-wrapper">
         <div className="search-icon left" aria-hidden="true">
-          <img src={searchIcon} alt="" />
+          <img src={searchIcon} alt="search" />
         </div>
         <input
           type="text"

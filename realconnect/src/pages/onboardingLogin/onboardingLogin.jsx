@@ -138,7 +138,7 @@ const OnboardingLogin = () => {
           </div>
           <div className="login-signup">
             계정이 없으신가요?{" "}
-            <a href="#" className="login-signup-link">
+            <a href="/register" className="login-signup-link">
               회원가입
             </a>
           </div>

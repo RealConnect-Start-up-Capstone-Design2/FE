@@ -13,7 +13,7 @@ const PropertyTable = ({ properties, onPropertySelect }) => {
   };
 
   const toggleSelect = (e, id) => {
-    e.stopPropagation(); // Prevent row click when checkbox is clicked
+    e.stopPropagation();
     setSelectedItems((prevSelected) => {
       if (prevSelected.includes(id)) {
         return prevSelected.filter((item) => item !== id);
@@ -99,9 +99,11 @@ const PropertyTable = ({ properties, onPropertySelect }) => {
               <td>{property.owner}</td>
               <td>{property.contact}</td>
               <td className="status-column">
-                <button className={`status-button ${property.status}`}>
+                <div
+                  className={`status-button ${property.status.replace(/\s+/g, "")}`}
+                >
                   {property.status}
-                </button>
+                </div>
               </td>
             </tr>
           ))}

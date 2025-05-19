@@ -8,7 +8,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing }) => {
     <div className={`property-detail-sidebar ${isClosing ? "closing" : ""}`}>
       <div className="sidebar-header">
         <div className="sidebar-header-title">
-          파크리오 {property.building} {property.unit}
+          {property.complex} {property.building} {property.unit}
         </div>
         <button className="close-button" onClick={onClose}>
           ×
@@ -24,7 +24,11 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing }) => {
       {/* 특징, 거래 상태 */}
       <div className="property-features">
         <div className="property-status">
-          <p className={property.status}>{property.status}</p>
+          <p
+            className={`property-status-text ${property.status.replace(/\s+/g, "")}`}
+          >
+            {property.status}
+          </p>
         </div>
       </div>
       <div className="property-info">
@@ -77,8 +81,8 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing }) => {
           </div>
         </div>
 
-        <div className="note-section">
-          <h3>상담 내용</h3>
+        <div className="note-section custom">
+          <p className="note-section-title">상담 내용</p>
           <div className="note-content">
             <p>집주인 재계약 원하지 않음</p>
             <p>최장실 하자 수리 완료한 집</p>

@@ -4,7 +4,7 @@
   right: 0;
   width: 33rem;
   height: 100vh;
-  background-color: white;
+  background-color: #f8f8f8;
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
   z-index: 100;
   overflow-y: auto;
@@ -49,7 +49,7 @@
   align-items: center;
   padding-bottom: 1rem;
   border-bottom: 1px solid #eee;
-  background-color: white;
+  background-color: #f8f8f8;
 }
 
 .close-button {
@@ -110,7 +110,7 @@
   text-align: right;
 }
 
-.property-status p {
+.property-status-text {
   display: inline-block;
   padding: 0.4rem 1rem;
   border-radius: 2rem;
@@ -121,20 +121,21 @@
 }
 
 /* 계약 전 */
-.property-status p.개약전 {
-  background-color: #defcdc;
-  color: #189554;
+.property-status-text.계약전 {
+  background-color: #fcdcdc;
+  color: #b72525;
 }
 
 /* 계약 중 */
-.property-status p.계약중 {
-  background-color: #ffc107;
+.property-status-text.계약중 {
+  background-color: #fff8b8;
+  color: #c38b11;
 }
 
 /* 계약 완료 */
-.property-status p.개약완료 {
-  background-color: #fcdcdc;
-  color: #b72525;
+.property-status-text.계약완료 {
+  background-color: #defcdc;
+  color: #189554;
 }
 
 /* 매물 정보 영역 */
@@ -142,14 +143,12 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 24px;
 }
 
 /* 가격 정보 */
 .pricing-info {
-  display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.667rem;
 }
 
 .price-item p {
@@ -162,48 +161,51 @@
 .contact-info {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.8rem;
 }
 
 .info-row {
   display: flex;
-  gap: 12px;
+  gap: 1rem;
 }
 
 .info-box {
   flex: 1;
   background-color: #f5f7ff;
-  padding: 12px;
-  border-radius: 8px;
+  padding: 0.8rem;
+  border-radius: 0.5rem;
 }
 
 .info-box h4 {
-  margin: 0 0 4px 0;
-  font-size: 14px;
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
   color: #666;
   font-weight: normal;
 }
 
 .info-box p {
   margin: 0;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 상담 내용 */
-.note-section {
-  padding: 16px;
-  border-radius: 8px;
+.note-section.custom {
+  padding: 1rem 0;
+  border-radius: 0.5rem;
 }
 
-.note-section h3 {
-  margin: 0 0 12px 0;
-  font-size: 16px;
-  color: #333;
+.note-section-title {
+  font-size: 1.33rem;
+  font-weight: 500;
+  color: #1b1b1b;
 }
 
 .note-content p {
-  margin: 8px 0;
+  margin: 0.5rem 0;
   font-size: 1rem;
   color: #8d8d8d;
 }
@@ -211,9 +213,7 @@
 /* 버튼 영역 */
 .action-buttons {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: auto;
+  gap: 0.8rem;
   width: 100%;
 }
 

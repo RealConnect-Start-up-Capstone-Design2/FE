@@ -1,18 +1,22 @@
-.edit-property {
+.add-inquiry {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.8rem;
+  padding: 0.6rem 1.2rem;
+  height: 3.2rem;
   background-color: #1c2882;
-  padding: 1rem 1.2rem;
   border-radius: 0.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(177, 182, 199, 0.4);
+  box-sizing: border-box;
 }
 
-.edit-property-img {
+.add-inquiry-img {
   width: 1rem;
   height: 1rem;
 }
 
-.edit-property-text {
+.add-inquiry-text {
   color: white;
   font-family: "Pretendard";
   font-size: 1.2rem;
