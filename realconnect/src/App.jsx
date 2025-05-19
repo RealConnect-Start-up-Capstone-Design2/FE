@@ -16,14 +16,14 @@ import Settings from "./pages/settings";
 import Logout from "./pages/logout";
 import OnboardingLogin from "./pages/onboardingLogin/onboardingLogin";
 import Profile from "./pages/profile/profile";
-
+import Register from "./pages/onboardingLogin/register";
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         {/* 외부(로그인X)에서 접속하는 페이지 */}
         <Route path="/login" element={<OnboardingLogin />} />
-
+        <Route path="/register" element={<Register />} />
         {/* 로그인 후 접속하는 페이지 */}
         <Route
           path="/"
