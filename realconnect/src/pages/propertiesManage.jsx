@@ -33,7 +33,7 @@ const Properties = () => {
       contact: "010-1234-2334",
       tenant: "김민채",
       tenantContact: "010-1234-2334",
-      status: "개약 전",
+      status: "계약 전",
     },
     {
       id: 2,
@@ -50,7 +50,7 @@ const Properties = () => {
       contact: "010-1234-2334",
       tenant: "김민채",
       tenantContact: "010-1234-2334",
-      status: "개약 완료",
+      status: "계약 완료",
     },
     {
       id: 3,
@@ -67,7 +67,7 @@ const Properties = () => {
       contact: "010-1234-2334",
       tenant: "김민채",
       tenantContact: "010-1234-2334",
-      status: "개약 전",
+      status: "계약 전",
     },
     {
       id: 4,
@@ -84,7 +84,7 @@ const Properties = () => {
       contact: "010-1234-2334",
       tenant: "김민채",
       tenantContact: "010-1234-2334",
-      status: "개약 전",
+      status: "계약 전",
     },
     {
       id: 5,
@@ -101,7 +101,7 @@ const Properties = () => {
       contact: "010-1234-2334",
       tenant: "김민채",
       tenantContact: "010-1234-2334",
-      status: "개약 전",
+      status: "계약 전",
     },
     {
       id: 6,
@@ -118,7 +118,7 @@ const Properties = () => {
       contact: "010-1234-2334",
       tenant: "신진범",
       tenantContact: "010-1234-2334",
-      status: "개약 완료",
+      status: "계약 완료",
     },
     {
       id: 7,
@@ -135,7 +135,7 @@ const Properties = () => {
       contact: "010-1234-2334",
       tenant: "김민채",
       tenantContact: "010-1234-2334",
-      status: "개약 완료",
+      status: "계약 완료",
     },
     {
       id: 8,
@@ -152,7 +152,7 @@ const Properties = () => {
       contact: "010-1234-2334",
       tenant: "김민채",
       tenantContact: "010-1234-2334",
-      status: "개약 완료",
+      status: "계약 완료",
     },
     {
       id: 9,
@@ -169,7 +169,7 @@ const Properties = () => {
       contact: "010-5555-6666",
       tenant: "최정현",
       tenantContact: "010-7777-8888",
-      status: "개약 중",
+      status: "계약 중",
     },
   ];
 

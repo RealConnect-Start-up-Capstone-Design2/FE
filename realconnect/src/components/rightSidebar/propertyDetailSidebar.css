@@ -110,7 +110,7 @@
   text-align: right;
 }
 
-.property-status p {
+.property-status-text {
   display: inline-block;
   padding: 0.4rem 1rem;
   border-radius: 2rem;
@@ -121,20 +121,21 @@
 }
 
 /* 계약 전 */
-.property-status p.계약전 {
-  background-color: #defcdc;
-  color: #189554;
+.property-status-text.계약전 {
+  background-color: #fcdcdc;
+  color: #b72525;
 }
 
 /* 계약 중 */
-.property-status p.계약중 {
-  background-color: #ffc107;
+.property-status-text.계약중 {
+  background-color: #fff8b8;
+  color: #c38b11;
 }
 
 /* 계약 완료 */
-.property-status p.개약완료 {
-  background-color: #fcdcdc;
-  color: #b72525;
+.property-status-text.계약완료 {
+  background-color: #defcdc;
+  color: #189554;
 }
 
 /* 매물 정보 영역 */

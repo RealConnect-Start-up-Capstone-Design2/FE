@@ -13,7 +13,7 @@ const PropertyTable = ({ properties, onPropertySelect }) => {
   };
 
   const toggleSelect = (e, id) => {
-    e.stopPropagation(); // Prevent row click when checkbox is clicked
+    e.stopPropagation();
     setSelectedItems((prevSelected) => {
       if (prevSelected.includes(id)) {
         return prevSelected.filter((item) => item !== id);

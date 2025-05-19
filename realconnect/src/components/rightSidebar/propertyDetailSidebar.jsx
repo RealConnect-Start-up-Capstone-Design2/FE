@@ -24,7 +24,11 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing }) => {
       {/* 특징, 거래 상태 */}
       <div className="property-features">
         <div className="property-status">
-          <p className={property.status}>{property.status}</p>
+          <p
+            className={`property-status-text ${property.status.replace(/\s+/g, "")}`}
+          >
+            {property.status}
+          </p>
         </div>
       </div>
       <div className="property-info">

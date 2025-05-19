@@ -125,19 +125,19 @@
   text-overflow: clip;
 }
 
-.status-button.개약전 {
-  background-color: #defcdc;
-  color: #189554;
+.status-button.계약전 {
+  background-color: #fcdcdc;
+  color: #b72525;
 }
 
-.status-button.개약중 {
+.status-button.계약중 {
   background-color: #fff8b8;
   color: #c38b11;
 }
 
-.status-button.개약완료 {
-  background-color: #fcdcdc;
-  color: #b72525;
+.status-button.계약완료 {
+  background-color: #defcdc;
+  color: #189554;
 }
 
 .property-table input[type="checkbox"] {
