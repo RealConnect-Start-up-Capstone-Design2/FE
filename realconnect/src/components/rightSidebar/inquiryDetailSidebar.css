@@ -8,6 +8,7 @@
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
   z-index: 100;
   overflow-y: auto;
+  overflow-x: hidden;
   animation: slidein 0.3s ease-in-out;
   padding: 3.4rem 2rem 1rem 2.2rem;
   border-left: 1px solid #eee;
@@ -81,7 +82,9 @@
 .property-address {
   display: flex;
   align-items: center;
-  background-color: #e8edff;
+  height: 6rem;
+  border: 1px solid #dde2f2;
+  background-color: #ffffff;
   padding: 0.8rem;
   border-radius: 0.5rem;
   gap: 0.8rem;
@@ -178,7 +181,6 @@
 /* 문의 내용 */
 .inquiry-content {
   margin-top: 1.5rem;
-  padding: 1rem;
   border-radius: 0.5rem;
 }
 
