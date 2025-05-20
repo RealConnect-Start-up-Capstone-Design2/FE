@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./register.css";
 // 이미지 불러오기
 import loginLogo from "../../assets/icons/loginLogo.svg";
@@ -12,7 +13,7 @@ const Register = () => {
   const [form, setForm] = useState({
     username: "",
     password: "",
-    passwordCheck: "",
+    passwordVerify: "",
     name: "",
     email: "",
   });
@@ -22,10 +23,10 @@ const Register = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     console.log(form);
-    if (form.password !== form.passwordCheck) {
+    if (form.password !== form.passwordVerify) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
@@ -33,11 +34,27 @@ const Register = () => {
       alert("이메일 형식이 올바르지 않습니다.");
       return;
     }
-    // 실제 API 호출 예정
-    localStorage.setItem("isAuthenticated", "true");
-
-    // 회원가입 성공 후 대시보드로 리다이렉트
-    navigate("/");
+    try {
+      await axios.post("http://54.180.206.163:8080/api/register", {
+        username: form.username,
+        password: form.password,
+        passwordVerify: form.passwordVerify,
+        email: form.email,
+        name: form.name,
+      });
+      localStorage.setItem("isAuthenticated", "true");
+      navigate("/login");
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        alert(error.response.data.message);
+      } else {
+        alert("회원가입 요청 중 오류가 발생했습니다.");
+      }
+    }
   };
 
   return (
@@ -80,7 +97,7 @@ const Register = () => {
             </div>
           </div>
           <div className="login-form-group">
-            <label htmlFor="passwordCheck">비밀번호 확인</label>
+            <label htmlFor="passwordVerify">비밀번호 확인</label>
             <div className="login-input-wrap">
               <img
                 src={lockIcon}
@@ -89,9 +106,9 @@ const Register = () => {
               />
               <input
                 type="password"
-                id="passwordCheck"
-                name="passwordCheck"
-                value={form.passwordCheck}
+                id="passwordVerify"
+                name="passwordVerify"
+                value={form.passwordVerify}
                 onChange={handleChange}
                 placeholder="비밀번호 재입력"
                 autoComplete="new-password"
