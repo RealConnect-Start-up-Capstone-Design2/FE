@@ -1,0 +1,105 @@
+.regional-filter-container {
+  position: relative;
+  display: inline-block;
+}
+
+.regional-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff;
+  border: none;
+  border-radius: 1rem;
+  padding: 0.7rem 1.2rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.regional-filter-btn.selected {
+  background: #e8edff;
+}
+
+.regional-filter-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.regional-filter-dropdown {
+  position: absolute;
+  top: 120%;
+  left: 0;
+  background: #fff;
+  border: 1px solid rgba(177, 182, 199, 0.5);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.13);
+  z-index: 100000;
+  display: flex;
+  flex-direction: column;
+}
+
+.regional-filter-table {
+  display: flex;
+  flex-direction: row;
+}
+
+.regional-filter-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 8rem;
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+/* 시도(왼쪽 첫 컬럼) 타이틀의 왼쪽 상단만 */
+.regional-filter-col:first-child .regional-filter-col-title {
+  border-top-left-radius: 0.5rem;
+}
+
+/* 동읍면(오른쪽 마지막 컬럼) 타이틀의 오른쪽 상단만 */
+.regional-filter-col:last-child .regional-filter-col-title {
+  border-top-right-radius: 0.5rem;
+}
+
+.regional-filter-col-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.7rem;
+  color: #1b1b1b;
+  background-color: #e8edff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0.667rem 0;
+  text-align: center;
+}
+
+.regional-filter-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 0.6rem;
+  font-size: 1.05rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.2rem;
+  transition: background 0.15s;
+  margin-bottom: 0.1rem;
+}
+
+.regional-filter-option.selected {
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #1b1b1b;
+}
+
+.regional-filter-check {
+  color: #1c2882;
+  font-size: 1.1rem;
+  margin-right: 0.2rem;
+}
+
+.regional-filter-check-placeholder {
+  visibility: hidden;
+}
