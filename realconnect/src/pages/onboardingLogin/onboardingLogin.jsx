@@ -39,13 +39,26 @@ const OnboardingLogin = () => {
     }
     setError("");
     try {
-      const response = await axios.post("http://54.180.206.163:8080/login", {
-        username: form.username,
-        password: form.password,
-      });
-      // 서버에서 토큰, 유저정보를 store에 저장
-      const { accessToken, refreshToken, username } = response.data;
-      setAuth({ accessToken, refreshToken, username });
+      const response = await axios.post(
+        "http://54.180.206.163:8080/login",
+        {
+          username: form.username,
+          password: form.password,
+        },
+        { withCredentials: true } // 쿠키(리프레시 토큰) 받기
+      );
+      // 액세스 토큰은 Authorization 헤더에서 추출
+      const accessToken = response.headers["authorization"]?.replace(
+        "Bearer ",
+        ""
+      );
+      // username 등은 response.data에서 추출
+      const { username } = response.data;
+      if (!accessToken) {
+        setError("액세스 토큰이 없습니다.");
+        return;
+      }
+      setAuth({ accessToken, username });
       navigate("/");
     } catch (error) {
       if (
@@ -55,7 +68,7 @@ const OnboardingLogin = () => {
       ) {
         setError(error.response.data.message);
       } else {
-        setError("로그인 요청 중 오류가 발생했습니다.");
+        setError("로그인에 실패했습니다.");
       }
     }
   };
