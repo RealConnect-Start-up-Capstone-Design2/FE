@@ -104,6 +104,23 @@
   padding-right: 0.5rem;
 }
 
+/* 사이드바가 열렸을 때 아파트 이름(단지)에만 말줄임표 처리 적용 */
+.page_section.with-sidebar .inquiry-table td:nth-child(2) {
+  max-width: 5ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 사이드바가 열렸을 때 체크박스와 상태, 즐겨찾기 칼럼은 말줄임표 처리하지 않음 */
+.page_section.with-sidebar .inquiry-table td:first-child,
+.page_section.with-sidebar .inquiry-table td:nth-child(12),
+.page_section.with-sidebar .inquiry-table td:last-child {
+  overflow: visible;
+  text-overflow: clip;
+  max-width: none;
+}
+
 /* 체크박스 열 */
 .inquiry-table th:first-child,
 .inquiry-table td:first-child {
@@ -252,10 +269,19 @@
   overflow: visible;
   text-overflow: clip;
   border: none;
-  background-color: #f1f8ff;
-  color: #0077ff;
 }
 
+.inquiry-type-column {
+  display: inline-block;
+  border-radius: 99rem;
+  padding: 0.333rem 0.667rem;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  background-color: #e8edff;
+  font-size: 0.9rem;
+  color: #1c2882;
+}
 .status-column {
   white-space: nowrap;
   overflow: visible;

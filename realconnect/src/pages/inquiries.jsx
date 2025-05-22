@@ -1,4 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import useAuthStore from "../store/authStore";
 
 // 컴포넌트 불러오기
 import Search from "../components/search/search";
@@ -8,46 +10,113 @@ import DeleteInquiry from "../components/deleteInquiry/deleteInquiry";
 import InquiryTable from "../components/inquiriesTable/inquiryTable";
 import InquiryDetailSidebar from "../components/rightSidebar/inquiryDetailSidebar";
 
+// API 응답을 InquiryTable용 데이터로 변환
+const convertApiDataToInquiryTable = (apiData) => {
+  return apiData.map((item) => {
+    // 날짜 포맷 변환 함수
+    const formatDate = (dateString) => {
+      if (!dateString) return "-";
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return "-"; // 유효하지 않은 날짜
+
+        return date.toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "numeric",
+          day: "numeric",
+        });
+      } catch {
+        return "-";
+      }
+    };
+
+    return {
+      id: item.id,
+      name: item.name,
+      phone: item.phone,
+      apartmentName: item.apartmentName,
+      area: item.area ? `${item.area}` : "-",
+      inquiryType: item.inquiryType === "BUY" ? "매매" : "전세",
+      status:
+        item.status === "IN_PROGRESS"
+          ? "진행 중"
+          : item.status === "COMPLETED"
+            ? "완료"
+            : item.status === "CANCELLED"
+              ? "취소"
+              : "-",
+      salePrice: item.salePrice
+        ? (item.salePrice / 100000000).toFixed(1) + "억"
+        : "-",
+      deposit: item.deposit
+        ? (item.deposit / 100000000).toFixed(1) + "억"
+        : "-",
+      jeonsePrice: item.jeonsePrice
+        ? (item.jeonsePrice / 100000000).toFixed(1) + "억"
+        : "-",
+      monthPrice: item.monthPrice ? item.monthPrice.toLocaleString() : "-",
+      memo: item.memo || "-",
+      favorite: item.favorite || false,
+      createdAt: formatDate(item.createdAt),
+    };
+  });
+};
+
 const Inquiries = () => {
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [activeView, setActiveView] = useState("전체");
   const [isClosingSidebar, setIsClosingSidebar] = useState(false);
+  const [inquiries, setInquiries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
   const closingSidebarRef = useRef(false);
+  const accessToken = useAuthStore((state) => state.accessToken);
 
-  const allInquiries = [
-    {
-      id: 1,
-      complex: "파크리오",
-      content: "문의 내용",
-      area: "151",
-      transactionType: "매매",
-      sellPrice: "24억 5000",
-      deposit: "2억",
-      rentDeposit: "500",
-      monthlyRent: "60",
-      name: "김규식",
-      phone: "010-1234-5678",
-      date: "2025. 3. 2.",
-      status: "완료",
-      favorite: false,
-    },
-    {
-      id: 2,
-      complex: "파크리오",
-      content: "문의 내용",
-      area: "151",
-      transactionType: "매매",
-      sellPrice: "24억 5000",
-      deposit: "2억",
-      rentDeposit: "500",
-      monthlyRent: "60",
-      name: "김규식",
-      phone: "010-1234-5678",
-      date: "2025. 3. 2.",
-      status: "진행 중",
-      favorite: false,
-    },
-  ];
+  const handleAddInquiry = async (inquiryData, onSuccess, onError) => {
+    setAdding(true);
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/inquiries`,
+        inquiryData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          withCredentials: true,
+        }
+      );
+      await fetchInquiries();
+      if (onSuccess) onSuccess(res.data);
+    } catch (err) {
+      if (onError) onError(err);
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const fetchInquiries = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/inquiries`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          withCredentials: true,
+        }
+      );
+      setInquiries(convertApiDataToInquiryTable(res.data || []));
+    } catch {
+      setInquiries([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInquiries();
+  }, [accessToken]);
 
   const handleViewChange = (view) => {
     setActiveView(view);
@@ -127,23 +196,19 @@ const Inquiries = () => {
         </div>
         <div style={{ display: "flex", gap: "0.8rem" }}>
           <TransactionType />
-          <AddInquiry />
+          <AddInquiry onAddInquiry={handleAddInquiry} adding={adding} />
           <DeleteInquiry />
         </div>
       </div>
       <div className="page_content">
-        {activeView === "전체" ? (
-          <InquiryTable
-            inquiries={allInquiries}
-            onInquirySelect={handleInquirySelect}
-          />
+        {loading ? (
+          <div>로딩 중...</div>
         ) : (
           <InquiryTable
-            inquiries={allInquiries}
+            inquiries={inquiries}
             onInquirySelect={handleInquirySelect}
           />
         )}
-
         {selectedInquiry && (
           <InquiryDetailSidebar
             inquiry={selectedInquiry}

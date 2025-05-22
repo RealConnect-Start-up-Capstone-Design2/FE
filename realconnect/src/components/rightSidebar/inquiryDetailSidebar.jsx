@@ -1,11 +1,28 @@
-import React from "react";
+import React, { useState } from "react";
 import "./inquiryDetailSidebar.css";
+import ShareInquiryModal from "../../pages/modal/shareInquiryModal";
 
 const InquiryDetailSidebar = ({ inquiry, onClose, isClosing }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleSubmit = (data) => {
+    console.log("문의 공유하기 제출:", data);
+    // 여기서 API 호출 등의 로직 구현
+    closeModal();
+  };
+
   return (
     <div className={`inquiry-detail-sidebar ${isClosing ? "closing" : ""}`}>
       <div className="sidebar-header">
-        <div className="sidebar-header-title">{inquiry.complex}</div>
+        <div className="sidebar-header-title">{inquiry.apartmentName}</div>
         <button className="close-button" onClick={onClose}>
           ×
         </button>
@@ -30,10 +47,10 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing }) => {
       </div>
 
       <div className="price-info">
-        <div className="price-label">매매 {inquiry.sellPrice}</div>
-        <div className="price-label">전세 {inquiry.deposit}</div>
+        <div className="price-label">매매 {inquiry.salePrice}</div>
+        <div className="price-label">전세 {inquiry.jeonsePrice}</div>
         <div className="price-label">
-          보증금/월세 {inquiry.rentDeposit}/{inquiry.monthlyRent}
+          보증금/월세 {inquiry.deposit}/{inquiry.monthPrice}
         </div>
       </div>
 
@@ -54,7 +71,7 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing }) => {
         <div className="info-row">
           <div className="info-box">
             <h4>문의 유형</h4>
-            <p>{inquiry.transactionType}</p>
+            <p>{inquiry.inquiryType}</p>
           </div>
           <div className="info-box">
             <h4>진행 상태</h4>
@@ -73,24 +90,31 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing }) => {
           </div>
           <div className="info-box">
             <h4>등록일</h4>
-            <p>{inquiry.date}</p>
+            <p>{inquiry.createdAt}</p>
           </div>
         </div>
       </div>
 
       <div className="inquiry-content">
         <h3>문의 내용</h3>
-        <p>집주인 재계약 원하지 않음</p>
-        <p>확실한 6주 안에 완료될 집</p>
+        <p>{inquiry.memo}</p>
       </div>
 
       <div className="action-buttons">
         <button className="primary-button">수정하기</button>
         <div className="button-group">
           <button className="secondary-button">계약 작성</button>
-          <button className="secondary-button">공유하기</button>
+          <button className="secondary-button" onClick={openModal}>
+            공유하기
+          </button>
         </div>
       </div>
+
+      <ShareInquiryModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSubmit={handleSubmit}
+      />
     </div>
   );
 };
