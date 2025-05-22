@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import useAuthStore from "../../store/authStore";
+
 import "../onboardingLogin/onboardingLogin.css";
 import loginLogo from "../../assets/icons/loginLogo.svg";
 import userIcon from "../../assets/icons/user.svg";
@@ -16,6 +19,7 @@ const OnboardingLogin = () => {
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   // 입력값 변경 핸들러
   const handleChange = (e) => {
@@ -34,12 +38,39 @@ const OnboardingLogin = () => {
       return;
     }
     setError("");
-    // 이제 API를 통해 로그인 요청을 실제로 해야 함
-    // 데모 버전에선 그냥 로컬 스토리지에 토큰 저장만 한 상태임.
-    localStorage.setItem("isAuthenticated", "true");
-
-    // 로그인 성공 후 대시보드로 리다이렉트
-    navigate("/");
+    try {
+      const response = await axios.post(
+        "http://54.180.206.163:8080/login",
+        {
+          username: form.username,
+          password: form.password,
+        },
+        { withCredentials: true } // 쿠키(리프레시 토큰) 받기
+      );
+      // 액세스 토큰은 Authorization 헤더에서 추출
+      const accessToken = response.headers["authorization"]?.replace(
+        "Bearer ",
+        ""
+      );
+      // username 등은 response.data에서 추출
+      const { username } = response.data;
+      if (!accessToken) {
+        setError("액세스 토큰이 없습니다.");
+        return;
+      }
+      setAuth({ accessToken, username });
+      navigate("/");
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        setError(error.response.data.message);
+      } else {
+        setError("로그인에 실패했습니다.");
+      }
+    }
   };
 
   return (
