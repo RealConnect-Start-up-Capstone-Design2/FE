@@ -90,7 +90,7 @@ const Properties = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/apartments-properties?page=0&size=50`,
+        `${import.meta.env.VITE_API_URL}/api/apartments-properties?page=0&size=100`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

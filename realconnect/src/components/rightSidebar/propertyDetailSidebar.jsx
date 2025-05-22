@@ -124,11 +124,11 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing }) => {
           <div className="info-row">
             <div className="info-box">
               <h4>만기일</h4>
-              <p>2025. 3. 18</p>
+              <p>{property.endDate}</p>
             </div>
             <div className="info-box">
               <h4>등록일</h4>
-              <p>2025. 3. 2.</p>
+              <p>{property.startDate}</p>
             </div>
           </div>
         </div>
@@ -136,8 +136,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing }) => {
         <div className="note-section custom">
           <p className="note-section-title">상담 내용</p>
           <div className="note-content">
-            <p>집주인 재계약 원하지 않음</p>
-            <p>최장실 하자 수리 완료한 집</p>
+            <p>{property.memo}</p>
           </div>
         </div>
 
