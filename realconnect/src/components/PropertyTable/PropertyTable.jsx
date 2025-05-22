@@ -80,7 +80,7 @@ const PropertyTable = ({ properties, onPropertySelect }) => {
                   onChange={(e) => toggleSelect(e, property.id)}
                 />
               </td>
-              <td>{property.complex}</td>
+              <td>{property.apartmentName}</td>
               <td>{property.building}</td>
               <td>{property.unit}</td>
               <td>{property.area}</td>

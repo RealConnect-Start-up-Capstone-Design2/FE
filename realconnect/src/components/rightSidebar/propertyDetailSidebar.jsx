@@ -1,20 +1,72 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./propertyDetailSidebar.css";
+import useAuthStore from "../../store/authStore";
+import axios from "axios";
 
 const PropertyDetailSidebar = ({ property, onClose, isClosing }) => {
+  const [imageUrl, setImageUrl] = useState(null);
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  useEffect(() => {
+    // 이미지가 있으면 이미지 URL 생성
+    if (property && property.img) {
+      const loadImage = async () => {
+        try {
+          // 이미지를 Blob으로 가져오기
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_URL}${property.img}`,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+              responseType: "blob",
+            }
+          );
+
+          // Blob URL 생성
+          const url = URL.createObjectURL(response.data);
+          setImageUrl(url);
+        } catch (error) {
+          console.error("이미지 로드 실패:", error);
+          setImageUrl(null);
+        }
+      };
+
+      loadImage();
+
+      // 컴포넌트 언마운트 시 Blob URL 해제
+      return () => {
+        if (imageUrl) {
+          URL.revokeObjectURL(imageUrl);
+        }
+      };
+    }
+  }, [property, accessToken]);
+
   if (!property) return null;
 
   return (
     <div className={`property-detail-sidebar ${isClosing ? "closing" : ""}`}>
       <div className="sidebar-header">
         <div className="sidebar-header-title">
-          {property.complex} {property.building} {property.unit}
+          {property.apartmentName} {property.building} {property.unit}
         </div>
         <button className="close-button" onClick={onClose}>
           ×
         </button>
       </div>
       <div className="property-image-placeholder">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={`${property.apartmentName} ${property.building} ${property.unit}`}
+            style={{ objectFit: "contain" }} // 이미지 표시 모드 적용
+          />
+        ) : (
+          <div className="image-loading">
+            <p>이미지 로딩 중...</p>
+          </div>
+        )}
         <div className="floor-plan-placeholder"></div>
         <div className="image-control-buttons">
           <button className="control-button active">평면도</button>
