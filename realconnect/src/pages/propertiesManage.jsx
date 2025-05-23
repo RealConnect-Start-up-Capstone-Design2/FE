@@ -9,11 +9,14 @@ import AddProperty from "../components/addProperrty/addProperty";
 import DeleteProperty from "../components/deleteProperty/deleteProperty";
 import PropertyTable from "../components/PropertyTable/PropertyTable";
 import PropertyDetailSidebar from "../components/rightSidebar/propertyDetailSidebar";
+import PropertyModifySidebar from "../components/rightSidebar/propertyModifySidebar";
+
 
 const Properties = () => {
   const [activeView, setActiveView] = useState("전체");
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [isClosingSidebar, setIsClosingSidebar] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const closingSidebarRef = useRef(false);
 
   // 샘플 데이터
@@ -272,13 +275,27 @@ const Properties = () => {
           />
         )}
 
-        {selectedProperty && (
-          <PropertyDetailSidebar
-            property={selectedProperty}
-            onClose={closeSidebar}
-            isClosing={isClosingSidebar}
-          />
+       {selectedProperty && (
+          isEditMode ? (
+            <PropertyModifySidebar
+              property={selectedProperty}
+              onClose={() => {
+                closeSidebar();
+                setIsEditMode(false);
+              }}
+              onCancel={() => setIsEditMode(false)}
+            />
+          ) : (
+            <PropertyDetailSidebar
+              property={selectedProperty}
+              onClose={closeSidebar}
+              isClosing={isClosingSidebar}
+              onEdit={() => setIsEditMode(true)}  // ★ 중요: 수정 버튼 눌렀을 때!
+            />
+          )
         )}
+
+
       </div>
     </div>
   );

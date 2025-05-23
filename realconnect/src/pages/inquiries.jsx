@@ -7,11 +7,14 @@ import AddInquiry from "../components/addInquiry/addInquiry";
 import DeleteInquiry from "../components/deleteInquiry/deleteInquiry";
 import InquiryTable from "../components/inquiriesTable/inquiryTable";
 import InquiryDetailSidebar from "../components/rightSidebar/inquiryDetailSidebar";
+import InquiryModifySidebar from "../components/rightSidebar/inquiryModifySidebar";
+
 
 const Inquiries = () => {
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [activeView, setActiveView] = useState("전체");
   const [isClosingSidebar, setIsClosingSidebar] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const closingSidebarRef = useRef(false);
 
   const allInquiries = [
@@ -145,11 +148,27 @@ const Inquiries = () => {
         )}
 
         {selectedInquiry && (
-          <InquiryDetailSidebar
-            inquiry={selectedInquiry}
-            onClose={closeSidebar}
-            isClosing={isClosingSidebar}
-          />
+          isEditMode ? (
+            <InquiryModifySidebar
+              inquiry={selectedInquiry}
+              onClose={() => {
+                closeSidebar();
+                setIsEditMode(false);
+              }}
+              onSave={(modified) => {
+                console.log("수정된 문의:", modified);
+                setIsEditMode(false);
+                closeSidebar();
+              }}
+            />
+          ) : (
+            <InquiryDetailSidebar
+              inquiry={selectedInquiry}
+              onClose={closeSidebar}
+              isClosing={isClosingSidebar}
+              onEdit={() => setIsEditMode(true)}  // ✅ 핵심!
+            />
+          )
         )}
       </div>
     </div>
