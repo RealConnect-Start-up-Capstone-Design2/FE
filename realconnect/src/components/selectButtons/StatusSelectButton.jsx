@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import './SelectButton.css';
-
+import checkIcon from '/src/assets/icons/check.svg';
+import arrowIcon from '/src/assets/icons/downArrow.svg'; 
 
 const StatusSelectButton = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +14,16 @@ const StatusSelectButton = ({ value, onChange }) => {
         className="custom-select-button"
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        {value || "진행 상태 선택"} <span className="arrow">▾</span>
+        {value || "진행 상태 선택"}
+
+        <span>
+          <img
+            src={arrowIcon}
+            alt="화살표"
+            className={`arrow-icon ${isOpen ? 'rotate-up' : ''}`}
+          />
+        </span>
+        
       </button>
       {isOpen && (
         <ul className="custom-select-list">
@@ -27,7 +37,8 @@ const StatusSelectButton = ({ value, onChange }) => {
               }}
             >
               {option}
-              {value === option && <span className="check">✔</span>}
+              {value === option && (
+                <img src={checkIcon} alt="선택됨" className="check-icon" />)}
             </li>
           ))}
         </ul>

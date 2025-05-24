@@ -166,7 +166,7 @@ const Inquiries = () => {
               inquiry={selectedInquiry}
               onClose={closeSidebar}
               isClosing={isClosingSidebar}
-              onEdit={() => setIsEditMode(true)}  // ✅ 핵심!
+              onEdit={() => setIsEditMode(true)}  
             />
           )
         )}

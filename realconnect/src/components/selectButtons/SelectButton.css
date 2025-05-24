@@ -17,13 +17,18 @@
   margin-top: 0.733rem;                   /* 11px */
 }
 
-.custom-select-button .arrow {
-  position: absolute;
-  right: 0.8rem;                          /* 12px */
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.667rem;                    /* 25px */
-  color: #989898;
+.arrow-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-left: 9rem;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+  vertical-align: middle;
+   align-items: center;
+}
+
+.rotate-up {
+  transform: rotate(180deg); /* 90 + 180 = 270 → 위 ↑ */
 }
 
 .custom-select-list {
@@ -60,8 +65,8 @@
   color: #1B1B1B;
 }
 
-.custom-select-item .check {
-  color: #1B1B1B;
-  font-size: 0.6rem;                      /* 9px */
-  margin-left: 0.333rem;                 /* 5px */
+.check-icon {
+  width: 0.6rem;
+  height: 0.467rem;
+  margin-left: 0.533rem;
 }

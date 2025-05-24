@@ -290,7 +290,7 @@ const Properties = () => {
               property={selectedProperty}
               onClose={closeSidebar}
               isClosing={isClosingSidebar}
-              onEdit={() => setIsEditMode(true)}  // ★ 중요: 수정 버튼 눌렀을 때!
+              onEdit={() => setIsEditMode(true)}  
             />
           )
         )}
