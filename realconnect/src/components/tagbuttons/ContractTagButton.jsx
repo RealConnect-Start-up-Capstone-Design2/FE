@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import './TagButton.css';
+import arrowIcon from '/src/assets/icons/intoArrow.svg'; 
 
 const ContractTagButton = ({ value, onChange, className = "" }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,7 +23,14 @@ const ContractTagButton = ({ value, onChange, className = "" }) => {
         className="tag-contract-select-button"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {value || "계약 상태 선택"} <span className="tag-arrow">▼</span>
+        {value || "계약 상태 선택"} 
+        <span>
+          <img
+          src={arrowIcon}
+          alt="화살표"
+          className={`tag-arrow-icon ${isOpen ? 'tag-rotate-up' : ''}`}
+           />
+          </span>
       </button>
       {isOpen && (
         <ul
@@ -39,7 +47,7 @@ const ContractTagButton = ({ value, onChange, className = "" }) => {
               }}
             >
               {option}
-              {value === option && <span className="tag-check">✔</span>}
+              
             </li>
           ))}
         </ul>

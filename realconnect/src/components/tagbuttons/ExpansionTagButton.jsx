@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import './TagButton.css';
+import checkIcon from '/src/assets/icons/check.svg';
+import arrowIcon from '/src/assets/icons/intoArrow.svg'; 
 
 const ExpansionTagButton = ({ value, onChange, className = "" }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,7 +24,14 @@ const ExpansionTagButton = ({ value, onChange, className = "" }) => {
         className="tag-select-button"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {value || "확장"} <span className="tag-arrow">▼</span>
+        {value || "확장"} 
+        <span>
+          <img
+          src={arrowIcon}
+          alt="화살표"
+          className={`tag-arrow-icon ${isOpen ? 'tag-rotate-up' : ''}`}
+          />
+        </span>
       </button>
       {isOpen && (
         <ul
@@ -38,8 +47,8 @@ const ExpansionTagButton = ({ value, onChange, className = "" }) => {
                 setIsOpen(false);
               }}
             >
-              {option}
-              {value === option && <span className="tag-check">✔</span>}
+               {option}
+        
             </li>
           ))}
         </ul>

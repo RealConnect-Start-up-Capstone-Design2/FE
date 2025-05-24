@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import './TagButton.css';
+import arrowIcon from '/src/assets/icons/intoArrow.svg'; 
 
 const DirectionTagButton = ({ value, onChange, className = "" }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,7 +26,14 @@ const DirectionTagButton = ({ value, onChange, className = "" }) => {
         className="tag-select-button"
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        {value || "남향"} <span className="tag-arrow">▼</span>
+        {value || "남향"}
+        <span>
+          <img
+          src={arrowIcon}
+          alt="화살표"
+          className={`tag-arrow-icon ${isOpen ? 'tag-rotate-up' : ''}`}
+          />
+        </span>
       </button>
       {isOpen && (
         <ul
@@ -42,7 +50,7 @@ const DirectionTagButton = ({ value, onChange, className = "" }) => {
               }}
             >
               {option}
-              {value === option && <span className="tag-check">✔</span>}
+            
             </li>
           ))}
         </ul>
