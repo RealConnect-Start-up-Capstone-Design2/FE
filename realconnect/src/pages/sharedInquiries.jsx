@@ -1,16 +1,51 @@
-import React, { useState } from "react";
-
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import useAuthStore from "../store/authStore";
 import RegionalFilter from "../components/regionalFilter/regionalFilter";
 import TransactionType from "../components/sortButtons/transactionType";
 import AddProperty from "../components/addProperrty/addProperty";
 import DeleteProperty from "../components/deleteProperty/deleteProperty";
+import SharedInquiriesTable from "../components/sharedInquiriesTable/sharedInquiriesTable";
 
 const SharedInquiries = () => {
   const [activeView, setActiveView] = useState("all");
+  const [sharedInquiries, setSharedInquiries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const accessToken = useAuthStore((state) => state.accessToken);
 
   const handleViewChange = (view) => {
     setActiveView(view);
   };
+
+  const handleSharedInquirySelect = (inquiry) => {
+    console.log("선택된 문의:", inquiry);
+  };
+
+  const fetchSharedInquiries = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/shares`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          withCredentials: true,
+        }
+      );
+      console.log("API 응답 데이터:", res.data);
+      setSharedInquiries(res.data);
+    } catch (error) {
+      console.error("문의 공유 데이터 조회 중 오류 발생:", error);
+      setSharedInquiries([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSharedInquiries();
+  }, [accessToken]);
 
   return (
     <div className="page_section">
@@ -52,9 +87,17 @@ const SharedInquiries = () => {
           <AddProperty />
           <DeleteProperty />
         </div>
-        {/* 문의 공유 목록 */}
       </div>
-      <div className="page_content"></div>
+      <div className="page_content">
+        {loading ? (
+          <div>로딩 중...</div>
+        ) : (
+          <SharedInquiriesTable
+            sharedInquiries={sharedInquiries}
+            onSharedInquirySelect={handleSharedInquirySelect}
+          />
+        )}
+      </div>
     </div>
   );
 };
