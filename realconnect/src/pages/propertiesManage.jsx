@@ -80,6 +80,7 @@ const getStatusText = (status) => {
 const Properties = () => {
   const [activeView, setActiveView] = useState("전체");
   const [properties, setProperties] = useState([]);
+  const [filteredProperties, setFilteredProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [isClosingSidebar, setIsClosingSidebar] = useState(false);
@@ -108,9 +109,11 @@ const Properties = () => {
       // 변환된 데이터 저장
       const convertedData = convertApiDataToTableData(responseData);
       setProperties(convertedData);
+      setFilteredProperties(convertedData); // 초기에는 모든 데이터 표시
     } catch (error) {
       console.error("매물 데이터 조회 중 오류 발생:", error);
       setProperties([]);
+      setFilteredProperties([]);
     } finally {
       setLoading(false);
     }
@@ -119,6 +122,32 @@ const Properties = () => {
   useEffect(() => {
     fetchProperties();
   }, [accessToken]);
+
+  // 내 물건 필터링 함수
+  const filterMyProperties = () => {
+    if (activeView === "전체") {
+      setFilteredProperties(properties);
+    } else {
+      // 내 물건: 값이 입력된 매물만 필터링
+      const filtered = properties.filter((property) => {
+        // 소유주, 임차인, 가격 등 주요 정보가 입력된 매물만 표시
+        return (
+          (property.owner && property.owner !== "-") ||
+          (property.tenant && property.tenant !== "-") ||
+          (property.sellPrice && property.sellPrice !== "-") ||
+          (property.deposit && property.deposit !== "-") ||
+          (property.rentDeposit && property.rentDeposit !== "-") ||
+          (property.memo && property.memo !== "")
+        );
+      });
+      setFilteredProperties(filtered);
+    }
+  };
+
+  // activeView가 변경될 때마다 필터링 적용
+  useEffect(() => {
+    filterMyProperties();
+  }, [activeView, properties]);
 
   const handleViewChange = (view) => {
     setActiveView(view);
@@ -227,7 +256,7 @@ const Properties = () => {
           <div>로딩 중...</div>
         ) : (
           <PropertyTable
-            properties={properties}
+            properties={filteredProperties}
             onPropertySelect={handlePropertySelect}
           />
         )}
