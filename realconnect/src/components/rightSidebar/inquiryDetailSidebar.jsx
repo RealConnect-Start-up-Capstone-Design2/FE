@@ -1,7 +1,8 @@
 import React from "react";
 import "./inquiryDetailSidebar.css";
 
-const InquiryDetailSidebar = ({ inquiry, onClose, isClosing }) => {
+const InquiryDetailSidebar = ({ inquiry, onClose, isClosing ,onEdit}) => {
+
   return (
     <div className={`inquiry-detail-sidebar ${isClosing ? "closing" : ""}`}>
       <div className="sidebar-header">
@@ -85,7 +86,7 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing }) => {
       </div>
 
       <div className="action-buttons">
-        <button className="primary-button">수정하기</button>
+        <button className="primary-button" onClick={onEdit}>수정하기</button>
         <div className="button-group">
           <button className="secondary-button">계약 작성</button>
           <button className="secondary-button">공유하기</button>

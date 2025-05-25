@@ -1,7 +1,7 @@
 import React from "react";
 import "./propertyDetailSidebar.css";
 
-const PropertyDetailSidebar = ({ property, onClose, isClosing }) => {
+const PropertyDetailSidebar = ({ property, onClose, isClosing , onEdit }) => {
   if (!property) return null;
 
   return (
@@ -90,7 +90,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing }) => {
         </div>
 
         <div className="action-buttons">
-          <button className="primary-button">수정하기</button>
+          <button className="primary-button" onClick={onEdit}>수정하기</button>
           <button className="secondary-button">계약 작성</button>
         </div>
       </div>
