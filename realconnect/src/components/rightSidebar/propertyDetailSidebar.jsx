@@ -75,6 +75,17 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
       </div>
       {/* 특징, 거래 상태 */}
       <div className="property-features">
+        <div className="property-tags">
+          {property.direction && (
+            <span className="property-tag">{property.direction}</span>
+          )}
+          {property.expansion && (
+            <span className="property-tag">{property.expansion}</span>
+          )}
+          {property.wardrobe && (
+            <span className="property-tag">{property.wardrobe}</span>
+          )}
+        </div>
         <div className="property-status">
           <p
             className={`property-status-text ${property.status.replace(/\s+/g, "")}`}
@@ -141,7 +152,11 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
         </div>
 
         <div className="action-buttons">
-          <button className="primary-button" onClick={onEdit}>
+          <button
+            className="primary-button"
+            imageUrl={imageUrl}
+            onClick={onEdit}
+          >
             수정하기
           </button>
           <button className="secondary-button">계약 작성</button>

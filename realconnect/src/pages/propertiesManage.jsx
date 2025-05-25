@@ -142,7 +142,26 @@ const Properties = () => {
       // 다른 행을 클릭하면 새로운 프로퍼티 설정
       setIsClosingSidebar(false);
       setSelectedProperty(property);
+      // 수정 중이었다면 수정 모드 종료
+      if (isEditMode) {
+        setIsEditMode(false);
+      }
     }
+  };
+
+  const handleSaveProperty = (updatedProperty) => {
+    // 수정된 데이터를 상태에 반영
+    setSelectedProperty(updatedProperty);
+
+    // properties 배열에서 해당 항목 업데이트
+    setProperties((prevProperties) =>
+      prevProperties.map((prop) =>
+        prop.id === updatedProperty.id ? updatedProperty : prop
+      )
+    );
+
+    // 편집 모드 종료 (사이드바는 닫지 않음)
+    setIsEditMode(false);
   };
 
   const closeSidebar = () => {
@@ -218,9 +237,11 @@ const Properties = () => {
             <PropertyModifySidebar
               property={selectedProperty}
               onClose={() => {
+                // 닫기 버튼을 눌렀을 때만 사이드바를 닫음
                 closeSidebar();
                 setIsEditMode(false);
               }}
+              onSave={handleSaveProperty}
               onCancel={() => setIsEditMode(false)}
             />
           ) : (

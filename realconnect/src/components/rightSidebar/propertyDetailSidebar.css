@@ -162,10 +162,26 @@
   display: flex;
   flex-direction: row;
   margin: 1rem 0;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.property-tags {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.property-tag {
+  background-color: #e8edff;
+  color: #1c2882;
+  padding: 0.3rem 0.8rem;
+  border-radius: 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .property-status {
-  flex: 1;
+  flex: 0 0 auto;
   text-align: right;
 }
 
