@@ -37,7 +37,14 @@ const convertApiDataToInquiryTable = (apiData) => {
       phone: item.phone,
       apartmentName: item.apartmentName,
       area: item.area ? `${item.area}` : "-",
-      inquiryType: item.inquiryType === "BUY" ? "매매" : "전세",
+      inquiryType:
+        item.inquiryType === "BUY"
+          ? "매매"
+          : item.inquiryType === "JEONSE"
+            ? "전세"
+            : item.inquiryType === "MONTHLY_RENT"
+              ? "월세"
+              : "-",
       status:
         item.status === "IN_PROGRESS"
           ? "진행 중"
@@ -71,9 +78,11 @@ const Inquiries = () => {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [inquiryType, setInquiryType] = useState("ALL");
   const closingSidebarRef = useRef(false);
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isEditMode, setIsEditMode] = useState(false);
+
   const handleAddInquiry = async (inquiryData, onSuccess, onError) => {
     setAdding(true);
     try {
@@ -99,10 +108,25 @@ const Inquiries = () => {
   const fetchInquiries = async () => {
     setLoading(true);
     try {
-      // searchKeyword가 있으면 쿼리 파라미터로 추가
-      const url = searchKeyword
-        ? `${import.meta.env.VITE_API_URL}/api/inquiries?keyword=${searchKeyword}`
-        : `${import.meta.env.VITE_API_URL}/api/inquiries`;
+      // URL 쿼리 파라미터 구성
+      let queryParams = [];
+
+      // 검색어가 있으면 추가
+      if (searchKeyword) {
+        queryParams.push(`keyword=${encodeURIComponent(searchKeyword)}`);
+      }
+
+      // 거래 유형이 전체가 아니면 추가
+      if (inquiryType && inquiryType !== "ALL") {
+        queryParams.push(`inquiryType=${inquiryType}`);
+      }
+
+      // 쿼리 파라미터 문자열 생성
+      const queryString =
+        queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+
+      // API 요청 보내기
+      const url = `${import.meta.env.VITE_API_URL}/api/inquiries${queryString}`;
 
       const res = await axios.get(url, {
         headers: {
@@ -127,11 +151,11 @@ const Inquiries = () => {
     }
   };
 
-  // 검색어 또는 activeView가 변경될 때마다 데이터 다시 가져오기
+  // 검색어, 거래 유형, activeView가 변경될 때마다 데이터 다시 가져오기
   useEffect(() => {
     fetchInquiries();
     console.log(inquiries);
-  }, [accessToken, searchKeyword, activeView]);
+  }, [accessToken, searchKeyword, inquiryType, activeView]);
 
   const handleViewChange = (view) => {
     setActiveView(view);
@@ -140,6 +164,11 @@ const Inquiries = () => {
   const handleSearch = (searchTerm) => {
     // 검색어 상태 업데이트 (이후 useEffect에서 fetchInquiries 호출됨)
     setSearchKeyword(searchTerm);
+  };
+
+  // 거래 유형 변경 핸들러
+  const handleTransactionTypeChange = (type) => {
+    setInquiryType(type);
   };
 
   const handleInquirySelect = (inquiry) => {
@@ -210,7 +239,9 @@ const Inquiries = () => {
           <Search onSearch={handleSearch} />
         </div>
         <div style={{ display: "flex", gap: "0.8rem" }}>
-          <TransactionType />
+          <TransactionType
+            onTransactionTypeChange={handleTransactionTypeChange}
+          />
           <AddInquiry onAddInquiry={handleAddInquiry} adding={adding} />
           <DeleteInquiry />
         </div>
