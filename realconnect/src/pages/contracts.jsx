@@ -17,7 +17,7 @@ const Contracts = () => {
   const closingSidebarRef = useRef(false);
 
   // 샘플 데이터
-  const allContracts = [
+  const [allContracts, setAllContracts] = useState([
     {
       id: 1,
       complex: "파크리오",
@@ -40,7 +40,7 @@ const Contracts = () => {
       isFavorite: true,
     },
     // 추가 데이터는 나중에 추가
-  ];
+  ]);
 
   // 즐겨찾기 데이터
   const favoriteContracts = allContracts.filter(
@@ -86,6 +86,47 @@ const Contracts = () => {
       setIsClosingSidebar(false);
       closingSidebarRef.current = false;
     }, 300);
+  };
+
+  // 계약 정보 업데이트 처리
+  const handleContractUpdate = (updatedData) => {
+    // API 호출 구현 부분 (추후 구현)
+    // const response = await api.updateContract(updatedData);
+
+    // 임시로 로컬 상태 업데이트 (API 연동 전)
+    const updatedContracts = allContracts.map((contract) => {
+      if (contract.id === selectedContract.id) {
+        // 업데이트된 계약 데이터로 변환
+        return {
+          ...contract,
+          ...updatedData, // 이미 변환된 데이터를 그대로 사용
+          // 파일 날짜 업데이트
+          fileDate:
+            updatedData.contractFile &&
+            updatedData.contractFile !== contract.contractFile
+              ? new Date()
+                  .toLocaleDateString("ko-KR", {
+                    year: "numeric",
+                    month: "numeric",
+                    day: "numeric",
+                  })
+                  .replace(/\./g, ". ")
+                  .replace(/\s$/, "")
+              : contract.fileDate,
+        };
+      }
+      return contract;
+    });
+
+    setAllContracts(updatedContracts);
+
+    // 선택된 계약 정보도 업데이트
+    const updatedSelectedContract = updatedContracts.find(
+      (contract) => contract.id === selectedContract.id
+    );
+
+    setSelectedContract(updatedSelectedContract);
+    console.log("업데이트된 선택 계약:", updatedSelectedContract);
   };
 
   return (
@@ -152,6 +193,7 @@ const Contracts = () => {
             contract={selectedContract}
             onClose={closeSidebar}
             isClosing={isClosingSidebar}
+            onUpdate={handleContractUpdate}
           />
         )}
       </div>

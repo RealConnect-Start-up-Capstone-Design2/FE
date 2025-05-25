@@ -32,12 +32,12 @@
 }
 
 .before_contract_container {
-  background-color: #defcdc;
+  background-color: #fcdcdc;
 }
 
 .before_contract_container p {
   font-size: 1rem;
-  color: #189554;
+  color: #b72525;
 }
 
 .ongoing_contract_container {
@@ -50,10 +50,28 @@
 }
 
 .completed_contract_container {
-  background-color: #fcdcdc;
+  background-color: #defcdc;
 }
 
 .completed_contract_container p {
+  font-size: 1rem;
+  color: #189554;
+}
+
+.expired_contract_container {
+  background-color: #ebebeb;
+}
+
+.expired_contract_container p {
+  font-size: 1rem;
+  color: #8d8d8d;
+}
+
+.terminated_contract_container {
+  background-color: #fcdcdc;
+}
+
+.terminated_contract_container p {
   font-size: 1rem;
   color: #b72525;
 }
