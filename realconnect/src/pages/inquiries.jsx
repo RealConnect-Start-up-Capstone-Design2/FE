@@ -70,6 +70,7 @@ const Inquiries = () => {
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState("");
   const closingSidebarRef = useRef(false);
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -98,34 +99,47 @@ const Inquiries = () => {
   const fetchInquiries = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/inquiries`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-          withCredentials: true,
-        }
-      );
-      setInquiries(convertApiDataToInquiryTable(res.data || []));
-    } catch {
+      // searchKeyword가 있으면 쿼리 파라미터로 추가
+      const url = searchKeyword
+        ? `${import.meta.env.VITE_API_URL}/api/inquiries?keyword=${searchKeyword}`
+        : `${import.meta.env.VITE_API_URL}/api/inquiries`;
+
+      const res = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        withCredentials: true,
+      });
+
+      let processedData = convertApiDataToInquiryTable(res.data || []);
+
+      // 즐겨찾기 필터링 (activeView가 즐겨찾기인 경우)
+      if (activeView === "즐겨찾기") {
+        processedData = processedData.filter((inquiry) => inquiry.favorite);
+      }
+
+      setInquiries(processedData);
+    } catch (error) {
+      console.error("문의 데이터 조회 실패:", error);
       setInquiries([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // 검색어 또는 activeView가 변경될 때마다 데이터 다시 가져오기
   useEffect(() => {
     fetchInquiries();
-  }, [accessToken]);
+    console.log(inquiries);
+  }, [accessToken, searchKeyword, activeView]);
 
   const handleViewChange = (view) => {
     setActiveView(view);
   };
 
   const handleSearch = (searchTerm) => {
-    console.log(searchTerm);
-    // 검색 기능 구현
+    // 검색어 상태 업데이트 (이후 useEffect에서 fetchInquiries 호출됨)
+    setSearchKeyword(searchTerm);
   };
 
   const handleInquirySelect = (inquiry) => {
