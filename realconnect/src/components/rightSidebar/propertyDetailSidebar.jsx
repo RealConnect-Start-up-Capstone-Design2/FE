@@ -3,7 +3,7 @@ import "./propertyDetailSidebar.css";
 import useAuthStore from "../../store/authStore";
 import axios from "axios";
 
-const PropertyDetailSidebar = ({ property, onClose, isClosing }) => {
+const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
   const [imageUrl, setImageUrl] = useState(null);
   const accessToken = useAuthStore((state) => state.accessToken);
 
@@ -141,7 +141,9 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing }) => {
         </div>
 
         <div className="action-buttons">
-          <button className="primary-button">수정하기</button>
+          <button className="primary-button" onClick={onEdit}>
+            수정하기
+          </button>
           <button className="secondary-button">계약 작성</button>
         </div>
       </div>

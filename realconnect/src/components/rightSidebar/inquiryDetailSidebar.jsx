@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./inquiryDetailSidebar.css";
 import ShareInquiryModal from "../../pages/modal/shareInquiryModal";
 
-const InquiryDetailSidebar = ({ inquiry, onClose, isClosing }) => {
+const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onEdit }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => {
@@ -101,7 +101,9 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing }) => {
       </div>
 
       <div className="action-buttons">
-        <button className="primary-button">수정하기</button>
+        <button className="primary-button" onClick={onEdit}>
+          수정하기
+        </button>
         <div className="button-group">
           <button className="secondary-button">계약 작성</button>
           <button className="secondary-button" onClick={openModal}>

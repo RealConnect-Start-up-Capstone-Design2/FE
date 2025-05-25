@@ -9,6 +9,7 @@ import AddInquiry from "../components/addInquiry/addInquiry";
 import DeleteInquiry from "../components/deleteInquiry/deleteInquiry";
 import InquiryTable from "../components/inquiriesTable/inquiryTable";
 import InquiryDetailSidebar from "../components/rightSidebar/inquiryDetailSidebar";
+import InquiryModifySidebar from "../components/rightSidebar/inquiryModifySidebar";
 
 // API 응답을 InquiryTable용 데이터로 변환
 const convertApiDataToInquiryTable = (apiData) => {
@@ -71,7 +72,7 @@ const Inquiries = () => {
   const [adding, setAdding] = useState(false);
   const closingSidebarRef = useRef(false);
   const accessToken = useAuthStore((state) => state.accessToken);
-
+  const [isEditMode, setIsEditMode] = useState(false);
   const handleAddInquiry = async (inquiryData, onSuccess, onError) => {
     setAdding(true);
     try {
@@ -209,13 +210,28 @@ const Inquiries = () => {
             onInquirySelect={handleInquirySelect}
           />
         )}
-        {selectedInquiry && (
-          <InquiryDetailSidebar
-            inquiry={selectedInquiry}
-            onClose={closeSidebar}
-            isClosing={isClosingSidebar}
-          />
-        )}
+        {selectedInquiry &&
+          (isEditMode ? (
+            <InquiryModifySidebar
+              inquiry={selectedInquiry}
+              onClose={() => {
+                closeSidebar();
+                setIsEditMode(false);
+              }}
+              onSave={(modified) => {
+                console.log("수정된 문의:", modified);
+                setIsEditMode(false);
+                closeSidebar();
+              }}
+            />
+          ) : (
+            <InquiryDetailSidebar
+              inquiry={selectedInquiry}
+              onClose={closeSidebar}
+              isClosing={isClosingSidebar}
+              onEdit={() => setIsEditMode(true)}
+            />
+          ))}
       </div>
     </div>
   );

@@ -317,18 +317,28 @@
 }
 
 .contract-status.계약-완료 {
-  background-color: #fcdcdc;
-  color: #b72525;
+  background-color: #defcdc;
+  color: #189554;
 }
 
 .contract-status.계약-전 {
-  background-color: #defcdc;
-  color: #189554;
+  background-color: #fcdcdc;
+  color: #b72525;
 }
 
 .contract-status.계약-중 {
   background-color: #fff8b8;
   color: #c38b11;
+}
+
+.contract-status.계약-파기 {
+  background-color: #fcdcdc;
+  color: #b72525;
+}
+
+.contract-status.계약-만료 {
+  background-color: #ebebeb;
+  color: #8d8d8d;
 }
 
 .contract-file {

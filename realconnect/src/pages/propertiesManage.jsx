@@ -11,6 +11,7 @@ import AddProperty from "../components/addProperrty/addProperty";
 import DeleteProperty from "../components/deleteProperty/deleteProperty";
 import PropertyTable from "../components/PropertyTable/PropertyTable";
 import PropertyDetailSidebar from "../components/rightSidebar/propertyDetailSidebar";
+import PropertyModifySidebar from "../components/rightSidebar/propertyModifySidebar";
 
 // API 응답을 PropertyTable용 데이터로 변환
 const convertApiDataToTableData = (apiData) => {
@@ -82,6 +83,7 @@ const Properties = () => {
   const [loading, setLoading] = useState(true);
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [isClosingSidebar, setIsClosingSidebar] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const closingSidebarRef = useRef(false);
   const accessToken = useAuthStore((state) => state.accessToken);
 
@@ -210,13 +212,25 @@ const Properties = () => {
             onPropertySelect={handlePropertySelect}
           />
         )}
-        {selectedProperty && (
-          <PropertyDetailSidebar
-            property={selectedProperty}
-            onClose={closeSidebar}
-            isClosing={isClosingSidebar}
-          />
-        )}
+
+        {selectedProperty &&
+          (isEditMode ? (
+            <PropertyModifySidebar
+              property={selectedProperty}
+              onClose={() => {
+                closeSidebar();
+                setIsEditMode(false);
+              }}
+              onCancel={() => setIsEditMode(false)}
+            />
+          ) : (
+            <PropertyDetailSidebar
+              property={selectedProperty}
+              onClose={closeSidebar}
+              isClosing={isClosingSidebar}
+              onEdit={() => setIsEditMode(true)}
+            />
+          ))}
       </div>
     </div>
   );
