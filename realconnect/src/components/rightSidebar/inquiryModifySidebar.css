@@ -30,12 +30,12 @@
   padding-top: 0.6667rem;
   padding-bottom: 0.6667rem;
   border-radius: 0.4rem;
-  border: 0.0667rem solid #B1B6C7;
+  border: 0.0667rem solid #b1b6c7;
 }
 
 .inquiry-modify-sidebar label {
   font-size: 1.3333rem;
-  color: #1B1B1B;
+  color: #1b1b1b;
   font-weight: 500;
 }
 
@@ -135,15 +135,15 @@ textarea {
   margin-top: 0.7333rem;
   padding: 0.8rem;
   font-size: 1rem;
-  border: 0.0667rem solid #B1B6C7;
+  border: 0.0667rem solid #b1b6c7;
   border-radius: 0.4rem;
   box-sizing: border-box;
-  color: #8D8D8D;
+  color: #8d8d8d;
 }
 
 textarea::placeholder {
   white-space: pre-line;
-  color: #8D8D8D;
+  color: #8d8d8d;
 }
 
 .inquiry-save-button {
@@ -152,8 +152,8 @@ textarea::placeholder {
   margin-bottom: 1.6667rem;
   padding: 0.6667rem 0.7333rem;
   text-align: center;
-  background-color: #CFD0D0;
-  color: #FFFFFF;
+  background-color: #1c2882;
+  color: #ffffff;
   border: none;
   border-radius: 0.5333rem;
   font-weight: 600;
@@ -161,7 +161,6 @@ textarea::placeholder {
   font-size: 1.2rem;
 }
 
-
 * {
-    font-family: "pretendard" ;
+  font-family: "pretendard";
 }

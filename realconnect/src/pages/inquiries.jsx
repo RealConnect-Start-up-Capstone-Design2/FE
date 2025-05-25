@@ -42,7 +42,7 @@ const convertApiDataToInquiryTable = (apiData) => {
           ? "매매"
           : item.inquiryType === "JEONSE"
             ? "전세"
-            : item.inquiryType === "MONTHLY_RENT"
+            : item.inquiryType === "MONTH_RENT"
               ? "월세"
               : "-",
       status:
@@ -50,7 +50,7 @@ const convertApiDataToInquiryTable = (apiData) => {
           ? "진행 중"
           : item.status === "COMPLETED"
             ? "완료"
-            : item.status === "CANCELLED"
+            : item.status === "CANCEL"
               ? "취소"
               : "-",
       salePrice: item.salePrice
@@ -79,27 +79,79 @@ const Inquiries = () => {
   const [adding, setAdding] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [inquiryType, setInquiryType] = useState("ALL");
+  const [isAddingInquiry, setIsAddingInquiry] = useState(false);
+  const [newInquiry, setNewInquiry] = useState(null);
   const closingSidebarRef = useRef(false);
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isEditMode, setIsEditMode] = useState(false);
 
-  const handleAddInquiry = async (inquiryData, onSuccess, onError) => {
+  const handleAddInquiryClick = (emptyInquiry) => {
+    setNewInquiry(emptyInquiry);
+    setIsAddingInquiry(true);
+    if (selectedInquiry) {
+      setSelectedInquiry(null);
+      setIsEditMode(false);
+    }
+  };
+
+  const handleSaveNewInquiry = async (inquiryData) => {
     setAdding(true);
     try {
+      console.log(inquiryData.status);
+      // 디버깅을 위한 원본 데이터 로깅
+      const apiData = {
+        name: inquiryData.name || "",
+        phone: inquiryData.phone || "",
+        apartmentName: inquiryData.apartmentName || "",
+        area: inquiryData.area ? parseFloat(inquiryData.area) : null,
+        inquiryType: inquiryData.inquiryType || "BUY",
+        status: inquiryData.status || "COMPLETED", // 상태 명시적 추가
+        salePrice:
+          inquiryData.salePrice && inquiryData.salePrice !== "-"
+            ? parseFloat(inquiryData.salePrice.replace(/[^0-9.]/g, "")) *
+              100000000
+            : null,
+        jeonsePrice:
+          inquiryData.jeonsePrice && inquiryData.jeonsePrice !== "-"
+            ? parseFloat(inquiryData.jeonsePrice.replace(/[^0-9.]/g, "")) *
+              100000000
+            : null,
+        deposit:
+          inquiryData.deposit && inquiryData.deposit !== "-"
+            ? parseFloat(inquiryData.deposit.replace(/[^0-9.]/g, "")) *
+              100000000
+            : null,
+        monthPrice:
+          inquiryData.monthPrice && inquiryData.monthPrice !== "-"
+            ? parseInt(inquiryData.monthPrice.replace(/[^0-9]/g, ""))
+            : null,
+        memo: inquiryData.memo || "",
+      };
+
+      // 디버깅을 위한 API 요청 데이터 로깅
+      console.log("API 요청 데이터:", apiData);
+
       const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/inquiries`,
-        inquiryData,
+        apiData,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
           },
           withCredentials: true,
         }
       );
+
+      console.log("새 문의 생성 성공:", res.data);
+
       await fetchInquiries();
-      if (onSuccess) onSuccess(res.data);
-    } catch (err) {
-      if (onError) onError(err);
+
+      setIsAddingInquiry(false);
+      setNewInquiry(null);
+    } catch (error) {
+      console.error("문의 생성 실패:", error);
+      alert("문의 등록에 실패했습니다.");
     } finally {
       setAdding(false);
     }
@@ -108,24 +160,19 @@ const Inquiries = () => {
   const fetchInquiries = async () => {
     setLoading(true);
     try {
-      // URL 쿼리 파라미터 구성
       let queryParams = [];
 
-      // 검색어가 있으면 추가
       if (searchKeyword) {
         queryParams.push(`keyword=${encodeURIComponent(searchKeyword)}`);
       }
 
-      // 거래 유형이 전체가 아니면 추가
       if (inquiryType && inquiryType !== "ALL") {
         queryParams.push(`inquiryType=${inquiryType}`);
       }
 
-      // 쿼리 파라미터 문자열 생성
       const queryString =
         queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
 
-      // API 요청 보내기
       const url = `${import.meta.env.VITE_API_URL}/api/inquiries${queryString}`;
 
       const res = await axios.get(url, {
@@ -137,7 +184,6 @@ const Inquiries = () => {
 
       let processedData = convertApiDataToInquiryTable(res.data || []);
 
-      // 즐겨찾기 필터링 (activeView가 즐겨찾기인 경우)
       if (activeView === "즐겨찾기") {
         processedData = processedData.filter((inquiry) => inquiry.favorite);
       }
@@ -151,7 +197,6 @@ const Inquiries = () => {
     }
   };
 
-  // 검색어, 거래 유형, activeView가 변경될 때마다 데이터 다시 가져오기
   useEffect(() => {
     fetchInquiries();
     console.log(inquiries);
@@ -162,40 +207,42 @@ const Inquiries = () => {
   };
 
   const handleSearch = (searchTerm) => {
-    // 검색어 상태 업데이트 (이후 useEffect에서 fetchInquiries 호출됨)
     setSearchKeyword(searchTerm);
   };
 
-  // 거래 유형 변경 핸들러
   const handleTransactionTypeChange = (type) => {
     setInquiryType(type);
   };
 
   const handleInquirySelect = (inquiry) => {
+    if (isAddingInquiry) {
+      setIsAddingInquiry(false);
+      setNewInquiry(null);
+    }
+
     if (closingSidebarRef.current) {
-      // 닫히는 애니메이션 중이면 무시
       return;
     }
 
-    // 동일한 행을 다시 클릭하면 사이드바 닫기
     if (selectedInquiry && selectedInquiry.id === inquiry.id) {
-      // 사이드바를 닫으려면 handleCloseSidebar 실행
       closeSidebar();
     } else {
-      // 다른 행을 클릭하면 새로운 프로퍼티 설정
       setIsClosingSidebar(false);
       setSelectedInquiry(inquiry);
     }
   };
 
   const closeSidebar = () => {
-    // 닫기 애니메이션 시작
+    if (isAddingInquiry) {
+      setIsAddingInquiry(false);
+      setNewInquiry(null);
+      return;
+    }
+
     setIsClosingSidebar(true);
 
-    // 사이드바가 닫힐 때 상태 업데이트하지 않기 위한 플래그
     closingSidebarRef.current = true;
 
-    // 애니메이션 시간 후에 선택된 프로퍼티 null로 설정
     setTimeout(() => {
       setSelectedInquiry(null);
       setIsClosingSidebar(false);
@@ -204,7 +251,9 @@ const Inquiries = () => {
   };
 
   return (
-    <div className={`page_section ${selectedInquiry ? "with-sidebar" : ""}`}>
+    <div
+      className={`page_section ${selectedInquiry || isAddingInquiry ? "with-sidebar" : ""}`}
+    >
       <div className="page_header">
         <div className="header_left">
           <p className="page_title">문의 관리</p>
@@ -242,7 +291,7 @@ const Inquiries = () => {
           <TransactionType
             onTransactionTypeChange={handleTransactionTypeChange}
           />
-          <AddInquiry onAddInquiry={handleAddInquiry} adding={adding} />
+          <AddInquiry onAddInquiry={handleAddInquiryClick} adding={adding} />
           <DeleteInquiry />
         </div>
       </div>
@@ -264,7 +313,81 @@ const Inquiries = () => {
                 setIsEditMode(false);
               }}
               onSave={(modified) => {
-                console.log("수정된 문의:", modified);
+                // 수정된 문의 데이터를 서버에 저장하는 로직 추가
+                const updateInquiry = async () => {
+                  try {
+                    // 디버깅을 위해 원본 데이터 확인
+                    console.log("문의 수정 - 원본 데이터:", modified);
+                    console.log("문의 유형:", modified.inquiryType);
+
+                    // 필요한 데이터 변환 작업
+                    const apiData = {
+                      name: modified.name || "",
+                      phone: modified.phone || "",
+                      apartmentName: modified.apartmentName || "",
+                      area: modified.area ? parseFloat(modified.area) : null,
+                      inquiryType: modified.inquiryType || "BUY",
+                      status: modified.status || "IN_PROGRESS",
+                      salePrice:
+                        modified.salePrice && modified.salePrice !== "-"
+                          ? parseFloat(
+                              modified.salePrice.replace(/[^0-9.]/g, "")
+                            ) * 100000000
+                          : null,
+                      jeonsePrice:
+                        modified.jeonsePrice && modified.jeonsePrice !== "-"
+                          ? parseFloat(
+                              modified.jeonsePrice.replace(/[^0-9.]/g, "")
+                            ) * 100000000
+                          : null,
+                      deposit:
+                        modified.deposit && modified.deposit !== "-"
+                          ? parseFloat(
+                              modified.deposit.replace(/[^0-9.]/g, "")
+                            ) * 100000000
+                          : null,
+                      monthPrice:
+                        modified.monthPrice && modified.monthPrice !== "-"
+                          ? parseInt(modified.monthPrice.replace(/[^0-9]/g, ""))
+                          : null,
+                      memo: modified.memo || "",
+                    };
+
+                    // 월세 선택 시 inquiryType이 MONTH_RENT인지 확인
+                    if (
+                      modified.inquiryTypeDisplay === "월세" &&
+                      apiData.inquiryType !== "MONTH_RENT"
+                    ) {
+                      apiData.inquiryType = "MONTH_RENT";
+                    }
+
+                    console.log("문의 수정 요청 데이터:", apiData);
+
+                    // API 호출로 문의 수정
+                    await axios.put(
+                      `${import.meta.env.VITE_API_URL}/api/inquiries/${selectedInquiry.id}`,
+                      apiData,
+                      {
+                        headers: {
+                          Authorization: `Bearer ${accessToken}`,
+                          "Content-Type": "application/json",
+                        },
+                        withCredentials: true,
+                      }
+                    );
+
+                    // 수정 후 데이터 새로고침
+                    await fetchInquiries();
+                  } catch (error) {
+                    console.error("문의 수정 실패:", error);
+                    alert("문의 수정에 실패했습니다.");
+                  }
+                };
+
+                // 수정 함수 실행
+                updateInquiry();
+
+                // 사이드바 닫기 및 편집 모드 종료
                 setIsEditMode(false);
                 closeSidebar();
               }}
@@ -277,6 +400,14 @@ const Inquiries = () => {
               onEdit={() => setIsEditMode(true)}
             />
           ))}
+
+        {isAddingInquiry && newInquiry && (
+          <InquiryModifySidebar
+            inquiry={newInquiry}
+            onClose={closeSidebar}
+            onSave={handleSaveNewInquiry}
+          />
+        )}
       </div>
     </div>
   );
