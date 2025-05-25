@@ -22,6 +22,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
               responseType: "blob",
             }
           );
+          console.log(property);
 
           // Blob URL 생성
           const url = URL.createObjectURL(response.data);
@@ -100,11 +101,11 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
             <p>매매 {property.sellPrice}</p>
           </div>
           <div className="price-item">
-            <p>전세 {property.deposit}</p>
+            <p>전세 {property.rentDeposit}</p>
           </div>
           <div className="price-item">
             <p>
-              보증금/월세 {property.rentDeposit}/{property.monthlyRent}
+              보증금/월세 {property.deposit}/{property.monthlyRent}
             </p>
           </div>
         </div>
@@ -157,7 +158,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
             imageUrl={imageUrl}
             onClick={onEdit}
           >
-            수정하기
+            {property.rawData.property ? "수정하기" : "정보 추가하기"}
           </button>
           <button className="secondary-button">계약 작성</button>
         </div>

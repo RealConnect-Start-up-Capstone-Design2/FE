@@ -30,6 +30,7 @@ const convertApiDataToTableData = (apiData) => {
       rentDeposit: p.jeonsePrice
         ? (p.jeonsePrice / 100000000).toFixed(1) + "억"
         : "-",
+      // 월세
       monthlyRent: p.monthPrice ? p.monthPrice.toLocaleString() : "-",
       transactionType: getTransactionType(p),
       owner: p.ownerName || "-",

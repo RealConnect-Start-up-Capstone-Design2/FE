@@ -85,9 +85,9 @@ const PropertyTable = ({ properties, onPropertySelect }) => {
               <td>{property.unit}</td>
               <td>{property.area}</td>
               <td>{property.sellPrice}</td>
-              <td>{property.deposit}</td>
+              <td>{property.rentDeposit}</td>
               <td>
-                {property.rentDeposit}/{property.monthlyRent}
+                {property.deposit}/{property.monthlyRent}
               </td>
               <td>
                 <span
