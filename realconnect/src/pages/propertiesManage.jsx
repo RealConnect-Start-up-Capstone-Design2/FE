@@ -15,10 +15,10 @@ import PropertyModifySidebar from "../components/rightSidebar/propertyModifySide
 
 // API 응답을 PropertyTable용 데이터로 변환
 const convertApiDataToTableData = (apiData) => {
-  return apiData.map((item) => {
+  return apiData.map((item, index) => {
     const p = item.property || {};
     return {
-      id: p.id || item.apartmentId,
+      id: item.apartmentId || `apartment-${index}-${Date.now()}`,
       apartmentName: item.apartmentName,
       building: item.dong ? `${item.dong}동` : "",
       unit: item.ho ? `${item.ho}호` : "",
@@ -93,7 +93,7 @@ const Properties = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/apartments-properties?page=0&size=100`,
+        `${import.meta.env.VITE_API_URL}/api/apartments-properties?page=0&size=10`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

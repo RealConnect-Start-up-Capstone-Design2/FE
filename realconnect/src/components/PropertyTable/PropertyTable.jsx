@@ -64,9 +64,9 @@ const PropertyTable = ({ properties, onPropertySelect }) => {
           </tr>
         </thead>
         <tbody>
-          {properties.map((property) => (
+          {properties.map((property, index) => (
             <tr
-              key={property.id}
+              key={`${property.id}-${index}`}
               onClick={() => handleRowClick(property)}
               className="property-row"
             >
