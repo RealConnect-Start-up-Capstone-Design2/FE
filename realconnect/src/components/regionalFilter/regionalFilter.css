@@ -1,11 +1,13 @@
 .regional-filter-container {
   position: relative;
   display: inline-block;
+  height: 100%;
 }
 
 .regional-filter-btn {
   display: flex;
   align-items: center;
+  height: 100%;
   gap: 0.5rem;
   background: #fff;
   border: none;
