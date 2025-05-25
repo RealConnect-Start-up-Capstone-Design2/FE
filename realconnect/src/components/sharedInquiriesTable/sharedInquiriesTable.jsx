@@ -1,0 +1,122 @@
+import React, { useState } from "react";
+import FilledStar from "../../assets/icons/filledStar.svg";
+import BlankStar from "../../assets/icons/blankStar.svg";
+import "./sharedInquiriesTable.css";
+
+const SharedInquiriesTable = ({ sharedInquiries, onSharedInquirySelect }) => {
+  const [selectedItems, setSelectedItems] = useState([]);
+
+  const toggleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedItems(
+        sharedInquiries.map((sharedInquiry) => sharedInquiry.id)
+      );
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const toggleSelect = (e, id) => {
+    e.stopPropagation();
+    setSelectedItems((prevSelected) => {
+      if (prevSelected.includes(id)) {
+        return prevSelected.filter((item) => item !== id);
+      } else {
+        return [...prevSelected, id];
+      }
+    });
+  };
+
+  const handleRowClick = (sharedInquiry) => {
+    onSharedInquirySelect(sharedInquiry);
+  };
+
+  // 금액을 억 단위로 포맷팅하는 함수
+  const formatPrice = (price) => {
+    if (!price || price === 0) return "-";
+    return (price / 100000000).toFixed(1) + "억";
+  };
+
+  if (!sharedInquiries || sharedInquiries.length === 0) {
+    return (
+      <div className="shared-inquiries-table-empty">
+        <p>표시할 문의가 없습니다.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="shared-inquiries-table-container">
+      <table className="shared-inquiries-table">
+        <thead>
+          <tr>
+            <th className="checkbox-column">
+              <input
+                type="checkbox"
+                onChange={toggleSelectAll}
+                checked={selectedItems.length === sharedInquiries.length}
+              />
+            </th>
+            <th>구</th>
+            <th>동</th>
+            <th>단지</th>
+            <th>면적</th>
+            <th>매매</th>
+            <th>전세</th>
+            <th>보증금/월세</th>
+            <th>문의 유형</th>
+            <th>문의 제목</th>
+            <th>업소명</th>
+            <th>등록일</th>
+            <th>진행 상태</th>
+            <th>즐겨찾기</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sharedInquiries.map((inquiry) => (
+            <tr key={inquiry.id} onClick={() => handleRowClick(inquiry)}>
+              <td className="checkbox-column">
+                <input
+                  type="checkbox"
+                  checked={selectedItems.includes(inquiry.id)}
+                  onChange={(e) => toggleSelect(e, inquiry.id)}
+                />
+              </td>
+              <td>{inquiry.l2}</td>
+              <td>{inquiry.l3}</td>
+              <td>{inquiry.apartmentName}</td>
+              <td>{inquiry.area} m²</td>
+              <td>{formatPrice(inquiry.salePrice)}</td>
+              <td>{formatPrice(inquiry.jeonsePrice)}</td>
+              <td>
+                {inquiry.deposit}/{inquiry.monthPrice}
+              </td>
+              <td>{inquiry.type}</td>
+              <td>{inquiry.title}</td>
+              <td>{inquiry.agentName}</td>
+              <td>{inquiry.createdAt}</td>
+              <td>
+                {inquiry.status === "BUY"
+                  ? "매매"
+                  : inquiry.status === "RENT"
+                    ? "전세"
+                    : inquiry.status === "MONTH_RENT"
+                      ? "월세"
+                      : "미등록"}
+              </td>
+              <td>
+                {inquiry.favorite ? (
+                  <img src={FilledStar} alt="즐겨찾기" />
+                ) : (
+                  <img src={BlankStar} alt="즐겨찾기" />
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default SharedInquiriesTable;
