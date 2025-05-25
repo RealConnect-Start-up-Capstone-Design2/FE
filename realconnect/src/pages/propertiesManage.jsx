@@ -133,10 +133,15 @@ const Properties = () => {
         // 소유주, 임차인, 가격 등 주요 정보가 입력된 매물만 표시
         return (
           (property.owner && property.owner !== "-") ||
+          (property.ownerPhone && property.ownerPhone !== "-") ||
           (property.tenant && property.tenant !== "-") ||
+          (property.tenantPhone && property.tenantPhone !== "-") ||
           (property.sellPrice && property.sellPrice !== "-") ||
           (property.deposit && property.deposit !== "-") ||
           (property.rentDeposit && property.rentDeposit !== "-") ||
+          (property.monthPrice && property.monthPrice !== "-") ||
+          (property.startDate && property.startDate !== "-") ||
+          (property.endDate && property.endDate !== "-") ||
           (property.memo && property.memo !== "")
         );
       });

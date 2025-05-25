@@ -288,18 +288,18 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
           <div className="modify-info-box">
             <label>만기일</label>
             <input
-              name="expiryDate"
-              placeholder="2025.3.18"
-              value={formData.expiryDate}
+              name="endDate"
+              placeholder={formData.endDate}
+              value={formData.endDate}
               onChange={handleChange}
             />
           </div>
           <div className="modify-info-box">
             <label>등록일</label>
             <input
-              name="registeredDate"
-              placeholder="2025.3.2"
-              value={formData.registeredDate}
+              name="startDate"
+              placeholder={formData.startDate}
+              value={formData.startDate}
               onChange={handleChange}
             />
           </div>
