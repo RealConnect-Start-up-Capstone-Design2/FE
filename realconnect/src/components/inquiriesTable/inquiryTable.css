@@ -5,7 +5,7 @@
   border-radius: 0.533rem;
   overflow: auto;
   box-shadow: 0 0.133rem 0.267rem rgba(0, 0, 0, 0.05);
-  max-height: calc(100vh - 16.667rem);
+  max-height: calc(100vh - 23rem);
   overflow-x: auto;
   transition: width 0.3s ease-in-out;
 }
@@ -68,7 +68,10 @@
   color: #333;
   white-space: nowrap;
   border-bottom: 0.067rem solid #eaeaea;
-  transition: padding 0.3s ease-in-out;
+  transition:
+    width 0.3s ease-in-out,
+    min-width 0.3s ease-in-out,
+    max-width 0.3s ease-in-out;
 }
 
 .inquiry-table tbody {
@@ -94,7 +97,10 @@
   white-space: nowrap;
   overflow: visible;
   text-overflow: clip;
-  transition: padding 0.3s ease-in-out;
+  transition:
+    width 0.3s ease-in-out,
+    min-width 0.3s ease-in-out,
+    max-width 0.3s ease-in-out;
 }
 
 /* 사이드바가 열렸을 때 테이블 패딩 가로만 줄이기 */
