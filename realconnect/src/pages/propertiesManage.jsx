@@ -81,6 +81,7 @@ const getStatusText = (status) => {
 const Properties = () => {
   const [activeView, setActiveView] = useState("전체");
   const [properties, setProperties] = useState([]);
+  const [transactionType, setTransactionType] = useState("ALL");
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProperty, setSelectedProperty] = useState(null);
@@ -94,7 +95,7 @@ const Properties = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/apartments-properties?page=0&size=10`,
+        `${import.meta.env.VITE_API_URL}/api/apartments-properties?page=0&size=30`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -102,7 +103,6 @@ const Properties = () => {
           withCredentials: true,
         }
       );
-
       // API 응답 데이터 확인 및 적절한 구조로 변환
       const responseData = res.data.content || [];
       console.log("API 응답 데이터:", responseData);
@@ -110,7 +110,9 @@ const Properties = () => {
       // 변환된 데이터 저장
       const convertedData = convertApiDataToTableData(responseData);
       setProperties(convertedData);
-      setFilteredProperties(convertedData); // 초기에는 모든 데이터 표시
+
+      // 초기 필터링 적용
+      applyFilters(convertedData, activeView, transactionType);
     } catch (error) {
       console.error("매물 데이터 조회 중 오류 발생:", error);
       setProperties([]);
@@ -124,36 +126,53 @@ const Properties = () => {
     fetchProperties();
   }, [accessToken]);
 
-  // 내 물건 필터링 함수
-  const filterMyProperties = () => {
-    if (activeView === "전체") {
-      setFilteredProperties(properties);
-    } else {
-      // 내 물건: 값이 입력된 매물만 필터링
-      const filtered = properties.filter((property) => {
+  // 필터링 함수: 모든 필터 적용
+  const applyFilters = (propertiesList, view, type) => {
+    let filtered = [...propertiesList];
+
+    // 1. 내 물건 필터 적용
+    if (view === "내 물건") {
+      filtered = filtered.filter((property) => {
         // 소유주, 임차인, 가격 등 주요 정보가 입력된 매물만 표시
         return (
           (property.owner && property.owner !== "-") ||
-          (property.ownerPhone && property.ownerPhone !== "-") ||
+          (property.contact && property.contact !== "-") ||
           (property.tenant && property.tenant !== "-") ||
-          (property.tenantPhone && property.tenantPhone !== "-") ||
+          (property.tenantContact && property.tenantContact !== "-") ||
           (property.sellPrice && property.sellPrice !== "-") ||
           (property.deposit && property.deposit !== "-") ||
           (property.rentDeposit && property.rentDeposit !== "-") ||
-          (property.monthPrice && property.monthPrice !== "-") ||
+          (property.monthlyRent && property.monthlyRent !== "-") ||
           (property.startDate && property.startDate !== "-") ||
           (property.endDate && property.endDate !== "-") ||
           (property.memo && property.memo !== "")
         );
       });
-      setFilteredProperties(filtered);
     }
+
+    // 2. 거래 유형 필터 적용
+    if (type !== "ALL") {
+      const typeMapping = {
+        BUY: "매매",
+        JEONSE: "전세",
+        MONTH_RENT: "월세", // 월세에 대한 API 값은 MONTH_RENT로 통일
+      };
+
+      const displayType = typeMapping[type];
+      if (displayType) {
+        filtered = filtered.filter(
+          (property) => property.transactionType === displayType
+        );
+      }
+    }
+
+    setFilteredProperties(filtered);
   };
 
-  // activeView가 변경될 때마다 필터링 적용
+  // activeView나 transactionType이 변경될 때마다 필터링 적용
   useEffect(() => {
-    filterMyProperties();
-  }, [activeView, properties]);
+    applyFilters(properties, activeView, transactionType);
+  }, [activeView, transactionType, properties]);
 
   const handleViewChange = (view) => {
     setActiveView(view);
@@ -197,6 +216,11 @@ const Properties = () => {
 
     // 편집 모드 종료 (사이드바는 닫지 않음)
     setIsEditMode(false);
+  };
+
+  const handleTransactionTypeChange = (type) => {
+    console.log("거래 유형 변경:", type);
+    setTransactionType(type);
   };
 
   const closeSidebar = () => {
@@ -250,7 +274,9 @@ const Properties = () => {
         </div>
         <div style={{ display: "flex", gap: "0.8rem" }}>
           <SortBy />
-          <TransactionType />
+          <TransactionType
+            onTransactionTypeChange={handleTransactionTypeChange}
+          />
           <AddProperty />
           <DeleteProperty />
         </div>

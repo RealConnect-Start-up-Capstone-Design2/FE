@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Modal from "./modal";
 import "./ShareInquiryModal.css";
 
-const ShareInquiryModal = ({ isOpen, onClose, onSubmit }) => {
+const ShareInquiryModal = ({ isOpen, onClose, onSubmit, inquiry }) => {
   const [formData, setFormData] = useState({
     title: "",
     sido: "",
@@ -377,7 +377,7 @@ const ShareInquiryModal = ({ isOpen, onClose, onSubmit }) => {
           </div>
           <div className="detail-box">
             <div className="detail-box-label">등록일</div>
-            <div className="detail-box-value">2025. 3. 2.</div>
+            <div className="detail-box-value">{inquiry.createdAt}</div>
           </div>
         </div>
       </div>

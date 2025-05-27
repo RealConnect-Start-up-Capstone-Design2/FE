@@ -2,10 +2,13 @@ import React, { useState, useEffect } from "react";
 import "./propertyDetailSidebar.css";
 import useAuthStore from "../../store/authStore";
 import axios from "axios";
+import CreateContractModal from "../../pages/modal/createContractModal";
 
 const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
   const [imageUrl, setImageUrl] = useState(null);
   const accessToken = useAuthStore((state) => state.accessToken);
+  const [isContractModalOpen, setIsContractModalOpen] = useState(false);
+  const [isSubmittingContract, setIsSubmittingContract] = useState(false);
 
   useEffect(() => {
     // 이미지가 있으면 이미지 URL 생성
@@ -43,6 +46,28 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
       };
     }
   }, [property, accessToken]);
+
+  const handleContractButtonClick = () => {
+    setIsContractModalOpen(true);
+  };
+
+  const handleContractModalClose = () => {
+    setIsContractModalOpen(false);
+  };
+
+  const handleContractSubmit = (contractData) => {
+    setIsSubmittingContract(true);
+
+    console.log("계약 데이터 저장:", contractData);
+
+    // 성공 메시지 표시
+    if (contractData) {
+      alert("계약이 성공적으로 생성되었습니다.");
+    }
+
+    setIsSubmittingContract(false);
+    setIsContractModalOpen(false);
+  };
 
   if (!property) return null;
 
@@ -158,11 +183,25 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
             imageUrl={imageUrl}
             onClick={onEdit}
           >
-            {property.rawData.property ? "수정하기" : "정보 추가하기"}
+            {property.rawData?.property ? "수정하기" : "정보 추가하기"}
           </button>
-          <button className="secondary-button">계약 작성</button>
+          <button
+            className="secondary-button"
+            onClick={handleContractButtonClick}
+            disabled={isSubmittingContract}
+          >
+            {isSubmittingContract ? "처리 중..." : "계약 작성"}
+          </button>
         </div>
       </div>
+
+      {/* 계약 작성 모달 */}
+      <CreateContractModal
+        isOpen={isContractModalOpen}
+        onClose={handleContractModalClose}
+        onSubmit={handleContractSubmit}
+        property={property}
+      />
     </div>
   );
 };

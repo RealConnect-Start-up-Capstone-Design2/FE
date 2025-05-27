@@ -189,6 +189,7 @@ const Inquiries = () => {
       }
 
       setInquiries(processedData);
+      console.log(processedData);
     } catch (error) {
       console.error("문의 데이터 조회 실패:", error);
       setInquiries([]);
@@ -199,7 +200,6 @@ const Inquiries = () => {
 
   useEffect(() => {
     fetchInquiries();
-    console.log(inquiries);
   }, [accessToken, searchKeyword, inquiryType, activeView]);
 
   const handleViewChange = (view) => {

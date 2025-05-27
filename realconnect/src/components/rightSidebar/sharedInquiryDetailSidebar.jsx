@@ -27,7 +27,7 @@ const SharedInquiryDetailSidebar = ({
       className={`shared-inquiry-detail-sidebar ${isClosing ? "closing" : ""}`}
     >
       <div className="sidebar-header">
-        <div className="sidebar-header-title">{inquiry.apartmentName}</div>
+        <div className="sidebar-header-title">{inquiry.title}</div>
         <button className="close-button" onClick={onClose}>
           ×
         </button>
@@ -53,12 +53,18 @@ const SharedInquiryDetailSidebar = ({
         )}
         {inquiry.jeonsePrice && (
           <div className="price-label">
-            전세 {inquiry.jeonsePrice ? inquiry.jeonsePrice : "정보 없음"}
+            전세
+            {inquiry.jeonsePrice === "0" ? "정보 없음" : inquiry.jeonsePrice}
           </div>
         )}
-        {inquiry.deposit && inquiry.monthPrice && (
+        {inquiry.deposit && inquiry.monthPrice === 0 ? (
+          <div className="price-label">보증금/월세 정보 없음</div>
+        ) : (
           <div className="price-label">
-            보증금/월세 {inquiry.deposit}/{inquiry.monthPrice}
+            보증금/월세{" "}
+            {inquiry.deposit === 0
+              ? "정보 없음"
+              : inquiry.deposit + "/" + inquiry.monthPrice}
           </div>
         )}
       </div>
@@ -69,11 +75,11 @@ const SharedInquiryDetailSidebar = ({
           <div className="info-row">
             <div className="info-box">
               <h4>문의자</h4>
-              <p>{inquiry.customerName || "정보 없음"}</p>
+              <p>{inquiry.customerName || "등록 부동산에 문의"}</p>
             </div>
             <div className="info-box">
               <h4>연락처</h4>
-              <p>{inquiry.customerPhone || "정보 없음"}</p>
+              <p>{inquiry.customerPhone || "등록 부동산에 문의"}</p>
             </div>
           </div>
         </div>
@@ -83,7 +89,7 @@ const SharedInquiryDetailSidebar = ({
         <div className="info-row">
           <div className="info-box">
             <h4>문의 유형</h4>
-            <p>{formatInquiryType(inquiry.inquiryType)}</p>
+            <p>{formatInquiryType(inquiry.type)}</p>
           </div>
           <div className="info-box">
             <h4>진행 상태</h4>
@@ -108,13 +114,8 @@ const SharedInquiryDetailSidebar = ({
       </div>
 
       <div className="inquiry-content">
-        <h3>문의 제목</h3>
-        <p>{inquiry.title}</p>
-      </div>
-
-      <div className="inquiry-content">
         <h3>문의 내용</h3>
-        <p>{inquiry.content}</p>
+        <p>{inquiry.memo}</p>
       </div>
 
       <div className="action-buttons">

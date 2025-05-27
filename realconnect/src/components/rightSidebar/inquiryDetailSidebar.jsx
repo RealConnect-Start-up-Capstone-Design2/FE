@@ -114,6 +114,7 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onEdit }) => {
 
       <ShareInquiryModal
         isOpen={isModalOpen}
+        inquiry={inquiry}
         onClose={closeModal}
         onSubmit={handleSubmit}
       />

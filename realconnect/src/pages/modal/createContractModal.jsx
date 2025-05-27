@@ -1,12 +1,22 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Modal from "./modal.jsx";
 import "./createContractModal.css";
 import uploadIcon from "../../assets/icons/upload.svg";
+import axios from "axios";
+import useAuthStore from "../../store/authStore";
 
-const CreateContractModal = ({ isOpen, onClose, onSubmit }) => {
+const CreateContractModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  property = null,
+}) => {
   const fileInputRef = useRef(null);
+  const accessToken = useAuthStore((state) => state.accessToken);
 
-  const [formData, setFormData] = useState({
+  // 초기 폼 데이터 상태 (원래 있던 필드들만 유지)
+  const initialFormData = {
+    id: "",
     contractDate: "",
     expiryDate: "",
     owner: "",
@@ -19,7 +29,53 @@ const CreateContractModal = ({ isOpen, onClose, onSubmit }) => {
     contractFile: null,
     fileName: "",
     fileSize: "",
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // property 정보가 있으면 폼 데이터 초기화
+  useEffect(() => {
+    if (property) {
+      // 거래 유형 결정 (매매, 전세, 월세)
+      let transactionType = "";
+      if (property.sellPrice && property.sellPrice !== "-") {
+        transactionType = "매매";
+      } else if (property.rentDeposit && property.rentDeposit !== "-") {
+        transactionType = "전세";
+      } else if (property.deposit && property.deposit !== "-") {
+        transactionType = "월세";
+      }
+
+      // 가격 정보 처리
+      let price = "";
+      if (transactionType === "매매" && property.sellPrice !== "-") {
+        price = property.sellPrice;
+      } else if (transactionType === "전세" && property.rentDeposit !== "-") {
+        price = property.rentDeposit;
+      } else if (transactionType === "월세") {
+        price = `${property.deposit || "0"}/${property.monthlyRent || "0"}`;
+      }
+
+      // 폼 데이터 설정
+      setFormData({
+        ...initialFormData,
+        id: 100,
+        owner: property.owner || "",
+        tenant: property.tenant || "",
+        complex: property.apartmentName || "",
+        building: property.building || "",
+        unit: property.unit || "",
+        transactionType: transactionType,
+        price: price,
+        contractDate: new Date().toISOString().split("T")[0], // 오늘 날짜
+        expiryDate: property.endDate || "", // 만기일이 있으면 사용
+      });
+    } else {
+      // property가 없으면 초기 상태로 리셋
+      setFormData(initialFormData);
+    }
+  }, [property, isOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -90,8 +146,146 @@ const CreateContractModal = ({ isOpen, onClose, onSubmit }) => {
     e.preventDefault();
   };
 
-  const handleSubmit = () => {
-    onSubmit(formData);
+  // 거래 유형 API 형식으로 변환
+  const getContractTypeApiValue = (uiType) => {
+    switch (uiType) {
+      case "매매":
+        return "SALE";
+      case "전세":
+        return "JEONSE";
+      case "월세":
+        return "MONTHLY";
+      default:
+        return "";
+    }
+  };
+
+  // 가격 문자열에서 숫자만 추출
+  const extractPrice = (priceStr) => {
+    if (!priceStr) return 0;
+    // 숫자와 소수점만 추출
+    const numericValue = priceStr.replace(/[^0-9.]/g, "");
+    return numericValue ? parseFloat(numericValue) : 0;
+  };
+
+  // 가격 변환 (억 단위 처리)
+  const convertPrice = (priceStr) => {
+    if (!priceStr) return 0;
+
+    // "억" 포함 여부 확인
+    if (priceStr.includes("억")) {
+      const value = extractPrice(priceStr);
+      return value * 100000000; // 1억 = 100,000,000
+    }
+
+    return extractPrice(priceStr);
+  };
+
+  // 필수 입력값 검증 함수
+  const validateFormData = () => {
+    // 필수 입력값 확인
+    const requiredFields = {
+      owner: "소유주(매도인)",
+      tenant: "임차인(매수인)",
+      transactionType: "거래 유형",
+      complex: "단지명",
+      contractDate: "계약 일시",
+      expiryDate: "계약 만기일",
+    };
+
+    const missingFields = [];
+    Object.entries(requiredFields).forEach(([field, label]) => {
+      if (!formData[field]) {
+        missingFields.push(label);
+      }
+    });
+
+    if (missingFields.length > 0) {
+      alert(`다음 필수 항목을 입력해주세요: ${missingFields.join(", ")}`);
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    // 유효성 검사
+    if (!validateFormData()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // API 요청 데이터 구성
+      const requestData = {
+        id: 5, // 임의의 ID 할당 (서버에서 무시될 가능성이 높음)
+        apartment: formData.complex,
+        dong: formData.building ? formData.building.replace(/동$/, "") : "",
+        ho: formData.unit ? formData.unit.replace(/호$/, "") : "",
+        area: "pa",
+        ownerName: formData.owner,
+        ownerPhone: "010-1111-1111",
+        tenantName: formData.tenant,
+        tenantPhone: "010-1234-5678",
+        contractType: getContractTypeApiValue(formData.transactionType),
+        conTractprice: convertPrice(formData.price),
+        contractDate: formData.contractDate,
+        dueDate: formData.expiryDate,
+        contractStatus: "ALL",
+        favorite: false,
+      };
+
+      console.log("계약 요청 데이터:", requestData);
+
+      // 요청 URL 결정
+      const endpoint = property
+        ? "/api/contract/registerFromProperty"
+        : "/api/contract/registerDirect";
+
+      // Axios 인스턴스 생성
+      const axiosInstance = axios.create({
+        baseURL: import.meta.env.VITE_API_URL,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+
+      console.log(
+        "API 요청 URL:",
+        `${import.meta.env.VITE_API_URL}${endpoint}`
+      );
+
+      // API 호출 - 단순화된 방식으로 시도
+      try {
+        const response = await axiosInstance.post(endpoint, requestData);
+        console.log("계약 등록 성공:", response.data);
+
+        if (onSubmit) {
+          onSubmit(response.data);
+        }
+        onClose();
+      } catch (apiError) {
+        console.error("API 호출 실패:", apiError);
+
+        // 응답 데이터가 있는 경우 출력
+        if (apiError.response) {
+          console.error("API 응답 상태:", apiError.response.status);
+          console.error("API 응답 데이터:", apiError.response.data);
+        }
+
+        // 원본 에러를 다시 throw하여 상위 catch 블록에서 처리
+        throw new Error(
+          `API 오류: ${apiError.response?.data?.message || apiError.message}`
+        );
+      }
+    } catch (error) {
+      console.error("계약 등록 실패:", error);
+      alert(`계약 등록에 실패했습니다: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -100,7 +294,7 @@ const CreateContractModal = ({ isOpen, onClose, onSubmit }) => {
       onClose={onClose}
       onSubmit={handleSubmit}
       title="계약 작성하기"
-      submitText="저장하기"
+      submitText={isSubmitting ? "저장 중..." : "저장하기"}
       cancelText="취소"
       modalSize="large"
     >
@@ -111,7 +305,7 @@ const CreateContractModal = ({ isOpen, onClose, onSubmit }) => {
               계약 일시
             </label>
             <input
-              type="text"
+              type="date"
               id="contractDate"
               name="contractDate"
               className="form-input"
@@ -126,7 +320,7 @@ const CreateContractModal = ({ isOpen, onClose, onSubmit }) => {
               계약 만기일
             </label>
             <input
-              type="text"
+              type="date"
               id="expiryDate"
               name="expiryDate"
               className="form-input"

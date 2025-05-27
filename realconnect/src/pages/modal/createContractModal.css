@@ -53,7 +53,7 @@
 /* 파일 업로드 영역 */
 .file-upload-area {
   width: 23.6rem; /* 354px */
-  height: 6rem; /* 90px */
+  height: 2rem;
   border: 1px dashed #b1b6c7;
   border-radius: 0.33rem; /* 5px */
   display: flex;
@@ -70,7 +70,7 @@
 .file-input {
   position: absolute;
   width: 100%;
-  height: 100%;
+  height: 4rem;
   top: 0;
   left: 0;
   opacity: 0;
@@ -84,12 +84,15 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 100%;
+  text-align: center;
+  height: 6rem;
   position: relative;
 }
 
 .upload-icon {
-  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   top: 0.867rem; /* 13px */
   left: 10.867rem; /* 163px */
   width: 1.867rem; /* 28px */
@@ -98,8 +101,10 @@
 }
 
 .upload-text {
-  position: absolute;
-  top: 3.133rem; /* 47px */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 0; /* 47px */
   width: 90%;
   left: 5%;
   font-size: 0.867rem; /* 13px */

@@ -41,7 +41,7 @@ const TransactionType = ({ onTransactionTypeChange }) => {
       case "전세":
         return "JEONSE";
       case "월세":
-        return "MONTHLY_RENT";
+        return "MONTH_RENT";
       default:
         return "ALL";
     }
@@ -59,6 +59,9 @@ const TransactionType = ({ onTransactionTypeChange }) => {
     // 부모 컴포넌트에 선택된 거래 유형 전달
     if (onTransactionTypeChange) {
       const inquiryTypeParam = getInquiryTypeParam(option);
+      console.log(
+        `TransactionType 선택: ${option} -> API 값: ${inquiryTypeParam}`
+      );
       onTransactionTypeChange(inquiryTypeParam);
     }
     setIsOpen(false);

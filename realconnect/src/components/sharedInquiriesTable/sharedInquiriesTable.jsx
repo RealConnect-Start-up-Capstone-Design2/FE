@@ -91,8 +91,20 @@ const SharedInquiriesTable = ({ sharedInquiries, onSharedInquirySelect }) => {
               <td>
                 {inquiry.deposit}/{inquiry.monthPrice}
               </td>
-              <td>{inquiry.type}</td>
-              <td>{inquiry.title}</td>
+              <td>
+                <div className="inquiry-type-text">
+                  {inquiry.type === "BUY"
+                    ? "매매"
+                    : inquiry.type === "RENT"
+                      ? "전세"
+                      : inquiry.type === "MONTH_RENT"
+                        ? "월세"
+                        : "미등록"}
+                </div>
+              </td>
+              <td>
+                <span className="inquiry-title-text">{inquiry.title}</span>
+              </td>
               <td>{inquiry.agentName}</td>
               <td>{inquiry.createdAt}</td>
               <td>

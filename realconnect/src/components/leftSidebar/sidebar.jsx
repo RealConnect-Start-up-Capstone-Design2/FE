@@ -48,21 +48,40 @@ const Sidebar = () => {
   }, [location.pathname]);
 
   // 메뉴 항목 클릭 핸들러
-  const handleMenuClick = (menuName) => {
+  const handleMenuClick = (menuName, e) => {
+    // 혹시 진행 중인 다른 이벤트가 있다면 중단
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    // 현재 활성화된 메뉴를 변경
     setActiveMenu(menuName);
-    navigate(menuRoutes[menuName]);
+
+    // 비동기로 실행하여 상태 업데이트가 완료된 후 라우팅
+    setTimeout(() => {
+      navigate(menuRoutes[menuName]);
+    }, 10);
   };
 
   // 로고 클릭 핸들러
-  const handleLogoClick = () => {
+  const handleLogoClick = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
     setActiveMenu(""); // 로고 클릭 시 아무 메뉴도 선택되지 않음
-    navigate("/");
+
+    setTimeout(() => {
+      navigate("/");
+    }, 10);
   };
 
   return (
     <div className="sidebar-container">
       {/* 로고 섹션 */}
-      <div className="logo-container" onClick={handleLogoClick}>
+      <div className="logo-container" onClick={(e) => handleLogoClick(e)}>
         <img className="logo-image" src={logo} alt="logo" />
         <span className="logo-text">RealConnect</span>
       </div>
@@ -72,7 +91,7 @@ const Sidebar = () => {
         {/* 매물 관리 */}
         <div
           className={`menu-item ${activeMenu === "매물 관리" ? "active" : ""}`}
-          onClick={() => handleMenuClick("매물 관리")}
+          onClick={(e) => handleMenuClick("매물 관리", e)}
         >
           <div className="menu-icon">
             <img src={clipboard} alt="매물 관리" />
@@ -83,7 +102,7 @@ const Sidebar = () => {
         {/* 문의 관리 */}
         <div
           className={`menu-item ${activeMenu === "문의 관리" ? "active" : ""}`}
-          onClick={() => handleMenuClick("문의 관리")}
+          onClick={(e) => handleMenuClick("문의 관리", e)}
         >
           <div className="menu-icon">
             <img src={edit} alt="문의 관리" />
@@ -94,7 +113,7 @@ const Sidebar = () => {
         {/* 계약 관리 */}
         <div
           className={`menu-item ${activeMenu === "계약 관리" ? "active" : ""}`}
-          onClick={() => handleMenuClick("계약 관리")}
+          onClick={(e) => handleMenuClick("계약 관리", e)}
         >
           <div className="menu-icon">
             <img src={fileText} alt="계약 관리" />
@@ -105,7 +124,7 @@ const Sidebar = () => {
         {/* 문의 공유 */}
         <div
           className={`menu-item ${activeMenu === "문의 공유" ? "active" : ""}`}
-          onClick={() => handleMenuClick("문의 공유")}
+          onClick={(e) => handleMenuClick("문의 공유", e)}
         >
           <div className="menu-icon">
             <img src={share} alt="문의 공유" />
@@ -118,7 +137,7 @@ const Sidebar = () => {
       <div className="sidebar-footer">
         <div
           className={`footer-item ${activeMenu === "설정" ? "active" : ""}`}
-          onClick={() => handleMenuClick("설정")}
+          onClick={(e) => handleMenuClick("설정", e)}
         >
           <div className="menu-icon">
             <img src={settings} alt="설정" />
@@ -128,7 +147,7 @@ const Sidebar = () => {
 
         <div
           className={`footer-item ${activeMenu === "로그아웃" ? "active" : ""}`}
-          onClick={() => handleMenuClick("로그아웃")}
+          onClick={(e) => handleMenuClick("로그아웃", e)}
         >
           <div className="menu-icon">
             <img src={logout} alt="로그아웃" />
