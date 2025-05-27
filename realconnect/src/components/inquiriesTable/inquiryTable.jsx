@@ -3,8 +3,11 @@ import "./inquiryTable.css";
 import FilledStarIcon from "../../assets/icons/filledStar.svg";
 import BlackStarIcon from "../../assets/icons/blankStar.svg";
 
-const InquiryTable = ({ inquiries, onInquirySelect, onFavoriteToggle }) => {
-  const [selectedItems, setSelectedItems] = useState([]);
+const InquiryTable = ({
+  inquiries = [],
+  onInquirySelect,
+  onFavoriteToggle,
+}) => {
   // 내부 상태로 즐겨찾기 상태 관리
   const [inquiriesList, setInquiriesList] = useState([]);
 
@@ -12,25 +15,6 @@ const InquiryTable = ({ inquiries, onInquirySelect, onFavoriteToggle }) => {
   useEffect(() => {
     setInquiriesList([...inquiries]);
   }, [inquiries]);
-
-  const toggleSelectAll = (e) => {
-    if (e.target.checked) {
-      setSelectedItems(inquiriesList.map((inquiry) => inquiry.id));
-    } else {
-      setSelectedItems([]);
-    }
-  };
-
-  const toggleSelect = (e, id) => {
-    e.stopPropagation();
-
-    // 기존 선택된 항목들을 모두 제거하고 현재 항목만 선택
-    if (e.target.checked) {
-      setSelectedItems([id]);
-    } else {
-      setSelectedItems([]);
-    }
-  };
 
   const handleRowClick = (inquiry) => {
     onInquirySelect(inquiry);
@@ -55,11 +39,6 @@ const InquiryTable = ({ inquiries, onInquirySelect, onFavoriteToggle }) => {
     }
   };
 
-  const formatCell = (value) => {
-    if (!value || value === "") return "-";
-    return value;
-  };
-
   if (!inquiriesList || inquiriesList.length === 0) {
     return (
       <div className="inquiry-table-empty">
@@ -72,15 +51,8 @@ const InquiryTable = ({ inquiries, onInquirySelect, onFavoriteToggle }) => {
       <table className="inquiry-table">
         <thead>
           <tr>
-            <th className="checkbox-column">
-              <input
-                type="checkbox"
-                onChange={toggleSelectAll}
-                checked={
-                  selectedItems.length === inquiriesList.length &&
-                  inquiriesList.length > 0
-                }
-              />
+            <th>
+              <input type="checkbox" />
             </th>
             <th>단지</th>
             <th>문의 내용</th>
@@ -103,39 +75,30 @@ const InquiryTable = ({ inquiries, onInquirySelect, onFavoriteToggle }) => {
               onClick={() => handleRowClick(inquiry)}
               className="inquiry-row"
             >
-              <td
-                className="checkbox-column"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedItems.includes(inquiry.id)}
-                  onChange={(e) => toggleSelect(e, inquiry.id)}
-                />
-              </td>
-              <td>{formatCell(inquiry.complex)}</td>
-              <td>{formatCell(inquiry.content)}</td>
-              <td>{formatCell(inquiry.area)}</td>
               <td>
-                <div className="transaction-type">
-                  {formatCell(inquiry.transactionType)}
+                <input type="checkbox" />
+              </td>
+              <td>{inquiry.apartmentName || "-"}</td>
+              <td>{inquiry.memo || "-"}</td>
+              <td>{inquiry.area || "-"}</td>
+              <td>
+                <div className="inquiry-type-column">
+                  {inquiry.inquiryType || "-"}
                 </div>
               </td>
-              <td>{formatCell(inquiry.sellPrice)}</td>
-              <td>{formatCell(inquiry.rentPrice)}</td>
+              <td>{inquiry.salePrice || "-"}</td>
+              <td>{inquiry.jeonsePrice || "-"}</td>
               <td>
-                {inquiry.deposit || inquiry.monthlyRent
-                  ? `${formatCell(inquiry.deposit)}/${formatCell(inquiry.monthlyRent)}`
-                  : "-"}
+                {inquiry.deposit || "-"}/{inquiry.monthPrice || "-"}
               </td>
-              <td>{formatCell(inquiry.name)}</td>
-              <td>{formatCell(inquiry.phone)}</td>
-              <td>{formatCell(inquiry.date)}</td>
+              <td>{inquiry.name || "-"}</td>
+              <td>{inquiry.phone || "-"}</td>
+              <td>{inquiry.createdAt || "-"}</td>
               <td className="status-column">
                 <div
-                  className={`status-button ${inquiry.status.replace(/\s+/g, "")}`}
+                  className={`status-button ${(inquiry.status || "").replace(/\s+/g, "")}`}
                 >
-                  {inquiry.status}
+                  {inquiry.status || "-"}
                 </div>
               </td>
               <td

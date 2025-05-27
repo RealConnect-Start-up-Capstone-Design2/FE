@@ -1,13 +1,15 @@
 .property-table-container {
   width: 100%;
+  height: 100%;
+  max-height: 100%;
   position: relative;
   border: 0.067rem solid #eaeaea;
   border-radius: 0.533rem;
   overflow: auto;
   box-shadow: 0 0.133rem 0.267rem rgba(0, 0, 0, 0.05);
-  max-height: calc(100vh - 16.667rem);
-  overflow-x: auto;
-  transition: width 0.3s ease-in-out;
+  height: calc(100vh - 23rem); /* 헤더와 검색바를 제외한 높이 */
+  display: flex;
+  flex-direction: column;
 }
 
 .property-table-empty {
@@ -50,8 +52,6 @@
 }
 
 .property-table tbody {
-  max-height: calc(100vh - 20rem);
-  overflow-y: auto;
   position: relative;
   z-index: 0;
 }
@@ -338,10 +338,11 @@
   text-overflow: clip;
 }
 
-/* 사이드바가 열렸을 때 전화번호 컬럼 */
+/* 사이드바가 열렸을 때 소유자 컬럼 */
 .page_section.with-sidebar .property-table td:nth-child(10) {
   min-width: 8rem;
-  width: 8rem;
-  overflow: visible;
-  text-overflow: clip;
+  max-width: 6ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

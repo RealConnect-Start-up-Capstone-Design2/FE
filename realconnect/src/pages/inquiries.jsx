@@ -1,4 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import useAuthStore from "../store/authStore";
 
 // 컴포넌트 불러오기
 import Search from "../components/search/search";
@@ -9,83 +11,238 @@ import InquiryTable from "../components/inquiriesTable/inquiryTable";
 import InquiryDetailSidebar from "../components/rightSidebar/inquiryDetailSidebar";
 import InquiryModifySidebar from "../components/rightSidebar/inquiryModifySidebar";
 
+// API 응답을 InquiryTable용 데이터로 변환
+const convertApiDataToInquiryTable = (apiData) => {
+  return apiData.map((item) => {
+    // 날짜 포맷 변환 함수
+    const formatDate = (dateString) => {
+      if (!dateString) return "-";
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return "-"; // 유효하지 않은 날짜
+
+        return date.toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "numeric",
+          day: "numeric",
+        });
+      } catch {
+        return "-";
+      }
+    };
+
+    return {
+      id: item.id,
+      name: item.name,
+      phone: item.phone,
+      apartmentName: item.apartmentName,
+      area: item.area ? `${item.area}` : "-",
+      inquiryType:
+        item.inquiryType === "BUY"
+          ? "매매"
+          : item.inquiryType === "JEONSE"
+            ? "전세"
+            : item.inquiryType === "MONTH_RENT"
+              ? "월세"
+              : "-",
+      status:
+        item.status === "IN_PROGRESS"
+          ? "진행 중"
+          : item.status === "COMPLETED"
+            ? "완료"
+            : item.status === "CANCEL"
+              ? "취소"
+              : "-",
+      salePrice: item.salePrice
+        ? (item.salePrice / 100000000).toFixed(1) + "억"
+        : "-",
+      deposit: item.deposit
+        ? (item.deposit / 100000000).toFixed(1) + "억"
+        : "-",
+      jeonsePrice: item.jeonsePrice
+        ? (item.jeonsePrice / 100000000).toFixed(1) + "억"
+        : "-",
+      monthPrice: item.monthPrice ? item.monthPrice.toLocaleString() : "-",
+      memo: item.memo || "-",
+      favorite: item.favorite || false,
+      createdAt: formatDate(item.createdAt),
+    };
+  });
+};
 
 const Inquiries = () => {
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [activeView, setActiveView] = useState("전체");
   const [isClosingSidebar, setIsClosingSidebar] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [inquiries, setInquiries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [inquiryType, setInquiryType] = useState("ALL");
+  const [isAddingInquiry, setIsAddingInquiry] = useState(false);
+  const [newInquiry, setNewInquiry] = useState(null);
   const closingSidebarRef = useRef(false);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const [isEditMode, setIsEditMode] = useState(false);
 
-  const allInquiries = [
-    {
-      id: 1,
-      complex: "파크리오",
-      content: "문의 내용",
-      area: "151",
-      transactionType: "매매",
-      sellPrice: "24억 5000",
-      deposit: "2억",
-      rentDeposit: "500",
-      monthlyRent: "60",
-      name: "김규식",
-      phone: "010-1234-5678",
-      date: "2025. 3. 2.",
-      status: "완료",
-      favorite: false,
-    },
-    {
-      id: 2,
-      complex: "파크리오",
-      content: "문의 내용",
-      area: "151",
-      transactionType: "매매",
-      sellPrice: "24억 5000",
-      deposit: "2억",
-      rentDeposit: "500",
-      monthlyRent: "60",
-      name: "김규식",
-      phone: "010-1234-5678",
-      date: "2025. 3. 2.",
-      status: "진행 중",
-      favorite: false,
-    },
-  ];
+  const handleAddInquiryClick = (emptyInquiry) => {
+    setNewInquiry(emptyInquiry);
+    setIsAddingInquiry(true);
+    if (selectedInquiry) {
+      setSelectedInquiry(null);
+      setIsEditMode(false);
+    }
+  };
+
+  const handleSaveNewInquiry = async (inquiryData) => {
+    setAdding(true);
+    try {
+      console.log(inquiryData.status);
+      // 디버깅을 위한 원본 데이터 로깅
+      const apiData = {
+        name: inquiryData.name || "",
+        phone: inquiryData.phone || "",
+        apartmentName: inquiryData.apartmentName || "",
+        area: inquiryData.area ? parseFloat(inquiryData.area) : null,
+        inquiryType: inquiryData.inquiryType || "BUY",
+        status: inquiryData.status || "COMPLETED", // 상태 명시적 추가
+        salePrice:
+          inquiryData.salePrice && inquiryData.salePrice !== "-"
+            ? parseFloat(inquiryData.salePrice.replace(/[^0-9.]/g, "")) *
+              100000000
+            : null,
+        jeonsePrice:
+          inquiryData.jeonsePrice && inquiryData.jeonsePrice !== "-"
+            ? parseFloat(inquiryData.jeonsePrice.replace(/[^0-9.]/g, "")) *
+              100000000
+            : null,
+        deposit:
+          inquiryData.deposit && inquiryData.deposit !== "-"
+            ? parseFloat(inquiryData.deposit.replace(/[^0-9.]/g, "")) *
+              100000000
+            : null,
+        monthPrice:
+          inquiryData.monthPrice && inquiryData.monthPrice !== "-"
+            ? parseInt(inquiryData.monthPrice.replace(/[^0-9]/g, ""))
+            : null,
+        memo: inquiryData.memo || "",
+      };
+
+      // 디버깅을 위한 API 요청 데이터 로깅
+      console.log("API 요청 데이터:", apiData);
+
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/inquiries`,
+        apiData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("새 문의 생성 성공:", res.data);
+
+      await fetchInquiries();
+
+      setIsAddingInquiry(false);
+      setNewInquiry(null);
+    } catch (error) {
+      console.error("문의 생성 실패:", error);
+      alert("문의 등록에 실패했습니다.");
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const fetchInquiries = async () => {
+    setLoading(true);
+    try {
+      let queryParams = [];
+
+      if (searchKeyword) {
+        queryParams.push(`keyword=${encodeURIComponent(searchKeyword)}`);
+      }
+
+      if (inquiryType && inquiryType !== "ALL") {
+        queryParams.push(`inquiryType=${inquiryType}`);
+      }
+
+      const queryString =
+        queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+
+      const url = `${import.meta.env.VITE_API_URL}/api/inquiries${queryString}`;
+
+      const res = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        withCredentials: true,
+      });
+
+      let processedData = convertApiDataToInquiryTable(res.data || []);
+
+      if (activeView === "즐겨찾기") {
+        processedData = processedData.filter((inquiry) => inquiry.favorite);
+      }
+
+      setInquiries(processedData);
+      console.log(processedData);
+    } catch (error) {
+      console.error("문의 데이터 조회 실패:", error);
+      setInquiries([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInquiries();
+  }, [accessToken, searchKeyword, inquiryType, activeView]);
 
   const handleViewChange = (view) => {
     setActiveView(view);
   };
 
   const handleSearch = (searchTerm) => {
-    console.log(searchTerm);
-    // 검색 기능 구현
+    setSearchKeyword(searchTerm);
+  };
+
+  const handleTransactionTypeChange = (type) => {
+    setInquiryType(type);
   };
 
   const handleInquirySelect = (inquiry) => {
+    if (isAddingInquiry) {
+      setIsAddingInquiry(false);
+      setNewInquiry(null);
+    }
+
     if (closingSidebarRef.current) {
-      // 닫히는 애니메이션 중이면 무시
       return;
     }
 
-    // 동일한 행을 다시 클릭하면 사이드바 닫기
     if (selectedInquiry && selectedInquiry.id === inquiry.id) {
-      // 사이드바를 닫으려면 handleCloseSidebar 실행
       closeSidebar();
     } else {
-      // 다른 행을 클릭하면 새로운 프로퍼티 설정
       setIsClosingSidebar(false);
       setSelectedInquiry(inquiry);
     }
   };
 
   const closeSidebar = () => {
-    // 닫기 애니메이션 시작
+    if (isAddingInquiry) {
+      setIsAddingInquiry(false);
+      setNewInquiry(null);
+      return;
+    }
+
     setIsClosingSidebar(true);
 
-    // 사이드바가 닫힐 때 상태 업데이트하지 않기 위한 플래그
     closingSidebarRef.current = true;
 
-    // 애니메이션 시간 후에 선택된 프로퍼티 null로 설정
     setTimeout(() => {
       setSelectedInquiry(null);
       setIsClosingSidebar(false);
@@ -94,7 +251,9 @@ const Inquiries = () => {
   };
 
   return (
-    <div className={`page_section ${selectedInquiry ? "with-sidebar" : ""}`}>
+    <div
+      className={`page_section ${selectedInquiry || isAddingInquiry ? "with-sidebar" : ""}`}
+    >
       <div className="page_header">
         <div className="header_left">
           <p className="page_title">문의 관리</p>
@@ -129,26 +288,24 @@ const Inquiries = () => {
           <Search onSearch={handleSearch} />
         </div>
         <div style={{ display: "flex", gap: "0.8rem" }}>
-          <TransactionType />
-          <AddInquiry />
+          <TransactionType
+            onTransactionTypeChange={handleTransactionTypeChange}
+          />
+          <AddInquiry onAddInquiry={handleAddInquiryClick} adding={adding} />
           <DeleteInquiry />
         </div>
       </div>
       <div className="page_content">
-        {activeView === "전체" ? (
-          <InquiryTable
-            inquiries={allInquiries}
-            onInquirySelect={handleInquirySelect}
-          />
+        {loading ? (
+          <div>로딩 중...</div>
         ) : (
           <InquiryTable
-            inquiries={allInquiries}
+            inquiries={inquiries}
             onInquirySelect={handleInquirySelect}
           />
         )}
-
-        {selectedInquiry && (
-          isEditMode ? (
+        {selectedInquiry &&
+          (isEditMode ? (
             <InquiryModifySidebar
               inquiry={selectedInquiry}
               onClose={() => {
@@ -156,7 +313,81 @@ const Inquiries = () => {
                 setIsEditMode(false);
               }}
               onSave={(modified) => {
-                console.log("수정된 문의:", modified);
+                // 수정된 문의 데이터를 서버에 저장하는 로직 추가
+                const updateInquiry = async () => {
+                  try {
+                    // 디버깅을 위해 원본 데이터 확인
+                    console.log("문의 수정 - 원본 데이터:", modified);
+                    console.log("문의 유형:", modified.inquiryType);
+
+                    // 필요한 데이터 변환 작업
+                    const apiData = {
+                      name: modified.name || "",
+                      phone: modified.phone || "",
+                      apartmentName: modified.apartmentName || "",
+                      area: modified.area ? parseFloat(modified.area) : null,
+                      inquiryType: modified.inquiryType || "BUY",
+                      status: modified.status || "IN_PROGRESS",
+                      salePrice:
+                        modified.salePrice && modified.salePrice !== "-"
+                          ? parseFloat(
+                              modified.salePrice.replace(/[^0-9.]/g, "")
+                            ) * 100000000
+                          : null,
+                      jeonsePrice:
+                        modified.jeonsePrice && modified.jeonsePrice !== "-"
+                          ? parseFloat(
+                              modified.jeonsePrice.replace(/[^0-9.]/g, "")
+                            ) * 100000000
+                          : null,
+                      deposit:
+                        modified.deposit && modified.deposit !== "-"
+                          ? parseFloat(
+                              modified.deposit.replace(/[^0-9.]/g, "")
+                            ) * 100000000
+                          : null,
+                      monthPrice:
+                        modified.monthPrice && modified.monthPrice !== "-"
+                          ? parseInt(modified.monthPrice.replace(/[^0-9]/g, ""))
+                          : null,
+                      memo: modified.memo || "",
+                    };
+
+                    // 월세 선택 시 inquiryType이 MONTH_RENT인지 확인
+                    if (
+                      modified.inquiryTypeDisplay === "월세" &&
+                      apiData.inquiryType !== "MONTH_RENT"
+                    ) {
+                      apiData.inquiryType = "MONTH_RENT";
+                    }
+
+                    console.log("문의 수정 요청 데이터:", apiData);
+
+                    // API 호출로 문의 수정
+                    await axios.put(
+                      `${import.meta.env.VITE_API_URL}/api/inquiries/${selectedInquiry.id}`,
+                      apiData,
+                      {
+                        headers: {
+                          Authorization: `Bearer ${accessToken}`,
+                          "Content-Type": "application/json",
+                        },
+                        withCredentials: true,
+                      }
+                    );
+
+                    // 수정 후 데이터 새로고침
+                    await fetchInquiries();
+                  } catch (error) {
+                    console.error("문의 수정 실패:", error);
+                    alert("문의 수정에 실패했습니다.");
+                  }
+                };
+
+                // 수정 함수 실행
+                updateInquiry();
+
+                // 사이드바 닫기 및 편집 모드 종료
                 setIsEditMode(false);
                 closeSidebar();
               }}
@@ -166,9 +397,16 @@ const Inquiries = () => {
               inquiry={selectedInquiry}
               onClose={closeSidebar}
               isClosing={isClosingSidebar}
-              onEdit={() => setIsEditMode(true)}  
+              onEdit={() => setIsEditMode(true)}
             />
-          )
+          ))}
+
+        {isAddingInquiry && newInquiry && (
+          <InquiryModifySidebar
+            inquiry={newInquiry}
+            onClose={closeSidebar}
+            onSave={handleSaveNewInquiry}
+          />
         )}
       </div>
     </div>

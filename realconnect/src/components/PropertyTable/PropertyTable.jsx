@@ -64,9 +64,9 @@ const PropertyTable = ({ properties, onPropertySelect }) => {
           </tr>
         </thead>
         <tbody>
-          {properties.map((property) => (
+          {properties.map((property, index) => (
             <tr
-              key={property.id}
+              key={`${property.id}-${index}`}
               onClick={() => handleRowClick(property)}
               className="property-row"
             >
@@ -80,14 +80,14 @@ const PropertyTable = ({ properties, onPropertySelect }) => {
                   onChange={(e) => toggleSelect(e, property.id)}
                 />
               </td>
-              <td>{property.complex}</td>
+              <td>{property.apartmentName}</td>
               <td>{property.building}</td>
               <td>{property.unit}</td>
               <td>{property.area}</td>
               <td>{property.sellPrice}</td>
-              <td>{property.deposit}</td>
+              <td>{property.rentDeposit}</td>
               <td>
-                {property.rentDeposit}/{property.monthlyRent}
+                {property.deposit}/{property.monthlyRent}
               </td>
               <td>
                 <span

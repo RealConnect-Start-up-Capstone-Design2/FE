@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import checkIcon from "../../assets/icons/check.svg";
 import "./transactionType.css";
 
-const TransactionType = () => {
+const TransactionType = ({ onTransactionTypeChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState({
     전체: true,
@@ -14,7 +14,6 @@ const TransactionType = () => {
 
   const dropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -32,6 +31,22 @@ const TransactionType = () => {
     setIsOpen(!isOpen);
   };
 
+  // 거래 유형을 API 파라미터 형식으로 변환하는 함수
+  const getInquiryTypeParam = (option) => {
+    switch (option) {
+      case "전체":
+        return "ALL";
+      case "매매":
+        return "BUY";
+      case "전세":
+        return "JEONSE";
+      case "월세":
+        return "MONTH_RENT";
+      default:
+        return "ALL";
+    }
+  };
+
   const handleOptionClick = (option) => {
     setSelectedOptions({
       ...Object.fromEntries(
@@ -40,11 +55,18 @@ const TransactionType = () => {
       [option]: true,
     });
     setHasUserSelected(true);
-    // Close dropdown after option is selected
+
+    // 부모 컴포넌트에 선택된 거래 유형 전달
+    if (onTransactionTypeChange) {
+      const inquiryTypeParam = getInquiryTypeParam(option);
+      console.log(
+        `TransactionType 선택: ${option} -> API 값: ${inquiryTypeParam}`
+      );
+      onTransactionTypeChange(inquiryTypeParam);
+    }
     setIsOpen(false);
   };
 
-  // Get the display text for the dropdown button
   const getButtonText = () => {
     if (!hasUserSelected) {
       return "거래 유형";

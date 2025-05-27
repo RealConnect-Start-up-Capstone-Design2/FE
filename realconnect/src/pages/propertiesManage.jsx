@@ -1,4 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import useAuthStore from "../store/authStore";
 import "./propertiesManage.css";
 
 // 컴포넌트 불러오기
@@ -11,173 +13,166 @@ import PropertyTable from "../components/PropertyTable/PropertyTable";
 import PropertyDetailSidebar from "../components/rightSidebar/propertyDetailSidebar";
 import PropertyModifySidebar from "../components/rightSidebar/propertyModifySidebar";
 
+// API 응답을 PropertyTable용 데이터로 변환
+const convertApiDataToTableData = (apiData) => {
+  return apiData.map((item, index) => {
+    const p = item.property || {};
+    return {
+      id: item.apartmentId || `apartment-${index}-${Date.now()}`,
+      apartmentName: item.apartmentName,
+      building: item.dong ? `${item.dong}동` : "",
+      unit: item.ho ? `${item.ho}호` : "",
+      area: item.area ? `${item.area} m²` : "",
+      sellPrice: p.salePrice
+        ? (p.salePrice / 100000000).toFixed(1) + "억"
+        : "-",
+      deposit: p.deposit ? (p.deposit / 100000000).toFixed(1) + "억" : "-",
+      rentDeposit: p.jeonsePrice
+        ? (p.jeonsePrice / 100000000).toFixed(1) + "억"
+        : "-",
+      // 월세
+      monthlyRent: p.monthPrice ? p.monthPrice.toLocaleString() : "-",
+      transactionType: getTransactionType(p),
+      owner: p.ownerName || "-",
+      contact: p.ownerPhone || "-",
+      tenant: p.tenantName || "-",
+      tenantContact: p.tenantPhone || "-",
+      status: getStatusText(p.status) || "미등록",
+      memo: p.memo || "",
+      img: item.img || null,
+      // 추가 정보 저장
+      startDate: p.startDate || "-",
+      endDate: p.endDate || "-",
+      // 원본 데이터도 저장 (필요 시 활용)
+      rawData: item,
+    };
+  });
+};
+
+// 거래 유형 반환 함수
+const getTransactionType = (property) => {
+  if (!property || !property.status) return "-";
+
+  // 상태값에 따른 거래 유형 분류
+  if (property.salePrice && property.salePrice > 0) return "매매";
+  if (property.jeonsePrice && property.jeonsePrice > 0) return "전세";
+  if (property.deposit && property.monthPrice) return "월세";
+
+  return "-";
+};
+
+// 상태 텍스트 변환 함수
+const getStatusText = (status) => {
+  if (!status) return "미등록";
+
+  // 상태값 한글화
+  switch (status) {
+    case "CONTRACTED":
+      return "계약 완료";
+    case "RESERVED":
+      return "계약 중";
+    case "WAITING":
+      return "계약 전";
+    default:
+      return status;
+  }
+};
 
 const Properties = () => {
   const [activeView, setActiveView] = useState("전체");
+  const [properties, setProperties] = useState([]);
+  const [transactionType, setTransactionType] = useState("ALL");
+  const [filteredProperties, setFilteredProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [isClosingSidebar, setIsClosingSidebar] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const closingSidebarRef = useRef(false);
+  const accessToken = useAuthStore((state) => state.accessToken);
 
-  // 샘플 데이터
-  const allProperties = [
-    {
-      id: 1,
-      complex: "파크리오",
-      building: "101동",
-      unit: "101호",
-      area: "151 m²",
-      sellPrice: "24억 5000",
-      deposit: "2억",
-      rentDeposit: "500",
-      monthlyRent: "60",
-      transactionType: "매매/전세/월세",
-      owner: "김규식",
-      contact: "010-1234-2334",
-      tenant: "김민채",
-      tenantContact: "010-1234-2334",
-      status: "계약 전",
-    },
-    {
-      id: 2,
-      complex: "파크리오",
-      building: "101동",
-      unit: "102호",
-      area: "151 m²",
-      sellPrice: "24억 5000",
-      deposit: "2억",
-      rentDeposit: "500",
-      monthlyRent: "60",
-      transactionType: "매매",
-      owner: "김규식",
-      contact: "010-1234-2334",
-      tenant: "김민채",
-      tenantContact: "010-1234-2334",
-      status: "계약 완료",
-    },
-    {
-      id: 3,
-      complex: "파크리오",
-      building: "101동",
-      unit: "103호",
-      area: "151 m²",
-      sellPrice: "24억 5000",
-      deposit: "2억",
-      rentDeposit: "500",
-      monthlyRent: "60",
-      transactionType: "매매",
-      owner: "김규식",
-      contact: "010-1234-2334",
-      tenant: "김민채",
-      tenantContact: "010-1234-2334",
-      status: "계약 전",
-    },
-    {
-      id: 4,
-      complex: "파크리오",
-      building: "101동",
-      unit: "104호",
-      area: "151 m²",
-      sellPrice: "24억 5000",
-      deposit: "2억",
-      rentDeposit: "500",
-      monthlyRent: "60",
-      transactionType: "매매",
-      owner: "김규식",
-      contact: "010-1234-2334",
-      tenant: "김민채",
-      tenantContact: "010-1234-2334",
-      status: "계약 전",
-    },
-    {
-      id: 5,
-      complex: "파크리오",
-      building: "101동",
-      unit: "105호",
-      area: "151 m²",
-      sellPrice: "24억 5000",
-      deposit: "2억",
-      rentDeposit: "500",
-      monthlyRent: "60",
-      transactionType: "매매",
-      owner: "김규식",
-      contact: "010-1234-2334",
-      tenant: "김민채",
-      tenantContact: "010-1234-2334",
-      status: "계약 전",
-    },
-    {
-      id: 6,
-      complex: "파크리오",
-      building: "101동",
-      unit: "106호",
-      area: "151 m²",
-      sellPrice: "24억 5000",
-      deposit: "2억",
-      rentDeposit: "500",
-      monthlyRent: "60",
-      transactionType: "매매",
-      owner: "김규식",
-      contact: "010-1234-2334",
-      tenant: "신진범",
-      tenantContact: "010-1234-2334",
-      status: "계약 완료",
-    },
-    {
-      id: 7,
-      complex: "파크리오",
-      building: "101동",
-      unit: "107호",
-      area: "151 m²",
-      sellPrice: "24억 5000",
-      deposit: "2억",
-      rentDeposit: "500",
-      monthlyRent: "60",
-      transactionType: "매매",
-      owner: "김규식",
-      contact: "010-1234-2334",
-      tenant: "김민채",
-      tenantContact: "010-1234-2334",
-      status: "계약 완료",
-    },
-    {
-      id: 8,
-      complex: "파크리오",
-      building: "101동",
-      unit: "108호",
-      area: "151 m²",
-      sellPrice: "24억 5000",
-      deposit: "2억",
-      rentDeposit: "500",
-      monthlyRent: "60",
-      transactionType: "매매",
-      owner: "김규식",
-      contact: "010-1234-2334",
-      tenant: "김민채",
-      tenantContact: "010-1234-2334",
-      status: "계약 완료",
-    },
-    {
-      id: 9,
-      complex: "파크리오",
-      building: "101동",
-      unit: "109호",
-      area: "151 m²",
-      sellPrice: "24억 5000",
-      deposit: "2억",
-      rentDeposit: "500",
-      monthlyRent: "60",
-      transactionType: "매매",
-      owner: "신진범",
-      contact: "010-5555-6666",
-      tenant: "최정현",
-      tenantContact: "010-7777-8888",
-      status: "계약 중",
-    },
-  ];
+  // 매물 데이터 다시 불러오기 함수
+  const fetchProperties = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/apartments-properties?page=0&size=30`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          withCredentials: true,
+        }
+      );
+      // API 응답 데이터 확인 및 적절한 구조로 변환
+      const responseData = res.data.content || [];
+      console.log("API 응답 데이터:", responseData);
 
-  // 내 물건 데이터 (전체 중 일부)
-  const myProperties = allProperties.slice(0, 2);
+      // 변환된 데이터 저장
+      const convertedData = convertApiDataToTableData(responseData);
+      setProperties(convertedData);
+
+      // 초기 필터링 적용
+      applyFilters(convertedData, activeView, transactionType);
+    } catch (error) {
+      console.error("매물 데이터 조회 중 오류 발생:", error);
+      setProperties([]);
+      setFilteredProperties([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProperties();
+  }, [accessToken]);
+
+  // 필터링 함수: 모든 필터 적용
+  const applyFilters = (propertiesList, view, type) => {
+    let filtered = [...propertiesList];
+
+    // 1. 내 물건 필터 적용
+    if (view === "내 물건") {
+      filtered = filtered.filter((property) => {
+        // 소유주, 임차인, 가격 등 주요 정보가 입력된 매물만 표시
+        return (
+          (property.owner && property.owner !== "-") ||
+          (property.contact && property.contact !== "-") ||
+          (property.tenant && property.tenant !== "-") ||
+          (property.tenantContact && property.tenantContact !== "-") ||
+          (property.sellPrice && property.sellPrice !== "-") ||
+          (property.deposit && property.deposit !== "-") ||
+          (property.rentDeposit && property.rentDeposit !== "-") ||
+          (property.monthlyRent && property.monthlyRent !== "-") ||
+          (property.startDate && property.startDate !== "-") ||
+          (property.endDate && property.endDate !== "-") ||
+          (property.memo && property.memo !== "")
+        );
+      });
+    }
+
+    // 2. 거래 유형 필터 적용
+    if (type !== "ALL") {
+      const typeMapping = {
+        BUY: "매매",
+        JEONSE: "전세",
+        MONTH_RENT: "월세", // 월세에 대한 API 값은 MONTH_RENT로 통일
+      };
+
+      const displayType = typeMapping[type];
+      if (displayType) {
+        filtered = filtered.filter(
+          (property) => property.transactionType === displayType
+        );
+      }
+    }
+
+    setFilteredProperties(filtered);
+  };
+
+  // activeView나 transactionType이 변경될 때마다 필터링 적용
+  useEffect(() => {
+    applyFilters(properties, activeView, transactionType);
+  }, [activeView, transactionType, properties]);
 
   const handleViewChange = (view) => {
     setActiveView(view);
@@ -201,7 +196,31 @@ const Properties = () => {
       // 다른 행을 클릭하면 새로운 프로퍼티 설정
       setIsClosingSidebar(false);
       setSelectedProperty(property);
+      // 수정 중이었다면 수정 모드 종료
+      if (isEditMode) {
+        setIsEditMode(false);
+      }
     }
+  };
+
+  const handleSaveProperty = (updatedProperty) => {
+    // 수정된 데이터를 상태에 반영
+    setSelectedProperty(updatedProperty);
+
+    // properties 배열에서 해당 항목 업데이트
+    setProperties((prevProperties) =>
+      prevProperties.map((prop) =>
+        prop.id === updatedProperty.id ? updatedProperty : prop
+      )
+    );
+
+    // 편집 모드 종료 (사이드바는 닫지 않음)
+    setIsEditMode(false);
+  };
+
+  const handleTransactionTypeChange = (type) => {
+    console.log("거래 유형 변경:", type);
+    setTransactionType(type);
   };
 
   const closeSidebar = () => {
@@ -255,34 +274,35 @@ const Properties = () => {
         </div>
         <div style={{ display: "flex", gap: "0.8rem" }}>
           <SortBy />
-          <TransactionType />
+          <TransactionType
+            onTransactionTypeChange={handleTransactionTypeChange}
+          />
           <AddProperty />
           <DeleteProperty />
         </div>
       </div>
 
       {/* 매물 컨텐츠 */}
-      <div className="page_content">
-        {activeView === "전체" ? (
-          <PropertyTable
-            properties={allProperties}
-            onPropertySelect={handlePropertySelect}
-          />
+      <div className={`page_content ${selectedProperty ? "with-sidebar" : ""}`}>
+        {loading ? (
+          <div>로딩 중...</div>
         ) : (
           <PropertyTable
-            properties={myProperties}
+            properties={filteredProperties}
             onPropertySelect={handlePropertySelect}
           />
         )}
 
-       {selectedProperty && (
-          isEditMode ? (
+        {selectedProperty &&
+          (isEditMode ? (
             <PropertyModifySidebar
               property={selectedProperty}
               onClose={() => {
+                // 닫기 버튼을 눌렀을 때만 사이드바를 닫음
                 closeSidebar();
                 setIsEditMode(false);
               }}
+              onSave={handleSaveProperty}
               onCancel={() => setIsEditMode(false)}
             />
           ) : (
@@ -290,12 +310,9 @@ const Properties = () => {
               property={selectedProperty}
               onClose={closeSidebar}
               isClosing={isClosingSidebar}
-              onEdit={() => setIsEditMode(true)}  
+              onEdit={() => setIsEditMode(true)}
             />
-          )
-        )}
-
-
+          ))}
       </div>
     </div>
   );

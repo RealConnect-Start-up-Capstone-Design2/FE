@@ -1,20 +1,98 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./propertyDetailSidebar.css";
+import useAuthStore from "../../store/authStore";
+import axios from "axios";
+import CreateContractModal from "../../pages/modal/createContractModal";
 
-const PropertyDetailSidebar = ({ property, onClose, isClosing , onEdit }) => {
+const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
+  const [imageUrl, setImageUrl] = useState(null);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const [isContractModalOpen, setIsContractModalOpen] = useState(false);
+  const [isSubmittingContract, setIsSubmittingContract] = useState(false);
+
+  useEffect(() => {
+    // 이미지가 있으면 이미지 URL 생성
+    if (property && property.img) {
+      const loadImage = async () => {
+        try {
+          // 이미지를 Blob으로 가져오기
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_URL}${property.img}`,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+              responseType: "blob",
+            }
+          );
+          console.log(property);
+
+          // Blob URL 생성
+          const url = URL.createObjectURL(response.data);
+          setImageUrl(url);
+        } catch (error) {
+          console.error("이미지 로드 실패:", error);
+          setImageUrl(null);
+        }
+      };
+
+      loadImage();
+
+      // 컴포넌트 언마운트 시 Blob URL 해제
+      return () => {
+        if (imageUrl) {
+          URL.revokeObjectURL(imageUrl);
+        }
+      };
+    }
+  }, [property, accessToken]);
+
+  const handleContractButtonClick = () => {
+    setIsContractModalOpen(true);
+  };
+
+  const handleContractModalClose = () => {
+    setIsContractModalOpen(false);
+  };
+
+  const handleContractSubmit = (contractData) => {
+    setIsSubmittingContract(true);
+
+    console.log("계약 데이터 저장:", contractData);
+
+    // 성공 메시지 표시
+    if (contractData) {
+      alert("계약이 성공적으로 생성되었습니다.");
+    }
+
+    setIsSubmittingContract(false);
+    setIsContractModalOpen(false);
+  };
+
   if (!property) return null;
 
   return (
     <div className={`property-detail-sidebar ${isClosing ? "closing" : ""}`}>
       <div className="sidebar-header">
         <div className="sidebar-header-title">
-          {property.complex} {property.building} {property.unit}
+          {property.apartmentName} {property.building} {property.unit}
         </div>
         <button className="close-button" onClick={onClose}>
           ×
         </button>
       </div>
       <div className="property-image-placeholder">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={`${property.apartmentName} ${property.building} ${property.unit}`}
+            style={{ objectFit: "contain" }} // 이미지 표시 모드 적용
+          />
+        ) : (
+          <div className="image-loading">
+            <p>이미지 로딩 중...</p>
+          </div>
+        )}
         <div className="floor-plan-placeholder"></div>
         <div className="image-control-buttons">
           <button className="control-button active">평면도</button>
@@ -23,6 +101,17 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing , onEdit }) => {
       </div>
       {/* 특징, 거래 상태 */}
       <div className="property-features">
+        <div className="property-tags">
+          {property.direction && (
+            <span className="property-tag">{property.direction}</span>
+          )}
+          {property.expansion && (
+            <span className="property-tag">{property.expansion}</span>
+          )}
+          {property.wardrobe && (
+            <span className="property-tag">{property.wardrobe}</span>
+          )}
+        </div>
         <div className="property-status">
           <p
             className={`property-status-text ${property.status.replace(/\s+/g, "")}`}
@@ -37,11 +126,11 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing , onEdit }) => {
             <p>매매 {property.sellPrice}</p>
           </div>
           <div className="price-item">
-            <p>전세 {property.deposit}</p>
+            <p>전세 {property.rentDeposit}</p>
           </div>
           <div className="price-item">
             <p>
-              보증금/월세 {property.rentDeposit}/{property.monthlyRent}
+              보증금/월세 {property.deposit}/{property.monthlyRent}
             </p>
           </div>
         </div>
@@ -72,11 +161,11 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing , onEdit }) => {
           <div className="info-row">
             <div className="info-box">
               <h4>만기일</h4>
-              <p>2025. 3. 18</p>
+              <p>{property.endDate}</p>
             </div>
             <div className="info-box">
               <h4>등록일</h4>
-              <p>2025. 3. 2.</p>
+              <p>{property.startDate}</p>
             </div>
           </div>
         </div>
@@ -84,16 +173,35 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing , onEdit }) => {
         <div className="note-section custom">
           <p className="note-section-title">상담 내용</p>
           <div className="note-content">
-            <p>집주인 재계약 원하지 않음</p>
-            <p>최장실 하자 수리 완료한 집</p>
+            <p>{property.memo}</p>
           </div>
         </div>
 
         <div className="action-buttons">
-          <button className="primary-button" onClick={onEdit}>수정하기</button>
-          <button className="secondary-button">계약 작성</button>
+          <button
+            className="primary-button"
+            imageUrl={imageUrl}
+            onClick={onEdit}
+          >
+            {property.rawData?.property ? "수정하기" : "정보 추가하기"}
+          </button>
+          <button
+            className="secondary-button"
+            onClick={handleContractButtonClick}
+            disabled={isSubmittingContract}
+          >
+            {isSubmittingContract ? "처리 중..." : "계약 작성"}
+          </button>
         </div>
       </div>
+
+      {/* 계약 작성 모달 */}
+      <CreateContractModal
+        isOpen={isContractModalOpen}
+        onClose={handleContractModalClose}
+        onSubmit={handleContractSubmit}
+        property={property}
+      />
     </div>
   );
 };
