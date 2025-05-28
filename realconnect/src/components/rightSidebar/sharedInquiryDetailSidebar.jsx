@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./sharedInquiryDetailSidebar.css";
 
 const SharedInquiryDetailSidebar = ({
@@ -21,6 +21,16 @@ const SharedInquiryDetailSidebar = ({
         return type;
     }
   };
+
+  // 금액을 억 단위로 포맷팅하는 함수
+  const formatPrice = (price) => {
+    if (!price || price === 0) return "정보 없음";
+    return (price / 100000000).toFixed(1) + "억";
+  };
+
+  useEffect(() => {
+    console.log(inquiry);
+  }, [inquiry]);
 
   return (
     <div
@@ -48,25 +58,25 @@ const SharedInquiryDetailSidebar = ({
       </div>
 
       <div className="price-info">
-        {inquiry.salePrice && (
-          <div className="price-label">매매 {inquiry.salePrice}</div>
-        )}
-        {inquiry.jeonsePrice && (
+        {inquiry.salePrice !== undefined && (
           <div className="price-label">
-            전세
-            {inquiry.jeonsePrice === "0" ? "정보 없음" : inquiry.jeonsePrice}
+            매매 {formatPrice(inquiry.salePrice)}
           </div>
         )}
-        {inquiry.deposit && inquiry.monthPrice === 0 ? (
-          <div className="price-label">보증금/월세 정보 없음</div>
-        ) : (
+        {inquiry.jeonsePrice !== undefined && (
           <div className="price-label">
-            보증금/월세{" "}
-            {inquiry.deposit === 0
-              ? "정보 없음"
-              : inquiry.deposit + "/" + inquiry.monthPrice}
+            전세 {formatPrice(inquiry.jeonsePrice)}
           </div>
         )}
+        <div className="price-label">
+          보증금/월세{" "}
+          {!inquiry.deposit ||
+          inquiry.deposit === 0 ||
+          !inquiry.monthPrice ||
+          inquiry.monthPrice === 0
+            ? "정보 없음"
+            : `${formatPrice(inquiry.deposit)}/${inquiry.monthPrice}만원`}
+        </div>
       </div>
 
       {/* 문의자 정보 - 자신의 문의일 경우에만 표시 */}
@@ -108,6 +118,19 @@ const SharedInquiryDetailSidebar = ({
           </div>
           <div className="info-box">
             <h4>등록일</h4>
+            <p>{inquiry.createdAt}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="property-details">
+        <div className="info-row">
+          <div className="info-box">
+            <h4>연락처</h4>
+            <p>010-3086-8805</p>
+          </div>
+          <div className="info-box">
+            <h4>시/구/동</h4>
             <p>{inquiry.createdAt}</p>
           </div>
         </div>
