@@ -10,7 +10,42 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isSubmittingContract, setIsSubmittingContract] = useState(false);
 
+  // 가격 포맷팅 함수
+  const formatPrice = (price) => {
+    if (!price || price === "-") return "-";
+
+    // 문자열이면서 쉼표가 포함된 경우 처리
+    let numericValue;
+    if (typeof price === "string") {
+      // 쉼표 제거
+      const cleanPrice = price.replace(/,/g, "");
+      numericValue = Number(cleanPrice);
+
+      // 변환 실패시 기본값 반환
+      if (isNaN(numericValue)) return "-";
+    } else {
+      numericValue = Number(price);
+    }
+
+    // 0원이면 "-" 표시
+    if (numericValue === 0) return "-";
+
+    // 1억 이상인 경우
+    if (numericValue >= 100000000) {
+      // 억 단위로 변환 (반올림 없이 소수점 첫째자리까지)
+      const billions = Math.floor(numericValue / 10000000) / 10;
+      return billions.toFixed(1) + "억";
+    }
+    // 1억 미만인 경우
+    else {
+      // 만원 단위로 표시
+      const tenThousands = Math.floor(numericValue / 10000);
+      return tenThousands.toLocaleString() + "만원";
+    }
+  };
+
   useEffect(() => {
+    console.log(property);
     // 이미지가 있으면 이미지 URL 생성
     if (property && property.img) {
       const loadImage = async () => {
@@ -25,7 +60,6 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
               responseType: "blob",
             }
           );
-          console.log(property);
 
           // Blob URL 생성
           const url = URL.createObjectURL(response.data);
@@ -70,7 +104,6 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
   };
 
   if (!property) return null;
-
   return (
     <div className={`property-detail-sidebar ${isClosing ? "closing" : ""}`}>
       <div className="sidebar-header">
@@ -123,14 +156,14 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
       <div className="property-info">
         <div className="pricing-info">
           <div className="price-item">
-            <p>매매 {property.sellPrice}</p>
+            <p>매매 {formatPrice(property.salePrice)}</p>
           </div>
           <div className="price-item">
-            <p>전세 {property.rentDeposit}</p>
+            <p>전세 {formatPrice(property.jeonsePrice)}</p>
           </div>
           <div className="price-item">
             <p>
-              보증금/월세 {property.deposit}/{property.monthlyRent}
+              보증금/월세 {property.deposit}/{property.monthPrice}
             </p>
           </div>
         </div>
@@ -139,7 +172,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
           <div className="info-row">
             <div className="info-box">
               <h4>소유주</h4>
-              <p>{property.owner}</p>
+              <p>{property.ownerName}</p>
             </div>
             <div className="info-box">
               <h4>소유주 연락처</h4>
@@ -183,7 +216,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
             imageUrl={imageUrl}
             onClick={onEdit}
           >
-            {property.rawData?.property ? "수정하기" : "정보 추가하기"}
+            수정하기
           </button>
           <button
             className="secondary-button"

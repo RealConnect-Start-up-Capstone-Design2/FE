@@ -15,28 +15,25 @@ import PropertyModifySidebar from "../components/rightSidebar/propertyModifySide
 
 // API 응답을 PropertyTable용 데이터로 변환
 const convertApiDataToTableData = (apiData) => {
-  return apiData.map((item, index) => {
+  return apiData.map((item) => {
     const p = item.property || {};
     return {
-      id: item.apartmentId || `apartment-${index}-${Date.now()}`,
+      id: item.apartmentId,
       apartmentName: item.apartmentName,
       building: item.dong ? `${item.dong}동` : "",
       unit: item.ho ? `${item.ho}호` : "",
       area: item.area ? `${item.area} m²` : "",
-      sellPrice: p.salePrice
-        ? (p.salePrice / 100000000).toFixed(1) + "억"
-        : "-",
-      deposit: p.deposit ? (p.deposit / 100000000).toFixed(1) + "억" : "-",
-      rentDeposit: p.jeonsePrice
-        ? (p.jeonsePrice / 100000000).toFixed(1) + "억"
-        : "-",
+      salePrice: p.salePrice || "-",
+      deposit: p.deposit || "-",
+      jeonsePrice: p.jeonsePrice || "-",
       // 월세
-      monthlyRent: p.monthPrice ? p.monthPrice.toLocaleString() : "-",
+      monthPrice: p.monthPrice ? p.monthPrice.toLocaleString() : "-",
       transactionType: getTransactionType(p),
-      owner: p.ownerName || "-",
+      ownerName: p.ownerName || "-",
       contact: p.ownerPhone || "-",
       tenant: p.tenantName || "-",
       tenantContact: p.tenantPhone || "-",
+      // API 응답의 원본 상태값을 한글로 변환하여 저장
       status: getStatusText(p.status) || "미등록",
       memo: p.memo || "",
       img: item.img || null,
@@ -135,14 +132,14 @@ const Properties = () => {
       filtered = filtered.filter((property) => {
         // 소유주, 임차인, 가격 등 주요 정보가 입력된 매물만 표시
         return (
-          (property.owner && property.owner !== "-") ||
+          (property.ownerName && property.ownerName !== "-") ||
           (property.contact && property.contact !== "-") ||
           (property.tenant && property.tenant !== "-") ||
           (property.tenantContact && property.tenantContact !== "-") ||
-          (property.sellPrice && property.sellPrice !== "-") ||
+          (property.salePrice && property.salePrice !== "-") ||
           (property.deposit && property.deposit !== "-") ||
-          (property.rentDeposit && property.rentDeposit !== "-") ||
-          (property.monthlyRent && property.monthlyRent !== "-") ||
+          (property.jeonsePrice && property.jeonsePrice !== "-") ||
+          (property.monthPrice && property.monthPrice !== "-") ||
           (property.startDate && property.startDate !== "-") ||
           (property.endDate && property.endDate !== "-") ||
           (property.memo && property.memo !== "")
@@ -203,16 +200,21 @@ const Properties = () => {
     }
   };
 
-  const handleSaveProperty = (updatedProperty) => {
-    // 수정된 데이터를 상태에 반영
-    setSelectedProperty(updatedProperty);
+  const handleSaveProperty = async (updatedProperty) => {
+    // 먼저 서버에서 최신 데이터를 가져옴
+    await fetchProperties();
 
-    // properties 배열에서 해당 항목 업데이트
-    setProperties((prevProperties) =>
-      prevProperties.map((prop) =>
-        prop.id === updatedProperty.id ? updatedProperty : prop
-      )
-    );
+    // 서버에서 최신 데이터를 가져온 후 선택된 항목을 업데이트
+    // API에서 가져온 데이터 중 해당 id의 항목을 찾아 선택
+    const freshProperty = properties.find((p) => p.id === updatedProperty.id);
+
+    if (freshProperty) {
+      // 서버의 최신 데이터로 선택된 항목 업데이트
+      setSelectedProperty(freshProperty);
+    } else {
+      // 서버에서 찾지 못한 경우 업데이트된 로컬 데이터 사용
+      setSelectedProperty(updatedProperty);
+    }
 
     // 편집 모드 종료 (사이드바는 닫지 않음)
     setIsEditMode(false);

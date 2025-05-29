@@ -27,6 +27,40 @@ const PropertyTable = ({ properties, onPropertySelect }) => {
     onPropertySelect(property);
   };
 
+  // 가격 포맷팅 함수
+  const formatPrice = (price) => {
+    if (!price || price === "-") return "-";
+
+    // 문자열이면서 쉼표가 포함된 경우 처리
+    let numericValue;
+    if (typeof price === "string") {
+      // 쉼표 제거
+      const cleanPrice = price.replace(/,/g, "");
+      numericValue = Number(cleanPrice);
+
+      // 변환 실패시 기본값 반환
+      if (isNaN(numericValue)) return "-";
+    } else {
+      numericValue = Number(price);
+    }
+
+    // 0원이면 "-" 표시
+    if (numericValue === 0) return "-";
+
+    // 1억 이상인 경우
+    if (numericValue >= 100000000) {
+      // 억 단위로 변환 (반올림 없이 소수점 첫째자리까지)
+      const billions = Math.floor(numericValue / 10000000) / 10;
+      return billions.toFixed(1) + "억";
+    }
+    // 1억 미만인 경우
+    else {
+      // 만원 단위로 표시
+      const tenThousands = Math.floor(numericValue / 10000);
+      return tenThousands.toLocaleString() + "만원";
+    }
+  };
+
   if (!properties || properties.length === 0) {
     return (
       <div className="property-table-empty">
@@ -84,10 +118,10 @@ const PropertyTable = ({ properties, onPropertySelect }) => {
               <td>{property.building}</td>
               <td>{property.unit}</td>
               <td>{property.area}</td>
-              <td>{property.sellPrice}</td>
-              <td>{property.rentDeposit}</td>
+              <td>{formatPrice(property.salePrice)}</td>
+              <td>{formatPrice(property.jeonsePrice)}</td>
               <td>
-                {property.deposit}/{property.monthlyRent}
+                {property.deposit}/{property.monthPrice}
               </td>
               <td>
                 <span
@@ -96,7 +130,7 @@ const PropertyTable = ({ properties, onPropertySelect }) => {
                   {property.transactionType}
                 </span>
               </td>
-              <td>{property.owner}</td>
+              <td>{property.ownerName}</td>
               <td>{property.contact}</td>
               <td className="status-column">
                 <div

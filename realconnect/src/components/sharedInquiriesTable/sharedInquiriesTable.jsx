@@ -37,6 +37,14 @@ const SharedInquiriesTable = ({ sharedInquiries, onSharedInquirySelect }) => {
     return (price / 100000000).toFixed(1) + "억";
   };
 
+  // 보증금/월세 포맷팅 함수
+  const formatDepositMonthly = (deposit, monthly) => {
+    const depositFormatted =
+      deposit && deposit !== 0 ? formatPrice(deposit) : "-";
+    const monthlyFormatted = monthly && monthly !== 0 ? monthly + "만원" : "-";
+    return `${depositFormatted}/${monthlyFormatted}`;
+  };
+
   if (!sharedInquiries || sharedInquiries.length === 0) {
     return (
       <div className="shared-inquiries-table-empty">
@@ -89,7 +97,7 @@ const SharedInquiriesTable = ({ sharedInquiries, onSharedInquirySelect }) => {
               <td>{formatPrice(inquiry.salePrice)}</td>
               <td>{formatPrice(inquiry.jeonsePrice)}</td>
               <td>
-                {inquiry.deposit}/{inquiry.monthPrice}
+                {formatDepositMonthly(inquiry.deposit, inquiry.monthPrice)}
               </td>
               <td>
                 <div className="inquiry-type-text">
