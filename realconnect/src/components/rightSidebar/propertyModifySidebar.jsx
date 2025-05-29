@@ -71,7 +71,8 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
   }, [property, accessToken]);
 
   useEffect(() => {
-    console.log(property.id);
+    // console.log(property.id);
+    console.log(property.rawData.property.id);
     // 숫자 외의 문자 제거 후 세 자리마다 쉼표 추가
     const formatWithCommas = (value) => {
       // value가 문자열일 때만 처리
@@ -202,7 +203,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
       } else {
         // PUT 요청 보내기 (기존 매물 수정) - property.id는 propertiesManage.jsx에서 apartmentId로 설정됨
         response = await axios.put(
-          `${import.meta.env.VITE_API_URL}/api/properties/${property.id}`,
+          `${import.meta.env.VITE_API_URL}/api/properties/${property.rawData.property.id}`,
           apiData,
           {
             headers: {
