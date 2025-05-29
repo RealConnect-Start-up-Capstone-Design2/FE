@@ -214,6 +214,22 @@ const Inquiries = () => {
     setInquiryType(type);
   };
 
+  const handleFavoriteToggle = async (inquiry) => {
+    const res = await axios.put(
+      `${import.meta.env.VITE_API_URL}/api/inquiries/${inquiry.id}`,
+      {
+        favorite: !inquiry.favorite,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        withCredentials: true,
+      }
+    );
+    console.log(res);
+  };
+
   const handleInquirySelect = (inquiry) => {
     if (isAddingInquiry) {
       setIsAddingInquiry(false);
@@ -301,6 +317,7 @@ const Inquiries = () => {
         ) : (
           <InquiryTable
             inquiries={inquiries}
+            onFavoriteToggle={handleFavoriteToggle}
             onInquirySelect={handleInquirySelect}
           />
         )}
