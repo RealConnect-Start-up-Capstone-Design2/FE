@@ -205,7 +205,7 @@ const Contracts = () => {
           marginBottom: "1.6rem",
         }}
       >
-        <div style={{ width: "400px" }}>
+        <div style={{ width: "30rem" }}>
           <Search onSearch={handleSearch} />
         </div>
         <div style={{ display: "flex", gap: "0.8rem" }}>
