@@ -110,10 +110,14 @@ const Properties = () => {
 
       // 초기 필터링 적용
       applyFilters(convertedData, activeView, transactionType);
+
+      // 변환된 데이터 반환
+      return convertedData;
     } catch (error) {
       console.error("매물 데이터 조회 중 오류 발생:", error);
       setProperties([]);
       setFilteredProperties([]);
+      return [];
     } finally {
       setLoading(false);
     }
@@ -202,11 +206,12 @@ const Properties = () => {
 
   const handleSaveProperty = async (updatedProperty) => {
     // 먼저 서버에서 최신 데이터를 가져옴
-    await fetchProperties();
+    const latestProperties = await fetchProperties();
 
-    // 서버에서 최신 데이터를 가져온 후 선택된 항목을 업데이트
-    // API에서 가져온 데이터 중 해당 id의 항목을 찾아 선택
-    const freshProperty = properties.find((p) => p.id === updatedProperty.id);
+    // 최신 데이터에서 해당 id의 항목을 찾아 선택
+    const freshProperty = latestProperties.find(
+      (p) => p.id === updatedProperty.id
+    );
 
     if (freshProperty) {
       // 서버의 최신 데이터로 선택된 항목 업데이트
