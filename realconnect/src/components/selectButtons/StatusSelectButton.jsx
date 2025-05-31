@@ -5,7 +5,7 @@ import arrowIcon from "/src/assets/icons/downArrow.svg";
 
 const StatusSelectButton = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const options = ["진행중", "완료", "취소"];
+  const options = ["진행중", "완료"];
 
   return (
     <div className="custom-select-wrapper">

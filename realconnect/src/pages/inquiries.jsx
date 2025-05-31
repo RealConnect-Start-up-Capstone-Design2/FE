@@ -126,6 +126,7 @@ const Inquiries = () => {
             ? parseInt(inquiryData.monthPrice.replace(/[^0-9]/g, ""))
             : null,
         memo: inquiryData.memo || "",
+        favorite: inquiryData.favorite || false,
       };
 
       // 디버깅을 위한 API 요청 데이터 로깅
@@ -368,15 +369,8 @@ const Inquiries = () => {
                           ? parseInt(modified.monthPrice.replace(/[^0-9]/g, ""))
                           : null,
                       memo: modified.memo || "",
+                      favorite: modified.favorite || false,
                     };
-
-                    // 월세 선택 시 inquiryType이 MONTH_RENT인지 확인
-                    if (
-                      modified.inquiryTypeDisplay === "월세" &&
-                      apiData.inquiryType !== "MONTH_RENT"
-                    ) {
-                      apiData.inquiryType = "MONTH_RENT";
-                    }
 
                     console.log("문의 수정 요청 데이터:", apiData);
 

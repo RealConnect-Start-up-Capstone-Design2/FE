@@ -4,20 +4,6 @@ import InquirySelectButton from "../selectButtons/InquirySelectButton";
 import StatusSelectButton from "../selectButtons/StatusSelectButton";
 
 const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
-  // API 값을 UI 표시용 한글 값으로 변환
-  const getInquiryTypeDisplayValue = (apiType) => {
-    switch (apiType) {
-      case "BUY":
-        return "매매";
-      case "JEONSE":
-        return "전세";
-      case "MONTH_RENT":
-        return "월세";
-      default:
-        return "매매"; // 기본값
-    }
-  };
-
   const getStatusDisplayValue = (apiStatus) => {
     switch (apiStatus) {
       case "IN_PROGRESS":
@@ -29,7 +15,7 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
     }
   };
 
-  // 초기 데이터 설정 (API 값을 UI 표시용 값으로 변환)
+  // 초기 데이터 설정 (inquiryType은 영어 값 그대로 사용)
   const [formData, setFormData] = useState({
     name: inquiry.name || "",
     phone: inquiry.phone || "",
@@ -38,11 +24,7 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
       inquiry.area && inquiry.area !== "-"
         ? inquiry.area.replace(/[^0-9.]/g, "")
         : "",
-    // API 값을 UI 표시용 한글 값으로 변환
-    inquiryTypeDisplay: getInquiryTypeDisplayValue(
-      inquiry.inquiryType || "BUY"
-    ),
-    inquiryType: inquiry.inquiryType || "BUY", // API 통신용 원본 값 보존
+    inquiryType: inquiry.inquiryType || "BUY", // 영어 값 그대로 사용
     statusDisplay: getStatusDisplayValue(inquiry.status),
     status: inquiry.status,
     salePrice: inquiry.salePrice || "",
@@ -50,6 +32,7 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
     deposit: inquiry.deposit || "",
     monthPrice: inquiry.monthPrice || "",
     memo: inquiry.memo || "",
+    favorite: inquiry.favorite || false,
   });
 
   // 디버깅용: 컴포넌트 마운트 시 초기 데이터 로그
@@ -57,63 +40,25 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
     console.log("InquiryModifySidebar 초기 데이터:", formData);
   }, []);
 
-  // inquiryTypeDisplay 값이 변경될 때마다 inquiryType 값 동기화
-  useEffect(() => {
-    // inquiryTypeDisplay 값에 따라 inquiryType 값 설정
-    let apiValue;
-    switch (formData.inquiryTypeDisplay) {
-      case "매매":
-        apiValue = "BUY";
-        break;
-      case "전세":
-        apiValue = "JEONSE";
-        break;
-      case "월세":
-        apiValue = "MONTH_RENT";
-        break;
-      default:
-        apiValue = formData.inquiryType || "BUY"; // 기존 값 유지
-    }
-
-    // inquiryType 값이 이미 올바른 경우 불필요한 상태 업데이트 방지
-    if (apiValue !== formData.inquiryType) {
-      console.log(
-        `inquiryType 업데이트: ${formData.inquiryType} -> ${apiValue}`
-      );
-      setFormData((prev) => ({ ...prev, inquiryType: apiValue }));
-    }
-  }, [formData.inquiryTypeDisplay]);
-
   const handleChange = (field) => (e) => {
     setFormData({ ...formData, [field]: e.target.value });
   };
 
   const handleSave = () => {
-    // UI 표시용 필드는 제외하고 API 요청용 데이터만 전달
+    // statusDisplay 필드만 제외하고 전달
     const apiData = {
       ...formData,
-      // UI 표시용 필드 제외
-      inquiryTypeDisplay: undefined,
       statusDisplay: undefined,
     };
 
     console.log("저장할 데이터:", apiData);
-
-    // 월세 선택 시 inquiryType이 MONTH_RENT인지 다시 한번 확인
-    if (
-      formData.inquiryTypeDisplay === "월세" &&
-      apiData.inquiryType !== "MONTH_RENT"
-    ) {
-      console.log("월세 선택 감지 - inquiryType 강제 설정:", "MONTH_RENT");
-      apiData.inquiryType = "MONTH_RENT";
-    }
 
     if (onSave) {
       onSave(apiData);
     }
   };
 
-  // inquiryType 변환 (UI 표시 형식 → API 요청 형식)
+  // inquiryType 변환 (한글 → 영어)
   const handleInquiryTypeChange = (displayValue) => {
     let apiValue;
 
@@ -135,7 +80,6 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
 
     setFormData({
       ...formData,
-      inquiryTypeDisplay: displayValue,
       inquiryType: apiValue,
     });
   };
@@ -255,7 +199,7 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
           <div className="inquiry-info-box">
             <label>문의 유형</label>
             <InquirySelectButton
-              value={formData.inquiryTypeDisplay}
+              value={formData.inquiryType}
               onChange={handleInquiryTypeChange}
             />
           </div>
