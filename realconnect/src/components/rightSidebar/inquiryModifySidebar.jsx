@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import useAuthStore from "../../store/authStore";
 import "./inquiryModifySidebar.css";
 import InquirySelectButton from "../selectButtons/InquirySelectButton";
 import StatusSelectButton from "../selectButtons/StatusSelectButton";
 
 const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+
   const getStatusDisplayValue = (apiStatus) => {
     switch (apiStatus) {
       case "IN_PROGRESS":
         return "진행중";
       case "COMPLETED":
         return "완료";
-      case "CANCEL":
-        return "취소";
     }
   };
 
@@ -26,7 +28,7 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
         : "",
     inquiryType: inquiry.inquiryType || "BUY", // 영어 값 그대로 사용
     statusDisplay: getStatusDisplayValue(inquiry.status),
-    status: inquiry.status,
+    status: inquiry.status || "IN_PROGRESS", // 원본 영어 값 유지
     salePrice: inquiry.salePrice || "",
     jeonsePrice: inquiry.jeonsePrice || "",
     deposit: inquiry.deposit || "",
@@ -44,17 +46,128 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
     setFormData({ ...formData, [field]: e.target.value });
   };
 
-  const handleSave = () => {
-    // statusDisplay 필드만 제외하고 전달
-    const apiData = {
-      ...formData,
-      statusDisplay: undefined,
-    };
+  const handleSave = async () => {
+    const isEditMode = inquiry.id; // id가 있으면 수정 모드
 
-    console.log("저장할 데이터:", apiData);
+    try {
+      console.log("AccessToken:", accessToken); // 토큰 확인용
 
-    if (onSave) {
-      onSave(apiData);
+      if (isEditMode) {
+        // 수정 모드: PUT 요청
+        const apiData = {
+          name: formData.name || "",
+          phone: formData.phone || "",
+          apartmentName: formData.apartmentName || "",
+          type: formData.inquiryType || "BUY",
+          status: (() => {
+            // status 값이 한글이면 영어로 변환
+            switch (formData.status) {
+              case "진행중":
+                return "IN_PROGRESS";
+              case "완료":
+                return "COMPLETED";
+              default:
+                return formData.status || "IN_PROGRESS";
+            }
+          })(),
+          salePrice:
+            formData.salePrice && formData.salePrice !== "-"
+              ? parseFloat(formData.salePrice.replace(/[^0-9.]/g, "")) *
+                100000000
+              : null,
+          jeonsePrice:
+            formData.jeonsePrice && formData.jeonsePrice !== "-"
+              ? parseFloat(formData.jeonsePrice.replace(/[^0-9.]/g, "")) *
+                100000000
+              : null,
+          deposit:
+            formData.deposit && formData.deposit !== "-"
+              ? parseFloat(formData.deposit.replace(/[^0-9.]/g, "")) * 100000000
+              : null,
+          monthPrice:
+            formData.monthPrice && formData.monthPrice !== "-"
+              ? parseInt(formData.monthPrice.replace(/[^0-9]/g, ""))
+              : null,
+          memo: formData.memo || "",
+          favorite: formData.favorite || false,
+        };
+
+        console.log("문의 수정 요청 데이터:", apiData);
+
+        await axios.put(
+          `${import.meta.env.VITE_API_URL}/api/inquiries/${inquiry.id}`,
+          apiData,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        console.log("문의 수정 성공");
+      } else {
+        // 추가 모드: POST 요청
+        const apiData = {
+          name: formData.name || "",
+          phone: formData.phone || "",
+          apartmentName: formData.apartmentName || "",
+          area: formData.area || "", // String 타입 그대로
+          inquiryType: formData.inquiryType || "BUY",
+          salePrice:
+            formData.salePrice && formData.salePrice !== "-"
+              ? parseFloat(formData.salePrice.replace(/[^0-9.]/g, "")) *
+                100000000
+              : null,
+          jeonsePrice:
+            formData.jeonsePrice && formData.jeonsePrice !== "-"
+              ? parseFloat(formData.jeonsePrice.replace(/[^0-9.]/g, "")) *
+                100000000
+              : null,
+          deposit:
+            formData.deposit && formData.deposit !== "-"
+              ? parseFloat(formData.deposit.replace(/[^0-9.]/g, "")) * 100000000
+              : null,
+          monthPrice:
+            formData.monthPrice && formData.monthPrice !== "-"
+              ? parseInt(formData.monthPrice.replace(/[^0-9]/g, ""))
+              : null,
+          memo: formData.memo || "",
+          // status, favorite 제외
+        };
+
+        console.log("문의 추가 요청 데이터:", apiData);
+
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/inquiries`,
+          apiData,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        console.log("문의 추가 성공");
+      }
+
+      // 성공 시 콜백 호출
+      if (onSave) {
+        onSave(true);
+      }
+    } catch (error) {
+      console.error(isEditMode ? "문의 수정 실패:" : "문의 추가 실패:", error);
+      console.error("응답 데이터:", error.response?.data);
+      console.error("응답 상태:", error.response?.status);
+      alert(
+        isEditMode ? "문의 수정에 실패했습니다." : "문의 추가에 실패했습니다."
+      );
+
+      // 실패 시 콜백 호출
+      if (onSave) {
+        onSave(false);
+      }
     }
   };
 
@@ -94,9 +207,6 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
         break;
       case "완료":
         apiValue = "COMPLETED";
-        break;
-      case "취소":
-        apiValue = "CANCEL";
         break;
     }
 
