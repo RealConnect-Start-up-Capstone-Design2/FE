@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./contractDetailSidebar.css";
+import axios from "axios";
+import useAuthStore from "../../store/authStore";
 
 import FileIcon from "../../assets/icons/file-text.svg";
 import DownloadIcon from "../../assets/icons/download.svg";
@@ -13,6 +15,7 @@ import dropboxCheck from "../../assets/icons/dropboxCheck.svg";
 const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const fileInputRef = useRef(null);
+  const { accessToken } = useAuthStore();
 
   // 드롭박스 상태
   const [isTransactionTypeOpen, setIsTransactionTypeOpen] = useState(false);
@@ -21,6 +24,64 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
   // 드롭박스 외부 클릭 감지를 위한 ref
   const transactionTypeRef = useRef(null);
   const statusRef = useRef(null);
+
+  // 거래 유형 변환 함수들
+  const getTransactionTypeText = (contractType) => {
+    const typeMap = { BUY: "매매", JEONSE: "전세", MONTH_RENT: "월세" };
+    return typeMap[contractType] || contractType;
+  };
+
+  const getTransactionTypeValue = (contractTypeKo) => {
+    const typeMap = { 매매: "BUY", 전세: "JEONSE", 월세: "MONTH_RENT" };
+    return typeMap[contractTypeKo] || contractTypeKo;
+  };
+
+  const transactionTypeOptions = ["매매", "전세", "월세"];
+
+  // 거래 가격 포맷팅 (원 → 만원/억 단위)
+  const formatPrice = (price) => {
+    if (!price) return "-";
+    const numPrice = parseInt(price, 10);
+
+    if (numPrice >= 100000000) {
+      // 1억 이상
+      const eok = numPrice / 100000000;
+      return `${eok.toFixed(1)}억`;
+    } else {
+      // 1억 미만
+      const man = numPrice / 10000;
+      return `${man.toLocaleString()}만원`;
+    }
+  };
+
+  // 계약 상태를 한국어로 변환
+  const getContractStatusText = (status) => {
+    const statusMap = {
+      ACTIVE: "계약 중",
+      COMPLETED: "계약 완료",
+      TERMINATED: "계약 파기",
+      EXPIRED: "계약 만료",
+    };
+    return statusMap[status] || status;
+  };
+
+  // 한국어 계약 상태를 영어로 변환 (API 요청용)
+  const getContractStatusValue = (statusKo) => {
+    const statusMap = {
+      "계약 중": "ACTIVE",
+      "계약 완료": "COMPLETED",
+      "계약 파기": "TERMINATED",
+      "계약 만료": "EXPIRED",
+    };
+    return statusMap[statusKo] || statusKo;
+  };
+
+  const contractStatusOptions = [
+    "계약 중",
+    "계약 완료",
+    "계약 파기",
+    "계약 만료",
+  ];
 
   // 날짜 형식 변환 함수들
   const formatDateForInput = (dateString) => {
@@ -32,21 +93,6 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
       const month = parts[1].padStart(2, "0");
       const day = parts[2].padStart(2, "0");
       return `${year}-${month}-${day}`;
-    }
-    return dateString;
-  };
-
-  const formatDateForDisplay = (dateString) => {
-    if (!dateString) return "";
-    // "2025-03-02" 형식을 "2025. 3. 2." 형식으로 변환
-    if (dateString.includes("-")) {
-      const parts = dateString.split("-");
-      if (parts.length === 3) {
-        const year = parts[0];
-        const month = parseInt(parts[1], 10);
-        const day = parseInt(parts[2], 10);
-        return `${year}. ${month}. ${day}.`;
-      }
     }
     return dateString;
   };
@@ -73,22 +119,22 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
   useEffect(() => {
     if (contract) {
       setFormData({
-        contractDate: formatDateForInput(contract.startDate),
-        expiryDate: formatDateForInput(contract.endDate),
-        owner: contract.owner || "",
-        ownerContact: contract.ownerContact || "",
-        tenant: contract.tenant || "",
-        tenantContact: contract.tenantContact || "",
-        transactionType: contract.transactionType || "",
-        complex: contract.complex || "",
-        building: contract.building || "",
-        unit: contract.unit || "",
+        contractDate: formatDateForInput(contract.contractDate),
+        expiryDate: formatDateForInput(contract.dueDate),
+        owner: contract.ownerName || "",
+        ownerContact: contract.ownerPhone || "",
+        tenant: contract.tenantName || "",
+        tenantContact: contract.tenantPhone || "",
+        transactionType: getTransactionTypeText(contract.contractType) || "",
+        apartment: contract.apartment || "",
+        dong: contract.dong || "",
+        ho: contract.ho || "",
         area: contract.area || "",
-        price: contract.sellPrice || contract.price || "", // sellPrice를 우선 사용
+        price: contract.contractPrice || "",
         contractFile: null,
         fileName: contract.contractFile || "",
         fileSize: contract.fileSize || "",
-        status: contract.status || "",
+        status: getContractStatusText(contract.contractStatus) || "",
       });
     }
   }, [contract]);
@@ -112,18 +158,6 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  // 계약 상태 클래스명 매핑
-  const getStatusClass = (status) => {
-    const statusMap = {
-      "계약 완료": "contract-status-completed",
-      "계약 중": "contract-status-ongoing",
-      "계약 전": "contract-status-before",
-      "계약 파기": "contract-status-terminated",
-      "계약 만료": "contract-status-expired",
-    };
-    return statusMap[status] || "";
-  };
 
   if (!contract) return null;
 
@@ -162,62 +196,114 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
     setIsStatusOpen(false);
     // 초기 데이터로 다시 설정
     setFormData({
-      contractDate: formatDateForInput(contract.startDate),
-      expiryDate: formatDateForInput(contract.endDate),
-      owner: contract.owner || "",
-      ownerContact: contract.ownerContact || "",
-      tenant: contract.tenant || "",
-      tenantContact: contract.tenantContact || "",
-      transactionType: contract.transactionType || "",
-      complex: contract.complex || "",
-      building: contract.building || "",
-      unit: contract.unit || "",
+      contractDate: formatDateForInput(contract.contractDate),
+      expiryDate: formatDateForInput(contract.dueDate),
+      owner: contract.ownerName || "",
+      ownerContact: contract.ownerPhone || "",
+      tenant: contract.tenantName || "",
+      tenantContact: contract.tenantPhone || "",
+      transactionType: getTransactionTypeText(contract.contractType) || "",
+      apartment: contract.apartment || "",
+      dong: contract.dong || "",
+      ho: contract.ho || "",
       area: contract.area || "",
-      price: contract.sellPrice || contract.price || "",
+      price: contract.contractPrice || "",
       contractFile: null,
       fileName: contract.contractFile || "",
       fileSize: contract.fileSize || "",
-      status: contract.status || "",
+      status: getContractStatusText(contract.contractStatus) || "",
     });
   };
 
-  const handleSubmit = () => {
-    // API를 통해 계약 정보를 업데이트하는 로직 구현
-
-    // 부모 컴포넌트에 업데이트된 데이터 전달
-    if (onUpdate) {
-      const updatedContract = {
-        // 기존 contract에서 변경되지 않는 필드들만 유지
-        id: contract.id,
-        complex: contract.complex,
-        building: contract.building,
-        unit: contract.unit,
-        isFavorite: contract.isFavorite,
-        // formData에서 수정된 필드들
-        owner: formData.owner,
-        ownerContact: formData.ownerContact,
-        tenant: formData.tenant,
-        tenantContact: formData.tenantContact,
-        transactionType: formData.transactionType,
-        status: formData.status,
+  const handleSubmit = async () => {
+    try {
+      // API 요청용 데이터 구성
+      const updateData = {
+        apartment: contract.apartment,
+        dong: contract.dong,
+        ho: contract.ho,
         area: formData.area,
-        fileSize: formData.fileSize,
-        // 변환이 필요한 필드들 (중복 제거)
-        sellPrice: formData.price,
-        startDate: formatDateForDisplay(formData.contractDate),
-        endDate: formatDateForDisplay(formData.expiryDate),
-        contractFile: formData.fileName,
-        // 기존 파일 날짜 유지 (변경되지 않은 경우)
-        fileDate: contract.fileDate,
+        ownerName: formData.owner,
+        ownerPhone: formData.ownerContact,
+        tenantName: formData.tenant,
+        tenantPhone: formData.tenantContact,
+        contractType: getTransactionTypeValue(formData.transactionType),
+        contractPrice: formData.price,
+        contractDate: formData.contractDate, // 이미 YYYY-MM-DD 형식
+        dueDate: formData.expiryDate, // 이미 YYYY-MM-DD 형식
+        contractStatus: getContractStatusValue(formData.status),
+        favorite: contract.favorite || false,
       };
 
-      onUpdate(updatedContract);
-    }
+      console.log("Updating contract with data:", updateData);
 
-    setIsEditMode(false);
-    // 드롭박스도 닫기
-    setIsTransactionTypeOpen(false);
-    setIsStatusOpen(false);
+      // API 호출
+      const response = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/contract/update/${contract.id}`,
+        updateData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Contract update response:", response.data);
+
+      // 성공 시 부모 컴포넌트에 업데이트된 데이터 전달
+      if (onUpdate) {
+        const updatedContract = {
+          // 기존 contract 데이터 유지
+          ...contract,
+          // 업데이트된 필드들 (화면 표시용으로 변환)
+          ownerName: formData.owner,
+          ownerPhone: formData.ownerContact,
+          tenantName: formData.tenant,
+          tenantPhone: formData.tenantContact,
+          contractType: getTransactionTypeValue(formData.transactionType),
+          contractPrice: formData.price,
+          contractDate: formData.contractDate,
+          dueDate: formData.expiryDate,
+          contractStatus: getContractStatusValue(formData.status),
+          area: formData.area,
+          // 파일 관련 정보
+          contractFile: formData.fileName,
+          fileSize: formData.fileSize,
+          // 파일 날짜는 변경된 경우에만 업데이트
+          fileDate: formData.contractFile
+            ? new Date()
+                .toLocaleDateString("ko-KR", {
+                  year: "numeric",
+                  month: "numeric",
+                  day: "numeric",
+                })
+                .replace(/\./g, ". ")
+                .replace(/\s$/, "")
+            : contract.fileDate,
+        };
+
+        onUpdate(updatedContract);
+      }
+
+      // 편집 모드 종료
+      setIsEditMode(false);
+      setIsTransactionTypeOpen(false);
+      setIsStatusOpen(false);
+
+      // 성공 메시지 (선택사항)
+      console.log("계약 정보가 성공적으로 업데이트되었습니다.");
+    } catch (error) {
+      console.error("계약 업데이트 중 오류 발생:", error);
+      console.error("Error response:", error.response);
+      if (error.response) {
+        console.error("Error status:", error.response.status);
+        console.error("Error data:", error.response.data);
+      }
+
+      // 에러 메시지 표시 (추후 토스트나 알림으로 변경 가능)
+      alert("계약 완료 대신 다른 걸 선택해주세요.");
+    }
   };
 
   const formatFileSize = (bytes) => {
@@ -292,10 +378,9 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
             <div className="edit-related-property-info">
               <div className="edit-property-link-container">
                 <img src={HomeIcon} alt="매물" />
-                <span className="edit-property-link">관련매물로 이동</span>
               </div>
               <p className="edit-property-details">
-                {contract.complex} {contract.building}동-{contract.unit}호 (
+                {contract.apartment} {contract.dong}동-{contract.ho}호 (
                 {contract.area}㎡)
               </p>
             </div>
@@ -343,7 +428,7 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
 
                 {isTransactionTypeOpen && (
                   <div className="edit-dropdown-menu transaction-type-menu">
-                    {["매매", "전세", "월세"].map((option) => (
+                    {transactionTypeOptions.map((option) => (
                       <div
                         key={option}
                         className="edit-dropdown-option"
@@ -387,25 +472,23 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
 
                 {isStatusOpen && (
                   <div className="edit-dropdown-menu status-menu">
-                    {["계약 만료", "계약 중", "계약 완료", "계약 파기"].map(
-                      (option) => (
-                        <div
-                          key={option}
-                          className="edit-dropdown-option"
-                          data-status={option}
-                          onClick={() => handleStatusSelect(option)}
-                        >
-                          <span>{option}</span>
-                          {formData.status === option && (
-                            <img
-                              src={dropboxCheck}
-                              alt="selected"
-                              className="edit-dropdown-check"
-                            />
-                          )}
-                        </div>
-                      )
-                    )}
+                    {contractStatusOptions.map((option) => (
+                      <div
+                        key={option}
+                        className="edit-dropdown-option"
+                        data-status={option}
+                        onClick={() => handleStatusSelect(option)}
+                      >
+                        <span>{option}</span>
+                        {formData.status === option && (
+                          <img
+                            src={dropboxCheck}
+                            alt="selected"
+                            className="edit-dropdown-check"
+                          />
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -562,11 +645,36 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
           {/* 속성 요약 영역 */}
           <div className="property-summary">
             <div className="property-summary-item">
-              <p>{contract.complex}</p>
-              <p>
-                {contract.complex} {contract.building}-{contract.unit} (
-                {contract.area}m²)
-              </p>
+              <div
+                style={{
+                  display: "flex",
+                  backgroundColor: "#DDE2F2",
+                  width: "5rem",
+                  height: "5rem",
+                  marginRight: "0.8rem",
+                  borderRadius: "0.5rem",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              ></div>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                }}
+              >
+                <div className="property-summary-item-icon">
+                  <img src={HomeIcon} alt="매물" />
+                  <p>{contract.apartment}</p>
+                </div>
+                <div className="property-summary-item-text">
+                  <p>
+                    {contract.apartment} {contract.dong}동 {contract.ho}호 (
+                    {contract.area}m²)
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -575,13 +683,10 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
             {/* 가격 및 유형 정보 */}
             <div className="pricing-info">
               <div className="price-item">
-                <p>거래 가격 {contract.sellPrice || contract.price}</p>
-                <p>거래 유형 {contract.transactionType}</p>
+                <p>거래 가격 {formatPrice(contract.contractPrice)}</p>
+                <p>거래 유형 {getTransactionTypeText(contract.contractType)}</p>
                 <p>
-                  계약 상태{" "}
-                  <span className={getStatusClass(contract.status)}>
-                    {contract.status}
-                  </span>
+                  계약 상태 {getContractStatusText(contract.contractStatus)}
                 </p>
               </div>
             </div>
@@ -591,33 +696,33 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
               <div className="info-row">
                 <div className="info-box">
                   <h4>소유주(매도인)</h4>
-                  <p>{contract.owner}</p>
+                  <p>{contract.ownerName}</p>
                 </div>
                 <div className="info-box">
                   <h4>소유주 연락처</h4>
-                  <p>{contract.ownerContact}</p>
+                  <p>{contract.ownerPhone}</p>
                 </div>
               </div>
 
               <div className="info-row">
                 <div className="info-box">
                   <h4>입주인(매수인)</h4>
-                  <p>{contract.tenant}</p>
+                  <p>{contract.tenantName}</p>
                 </div>
                 <div className="info-box">
                   <h4>입주인 연락처</h4>
-                  <p>{contract.tenantContact}</p>
+                  <p>{contract.tenantPhone}</p>
                 </div>
               </div>
 
               <div className="info-row">
                 <div className="info-box">
                   <h4>계약 일시</h4>
-                  <p>{contract.startDate}</p>
+                  <p>{contract.contractDate}</p>
                 </div>
                 <div className="info-box">
                   <h4>만기일</h4>
-                  <p>{contract.endDate}</p>
+                  <p>{contract.dueDate}</p>
                 </div>
               </div>
             </div>

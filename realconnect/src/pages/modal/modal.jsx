@@ -54,7 +54,7 @@ const Modal = ({
           <button className="cancel-button" onClick={onClose}>
             {cancelText}
           </button>
-          <button className="submit-button" onClick={onClose}>
+          <button className="submit-button" onClick={onSubmit}>
             {submitText}
           </button>
         </div>

@@ -71,8 +71,23 @@
 
 .property-summary-item {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: center;
   padding: 0.667rem 0.8rem;
+}
+
+.property-summary-item-icon {
+  display: flex;
+  width: 2.667rem;
+  white-space: nowrap;
+  gap: 0.33rem;
+}
+
+.property-summary-item-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 /* 계약 상태 영역 */
