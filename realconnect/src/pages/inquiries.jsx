@@ -136,6 +136,18 @@ const Inquiries = () => {
     fetchInquiries();
   }, [accessToken, searchKeyword, inquiryType, activeView]);
 
+  // inquiries가 업데이트될 때 selectedInquiry도 최신 정보로 업데이트
+  useEffect(() => {
+    if (selectedInquiry && inquiries.length > 0) {
+      const updatedInquiry = inquiries.find(
+        (inquiry) => inquiry.id === selectedInquiry.id
+      );
+      if (updatedInquiry) {
+        setSelectedInquiry(updatedInquiry);
+      }
+    }
+  }, [inquiries]);
+
   const handleViewChange = (view) => {
     setActiveView(view);
   };
@@ -170,6 +182,12 @@ const Inquiries = () => {
     }
 
     if (closingSidebarRef.current) {
+      return;
+    }
+
+    if (isEditMode) {
+      setIsEditMode(false);
+      setSelectedInquiry(inquiry);
       return;
     }
 
@@ -265,8 +283,10 @@ const Inquiries = () => {
                 if (success) {
                   // 수정 성공 시 데이터 새로고침
                   await fetchInquiries();
+
+                  // fetchInquiries 완료 후 inquiries 상태가 업데이트되므로
+                  // 다음 렌더링에서 업데이트된 정보를 가져오기 위해 useEffect 사용
                   setIsEditMode(false);
-                  closeSidebar();
                 }
               }}
             />
