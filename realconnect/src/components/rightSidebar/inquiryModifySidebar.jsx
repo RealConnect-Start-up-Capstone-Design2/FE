@@ -10,11 +10,31 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
 
   const getStatusDisplayValue = (apiStatus) => {
     switch (apiStatus) {
-      case "IN_PROGRESS":
-        return "진행중";
-      case "COMPLETED":
+      case "진행중":
+      case "진행 중":
+        return "진행 중";
+      case "완료":
         return "완료";
+      default:
+        return "진행 중"; // 기본값
     }
+  };
+
+  // "10.0억" 형태를 "1,000,000,000" 형태로 변환하는 함수
+  const convertDisplayToNumber = (displayValue) => {
+    if (!displayValue || displayValue === "-") return "";
+
+    if (displayValue.includes("억")) {
+      const number = parseFloat(displayValue.replace("억", ""));
+      return (number * 100000000).toLocaleString();
+    }
+
+    if (displayValue.includes("천만")) {
+      const number = parseFloat(displayValue.replace("천만", ""));
+      return (number * 10000000).toLocaleString();
+    }
+
+    return displayValue;
   };
 
   // 초기 데이터 설정 (inquiryType은 영어 값 그대로 사용)
@@ -29,8 +49,8 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
     inquiryType: inquiry.inquiryType || "BUY", // 영어 값 그대로 사용
     statusDisplay: getStatusDisplayValue(inquiry.status),
     status: inquiry.status || "IN_PROGRESS", // 원본 영어 값 유지
-    salePrice: inquiry.salePrice || "",
-    jeonsePrice: inquiry.jeonsePrice || "",
+    salePrice: convertDisplayToNumber(inquiry.salePrice),
+    jeonsePrice: convertDisplayToNumber(inquiry.jeonsePrice),
     deposit: inquiry.deposit || "",
     monthPrice: inquiry.monthPrice || "",
     memo: inquiry.memo || "",
@@ -46,6 +66,13 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
     setFormData({ ...formData, [field]: e.target.value });
   };
 
+  // 쉼표 자동 입력을 위한 핸들러 (매매, 전세 가격용)
+  const handlePriceChange = (field) => (e) => {
+    const value = e.target.value.replace(/[^0-9]/g, ""); // 숫자만 추출
+    const formattedValue = value ? parseInt(value).toLocaleString() : "";
+    setFormData({ ...formData, [field]: formattedValue });
+  };
+
   const handleSave = async () => {
     const isEditMode = inquiry.id; // id가 있으면 수정 모드
 
@@ -58,11 +85,24 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
           name: formData.name || "",
           phone: formData.phone || "",
           apartmentName: formData.apartmentName || "",
-          type: formData.inquiryType || "BUY",
+          type: (() => {
+            // inquiryType 값이 한글이면 영어로 변환
+            switch (formData.inquiryType) {
+              case "매매":
+                return "BUY";
+              case "전세":
+                return "JEONSE";
+              case "월세":
+                return "MONTH_RENT";
+              default:
+                return formData.inquiryType || "BUY";
+            }
+          })(),
           status: (() => {
             // status 값이 한글이면 영어로 변환
             switch (formData.status) {
               case "진행중":
+              case "진행 중":
                 return "IN_PROGRESS";
               case "완료":
                 return "COMPLETED";
@@ -72,17 +112,15 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
           })(),
           salePrice:
             formData.salePrice && formData.salePrice !== "-"
-              ? parseFloat(formData.salePrice.replace(/[^0-9.]/g, "")) *
-                100000000
+              ? parseInt(formData.salePrice.replace(/[^0-9]/g, ""))
               : null,
           jeonsePrice:
             formData.jeonsePrice && formData.jeonsePrice !== "-"
-              ? parseFloat(formData.jeonsePrice.replace(/[^0-9.]/g, "")) *
-                100000000
+              ? parseInt(formData.jeonsePrice.replace(/[^0-9]/g, ""))
               : null,
           deposit:
             formData.deposit && formData.deposit !== "-"
-              ? parseFloat(formData.deposit.replace(/[^0-9.]/g, "")) * 100000000
+              ? parseInt(formData.deposit.replace(/[^0-9]/g, ""))
               : null,
           monthPrice:
             formData.monthPrice && formData.monthPrice !== "-"
@@ -113,20 +151,30 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
           phone: formData.phone || "",
           apartmentName: formData.apartmentName || "",
           area: formData.area || "", // String 타입 그대로
-          inquiryType: formData.inquiryType || "BUY",
+          inquiryType: (() => {
+            // inquiryType 값이 한글이면 영어로 변환
+            switch (formData.inquiryType) {
+              case "매매":
+                return "BUY";
+              case "전세":
+                return "JEONSE";
+              case "월세":
+                return "MONTH_RENT";
+              default:
+                return formData.inquiryType || "BUY";
+            }
+          })(),
           salePrice:
             formData.salePrice && formData.salePrice !== "-"
-              ? parseFloat(formData.salePrice.replace(/[^0-9.]/g, "")) *
-                100000000
+              ? parseInt(formData.salePrice.replace(/[^0-9]/g, ""))
               : null,
           jeonsePrice:
             formData.jeonsePrice && formData.jeonsePrice !== "-"
-              ? parseFloat(formData.jeonsePrice.replace(/[^0-9.]/g, "")) *
-                100000000
+              ? parseInt(formData.jeonsePrice.replace(/[^0-9]/g, ""))
               : null,
           deposit:
             formData.deposit && formData.deposit !== "-"
-              ? parseFloat(formData.deposit.replace(/[^0-9.]/g, "")) * 100000000
+              ? parseInt(formData.deposit.replace(/[^0-9]/g, ""))
               : null,
           monthPrice:
             formData.monthPrice && formData.monthPrice !== "-"
@@ -202,7 +250,7 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
     let apiValue;
 
     switch (displayValue) {
-      case "진행중":
+      case "진행 중":
         apiValue = "IN_PROGRESS";
         break;
       case "완료":
@@ -251,8 +299,8 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
           <input
             name="salePrice"
             value={formData.salePrice}
-            onChange={handleChange("salePrice")}
-            placeholder="0.0억"
+            onChange={handlePriceChange("salePrice")}
+            placeholder="예: 1,000,000,000"
           />
         </div>
         <div className="inquiry-desired-price">
@@ -260,8 +308,8 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
           <input
             name="jeonsePrice"
             value={formData.jeonsePrice}
-            onChange={handleChange("jeonsePrice")}
-            placeholder="0.0억"
+            onChange={handlePriceChange("jeonsePrice")}
+            placeholder="예: 500,000,000"
           />
         </div>
         <div className="inquiry-desired-price">

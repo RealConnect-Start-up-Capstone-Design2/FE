@@ -12,9 +12,17 @@
   background-color: #ffffff;
   text-align: left;
   cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   color: #989898;
   position: relative;
   margin-top: 0.733rem; /* 11px */
+}
+
+.custom-select-button-text {
+  display: flex;
+  white-space: nowrap;
 }
 
 /* CSS로 영어 inquiryType을 한글로 표시 */
