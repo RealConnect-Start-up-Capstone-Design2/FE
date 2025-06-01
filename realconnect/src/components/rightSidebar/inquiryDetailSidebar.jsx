@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import "./inquiryDetailSidebar.css";
 import ShareInquiryModal from "../../pages/modal/shareInquiryModal";
+import CreateContractModal from "../../pages/modal/createContractModal";
 import axios from "axios";
 import useAuthStore from "../../store/authStore";
 
 const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onEdit }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const accessToken = useAuthStore((state) => state.accessToken);
 
   const openModal = () => {
@@ -14,6 +16,14 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onEdit }) => {
 
   const closeModal = () => {
     setIsModalOpen(false);
+  };
+
+  const openContractModal = () => {
+    setIsContractModalOpen(true);
+  };
+
+  const closeContractModal = () => {
+    setIsContractModalOpen(false);
   };
 
   const handleSubmit = async (data) => {
@@ -30,6 +40,52 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onEdit }) => {
     );
     console.log(response);
     closeModal();
+  };
+
+  const handleContractSubmit = (contractData) => {
+    console.log("계약 작성 완료:", contractData);
+    // 계약 작성 성공 후 처리 로직
+    closeContractModal();
+  };
+
+  // 문의 정보를 계약 모달용 데이터로 변환
+  const convertInquiryToContractData = () => {
+    // 한국어 통화 형식을 쉼표 포함 숫자로 변환하는 함수
+    const convertCurrencyToNumber = (currencyStr) => {
+      if (!currencyStr || currencyStr === "-") return "";
+
+      if (currencyStr.includes("억")) {
+        const number = parseFloat(currencyStr.replace("억", ""));
+        const result = number * 100000000;
+        return result.toLocaleString(); // 쉼표 포함 형태로 변환
+      }
+
+      if (currencyStr.includes("천만")) {
+        const number = parseFloat(currencyStr.replace("천만", ""));
+        const result = number * 10000000;
+        return result.toLocaleString();
+      }
+
+      // 이미 숫자 형태인 경우
+      const numericValue = currencyStr.replace(/[^0-9]/g, "");
+      if (numericValue) {
+        return parseInt(numericValue).toLocaleString();
+      }
+
+      return currencyStr;
+    };
+
+    return {
+      apartmentName: inquiry.apartmentName,
+      inquiryType: inquiry.inquiryType,
+      salePrice: convertCurrencyToNumber(inquiry.salePrice),
+      jeonsePrice: convertCurrencyToNumber(inquiry.jeonsePrice),
+      deposit: convertCurrencyToNumber(inquiry.deposit),
+      monthPrice: inquiry.monthPrice, // 월세는 보통 만원 단위라서 그대로
+      area: inquiry.area,
+      tenant: inquiry.name, // 문의자가 임차인(매수인)이 됨
+      tenantPhone: inquiry.phone,
+    };
   };
 
   return (
@@ -118,7 +174,9 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onEdit }) => {
           수정하기
         </button>
         <div className="button-group">
-          <button className="secondary-button">계약 작성</button>
+          <button className="secondary-button" onClick={openContractModal}>
+            계약 작성
+          </button>
           <button className="secondary-button" onClick={openModal}>
             공유하기
           </button>
@@ -130,6 +188,13 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onEdit }) => {
         inquiry={inquiry}
         onClose={closeModal}
         onSubmit={handleSubmit}
+      />
+
+      <CreateContractModal
+        isOpen={isContractModalOpen}
+        onClose={closeContractModal}
+        onSubmit={handleContractSubmit}
+        property={convertInquiryToContractData()}
       />
     </div>
   );

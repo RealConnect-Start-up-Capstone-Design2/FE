@@ -20,6 +20,24 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
     }
   };
 
+  // 날짜를 YYYY-MM-DD 형태로 포맷팅하는 함수
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return ""; // 유효하지 않은 날짜
+
+      // YYYY-MM-DD 형태로 포맷팅
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    } catch {
+      return "";
+    }
+  };
+
   // "10.0억" 형태를 "1,000,000,000" 형태로 변환하는 함수
   const convertDisplayToNumber = (displayValue) => {
     if (!displayValue || displayValue === "-") return "";
@@ -55,6 +73,7 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
     monthPrice: inquiry.monthPrice || "",
     memo: inquiry.memo || "",
     favorite: inquiry.favorite || false,
+    createdAt: formatDate(inquiry.createdAt),
   });
 
   // 디버깅용: 컴포넌트 마운트 시 초기 데이터 로그

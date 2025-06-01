@@ -40,22 +40,68 @@ const CreateContractModal = ({
     if (property) {
       // 거래 유형 결정 (매매, 전세, 월세)
       let transactionType = "";
-      if (property.sellPrice && property.sellPrice !== "-") {
-        transactionType = "매매";
-      } else if (property.rentDeposit && property.rentDeposit !== "-") {
-        transactionType = "전세";
-      } else if (property.deposit && property.deposit !== "-") {
-        transactionType = "월세";
+      if (property.inquiryType) {
+        // 문의에서 온 경우
+        switch (property.inquiryType) {
+          case "매매":
+            transactionType = "매매";
+            break;
+          case "전세":
+            transactionType = "전세";
+            break;
+          case "월세":
+            transactionType = "월세";
+            break;
+          default:
+            transactionType = "매매";
+        }
+      } else {
+        // 기존 매물에서 온 경우
+        if (property.sellPrice && property.sellPrice !== "-") {
+          transactionType = "매매";
+        } else if (property.rentDeposit && property.rentDeposit !== "-") {
+          transactionType = "전세";
+        } else if (property.deposit && property.deposit !== "-") {
+          transactionType = "월세";
+        }
       }
 
       // 가격 정보 처리
       let price = "";
-      if (transactionType === "매매" && property.sellPrice !== "-") {
-        price = property.sellPrice;
-      } else if (transactionType === "전세" && property.rentDeposit !== "-") {
-        price = property.rentDeposit;
-      } else if (transactionType === "월세") {
-        price = `${property.deposit || "0"}/${property.monthlyRent || "0"}`;
+      if (property.inquiryType) {
+        // 문의에서 온 경우 - 이미 변환된 쉼표 포함 숫자
+        if (
+          transactionType === "매매" &&
+          property.salePrice &&
+          property.salePrice !== "-"
+        ) {
+          price = property.salePrice;
+        } else if (
+          transactionType === "전세" &&
+          property.jeonsePrice &&
+          property.jeonsePrice !== "-"
+        ) {
+          price = property.jeonsePrice;
+        } else if (transactionType === "월세") {
+          const deposit =
+            property.deposit && property.deposit !== "-"
+              ? property.deposit
+              : "0";
+          const monthPrice =
+            property.monthPrice && property.monthPrice !== "-"
+              ? property.monthPrice
+              : "0";
+          price = `${deposit}/${monthPrice}`;
+        }
+      } else {
+        // 기존 매물에서 온 경우
+        if (transactionType === "매매" && property.sellPrice !== "-") {
+          price = property.sellPrice;
+        } else if (transactionType === "전세" && property.rentDeposit !== "-") {
+          price = property.rentDeposit;
+        } else if (transactionType === "월세") {
+          price = `${property.deposit || "0"}/${property.monthlyRent || "0"}`;
+        }
       }
 
       // 폼 데이터 설정
@@ -90,6 +136,29 @@ const CreateContractModal = ({
     setFormData((prevData) => ({
       ...prevData,
       transactionType: type,
+    }));
+  };
+
+  // 숫자에 쉼표 추가하는 함수
+  const formatNumberWithCommas = (value) => {
+    // 숫자가 아닌 문자 제거
+    const numericValue = value.replace(/[^0-9]/g, "");
+
+    // 빈 문자열이면 그대로 반환
+    if (!numericValue) return "";
+
+    // 숫자에 쉼표 추가
+    return parseInt(numericValue).toLocaleString();
+  };
+
+  // 거래 금액 입력 핸들러
+  const handlePriceChange = (e) => {
+    const { value } = e.target;
+    const formattedValue = formatNumberWithCommas(value);
+
+    setFormData((prevData) => ({
+      ...prevData,
+      price: formattedValue,
     }));
   };
 
@@ -164,7 +233,7 @@ const CreateContractModal = ({
   // 가격 문자열에서 숫자만 추출
   const extractPrice = (priceStr) => {
     if (!priceStr) return 0;
-    // 숫자와 소수점만 추출
+    // 쉼표와 기타 숫자가 아닌 문자 제거 (소수점은 유지)
     const numericValue = priceStr.replace(/[^0-9.]/g, "");
     return numericValue ? parseFloat(numericValue) : 0;
   };
@@ -173,13 +242,23 @@ const CreateContractModal = ({
   const convertPrice = (priceStr) => {
     if (!priceStr) return 0;
 
+    // 쉼표 제거 후 처리
+    const cleanPriceStr = priceStr.replace(/,/g, "");
+
     // "억" 포함 여부 확인
-    if (priceStr.includes("억")) {
-      const value = extractPrice(priceStr);
+    if (cleanPriceStr.includes("억")) {
+      const value = extractPrice(cleanPriceStr);
       return value * 100000000; // 1억 = 100,000,000
     }
 
-    return extractPrice(priceStr);
+    // 월세의 경우 (보증금/월세) 형태 처리
+    if (cleanPriceStr.includes("/")) {
+      const [deposit] = cleanPriceStr.split("/");
+      const depositValue = extractPrice(deposit);
+      return depositValue; // 보증금만 반환
+    }
+
+    return extractPrice(cleanPriceStr);
   };
 
   // 필수 입력값 검증 함수
@@ -222,11 +301,11 @@ const CreateContractModal = ({
         apartment: formData.complex,
         dong: formData.building ? formData.building.replace(/동$/, "") : "",
         ho: formData.unit ? formData.unit.replace(/호$/, "") : "",
-        area: "55", // 기본값 또는 property에서 가져온 값
+        area: property?.area ? property.area.replace(/[^0-9.]/g, "") : "55", // 문의에서 면적 정보 가져오기
         ownerName: formData.owner,
-        ownerPhone: "010-1111-1111", // 기본값 또는 실제 입력값
+        ownerPhone: property?.ownerPhone || "010-1111-1111", // 소유주 연락처
         tenantName: formData.tenant,
-        tenantPhone: "010-1234-5678", // 기본값 또는 실제 입력값
+        tenantPhone: property?.tenantPhone || "010-1234-5678", // 임차인 연락처
         contractType: getContractTypeApiValue(formData.transactionType),
         contractPrice: convertPrice(formData.price).toString(), // String으로 변환
         contractDate: formData.contractDate,
@@ -444,7 +523,7 @@ const CreateContractModal = ({
               className="form-input"
               placeholder="해당 계약의 거래 금액을 입력하세요"
               value={formData.price}
-              onChange={handleChange}
+              onChange={handlePriceChange}
             />
           </div>
 
