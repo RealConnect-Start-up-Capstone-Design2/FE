@@ -177,6 +177,8 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
                 ? "CONTRACTED"
                 : "WAITING",
         memo: formData.note1 || "",
+        startDate: formData.startDate || "",
+        endDate: formData.endDate || "",
         // 추가 필드: 태그 정보
         direction: formData.direction || "",
         expansion: formData.expansion || "",
@@ -376,6 +378,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
           <div className="modify-info-box">
             <label>만기일</label>
             <input
+              type="date"
               name="endDate"
               placeholder="yyyy-mm-dd"
               value={formData.endDate}
@@ -385,6 +388,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
           <div className="modify-info-box">
             <label>등록일</label>
             <input
+              type="date"
               name="startDate"
               placeholder="yyyy-mm-dd"
               value={formData.startDate}
