@@ -124,6 +124,15 @@ const Contracts = () => {
     console.log("업데이트된 선택 계약:", updatedSelectedContract);
   };
 
+  // 즐겨찾기 업데이트 시 즉시 로컬 상태 업데이트
+  const handleFavoriteUpdate = (contractId, updates) => {
+    setAllContracts((prevContracts) =>
+      prevContracts.map((contract) =>
+        contract.id === contractId ? { ...contract, ...updates } : contract
+      )
+    );
+  };
+
   return (
     <div className={`page_section ${selectedContract ? "with-sidebar" : ""}`}>
       {/* 페이지 헤더 영역 (수평 레이아웃) */}
@@ -175,11 +184,13 @@ const Contracts = () => {
           <ContractTable
             contracts={allContracts}
             onContractSelect={handleContractSelect}
+            onContractUpdate={handleFavoriteUpdate}
           />
         ) : (
           <ContractTable
             contracts={favoriteContracts}
             onContractSelect={handleContractSelect}
+            onContractUpdate={handleFavoriteUpdate}
           />
         )}
 

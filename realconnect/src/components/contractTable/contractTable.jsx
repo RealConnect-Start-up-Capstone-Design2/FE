@@ -1,9 +1,13 @@
 import React from "react";
+import axios from "axios";
+import useAuthStore from "../../store/authStore";
 import "./contractTable.css";
 import BlackStarIcon from "../../assets/icons/blankStar.svg";
 import FilledStarIcon from "../../assets/icons/filledStar.svg";
 
-const ContractTable = ({ contracts, onContractSelect }) => {
+const ContractTable = ({ contracts, onContractSelect, onContractUpdate }) => {
+  const { accessToken } = useAuthStore();
+
   // 거래 유형을 한국어로 변환
   const getTransactionTypeText = (contractType) => {
     const typeMap = { BUY: "매매", JEONSE: "전세", MONTH_RENT: "월세" };
@@ -48,6 +52,58 @@ const ContractTable = ({ contracts, onContractSelect }) => {
       "계약 만료": "계약-만료",
     };
     return classNameMap[statusText] || statusText;
+  };
+
+  // 즐겨찾기 토글 함수
+  const handleFavoriteToggle = async (contract, e) => {
+    e.stopPropagation();
+
+    // 즉시 UI 업데이트를 위해 부모 컴포넌트에 변경사항 전달
+    if (onContractUpdate) {
+      onContractUpdate(contract.id, { isFavorite: !contract.isFavorite });
+    }
+
+    try {
+      const updateData = {
+        apartment: contract.apartment,
+        dong: contract.dong,
+        ho: contract.ho,
+        area: contract.area,
+        ownerName: contract.ownerName,
+        ownerPhone: contract.ownerPhone,
+        tenantName: contract.tenantName,
+        tenantPhone: contract.tenantPhone,
+        contractType: contract.contractType,
+        contractPrice: contract.contractPrice,
+        contractDate: contract.contractDate,
+        dueDate: contract.dueDate,
+        contractStatus: contract.contractStatus,
+        favorite: !contract.isFavorite, // 즐겨찾기 상태 반전
+      };
+
+      // API 호출
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/contract/update/${contract.id}`,
+        updateData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("즐겨찾기 업데이트 성공");
+    } catch (error) {
+      console.error("즐겨찾기 업데이트 실패:", error);
+
+      // API 호출 실패 시 원래 상태로 롤백
+      if (onContractUpdate) {
+        onContractUpdate(contract.id, { isFavorite: contract.isFavorite });
+      }
+
+      alert("즐겨찾기 설정에 실패했습니다.");
+    }
   };
 
   if (!contracts || contracts.length === 0) {
@@ -123,7 +179,10 @@ const ContractTable = ({ contracts, onContractSelect }) => {
                 className="favorite-column"
                 onClick={(e) => e.stopPropagation()}
               >
-                <button className="favorite-button">
+                <button
+                  className="favorite-button"
+                  onClick={(e) => handleFavoriteToggle(contract, e)}
+                >
                   <img
                     src={contract.isFavorite ? FilledStarIcon : BlackStarIcon}
                     alt={contract.isFavorite ? "즐겨찾기 됨" : "즐겨찾기"}
