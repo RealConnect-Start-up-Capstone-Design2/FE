@@ -62,7 +62,6 @@
   justify-content: center;
   cursor: pointer;
   position: relative;
-  margin-top: 0.8rem; /* 12px */
   background-color: #f6f6f6;
   flex-shrink: 0;
 }
@@ -170,6 +169,12 @@
 .form-input:focus {
   outline: none;
   border-color: #1c2882;
+}
+
+.file-placeholder {
+  color: #b1b6c7;
+  display: flex;
+  align-items: center;
 }
 
 .transaction-type-buttons {

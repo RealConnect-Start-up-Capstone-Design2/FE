@@ -36,6 +36,7 @@ const CreateContractModal = ({
 
   // property 정보가 있으면 폼 데이터 초기화
   useEffect(() => {
+    console.log(property);
     if (property) {
       // 거래 유형 결정 (매매, 전세, 월세)
       let transactionType = "";
@@ -61,7 +62,7 @@ const CreateContractModal = ({
       setFormData({
         ...initialFormData,
         id: 100,
-        owner: property.owner || "",
+        owner: property.ownerName || "",
         tenant: property.tenant || "",
         complex: property.apartmentName || "",
         building: property.building || "",
@@ -150,13 +151,13 @@ const CreateContractModal = ({
   const getContractTypeApiValue = (uiType) => {
     switch (uiType) {
       case "매매":
-        return "SALE";
+        return "BUY";
       case "전세":
         return "JEONSE";
       case "월세":
-        return "MONTHLY";
+        return "MONTH_RENT";
       default:
-        return "";
+        return "BUY";
     }
   };
 
@@ -216,31 +217,28 @@ const CreateContractModal = ({
     setIsSubmitting(true);
 
     try {
-      // API 요청 데이터 구성
+      // API 요청 데이터 구성 (통일된 형식)
       const requestData = {
-        id: 5, // 임의의 ID 할당 (서버에서 무시될 가능성이 높음)
         apartment: formData.complex,
         dong: formData.building ? formData.building.replace(/동$/, "") : "",
         ho: formData.unit ? formData.unit.replace(/호$/, "") : "",
-        area: "pa",
+        area: "55", // 기본값 또는 property에서 가져온 값
         ownerName: formData.owner,
-        ownerPhone: "010-1111-1111",
+        ownerPhone: "010-1111-1111", // 기본값 또는 실제 입력값
         tenantName: formData.tenant,
-        tenantPhone: "010-1234-5678",
+        tenantPhone: "010-1234-5678", // 기본값 또는 실제 입력값
         contractType: getContractTypeApiValue(formData.transactionType),
-        conTractprice: convertPrice(formData.price),
+        contractPrice: convertPrice(formData.price).toString(), // String으로 변환
         contractDate: formData.contractDate,
         dueDate: formData.expiryDate,
-        contractStatus: "ALL",
+        contractStatus: "ACTIVE", // 기본값을 ACTIVE로 설정
         favorite: false,
       };
 
       console.log("계약 요청 데이터:", requestData);
 
-      // 요청 URL 결정
-      const endpoint = property
-        ? "/api/contract/registerFromProperty"
-        : "/api/contract/registerDirect";
+      // 통일된 엔드포인트 사용
+      const endpoint = "/api/contract";
 
       // Axios 인스턴스 생성
       const axiosInstance = axios.create({
@@ -257,7 +255,7 @@ const CreateContractModal = ({
         `${import.meta.env.VITE_API_URL}${endpoint}`
       );
 
-      // API 호출 - 단순화된 방식으로 시도
+      // API 호출
       try {
         const response = await axiosInstance.post(endpoint, requestData);
         console.log("계약 등록 성공:", response.data);
@@ -461,12 +459,9 @@ const CreateContractModal = ({
                 </button>
               </div>
             ) : (
-              <input
-                type="text"
-                className="form-input"
-                placeholder="등록된 파일이 없습니다"
-                readOnly
-              />
+              <div className="form-input file-placeholder">
+                등록된 파일이 없습니다
+              </div>
             )}
             <div
               className="file-upload-area"
