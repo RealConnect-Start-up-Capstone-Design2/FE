@@ -35,7 +35,7 @@ const Register = () => {
       return;
     }
     try {
-      await axios.post("http://54.180.206.163:8080/api/register", {
+      await axios.post(`${import.meta.env.VITE_API_URL}/register`, {
         username: form.username,
         password: form.password,
         passwordVerify: form.passwordVerify,
