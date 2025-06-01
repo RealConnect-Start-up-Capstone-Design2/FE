@@ -29,8 +29,15 @@ const Contracts = () => {
         },
       }
     );
-    setAllContracts(response.data);
-    console.log(response.data);
+
+    // API 응답의 favorite 필드를 isFavorite로 변환
+    const contractsWithUnifiedFields = response.data.map((contract) => ({
+      ...contract,
+      isFavorite: contract.favorite, // favorite를 isFavorite로 변환
+    }));
+
+    setAllContracts(contractsWithUnifiedFields);
+    console.log(contractsWithUnifiedFields);
   };
 
   useEffect(() => {
