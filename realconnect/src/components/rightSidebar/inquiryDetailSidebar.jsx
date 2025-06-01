@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import "./inquiryDetailSidebar.css";
 import ShareInquiryModal from "../../pages/modal/shareInquiryModal";
+import axios from "axios";
+import useAuthStore from "../../store/authStore";
 
 const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onEdit }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const accessToken = useAuthStore((state) => state.accessToken);
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -13,9 +16,19 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onEdit }) => {
     setIsModalOpen(false);
   };
 
-  const handleSubmit = (data) => {
+  const handleSubmit = async (data) => {
     console.log("문의 공유하기 제출:", data);
     // 여기서 API 호출 등의 로직 구현
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/shares`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    console.log(response);
     closeModal();
   };
 
