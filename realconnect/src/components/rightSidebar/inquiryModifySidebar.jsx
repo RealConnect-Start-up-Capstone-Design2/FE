@@ -343,7 +343,7 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
           </div>
 
           <div className="inquiry-info-box">
-            <label>문의자연락처</label>
+            <label>문의자 연락처</label>
             <input
               type="text"
               value={formData.phone}

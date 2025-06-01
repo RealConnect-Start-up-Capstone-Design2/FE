@@ -28,14 +28,17 @@
 /* CSS로 영어 inquiryType을 한글로 표시 */
 .inquiry-type-display[data-inquiry-type="BUY"]::before {
   content: "매매";
+  white-space: nowrap;
 }
 
 .inquiry-type-display[data-inquiry-type="JEONSE"]::before {
   content: "전세";
+  white-space: nowrap;
 }
 
 .inquiry-type-display[data-inquiry-type="MONTH_RENT"]::before {
   content: "월세";
+  white-space: nowrap;
 }
 
 /* 원본 텍스트 숨기기 (영어 값) */
