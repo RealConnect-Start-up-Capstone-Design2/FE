@@ -71,8 +71,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
   }, [property, accessToken]);
 
   useEffect(() => {
-    // console.log(property.id);
-    console.log(property.rawData.property.id);
+    console.log(formData.id);
     // 숫자 외의 문자 제거 후 세 자리마다 쉼표 추가
     const formatWithCommas = (value) => {
       // value가 문자열일 때만 처리
@@ -150,7 +149,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
       const apiData = {
         ...(isNewProperty === "미등록"
           ? {
-              apartmentId: property.id, // 아파트 ID 사용
+              apartmentId: formData.id, // 아파트 ID 사용
             }
           : {}),
         ownerName: formData.ownerName || "",
