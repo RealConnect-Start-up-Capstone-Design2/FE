@@ -170,6 +170,16 @@
   text-overflow: clip;
 }
 
+.transaction-type {
+  background-color: #e8edff;
+  color: #1c2882;
+  display: flex-end;
+  text-align: center;
+  padding: 0.33rem 0.66rem;
+  border-radius: 99rem;
+  font-weight: 500;
+}
+
 .contract-table th:nth-child(9), /* 거래 가격 */
 .contract-table td:nth-child(9) {
   width: 5.8rem;

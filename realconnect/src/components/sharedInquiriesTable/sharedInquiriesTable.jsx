@@ -103,7 +103,7 @@ const SharedInquiriesTable = ({ sharedInquiries, onSharedInquirySelect }) => {
                 <div className="inquiry-type-text">
                   {inquiry.type === "BUY"
                     ? "매매"
-                    : inquiry.type === "RENT"
+                    : inquiry.type === "JEONSE"
                       ? "전세"
                       : inquiry.type === "MONTH_RENT"
                         ? "월세"
@@ -114,15 +114,17 @@ const SharedInquiriesTable = ({ sharedInquiries, onSharedInquirySelect }) => {
                 <span className="inquiry-title-text">{inquiry.title}</span>
               </td>
               <td>{inquiry.agentName}</td>
-              <td>{inquiry.createdAt}</td>
+              <td>{inquiry.createdAt ? inquiry.createdAt : "-"}</td>
               <td>
-                {inquiry.status === "BUY"
-                  ? "매매"
-                  : inquiry.status === "RENT"
-                    ? "전세"
-                    : inquiry.status === "MONTH_RENT"
-                      ? "월세"
-                      : "미등록"}
+                <div className="inquiry-status-text">
+                  {inquiry.status === "BUY"
+                    ? "매매"
+                    : inquiry.status === "JEONSE"
+                      ? "전세"
+                      : inquiry.status === "MONTH_RENT"
+                        ? "월세"
+                        : "미등록"}
+                </div>
               </td>
               <td>
                 {inquiry.favorite ? (

@@ -152,7 +152,11 @@ const ContractTable = ({ contracts, onContractSelect, onContractUpdate }) => {
               <td>{contract.area}m²</td>
               <td>{contract.ownerName}</td>
               <td>{contract.tenantName}</td>
-              <td>{getTransactionTypeText(contract.contractType)}</td>
+              <td>
+                <span className="transaction-type">
+                  {getTransactionTypeText(contract.contractType)}
+                </span>
+              </td>
               <td>{formatPrice(contract.contractPrice)}</td>
               <td>{contract.contractDate}</td>
               <td>{contract.dueDate}</td>
