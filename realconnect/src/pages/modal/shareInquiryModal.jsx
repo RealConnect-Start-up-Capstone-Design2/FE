@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Modal from "./modal";
-import "./ShareInquiryModal.css";
+import "./shareInquiryModal.css";
 
 const ShareInquiryModal = ({ isOpen, onClose, onSubmit, inquiry }) => {
   const [formData, setFormData] = useState({
