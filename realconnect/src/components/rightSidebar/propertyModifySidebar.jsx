@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "./propertyModifySidebar.css";
 import ContractStatus from "../sortButtons/contractStatus";
-import ContractTagButton from "../tagButtons/ContractTagButton";
-import DirectionTagButton from "../tagButtons/DirectionTagButton";
-import ExpansionTagButton from "../tagButtons/ExpansionTagButton";
-import WardrobeTagButton from "../tagButtons/WardrobeTagButton";
+import ContractTagButton from "../tagbuttons/ContractTagButton";
+import DirectionTagButton from "../tagbuttons/DirectionTagButton";
+import ExpansionTagButton from "../tagbuttons/ExpansionTagButton";
+import WardrobeTagButton from "../tagbuttons/WardrobeTagButton";
 import axios from "axios";
 import useAuthStore from "../../store/authStore";
 

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./addContract.css";
 import plus from "../../assets/icons/plus.svg";
-import CreateContractModal from "../../pages/modal/createContractModal.jsx";
+import CreateContractModal from "../../pages/modal/createContractModal";
 
 const AddContract = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
