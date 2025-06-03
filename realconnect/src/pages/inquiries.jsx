@@ -21,11 +21,12 @@ const convertApiDataToInquiryTable = (apiData) => {
         const date = new Date(dateString);
         if (isNaN(date.getTime())) return "-"; // 유효하지 않은 날짜
 
-        return date.toLocaleDateString("ko-KR", {
-          year: "numeric",
-          month: "numeric",
-          day: "numeric",
-        });
+        // YYYY-MM-DD 형태로 포맷팅
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
       } catch {
         return "-";
       }
@@ -56,15 +57,13 @@ const convertApiDataToInquiryTable = (apiData) => {
       salePrice: item.salePrice
         ? (item.salePrice / 100000000).toFixed(1) + "억"
         : "-",
-      deposit: item.deposit
-        ? (item.deposit / 100000000).toFixed(1) + "억"
-        : "-",
+      deposit: item.deposit ? item.deposit.toLocaleString() : "-",
       jeonsePrice: item.jeonsePrice
         ? (item.jeonsePrice / 100000000).toFixed(1) + "억"
         : "-",
       monthPrice: item.monthPrice ? item.monthPrice.toLocaleString() : "-",
       memo: item.memo || "-",
-      favorite: item.favorite || false,
+      favorite: item.favorite === true,
       createdAt: formatDate(item.createdAt),
     };
   });
@@ -76,84 +75,18 @@ const Inquiries = () => {
   const [isClosingSidebar, setIsClosingSidebar] = useState(false);
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [adding, setAdding] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [inquiryType, setInquiryType] = useState("ALL");
   const [isAddingInquiry, setIsAddingInquiry] = useState(false);
-  const [newInquiry, setNewInquiry] = useState(null);
   const closingSidebarRef = useRef(false);
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isEditMode, setIsEditMode] = useState(false);
 
-  const handleAddInquiryClick = (emptyInquiry) => {
-    setNewInquiry(emptyInquiry);
+  const handleAddInquiryClick = () => {
     setIsAddingInquiry(true);
     if (selectedInquiry) {
       setSelectedInquiry(null);
       setIsEditMode(false);
-    }
-  };
-
-  const handleSaveNewInquiry = async (inquiryData) => {
-    setAdding(true);
-    try {
-      console.log(inquiryData.status);
-      // 디버깅을 위한 원본 데이터 로깅
-      const apiData = {
-        name: inquiryData.name || "",
-        phone: inquiryData.phone || "",
-        apartmentName: inquiryData.apartmentName || "",
-        area: inquiryData.area ? parseFloat(inquiryData.area) : null,
-        inquiryType: inquiryData.inquiryType || "BUY",
-        status: inquiryData.status || "COMPLETED", // 상태 명시적 추가
-        salePrice:
-          inquiryData.salePrice && inquiryData.salePrice !== "-"
-            ? parseFloat(inquiryData.salePrice.replace(/[^0-9.]/g, "")) *
-              100000000
-            : null,
-        jeonsePrice:
-          inquiryData.jeonsePrice && inquiryData.jeonsePrice !== "-"
-            ? parseFloat(inquiryData.jeonsePrice.replace(/[^0-9.]/g, "")) *
-              100000000
-            : null,
-        deposit:
-          inquiryData.deposit && inquiryData.deposit !== "-"
-            ? parseFloat(inquiryData.deposit.replace(/[^0-9.]/g, "")) *
-              100000000
-            : null,
-        monthPrice:
-          inquiryData.monthPrice && inquiryData.monthPrice !== "-"
-            ? parseInt(inquiryData.monthPrice.replace(/[^0-9]/g, ""))
-            : null,
-        memo: inquiryData.memo || "",
-      };
-
-      // 디버깅을 위한 API 요청 데이터 로깅
-      console.log("API 요청 데이터:", apiData);
-
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/inquiries`,
-        apiData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
-
-      console.log("새 문의 생성 성공:", res.data);
-
-      await fetchInquiries();
-
-      setIsAddingInquiry(false);
-      setNewInquiry(null);
-    } catch (error) {
-      console.error("문의 생성 실패:", error);
-      alert("문의 등록에 실패했습니다.");
-    } finally {
-      setAdding(false);
     }
   };
 
@@ -184,12 +117,21 @@ const Inquiries = () => {
 
       let processedData = convertApiDataToInquiryTable(res.data || []);
 
+      // 최신 등록순으로 정렬 (createdAt 기준 내림차순)
+      processedData.sort((a, b) => {
+        const dateA = new Date(a.createdAt);
+        const dateB = new Date(b.createdAt);
+        return dateB - dateA; // 최신이 먼저 오도록 내림차순 정렬
+      });
+
       if (activeView === "즐겨찾기") {
-        processedData = processedData.filter((inquiry) => inquiry.favorite);
+        const favoriteData = processedData.filter(
+          (inquiry) => inquiry.favorite
+        );
+        processedData = favoriteData;
       }
 
       setInquiries(processedData);
-      console.log(processedData);
     } catch (error) {
       console.error("문의 데이터 조회 실패:", error);
       setInquiries([]);
@@ -201,6 +143,19 @@ const Inquiries = () => {
   useEffect(() => {
     fetchInquiries();
   }, [accessToken, searchKeyword, inquiryType, activeView]);
+
+  // inquiries가 업데이트될 때 selectedInquiry도 최신 정보로 업데이트
+  useEffect(() => {
+    console.log(inquiries);
+    if (selectedInquiry && inquiries.length > 0) {
+      const updatedInquiry = inquiries.find(
+        (inquiry) => inquiry.id === selectedInquiry.id
+      );
+      if (updatedInquiry) {
+        setSelectedInquiry(updatedInquiry);
+      }
+    }
+  }, [inquiries]);
 
   const handleViewChange = (view) => {
     setActiveView(view);
@@ -214,13 +169,86 @@ const Inquiries = () => {
     setInquiryType(type);
   };
 
+  const handleFavoriteToggle = async (inquiry) => {
+    try {
+      // inquiry 객체를 원본 API 형태로 변환
+      const apiData = {
+        name: inquiry.name,
+        phone: inquiry.phone,
+        apartmentName: inquiry.apartmentName,
+        area: inquiry.area === "-" ? null : parseInt(inquiry.area),
+        inquiryType:
+          inquiry.inquiryType === "매매"
+            ? "BUY"
+            : inquiry.inquiryType === "전세"
+              ? "JEONSE"
+              : inquiry.inquiryType === "월세"
+                ? "MONTH_RENT"
+                : null,
+        status:
+          inquiry.status === "진행 중"
+            ? "IN_PROGRESS"
+            : inquiry.status === "완료"
+              ? "COMPLETED"
+              : inquiry.status === "취소"
+                ? "CANCEL"
+                : null,
+        salePrice:
+          inquiry.salePrice === "-"
+            ? null
+            : Math.round(
+                parseFloat(inquiry.salePrice.replace("억", "")) * 100000000
+              ),
+        deposit:
+          inquiry.deposit === "-"
+            ? null
+            : Math.round(
+                parseFloat(inquiry.deposit.replace("억", "")) * 100000000
+              ),
+        jeonsePrice:
+          inquiry.jeonsePrice === "-"
+            ? null
+            : Math.round(
+                parseFloat(inquiry.jeonsePrice.replace("억", "")) * 100000000
+              ),
+        monthPrice:
+          inquiry.monthPrice === "-"
+            ? null
+            : parseInt(inquiry.monthPrice.replace(/,/g, "")),
+        memo: inquiry.memo === "-" ? null : inquiry.memo,
+        favorite: !inquiry.favorite, // 즐겨찾기 상태 토글
+      };
+      console.log(apiData);
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/inquiries/${inquiry.id}`,
+        apiData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      console.log(res.data);
+
+      // API 호출 성공 후 데이터 새로고침
+      await fetchInquiries();
+    } catch (error) {
+      console.error("즐겨찾기 업데이트 실패:", error);
+    }
+  };
+
   const handleInquirySelect = (inquiry) => {
     if (isAddingInquiry) {
       setIsAddingInquiry(false);
-      setNewInquiry(null);
     }
 
     if (closingSidebarRef.current) {
+      return;
+    }
+
+    if (isEditMode) {
+      setIsEditMode(false);
+      setSelectedInquiry(inquiry);
       return;
     }
 
@@ -235,7 +263,6 @@ const Inquiries = () => {
   const closeSidebar = () => {
     if (isAddingInquiry) {
       setIsAddingInquiry(false);
-      setNewInquiry(null);
       return;
     }
 
@@ -291,7 +318,7 @@ const Inquiries = () => {
           <TransactionType
             onTransactionTypeChange={handleTransactionTypeChange}
           />
-          <AddInquiry onAddInquiry={handleAddInquiryClick} adding={adding} />
+          <AddInquiry onAddInquiry={handleAddInquiryClick} />
           <DeleteInquiry />
         </div>
       </div>
@@ -301,6 +328,7 @@ const Inquiries = () => {
         ) : (
           <InquiryTable
             inquiries={inquiries}
+            onFavoriteToggle={handleFavoriteToggle}
             onInquirySelect={handleInquirySelect}
           />
         )}
@@ -312,84 +340,15 @@ const Inquiries = () => {
                 closeSidebar();
                 setIsEditMode(false);
               }}
-              onSave={(modified) => {
-                // 수정된 문의 데이터를 서버에 저장하는 로직 추가
-                const updateInquiry = async () => {
-                  try {
-                    // 디버깅을 위해 원본 데이터 확인
-                    console.log("문의 수정 - 원본 데이터:", modified);
-                    console.log("문의 유형:", modified.inquiryType);
+              onSave={async (success) => {
+                if (success) {
+                  // 수정 성공 시 데이터 새로고침
+                  await fetchInquiries();
 
-                    // 필요한 데이터 변환 작업
-                    const apiData = {
-                      name: modified.name || "",
-                      phone: modified.phone || "",
-                      apartmentName: modified.apartmentName || "",
-                      area: modified.area ? parseFloat(modified.area) : null,
-                      inquiryType: modified.inquiryType || "BUY",
-                      status: modified.status || "IN_PROGRESS",
-                      salePrice:
-                        modified.salePrice && modified.salePrice !== "-"
-                          ? parseFloat(
-                              modified.salePrice.replace(/[^0-9.]/g, "")
-                            ) * 100000000
-                          : null,
-                      jeonsePrice:
-                        modified.jeonsePrice && modified.jeonsePrice !== "-"
-                          ? parseFloat(
-                              modified.jeonsePrice.replace(/[^0-9.]/g, "")
-                            ) * 100000000
-                          : null,
-                      deposit:
-                        modified.deposit && modified.deposit !== "-"
-                          ? parseFloat(
-                              modified.deposit.replace(/[^0-9.]/g, "")
-                            ) * 100000000
-                          : null,
-                      monthPrice:
-                        modified.monthPrice && modified.monthPrice !== "-"
-                          ? parseInt(modified.monthPrice.replace(/[^0-9]/g, ""))
-                          : null,
-                      memo: modified.memo || "",
-                    };
-
-                    // 월세 선택 시 inquiryType이 MONTH_RENT인지 확인
-                    if (
-                      modified.inquiryTypeDisplay === "월세" &&
-                      apiData.inquiryType !== "MONTH_RENT"
-                    ) {
-                      apiData.inquiryType = "MONTH_RENT";
-                    }
-
-                    console.log("문의 수정 요청 데이터:", apiData);
-
-                    // API 호출로 문의 수정
-                    await axios.put(
-                      `${import.meta.env.VITE_API_URL}/api/inquiries/${selectedInquiry.id}`,
-                      apiData,
-                      {
-                        headers: {
-                          Authorization: `Bearer ${accessToken}`,
-                          "Content-Type": "application/json",
-                        },
-                        withCredentials: true,
-                      }
-                    );
-
-                    // 수정 후 데이터 새로고침
-                    await fetchInquiries();
-                  } catch (error) {
-                    console.error("문의 수정 실패:", error);
-                    alert("문의 수정에 실패했습니다.");
-                  }
-                };
-
-                // 수정 함수 실행
-                updateInquiry();
-
-                // 사이드바 닫기 및 편집 모드 종료
-                setIsEditMode(false);
-                closeSidebar();
+                  // fetchInquiries 완료 후 inquiries 상태가 업데이트되므로
+                  // 다음 렌더링에서 업데이트된 정보를 가져오기 위해 useEffect 사용
+                  setIsEditMode(false);
+                }
               }}
             />
           ) : (
@@ -401,11 +360,18 @@ const Inquiries = () => {
             />
           ))}
 
-        {isAddingInquiry && newInquiry && (
+        {isAddingInquiry && (
           <InquiryModifySidebar
-            inquiry={newInquiry}
+            inquiry={{}}
             onClose={closeSidebar}
-            onSave={handleSaveNewInquiry}
+            onSave={async (success) => {
+              if (success) {
+                // 추가 성공 시 데이터 새로고침
+                await fetchInquiries();
+                setIsAddingInquiry(false);
+                closeSidebar();
+              }
+            }}
           />
         )}
       </div>

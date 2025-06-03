@@ -230,9 +230,28 @@ const ShareInquiryModal = ({ isOpen, onClose, onSubmit, inquiry }) => {
         : "",
     };
 
+    // API 요구사항에 맞는 형식으로 데이터 변환
     const submitData = {
-      ...formData,
-      location: `${location.sido} ${location.sigungu} ${location.dong}`.trim(),
+      title: formData.title,
+      l1: location.sido,
+      l2: location.sigungu,
+      l3: location.dong,
+      agentName: formData.company || "김부동산공인중개사", // 기본값
+      agentPhone: formData.contact || "02-1234-5678", // 기본값
+      type:
+        inquiry.inquiryType === "매매"
+          ? "BUY"
+          : inquiry.inquiryType === "전세"
+            ? "JEONSE"
+            : "RENT",
+      customerName: inquiry.name,
+      customerPhone: inquiry.phone,
+      apartmentName: inquiry.apartmentName,
+      area: parseFloat(inquiry.area) || 0,
+      salePrice: inquiry.salePrice
+        ? parseInt(inquiry.salePrice.replace(/[^0-9]/g, ""))
+        : 0,
+      memo: formData.memo || inquiry.memo || "",
     };
 
     onSubmit(submitData);
@@ -357,27 +376,35 @@ const ShareInquiryModal = ({ isOpen, onClose, onSubmit, inquiry }) => {
         <div className="detail-boxes">
           <div className="detail-box">
             <div className="detail-box-label">문의자</div>
-            <div className="detail-box-value">최정현</div>
+            <div className="detail-box-value">{inquiry?.name || "최정현"}</div>
           </div>
           <div className="detail-box">
             <div className="detail-box-label">문의자 연락처</div>
-            <div className="detail-box-value">010-1234-2334</div>
+            <div className="detail-box-value">
+              {inquiry?.phone || "010-1234-2334"}
+            </div>
           </div>
           <div className="detail-box">
             <div className="detail-box-label">문의 유형</div>
-            <div className="detail-box-value">매매</div>
+            <div className="detail-box-value">
+              {inquiry?.inquiryType || "매매"}
+            </div>
           </div>
           <div className="detail-box">
             <div className="detail-box-label">희망 가격</div>
-            <div className="detail-box-value">24억 5000</div>
+            <div className="detail-box-value">
+              {inquiry?.salePrice || "24억 5000"}
+            </div>
           </div>
           <div className="detail-box">
             <div className="detail-box-label">진행 상태</div>
-            <div className="detail-box-value">진행중</div>
+            <div className="detail-box-value">
+              {inquiry?.status || "진행중"}
+            </div>
           </div>
           <div className="detail-box">
             <div className="detail-box-label">등록일</div>
-            <div className="detail-box-value">{inquiry.createdAt}</div>
+            <div className="detail-box-value">{inquiry?.createdAt}</div>
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@ import arrowIcon from "/src/assets/icons/downArrow.svg";
 
 const StatusSelectButton = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const options = ["진행중", "완료", "취소"];
+  const options = ["진행 중", "완료"];
 
   return (
     <div className="custom-select-wrapper">
@@ -14,15 +14,14 @@ const StatusSelectButton = ({ value, onChange }) => {
         className="custom-select-button"
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        {value || "진행 상태 선택"}
-
-        <span>
-          <img
-            src={arrowIcon}
-            alt="화살표"
-            className={`arrow-icon ${isOpen ? "rotate-up" : ""}`}
-          />
-        </span>
+        <div className="custom-select-button-text">
+          {value || "진행 상태 선택"}
+        </div>
+        <img
+          src={arrowIcon}
+          alt="화살표"
+          className={`arrow-icon ${isOpen ? "rotate-up" : ""}`}
+        />
       </button>
       {isOpen && (
         <ul className="custom-select-list">

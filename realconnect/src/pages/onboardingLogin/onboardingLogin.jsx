@@ -40,7 +40,7 @@ const OnboardingLogin = () => {
     setError("");
     try {
       const response = await axios.post(
-        "http://54.180.206.163:8080/login",
+        `${import.meta.env.VITE_API_URL}/login`,
         {
           username: form.username,
           password: form.password,

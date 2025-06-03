@@ -71,8 +71,23 @@
 
 .property-summary-item {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: center;
   padding: 0.667rem 0.8rem;
+}
+
+.property-summary-item-icon {
+  display: flex;
+  width: 2.667rem;
+  white-space: nowrap;
+  gap: 0.33rem;
+}
+
+.property-summary-item-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 /* 계약 상태 영역 */
@@ -342,7 +357,7 @@
   width: 100%;
 }
 
-.primary-button,
+.contract-primary-button,
 .secondary-button {
   width: 100%;
   padding: 0.667rem 0;
@@ -354,8 +369,8 @@
   text-align: center;
 }
 
-.primary-button {
-  background-color: #1a4cab;
+.contract-primary-button {
+  background-color: #1c2882;
   color: white;
 }
 

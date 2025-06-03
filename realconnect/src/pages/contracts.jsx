@@ -1,5 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./contracts.css";
+import axios from "axios";
+import useAuthStore from "../store/authStore";
 
 // 컴포넌트 불러오기
 import ContractTable from "../components/contractTable/contractTable";
@@ -12,77 +14,35 @@ import ContractDetailSidebar from "../components/rightSidebar/contractDetailSide
 
 const Contracts = () => {
   const [activeView, setActiveView] = useState("전체");
+  const [allContracts, setAllContracts] = useState([]);
   const [selectedContract, setSelectedContract] = useState(null);
   const [isClosingSidebar, setIsClosingSidebar] = useState(false);
   const closingSidebarRef = useRef(false);
+  const { accessToken } = useAuthStore();
 
-  // 샘플 데이터
-  const [allContracts, setAllContracts] = useState([
-    {
-      id: 1,
-      complex: "파크리오",
-      building: "101",
-      unit: "102",
-      area: "16",
-      price: "2억 5000",
-      owner: "김규식",
-      ownerContact: "010-1234-2334",
-      tenant: "최정현",
-      tenantContact: "010-2334-3456",
-      transactionType: "매매",
-      sellPrice: "24억 5000",
-      startDate: "2025. 5. 27.",
-      endDate: "2026. 12. 12.",
-      status: "계약 완료",
-      contractFile: "전세계약서_김규식.pdf",
-      fileSize: "203.5 KB",
-      fileDate: "2025. 3. 2.",
-      isFavorite: true,
-    },
-    {
-      id: 2,
-      complex: "파크리오",
-      building: "101",
-      unit: "1010",
-      area: "151",
-      price: "2억 5000",
-      owner: "김규식",
-      ownerContact: "010-1234-2334",
-      tenant: "최정현",
-      tenantContact: "010-2334-3456",
-      transactionType: "매매",
-      sellPrice: "24억 5000",
-      startDate: "2025. 3. 2.",
-      endDate: "2026. 12. 12.",
-      status: "계약 완료",
-      contractFile: "전세계약서_김규식.pdf",
-      fileSize: "203.5 KB",
-      fileDate: "2025. 3. 2.",
-      isFavorite: true,
-    },
-    {
-      id: 3,
-      complex: "파크리오",
-      building: "101",
-      unit: "107",
-      area: "151",
-      price: "2억 5000",
-      owner: "김규식",
-      ownerContact: "010-1234-2334",
-      tenant: "최정현",
-      tenantContact: "010-2334-3456",
-      transactionType: "매매",
-      sellPrice: "24억 5000",
-      startDate: "2025. 3. 2.",
-      endDate: "2026. 12. 12.",
-      status: "계약 중",
-      contractFile: "전세계약서_김규식.pdf",
-      fileSize: "203.5 KB",
-      fileDate: "2025. 3. 2.",
-      isFavorite: true,
-    },
-    // 추가 데이터는 나중에 추가
-  ]);
+  const fetchContracts = async () => {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/api/contract/searchContracts`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    // API 응답의 favorite 필드를 isFavorite로 변환
+    const contractsWithUnifiedFields = response.data.map((contract) => ({
+      ...contract,
+      isFavorite: contract.favorite, // favorite를 isFavorite로 변환
+    }));
+
+    setAllContracts(contractsWithUnifiedFields);
+    console.log(contractsWithUnifiedFields);
+  };
+
+  useEffect(() => {
+    fetchContracts();
+  }, []);
 
   // 즐겨찾기 데이터
   const favoriteContracts = allContracts.filter(
@@ -171,6 +131,15 @@ const Contracts = () => {
     console.log("업데이트된 선택 계약:", updatedSelectedContract);
   };
 
+  // 즐겨찾기 업데이트 시 즉시 로컬 상태 업데이트
+  const handleFavoriteUpdate = (contractId, updates) => {
+    setAllContracts((prevContracts) =>
+      prevContracts.map((contract) =>
+        contract.id === contractId ? { ...contract, ...updates } : contract
+      )
+    );
+  };
+
   return (
     <div className={`page_section ${selectedContract ? "with-sidebar" : ""}`}>
       {/* 페이지 헤더 영역 (수평 레이아웃) */}
@@ -205,7 +174,7 @@ const Contracts = () => {
           marginBottom: "1.6rem",
         }}
       >
-        <div style={{ width: "400px" }}>
+        <div style={{ width: "30rem" }}>
           <Search onSearch={handleSearch} />
         </div>
         <div style={{ display: "flex", gap: "0.8rem" }}>
@@ -222,11 +191,13 @@ const Contracts = () => {
           <ContractTable
             contracts={allContracts}
             onContractSelect={handleContractSelect}
+            onContractUpdate={handleFavoriteUpdate}
           />
         ) : (
           <ContractTable
             contracts={favoriteContracts}
             onContractSelect={handleContractSelect}
+            onContractUpdate={handleFavoriteUpdate}
           />
         )}
 

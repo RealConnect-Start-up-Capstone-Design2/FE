@@ -37,6 +37,14 @@ const SharedInquiriesTable = ({ sharedInquiries, onSharedInquirySelect }) => {
     return (price / 100000000).toFixed(1) + "억";
   };
 
+  // 보증금/월세 포맷팅 함수
+  const formatDepositMonthly = (deposit, monthly) => {
+    const depositFormatted =
+      deposit && deposit !== 0 ? formatPrice(deposit) : "-";
+    const monthlyFormatted = monthly && monthly !== 0 ? monthly + "만원" : "-";
+    return `${depositFormatted}/${monthlyFormatted}`;
+  };
+
   if (!sharedInquiries || sharedInquiries.length === 0) {
     return (
       <div className="shared-inquiries-table-empty">
@@ -84,18 +92,22 @@ const SharedInquiriesTable = ({ sharedInquiries, onSharedInquirySelect }) => {
               </td>
               <td>{inquiry.l2}</td>
               <td>{inquiry.l3}</td>
-              <td>{inquiry.apartmentName}</td>
+              <td>
+                <div className="apartment-name-text">
+                  {inquiry.apartmentName}
+                </div>
+              </td>
               <td>{inquiry.area} m²</td>
               <td>{formatPrice(inquiry.salePrice)}</td>
               <td>{formatPrice(inquiry.jeonsePrice)}</td>
               <td>
-                {inquiry.deposit}/{inquiry.monthPrice}
+                {formatDepositMonthly(inquiry.deposit, inquiry.monthPrice)}
               </td>
               <td>
                 <div className="inquiry-type-text">
                   {inquiry.type === "BUY"
                     ? "매매"
-                    : inquiry.type === "RENT"
+                    : inquiry.type === "JEONSE"
                       ? "전세"
                       : inquiry.type === "MONTH_RENT"
                         ? "월세"
@@ -106,15 +118,17 @@ const SharedInquiriesTable = ({ sharedInquiries, onSharedInquirySelect }) => {
                 <span className="inquiry-title-text">{inquiry.title}</span>
               </td>
               <td>{inquiry.agentName}</td>
-              <td>{inquiry.createdAt}</td>
+              <td>{inquiry.createdAt ? inquiry.createdAt : "-"}</td>
               <td>
-                {inquiry.status === "BUY"
-                  ? "매매"
-                  : inquiry.status === "RENT"
-                    ? "전세"
-                    : inquiry.status === "MONTH_RENT"
-                      ? "월세"
-                      : "미등록"}
+                <div className="inquiry-status-text">
+                  {inquiry.status === "BUY"
+                    ? "매매"
+                    : inquiry.status === "JEONSE"
+                      ? "전세"
+                      : inquiry.status === "MONTH_RENT"
+                        ? "월세"
+                        : "미등록"}
+                </div>
               </td>
               <td>
                 {inquiry.favorite ? (

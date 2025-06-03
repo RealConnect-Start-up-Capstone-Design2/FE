@@ -15,11 +15,15 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
     expansion: "",
     wardrobe: "",
     direction: "",
+    salePrice: "",
+    jeonsePrice: "",
+    deposit: "",
+    monthPrice: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
   // property 객체 존재 여부 확인
-  const isNewProperty = property.rawData.property;
+  const isNewProperty = property.status;
 
   useEffect(() => {
     if (!property) return;
@@ -30,9 +34,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
       direction: property.direction || "남향",
       ...property,
     });
-    console.log(formData);
-    console.log(property);
-    console.log(property.id);
+
     // 이미지가 있으면 이미지 URL 생성
     if (property && property.img) {
       const loadImage = async () => {
@@ -68,14 +70,74 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
     }
   }, [property, accessToken]);
 
-  if (!property) return null;
+  useEffect(() => {
+    console.log(formData.id);
+    // 숫자 외의 문자 제거 후 세 자리마다 쉼표 추가
+    const formatWithCommas = (value) => {
+      // value가 문자열일 때만 처리
+      if (typeof value === "string" || typeof value === "number") {
+        return value
+          .toString() // 숫자라면 문자열로 변환
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 세 자리마다 쉼표 추가
+      }
+      return value;
+    };
+    setFormData((prev) => ({
+      ...prev,
+      salePrice: formatWithCommas(prev.salePrice),
+      jeonsePrice: formatWithCommas(prev.jeonsePrice),
+    }));
+  }, [formData.salePrice, formData.jeonsePrice]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // 필드 유형에 따라 다른 처리
+    if (
+      name === "ownerName" ||
+      name === "tenant" ||
+      name === "note1" ||
+      name === "startDate" ||
+      name === "endDate"
+    ) {
+      // 문자열 필드는 그대로 저장
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+    // 전화번호 필드 처리
+    else if (name === "contact" || name === "tenantContact") {
+      // 숫자만 추출
+      const numbersOnly = value.replace(/[^0-9]/g, "");
+
+      // 전화번호 포맷팅 (xxx-xxxx-xxxx)
+      let formattedPhone = "";
+      if (numbersOnly.length <= 3) {
+        formattedPhone = numbersOnly;
+      } else if (numbersOnly.length <= 7) {
+        formattedPhone = `${numbersOnly.slice(0, 3)}-${numbersOnly.slice(3)}`;
+      } else {
+        formattedPhone = `${numbersOnly.slice(0, 3)}-${numbersOnly.slice(3, 7)}-${numbersOnly.slice(7, 11)}`;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        [name]: formattedPhone,
+      }));
+    }
+    // 가격 필드 처리 (기존 로직)
+    else {
+      // 숫자 외의 문자 제거 후 세 자리마다 쉼표 추가
+      let formattedValue = value.replace(/[^0-9]/g, ""); // 숫자 외의 문자 제거
+      formattedValue = formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 세 자리마다 쉼표 추가
+
+      // 업데이트된 값만 저장
+      setFormData((prev) => ({
+        ...prev,
+        [name]: formattedValue,
+      }));
+    }
   };
 
   const handleSave = async () => {
@@ -85,23 +147,27 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
     try {
       // API 요청 데이터 준비
       const apiData = {
-        ...(!isNewProperty && {
-          apartmentId: property.id, // 아파트 ID
-        }),
-        ownerName: formData.owner || "",
+        ...(isNewProperty === "미등록"
+          ? {
+              apartmentId: formData.id, // 아파트 ID 사용
+            }
+          : {}),
+        ownerName: formData.ownerName || "",
         ownerPhone: formData.contact || "",
         tenantName: formData.tenant || "",
         tenantPhone: formData.tenantContact || "",
-        salePrice: formData.sellPrice
-          ? parseFloat(formData.sellPrice) * 100000000
+        salePrice: formData.salePrice
+          ? parseInt(formData.salePrice.replace(/,/g, "")) // 쉼표 제거 후 정수로 변환
           : 0,
-        jeonsePrice: formData.deposit
-          ? parseFloat(formData.deposit) * 100000000
+        jeonsePrice: formData.jeonsePrice
+          ? parseInt(formData.jeonsePrice.replace(/,/g, "")) // 쉼표 제거 후 정수로 변환
           : 0,
-        deposit: formData.rentDeposit
-          ? parseFloat(formData.rentDeposit) * 100000000
+        deposit: formData.deposit
+          ? parseInt(formData.deposit) // 쉼표 제거 후 정수로 변환
           : 0,
-        monthPrice: formData.monthlyRent ? parseInt(formData.monthlyRent) : 0,
+        monthPrice: formData.monthPrice
+          ? parseInt(formData.monthPrice) // 쉼표 제거 후 정수로 변환
+          : 0,
         status:
           formData.status === "계약 전"
             ? "WAITING"
@@ -111,6 +177,8 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
                 ? "CONTRACTED"
                 : "WAITING",
         memo: formData.note1 || "",
+        startDate: formData.startDate || "",
+        endDate: formData.endDate || "",
         // 추가 필드: 태그 정보
         direction: formData.direction || "",
         expansion: formData.expansion || "",
@@ -120,7 +188,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
       let response;
 
       // property 객체가 없는 경우 POST 요청
-      if (!isNewProperty) {
+      if (isNewProperty === "미등록") {
         // POST 요청 보내기 (새로운 매물 생성)
         response = await axios.post(
           `${import.meta.env.VITE_API_URL}/api/properties`,
@@ -134,9 +202,9 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
         );
         console.log("새 매물 정보 생성 성공:", response.data);
       } else {
-        // PUT 요청 보내기 (기존 매물 수정)
+        // PUT 요청 보내기 (기존 매물 수정) - property.id는 propertiesManage.jsx에서 apartmentId로 설정됨
         response = await axios.put(
-          `${import.meta.env.VITE_API_URL}/api/properties/${property.id}`,
+          `${import.meta.env.VITE_API_URL}/api/properties/${property.rawData.property.id}`,
           apiData,
           {
             headers: {
@@ -150,16 +218,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
 
       // 성공 시 부모 컴포넌트에 알림
       if (onSave) {
-        // API 응답 데이터와 기존 formData를 합쳐서 전달
-        const updatedProperty = {
-          ...property,
-          ...formData,
-          // API 응답 데이터가 있으면 추가
-          ...(response.data && { apiResponse: response.data }),
-          // property 객체가 없었다면 새로 생성된 property 정보 추가
-          property: response.data,
-        };
-        onSave(updatedProperty);
+        onSave(property); // 간단히 기존 property 객체만 전달
       }
     } catch (error) {
       console.error("매물 정보 저장 실패:", error);
@@ -245,8 +304,8 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
         <div className="modify-form-item">
           <label>매매</label>
           <input
-            name="sellPrice"
-            value={formData.sellPrice}
+            name="salePrice"
+            value={formData.salePrice}
             onChange={handleChange}
           />
         </div>
@@ -254,8 +313,8 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
         <div className="modify-form-item">
           <label>전세</label>
           <input
-            name="deposit"
-            value={formData.rentDeposit}
+            name="jeonsePrice"
+            value={formData.jeonsePrice}
             onChange={handleChange}
           />
         </div>
@@ -263,14 +322,14 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
         <div className="modify-form-item">
           <label>보증금/월세</label>
           <input
-            name="rentDeposit"
-            value={`${formData.deposit}/${formData.monthlyRent}`}
+            name="deposit"
+            value={`${formData.deposit}/${formData.monthPrice}`}
             onChange={(e) => {
               const [rent, month] = e.target.value.split("/");
               setFormData((prev) => ({
                 ...prev,
                 deposit: rent || "",
-                monthlyRent: month || "",
+                monthPrice: month || "",
               }));
             }}
           />
@@ -281,8 +340,8 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
           <div className="modify-info-box">
             <label>소유주</label>
             <input
-              name="owner"
-              value={formData.owner}
+              name="ownerName"
+              value={formData.ownerName}
               onChange={handleChange}
             />
           </div>
@@ -319,6 +378,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
           <div className="modify-info-box">
             <label>만기일</label>
             <input
+              type="date"
               name="endDate"
               placeholder="yyyy-mm-dd"
               value={formData.endDate}
@@ -328,6 +388,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
           <div className="modify-info-box">
             <label>등록일</label>
             <input
+              type="date"
               name="startDate"
               placeholder="yyyy-mm-dd"
               value={formData.startDate}
@@ -356,7 +417,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
           ? "저장 중..."
           : isNewProperty
             ? "정보 추가하기"
-            : "저장하기"}
+            : "수정하기"}
       </button>
     </div>
   );

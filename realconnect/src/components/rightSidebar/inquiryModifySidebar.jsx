@@ -1,35 +1,61 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import useAuthStore from "../../store/authStore";
 import "./inquiryModifySidebar.css";
 import InquirySelectButton from "../selectButtons/InquirySelectButton";
 import StatusSelectButton from "../selectButtons/StatusSelectButton";
 
 const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
-  // API 값을 UI 표시용 한글 값으로 변환
-  const getInquiryTypeDisplayValue = (apiType) => {
-    switch (apiType) {
-      case "BUY":
-        return "매매";
-      case "JEONSE":
-        return "전세";
-      case "MONTH_RENT":
-        return "월세";
-      default:
-        return "매매"; // 기본값
-    }
-  };
+  const accessToken = useAuthStore((state) => state.accessToken);
 
   const getStatusDisplayValue = (apiStatus) => {
     switch (apiStatus) {
-      case "IN_PROGRESS":
-        return "진행중";
-      case "COMPLETED":
+      case "진행중":
+      case "진행 중":
+        return "진행 중";
+      case "완료":
         return "완료";
-      case "CANCEL":
-        return "취소";
+      default:
+        return "진행 중"; // 기본값
     }
   };
 
-  // 초기 데이터 설정 (API 값을 UI 표시용 값으로 변환)
+  // 날짜를 YYYY-MM-DD 형태로 포맷팅하는 함수
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return ""; // 유효하지 않은 날짜
+
+      // YYYY-MM-DD 형태로 포맷팅
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    } catch {
+      return "";
+    }
+  };
+
+  // "10.0억" 형태를 "1,000,000,000" 형태로 변환하는 함수
+  const convertDisplayToNumber = (displayValue) => {
+    if (!displayValue || displayValue === "-") return "";
+
+    if (displayValue.includes("억")) {
+      const number = parseFloat(displayValue.replace("억", ""));
+      return (number * 100000000).toLocaleString();
+    }
+
+    if (displayValue.includes("천만")) {
+      const number = parseFloat(displayValue.replace("천만", ""));
+      return (number * 10000000).toLocaleString();
+    }
+
+    return displayValue;
+  };
+
+  // 초기 데이터 설정 (inquiryType은 영어 값 그대로 사용)
   const [formData, setFormData] = useState({
     name: inquiry.name || "",
     phone: inquiry.phone || "",
@@ -38,18 +64,16 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
       inquiry.area && inquiry.area !== "-"
         ? inquiry.area.replace(/[^0-9.]/g, "")
         : "",
-    // API 값을 UI 표시용 한글 값으로 변환
-    inquiryTypeDisplay: getInquiryTypeDisplayValue(
-      inquiry.inquiryType || "BUY"
-    ),
-    inquiryType: inquiry.inquiryType || "BUY", // API 통신용 원본 값 보존
+    inquiryType: inquiry.inquiryType || "BUY", // 영어 값 그대로 사용
     statusDisplay: getStatusDisplayValue(inquiry.status),
-    status: inquiry.status,
-    salePrice: inquiry.salePrice || "",
-    jeonsePrice: inquiry.jeonsePrice || "",
+    status: inquiry.status || "IN_PROGRESS", // 원본 영어 값 유지
+    salePrice: convertDisplayToNumber(inquiry.salePrice),
+    jeonsePrice: convertDisplayToNumber(inquiry.jeonsePrice),
     deposit: inquiry.deposit || "",
     monthPrice: inquiry.monthPrice || "",
     memo: inquiry.memo || "",
+    favorite: inquiry.favorite || false,
+    createdAt: formatDate(inquiry.createdAt),
   });
 
   // 디버깅용: 컴포넌트 마운트 시 초기 데이터 로그
@@ -57,63 +81,166 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
     console.log("InquiryModifySidebar 초기 데이터:", formData);
   }, []);
 
-  // inquiryTypeDisplay 값이 변경될 때마다 inquiryType 값 동기화
-  useEffect(() => {
-    // inquiryTypeDisplay 값에 따라 inquiryType 값 설정
-    let apiValue;
-    switch (formData.inquiryTypeDisplay) {
-      case "매매":
-        apiValue = "BUY";
-        break;
-      case "전세":
-        apiValue = "JEONSE";
-        break;
-      case "월세":
-        apiValue = "MONTH_RENT";
-        break;
-      default:
-        apiValue = formData.inquiryType || "BUY"; // 기존 값 유지
-    }
-
-    // inquiryType 값이 이미 올바른 경우 불필요한 상태 업데이트 방지
-    if (apiValue !== formData.inquiryType) {
-      console.log(
-        `inquiryType 업데이트: ${formData.inquiryType} -> ${apiValue}`
-      );
-      setFormData((prev) => ({ ...prev, inquiryType: apiValue }));
-    }
-  }, [formData.inquiryTypeDisplay]);
-
   const handleChange = (field) => (e) => {
     setFormData({ ...formData, [field]: e.target.value });
   };
 
-  const handleSave = () => {
-    // UI 표시용 필드는 제외하고 API 요청용 데이터만 전달
-    const apiData = {
-      ...formData,
-      // UI 표시용 필드 제외
-      inquiryTypeDisplay: undefined,
-      statusDisplay: undefined,
-    };
+  // 쉼표 자동 입력을 위한 핸들러 (매매, 전세 가격용)
+  const handlePriceChange = (field) => (e) => {
+    const value = e.target.value.replace(/[^0-9]/g, ""); // 숫자만 추출
+    const formattedValue = value ? parseInt(value).toLocaleString() : "";
+    setFormData({ ...formData, [field]: formattedValue });
+  };
 
-    console.log("저장할 데이터:", apiData);
+  const handleSave = async () => {
+    const isEditMode = inquiry.id; // id가 있으면 수정 모드
 
-    // 월세 선택 시 inquiryType이 MONTH_RENT인지 다시 한번 확인
-    if (
-      formData.inquiryTypeDisplay === "월세" &&
-      apiData.inquiryType !== "MONTH_RENT"
-    ) {
-      console.log("월세 선택 감지 - inquiryType 강제 설정:", "MONTH_RENT");
-      apiData.inquiryType = "MONTH_RENT";
-    }
+    try {
+      console.log("AccessToken:", accessToken); // 토큰 확인용
 
-    if (onSave) {
-      onSave(apiData);
+      if (isEditMode) {
+        // 수정 모드: PUT 요청
+        const apiData = {
+          name: formData.name || "",
+          phone: formData.phone || "",
+          apartmentName: formData.apartmentName || "",
+          type: (() => {
+            // inquiryType 값이 한글이면 영어로 변환
+            switch (formData.inquiryType) {
+              case "매매":
+                return "BUY";
+              case "전세":
+                return "JEONSE";
+              case "월세":
+                return "MONTH_RENT";
+              default:
+                return formData.inquiryType || "BUY";
+            }
+          })(),
+          status: (() => {
+            // status 값이 한글이면 영어로 변환
+            switch (formData.status) {
+              case "진행중":
+              case "진행 중":
+                return "IN_PROGRESS";
+              case "완료":
+                return "COMPLETED";
+              default:
+                return formData.status || "IN_PROGRESS";
+            }
+          })(),
+          salePrice:
+            formData.salePrice && formData.salePrice !== "-"
+              ? parseInt(formData.salePrice.replace(/[^0-9]/g, ""))
+              : null,
+          jeonsePrice:
+            formData.jeonsePrice && formData.jeonsePrice !== "-"
+              ? parseInt(formData.jeonsePrice.replace(/[^0-9]/g, ""))
+              : null,
+          deposit:
+            formData.deposit && formData.deposit !== "-"
+              ? parseInt(formData.deposit.replace(/[^0-9]/g, ""))
+              : null,
+          monthPrice:
+            formData.monthPrice && formData.monthPrice !== "-"
+              ? parseInt(formData.monthPrice.replace(/[^0-9]/g, ""))
+              : null,
+          memo: formData.memo || "",
+          favorite: formData.favorite || false,
+        };
+
+        console.log("문의 수정 요청 데이터:", apiData);
+
+        await axios.put(
+          `${import.meta.env.VITE_API_URL}/api/inquiries/${inquiry.id}`,
+          apiData,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        console.log("문의 수정 성공");
+      } else {
+        // 추가 모드: POST 요청
+        const apiData = {
+          name: formData.name || "",
+          phone: formData.phone || "",
+          apartmentName: formData.apartmentName || "",
+          area: formData.area || "", // String 타입 그대로
+          inquiryType: (() => {
+            // inquiryType 값이 한글이면 영어로 변환
+            switch (formData.inquiryType) {
+              case "매매":
+                return "BUY";
+              case "전세":
+                return "JEONSE";
+              case "월세":
+                return "MONTH_RENT";
+              default:
+                return formData.inquiryType || "BUY";
+            }
+          })(),
+          salePrice:
+            formData.salePrice && formData.salePrice !== "-"
+              ? parseInt(formData.salePrice.replace(/[^0-9]/g, ""))
+              : null,
+          jeonsePrice:
+            formData.jeonsePrice && formData.jeonsePrice !== "-"
+              ? parseInt(formData.jeonsePrice.replace(/[^0-9]/g, ""))
+              : null,
+          deposit:
+            formData.deposit && formData.deposit !== "-"
+              ? parseInt(formData.deposit.replace(/[^0-9]/g, ""))
+              : null,
+          monthPrice:
+            formData.monthPrice && formData.monthPrice !== "-"
+              ? parseInt(formData.monthPrice.replace(/[^0-9]/g, ""))
+              : null,
+          memo: formData.memo || "",
+          // status, favorite 제외
+        };
+
+        console.log("문의 추가 요청 데이터:", apiData);
+
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/inquiries`,
+          apiData,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        console.log("문의 추가 성공");
+      }
+
+      // 성공 시 콜백 호출
+      if (onSave) {
+        onSave(true);
+      }
+    } catch (error) {
+      console.error(isEditMode ? "문의 수정 실패:" : "문의 추가 실패:", error);
+      console.error("응답 데이터:", error.response?.data);
+      console.error("응답 상태:", error.response?.status);
+      alert(
+        isEditMode
+          ? "모든 필드를 입력해주세요(매매, 전세, 월세는 택1)"
+          : "모든 필드를 입력해주세요(매매, 전세, 월세는 택1)"
+      );
+
+      // 실패 시 콜백 호출
+      if (onSave) {
+        onSave(false);
+      }
     }
   };
 
-  // inquiryType 변환 (UI 표시 형식 → API 요청 형식)
+  // inquiryType 변환 (한글 → 영어)
   const handleInquiryTypeChange = (displayValue) => {
     let apiValue;
 
@@ -135,7 +262,6 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
 
     setFormData({
       ...formData,
-      inquiryTypeDisplay: displayValue,
       inquiryType: apiValue,
     });
   };
@@ -145,14 +271,11 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
     let apiValue;
 
     switch (displayValue) {
-      case "진행중":
+      case "진행 중":
         apiValue = "IN_PROGRESS";
         break;
       case "완료":
         apiValue = "COMPLETED";
-        break;
-      case "취소":
-        apiValue = "CANCEL";
         break;
     }
 
@@ -197,8 +320,8 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
           <input
             name="salePrice"
             value={formData.salePrice}
-            onChange={handleChange("salePrice")}
-            placeholder="0.0억"
+            onChange={handlePriceChange("salePrice")}
+            placeholder="예: 1,000,000,000"
           />
         </div>
         <div className="inquiry-desired-price">
@@ -206,8 +329,8 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
           <input
             name="jeonsePrice"
             value={formData.jeonsePrice}
-            onChange={handleChange("jeonsePrice")}
-            placeholder="0.0억"
+            onChange={handlePriceChange("jeonsePrice")}
+            placeholder="예: 500,000,000"
           />
         </div>
         <div className="inquiry-desired-price">
@@ -241,7 +364,7 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
           </div>
 
           <div className="inquiry-info-box">
-            <label>문의자연락처</label>
+            <label>문의자 연락처</label>
             <input
               type="text"
               value={formData.phone}
@@ -255,7 +378,7 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
           <div className="inquiry-info-box">
             <label>문의 유형</label>
             <InquirySelectButton
-              value={formData.inquiryTypeDisplay}
+              value={formData.inquiryType}
               onChange={handleInquiryTypeChange}
             />
           </div>
