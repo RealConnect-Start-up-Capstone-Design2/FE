@@ -1,11 +1,15 @@
 .property-table-container {
   width: 100%;
+  height: 100%;
+  max-height: 100%;
   position: relative;
-  border: 1px solid #eaeaea;
-  border-radius: 8px;
+  border: 0.067rem solid #eaeaea;
+  border-radius: 0.533rem;
   overflow: auto;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  max-height: calc(100vh - 250px);
+  box-shadow: 0 0.133rem 0.267rem rgba(0, 0, 0, 0.05);
+  height: calc(100vh - 23rem); /* 헤더와 검색바를 제외한 높이 */
+  display: flex;
+  flex-direction: column;
 }
 
 .property-table-empty {
@@ -13,12 +17,13 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 200px;
+  height: 13.333rem;
   background-color: #f9fafb;
-  border: 1px solid #eaeaea;
-  border-radius: 8px;
+  border: 0.067rem solid #eaeaea;
+  border-radius: 0.533rem;
   color: #6b7280;
-  font-size: 16px;
+  font-size: 1.067rem;
+  text-align: center;
 }
 
 .property-table {
@@ -36,24 +41,23 @@
 }
 
 .property-table th {
-  padding: 14px 16px;
+  padding: 0.933rem 1.067rem;
   text-align: left;
   font-size: 1rem;
   font-weight: 500;
   color: #333;
   white-space: nowrap;
-  border-bottom: 1px solid #eaeaea;
+  border-bottom: 0.067rem solid #eaeaea;
+  transition: padding 0.3s ease-in-out;
 }
 
 .property-table tbody {
-  max-height: calc(100vh - 300px);
-  overflow-y: auto;
   position: relative;
   z-index: 0;
 }
 
 .property-table tr {
-  border-bottom: 1px solid #eaeaea;
+  border-bottom: 0.067rem solid #eaeaea;
 }
 
 .property-table tr:last-child {
@@ -61,39 +65,26 @@
 }
 
 .property-table td {
-  padding: 12px 16px;
-  font-size: 14px;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
   color: #333;
   vertical-align: middle;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  transition: padding 0.3s ease-in-out;
+}
+
+/* 사이드바가 열렸을 때 테이블 패딩 가로만 줄이기 */
+.page_section.with-sidebar .property-table th,
+.page_section.with-sidebar .property-table td {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 
 .checkbox-column {
-  width: 40px;
+  width: 2.667rem;
   text-align: center;
-}
-
-.image-column {
-  width: 70px;
-}
-
-.property-image {
-  width: 48px;
-  height: 48px;
-  background-color: #f0f0f0;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.property-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.no-image {
-  width: 100%;
-  height: 100%;
-  background-color: #e0e0e0;
 }
 
 .transaction-type {
@@ -102,16 +93,21 @@
   border-radius: 99rem;
   font-size: 0.8rem;
   text-align: center;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  min-width: auto;
+  width: auto;
 }
 
 .transaction-type.sale {
-  background-color: #e8f0fe;
-  color: #1a73e8;
+  background-color: #e8edff;
+  color: #1c2882;
 }
 
 .transaction-type.rent {
-  background-color: #fef7e0;
-  color: #ea8600;
+  background-color: #e8edff;
+  color: #1c2882;
 }
 
 .status-button {
@@ -124,32 +120,58 @@
   cursor: pointer;
   background-color: #f1f8ff;
   color: #0077ff;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
 }
 
-.status-button.개약전 {
-  background-color: #defcdc;
-  color: #189554;
-}
-
-.status-button.개약완료 {
+.status-button.계약전 {
   background-color: #fcdcdc;
   color: #b72525;
 }
 
+.status-button.계약중 {
+  background-color: #fff8b8;
+  color: #c38b11;
+}
+
+.status-button.계약완료 {
+  background-color: #defcdc;
+  color: #189554;
+}
+
 .property-table input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 1.2rem;
+  height: 1.2rem;
   cursor: pointer;
-  border-radius: 3px;
-  border: 1px solid #d0d5dd;
+  border-radius: 0.2rem;
+  border: 0.067rem solid #d0d5dd;
 }
 
 /* 반응형 설정 */
 @media (max-width: 1200px) {
   .property-table th,
   .property-table td {
-    padding: 10px 12px;
-    font-size: 13px;
+    padding-left: 0.533rem;
+    padding-right: 0.533rem;
+    font-size: 0.867rem;
+  }
+
+  .page_section.with-sidebar .property-table th,
+  .page_section.with-sidebar .property-table td {
+    padding-left: 0.267rem;
+    padding-right: 0.267rem;
+  }
+
+  /* 반응형에서도 첫번째와 마지막 열의 패딩은 유지 */
+  .property-table th:first-child,
+  .property-table td:first-child {
+    padding-left: 0.533rem;
+  }
+
+  .page_section.with-sidebar .property-table th:first-child,
+  .page_section.with-sidebar .property-table td:first-child {
+    padding-left: 0.4rem;
   }
 }
 
@@ -165,4 +187,162 @@
 [role="listbox"],
 [role="menu"] {
   z-index: var(--dropdown-z-index) !important;
+}
+
+.status-column {
+  min-width: 5.333rem;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 체크박스 열 */
+.property-table th:first-child,
+.property-table td:first-child {
+  width: 2.667rem;
+  min-width: 2.667rem;
+  max-width: 2.667rem;
+  text-align: center;
+  padding-left: 1rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 넓이 조정 - 사진과 유사한 레이아웃으로 조정 */
+.property-table th:nth-child(2), /* 단지 */
+.property-table td:nth-child(2) {
+  min-width: 5.333rem;
+  width: 5.333rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.property-table th:nth-child(3), /* 동 */
+.property-table td:nth-child(3) {
+  min-width: 4rem;
+  width: 4rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.property-table th:nth-child(4), /* 호수 */
+.property-table td:nth-child(4) {
+  min-width: 4rem;
+  width: 4rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.property-table th:nth-child(5), /* 면적 */
+.property-table td:nth-child(5) {
+  min-width: 5.333rem;
+  width: 5.333rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 매매 */
+.property-table th:nth-child(6),
+.property-table td:nth-child(6) {
+  min-width: 7.333rem;
+  width: 7.333rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 전세 */
+.property-table th:nth-child(7),
+.property-table td:nth-child(7) {
+  min-width: 4.667rem;
+  width: 4.667rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 보증금/월세 */
+.property-table th:nth-child(8),
+.property-table td:nth-child(8) {
+  min-width: 6rem;
+  width: 6rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 거래 유형 관련 컬럼(매매/전세/월세) */
+.property-table th:nth-child(9),
+.property-table td:nth-child(9) {
+  min-width: 6.667rem;
+  width: 6.667rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 소유자 */
+.property-table th:nth-child(10),
+.property-table td:nth-child(10) {
+  min-width: 5.333rem;
+  width: 5.333rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 연락처 */
+.property-table th:nth-child(11),
+.property-table td:nth-child(11) {
+  min-width: 8.667rem;
+  width: 8.667rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 거래 상태 열 */
+.property-table th:nth-child(12),
+.property-table td:nth-child(12) {
+  min-width: 6rem;
+  width: 6rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 사이드바가 열렸을 때 조정 */
+.page_section.with-sidebar .property-table th:nth-child(3), /* 동 */
+.page_section.with-sidebar .property-table td:nth-child(3) {
+  min-width: 2.667rem;
+  width: 2.667rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.page_section.with-sidebar .property-table th:nth-child(4), /* 호수 */
+.page_section.with-sidebar .property-table td:nth-child(4) {
+  min-width: 3rem;
+  width: 3rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.page_section.with-sidebar .property-table th:nth-child(5), /* 면적 */
+.page_section.with-sidebar .property-table td:nth-child(5) {
+  min-width: 4rem;
+  width: 4rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 사이드바가 열렸을 때 거래 유형 컬럼 */
+.page_section.with-sidebar .property-table th:nth-child(9),
+.page_section.with-sidebar .property-table td:nth-child(9) {
+  min-width: 6rem;
+  width: 6rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 사이드바가 열렸을 때 소유자 컬럼 */
+.page_section.with-sidebar .property-table td:nth-child(10) {
+  min-width: 8rem;
+  max-width: 6ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

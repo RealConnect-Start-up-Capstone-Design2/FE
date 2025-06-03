@@ -2,21 +2,18 @@ import React, { useState, useRef, useEffect } from "react";
 import checkIcon from "../../assets/icons/check.svg";
 import "./transactionType.css";
 
-const TransactionType = () => {
+const TransactionType = ({ onTransactionTypeChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState({
-    "매매/전세/월세": false,
-    "매매/전세": false,
-    "매매/월세": false,
-    "전세/월세": false,
+    전체: true,
     매매: false,
     전세: false,
     월세: false,
   });
+  const [hasUserSelected, setHasUserSelected] = useState(false);
 
   const dropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -34,6 +31,22 @@ const TransactionType = () => {
     setIsOpen(!isOpen);
   };
 
+  // 거래 유형을 API 파라미터 형식으로 변환하는 함수
+  const getInquiryTypeParam = (option) => {
+    switch (option) {
+      case "전체":
+        return "ALL";
+      case "매매":
+        return "BUY";
+      case "전세":
+        return "JEONSE";
+      case "월세":
+        return "MONTH_RENT";
+      default:
+        return "ALL";
+    }
+  };
+
   const handleOptionClick = (option) => {
     setSelectedOptions({
       ...Object.fromEntries(
@@ -41,16 +54,28 @@ const TransactionType = () => {
       ),
       [option]: true,
     });
-    // Close dropdown after option is selected
+    setHasUserSelected(true);
+
+    // 부모 컴포넌트에 선택된 거래 유형 전달
+    if (onTransactionTypeChange) {
+      const inquiryTypeParam = getInquiryTypeParam(option);
+      console.log(
+        `TransactionType 선택: ${option} -> API 값: ${inquiryTypeParam}`
+      );
+      onTransactionTypeChange(inquiryTypeParam);
+    }
     setIsOpen(false);
   };
 
-  // Get the selected option name
-  const getSelectedOption = () => {
+  const getButtonText = () => {
+    if (!hasUserSelected) {
+      return "거래 유형";
+    }
+
     for (const [option, isSelected] of Object.entries(selectedOptions)) {
       if (isSelected) return option;
     }
-    return "거래유형";
+    return "거래 유형";
   };
 
   return (
@@ -71,7 +96,7 @@ const TransactionType = () => {
             d="M19 9l-7 7-7-7"
           ></path>
         </svg>
-        <span className="transaction-button-text">{getSelectedOption()}</span>
+        <span className="transaction-button-text">{getButtonText()}</span>
       </button>
 
       {/* Dropdown menu */}

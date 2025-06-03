@@ -42,7 +42,11 @@ body,
   flex-direction: column;
   overflow-x: hidden;
   overflow-y: auto;
-  padding-bottom: 4rem;
+  transition: all 0.3s ease-in-out;
+}
+
+.page_section.with-sidebar {
+  padding-right: 33rem;
 }
 
 /* 속성 페이지 헤더 */
@@ -53,7 +57,7 @@ body,
 }
 
 .header_left {
-  width: 300px;
+  width: 400px;
 }
 
 /* 페이지 제목 */
@@ -120,6 +124,12 @@ body,
 .page_content {
   margin-top: 1.5rem;
   display: flex;
+  position: relative;
+  width: 100%;
+  flex: 1;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+  max-width: 100%;
 }
 
 /* 미디어 쿼리 */
