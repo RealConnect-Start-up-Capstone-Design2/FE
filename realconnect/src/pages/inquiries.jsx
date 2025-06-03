@@ -57,9 +57,7 @@ const convertApiDataToInquiryTable = (apiData) => {
       salePrice: item.salePrice
         ? (item.salePrice / 100000000).toFixed(1) + "억"
         : "-",
-      deposit: item.deposit
-        ? (item.deposit / 100000000).toFixed(1) + "억"
-        : "-",
+      deposit: item.deposit ? item.deposit.toLocaleString() : "-",
       jeonsePrice: item.jeonsePrice
         ? (item.jeonsePrice / 100000000).toFixed(1) + "억"
         : "-",
@@ -118,6 +116,13 @@ const Inquiries = () => {
       });
 
       let processedData = convertApiDataToInquiryTable(res.data || []);
+
+      // 최신 등록순으로 정렬 (createdAt 기준 내림차순)
+      processedData.sort((a, b) => {
+        const dateA = new Date(a.createdAt);
+        const dateB = new Date(b.createdAt);
+        return dateB - dateA; // 최신이 먼저 오도록 내림차순 정렬
+      });
 
       if (activeView === "즐겨찾기") {
         const favoriteData = processedData.filter(
