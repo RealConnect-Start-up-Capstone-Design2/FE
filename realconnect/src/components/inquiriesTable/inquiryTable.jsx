@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import "./inquiryTable.css";
 import FilledStarIcon from "../../assets/icons/filledStar.svg";
 import BlackStarIcon from "../../assets/icons/blankStar.svg";
@@ -8,14 +8,6 @@ const InquiryTable = ({
   onInquirySelect,
   onFavoriteToggle,
 }) => {
-  // 내부 상태로 즐겨찾기 상태 관리
-  const [inquiriesList, setInquiriesList] = useState([]);
-
-  // 외부에서 받은 inquiries 데이터가 변경되면 내부 상태 업데이트
-  useEffect(() => {
-    setInquiriesList([...inquiries]);
-  }, [inquiries]);
-
   const handleRowClick = (inquiry) => {
     onInquirySelect(inquiry);
   };
@@ -23,23 +15,13 @@ const InquiryTable = ({
   const toggleFavorite = (e, inquiry) => {
     e.stopPropagation();
 
-    // 내부 상태를 업데이트하여 리렌더링 유도
-    const updatedList = inquiriesList.map((item) => {
-      if (item.id === inquiry.id) {
-        return { ...item, favorite: !item.favorite };
-      }
-      return item;
-    });
-
-    setInquiriesList(updatedList);
-
     // 부모 컴포넌트에서 onFavoriteToggle 함수를 전달받았다면 사용
     if (onFavoriteToggle) {
-      onFavoriteToggle(inquiry.id);
+      onFavoriteToggle(inquiry);
     }
   };
 
-  if (!inquiriesList || inquiriesList.length === 0) {
+  if (!inquiries || inquiries.length === 0) {
     return (
       <div className="inquiry-table-empty">
         <p>표시할 문의가 없습니다.</p>
@@ -69,7 +51,7 @@ const InquiryTable = ({
           </tr>
         </thead>
         <tbody>
-          {inquiriesList.map((inquiry) => (
+          {inquiries.map((inquiry) => (
             <tr
               key={inquiry.id}
               onClick={() => handleRowClick(inquiry)}
@@ -98,7 +80,7 @@ const InquiryTable = ({
                 <div
                   className={`status-button ${(inquiry.status || "").replace(/\s+/g, "")}`}
                 >
-                  {inquiry.status || "-"}
+                  {inquiry.status || "미등록"}
                 </div>
               </td>
               <td

@@ -228,7 +228,9 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave }) => {
       console.error("응답 데이터:", error.response?.data);
       console.error("응답 상태:", error.response?.status);
       alert(
-        isEditMode ? "문의 수정에 실패했습니다." : "문의 추가에 실패했습니다."
+        isEditMode
+          ? "모든 필드를 입력해주세요(매매, 전세, 월세는 택1)"
+          : "모든 필드를 입력해주세요(매매, 전세, 월세는 택1)"
       );
 
       // 실패 시 콜백 호출

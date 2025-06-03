@@ -6,8 +6,11 @@ const SharedInquiryDetailSidebar = ({
   onClose,
   isClosing,
   onEdit,
-  isMyInquiry,
 }) => {
+  // customerName과 customerPhone이 null이 아닌 경우가 내가 쓴 글
+  const isActuallyMyInquiry =
+    inquiry.customerName !== null && inquiry.customerPhone !== null;
+
   // 문의 유형에 따른 표시 텍스트 변환 함수
   const formatInquiryType = (type) => {
     switch (type) {
@@ -80,20 +83,18 @@ const SharedInquiryDetailSidebar = ({
       </div>
 
       {/* 문의자 정보 - 자신의 문의일 경우에만 표시 */}
-      {isMyInquiry && (
-        <div className="contact-info">
-          <div className="info-row">
-            <div className="info-box">
-              <h4>문의자</h4>
-              <p>{inquiry.customerName || "등록 부동산에 문의"}</p>
-            </div>
-            <div className="info-box">
-              <h4>연락처</h4>
-              <p>{inquiry.customerPhone || "등록 부동산에 문의"}</p>
-            </div>
+      <div className="contact-info">
+        <div className="info-row">
+          <div className="info-box">
+            <h4>문의자</h4>
+            <p>{inquiry.customerName || "등록 부동산에 문의"}</p>
+          </div>
+          <div className="info-box">
+            <h4>문의자 연락처</h4>
+            <p>{inquiry.customerPhone || "등록 부동산에 문의"}</p>
           </div>
         </div>
-      )}
+      </div>
 
       <div className="inquiry-info">
         <div className="info-row">
@@ -104,7 +105,7 @@ const SharedInquiryDetailSidebar = ({
           <div className="info-box">
             <h4>진행 상태</h4>
             <p className={inquiry.status?.replace(/\s+/g, "")}>
-              {inquiry.status}
+              {inquiry.status || "미등록"}
             </p>
           </div>
         </div>
@@ -118,7 +119,7 @@ const SharedInquiryDetailSidebar = ({
           </div>
           <div className="info-box">
             <h4>등록일</h4>
-            <p>{inquiry.createdAt}</p>
+            <p>{inquiry.createdAt || "-"}</p>
           </div>
         </div>
       </div>
@@ -127,11 +128,13 @@ const SharedInquiryDetailSidebar = ({
         <div className="info-row">
           <div className="info-box">
             <h4>연락처</h4>
-            <p>010-3086-8805</p>
+            <p>{inquiry.agentPhone}</p>
           </div>
           <div className="info-box">
             <h4>시/구/동</h4>
-            <p>{inquiry.createdAt}</p>
+            <p>
+              {inquiry.l1}/{inquiry.l2}/{inquiry.l3}
+            </p>
           </div>
         </div>
       </div>
@@ -143,12 +146,13 @@ const SharedInquiryDetailSidebar = ({
 
       <div className="action-buttons">
         <button
-          className="primary-button"
+          className="shared-inquiry-primary-button"
           onClick={onEdit}
-          disabled={!isMyInquiry}
+          disabled={!isActuallyMyInquiry}
           style={{
-            opacity: isMyInquiry ? 1 : 0.5,
-            cursor: isMyInquiry ? "pointer" : "not-allowed",
+            backgroundColor: isActuallyMyInquiry ? "" : "#CFD0D0",
+            color: isActuallyMyInquiry ? "" : "#FFFFFF",
+            cursor: isActuallyMyInquiry ? "pointer" : "not-allowed",
           }}
         >
           수정하기

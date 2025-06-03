@@ -357,7 +357,7 @@
   width: 100%;
 }
 
-.primary-button,
+.contract-primary-button,
 .secondary-button {
   width: 100%;
   padding: 0.667rem 0;
@@ -369,8 +369,8 @@
   text-align: center;
 }
 
-.primary-button {
-  background-color: #1a4cab;
+.contract-primary-button {
+  background-color: #1c2882;
   color: white;
 }
 

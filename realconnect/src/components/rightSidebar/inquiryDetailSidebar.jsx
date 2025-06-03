@@ -170,7 +170,7 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onEdit }) => {
       </div>
 
       <div className="action-buttons">
-        <button className="primary-button" onClick={onEdit}>
+        <button className="inquiry-primary-button" onClick={onEdit}>
           수정하기
         </button>
         <div className="button-group">

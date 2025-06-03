@@ -759,7 +759,10 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
             </div>
 
             <div className="action-buttons">
-              <button className="primary-button" onClick={handleEditMode}>
+              <button
+                className="contract-primary-button"
+                onClick={handleEditMode}
+              >
                 수정하기
               </button>
             </div>

@@ -92,7 +92,11 @@ const SharedInquiriesTable = ({ sharedInquiries, onSharedInquirySelect }) => {
               </td>
               <td>{inquiry.l2}</td>
               <td>{inquiry.l3}</td>
-              <td>{inquiry.apartmentName}</td>
+              <td>
+                <div className="apartment-name-text">
+                  {inquiry.apartmentName}
+                </div>
+              </td>
               <td>{inquiry.area} m²</td>
               <td>{formatPrice(inquiry.salePrice)}</td>
               <td>{formatPrice(inquiry.jeonsePrice)}</td>

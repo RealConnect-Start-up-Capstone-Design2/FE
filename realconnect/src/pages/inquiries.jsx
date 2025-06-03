@@ -65,7 +65,7 @@ const convertApiDataToInquiryTable = (apiData) => {
         : "-",
       monthPrice: item.monthPrice ? item.monthPrice.toLocaleString() : "-",
       memo: item.memo || "-",
-      favorite: item.favorite || false,
+      favorite: item.favorite === true,
       createdAt: formatDate(item.createdAt),
     };
   });
@@ -120,11 +120,13 @@ const Inquiries = () => {
       let processedData = convertApiDataToInquiryTable(res.data || []);
 
       if (activeView === "즐겨찾기") {
-        processedData = processedData.filter((inquiry) => inquiry.favorite);
+        const favoriteData = processedData.filter(
+          (inquiry) => inquiry.favorite
+        );
+        processedData = favoriteData;
       }
 
       setInquiries(processedData);
-      console.log(processedData);
     } catch (error) {
       console.error("문의 데이터 조회 실패:", error);
       setInquiries([]);
@@ -139,6 +141,7 @@ const Inquiries = () => {
 
   // inquiries가 업데이트될 때 selectedInquiry도 최신 정보로 업데이트
   useEffect(() => {
+    console.log(inquiries);
     if (selectedInquiry && inquiries.length > 0) {
       const updatedInquiry = inquiries.find(
         (inquiry) => inquiry.id === selectedInquiry.id
@@ -162,19 +165,71 @@ const Inquiries = () => {
   };
 
   const handleFavoriteToggle = async (inquiry) => {
-    const res = await axios.put(
-      `${import.meta.env.VITE_API_URL}/api/inquiries/${inquiry.id}`,
-      {
-        favorite: !inquiry.favorite,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        withCredentials: true,
-      }
-    );
-    console.log(res);
+    try {
+      // inquiry 객체를 원본 API 형태로 변환
+      const apiData = {
+        name: inquiry.name,
+        phone: inquiry.phone,
+        apartmentName: inquiry.apartmentName,
+        area: inquiry.area === "-" ? null : parseInt(inquiry.area),
+        inquiryType:
+          inquiry.inquiryType === "매매"
+            ? "BUY"
+            : inquiry.inquiryType === "전세"
+              ? "JEONSE"
+              : inquiry.inquiryType === "월세"
+                ? "MONTH_RENT"
+                : null,
+        status:
+          inquiry.status === "진행 중"
+            ? "IN_PROGRESS"
+            : inquiry.status === "완료"
+              ? "COMPLETED"
+              : inquiry.status === "취소"
+                ? "CANCEL"
+                : null,
+        salePrice:
+          inquiry.salePrice === "-"
+            ? null
+            : Math.round(
+                parseFloat(inquiry.salePrice.replace("억", "")) * 100000000
+              ),
+        deposit:
+          inquiry.deposit === "-"
+            ? null
+            : Math.round(
+                parseFloat(inquiry.deposit.replace("억", "")) * 100000000
+              ),
+        jeonsePrice:
+          inquiry.jeonsePrice === "-"
+            ? null
+            : Math.round(
+                parseFloat(inquiry.jeonsePrice.replace("억", "")) * 100000000
+              ),
+        monthPrice:
+          inquiry.monthPrice === "-"
+            ? null
+            : parseInt(inquiry.monthPrice.replace(/,/g, "")),
+        memo: inquiry.memo === "-" ? null : inquiry.memo,
+        favorite: !inquiry.favorite, // 즐겨찾기 상태 토글
+      };
+      console.log(apiData);
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/inquiries/${inquiry.id}`,
+        apiData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      console.log(res.data);
+
+      // API 호출 성공 후 데이터 새로고침
+      await fetchInquiries();
+    } catch (error) {
+      console.error("즐겨찾기 업데이트 실패:", error);
+    }
   };
 
   const handleInquirySelect = (inquiry) => {

@@ -294,6 +294,16 @@
   max-width: 15rem;
 }
 
+.page_section.with-sidebar .apartment-name-text {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 7ch;
+  max-width: 7ch;
+  text-overflow: ellipsis;
+  align-items: center;
+}
+
 /* 사이드바가 열렸을 때 문의 제목 텍스트 제한 */
 .page_section.with-sidebar .inquiry-title-text {
   display: inline-block;

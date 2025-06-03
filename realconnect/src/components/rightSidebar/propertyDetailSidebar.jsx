@@ -212,7 +212,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
 
         <div className="action-buttons">
           <button
-            className="primary-button"
+            className="property-primary-button"
             imageUrl={imageUrl}
             onClick={onEdit}
           >

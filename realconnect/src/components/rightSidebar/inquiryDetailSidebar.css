@@ -206,14 +206,14 @@
   margin-bottom: 1rem;
 }
 
-.primary-button {
+.inquiry-primary-button {
   width: 100%;
   padding: 0.8rem 0;
   background-color: #1c2882;
   color: #ffffff;
   border: none;
   border-radius: 0.5rem;
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 600;
   cursor: pointer;
   text-align: center;
@@ -231,7 +231,7 @@
   color: #ffffff;
   border: none;
   border-radius: 0.5rem;
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 600;
   cursor: pointer;
   text-align: center;
