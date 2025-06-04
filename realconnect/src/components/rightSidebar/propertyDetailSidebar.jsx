@@ -114,102 +114,107 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
           ×
         </button>
       </div>
-      <div className="property-image-placeholder">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={`${property.apartmentName} ${property.building} ${property.unit}`}
-            style={{ objectFit: "contain" }} // 이미지 표시 모드 적용
-          />
-        ) : (
-          <div className="image-loading">
-            <p>이미지 로딩 중...</p>
-          </div>
-        )}
-        <div className="floor-plan-placeholder"></div>
-        <div className="image-control-buttons">
-          <button className="control-button active">평면도</button>
-          <button className="control-button">전망</button>
-        </div>
-      </div>
-      {/* 특징, 거래 상태 */}
-      <div className="property-features">
-        <div className="property-tags">
-          {property.direction && (
-            <span className="property-tag">{property.direction}</span>
+
+      <div className="sidebar-content">
+        <div className="property-image-placeholder">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={`${property.apartmentName} ${property.building} ${property.unit}`}
+              style={{ objectFit: "contain" }} // 이미지 표시 모드 적용
+            />
+          ) : (
+            <div className="image-loading">
+              <p>이미지 로딩 중...</p>
+            </div>
           )}
-          {property.expansion && (
-            <span className="property-tag">{property.expansion}</span>
-          )}
-          {property.wardrobe && (
-            <span className="property-tag">{property.wardrobe}</span>
-          )}
-        </div>
-        <div className="property-status">
-          <p
-            className={`property-status-text ${property.status.replace(/\s+/g, "")}`}
-          >
-            {property.status}
-          </p>
-        </div>
-      </div>
-      <div className="property-info">
-        <div className="pricing-info">
-          <div className="price-item">
-            <p>매매 {formatPrice(property.salePrice)}</p>
+          <div className="floor-plan-placeholder"></div>
+          <div className="image-control-buttons">
+            <button className="control-button active">평면도</button>
+            <button className="control-button">전망</button>
           </div>
-          <div className="price-item">
-            <p>전세 {formatPrice(property.jeonsePrice)}</p>
+        </div>
+        {/* 특징, 거래 상태 */}
+        <div className="property-features">
+          <div className="property-tags">
+            {property.direction && (
+              <span className="property-tag">{property.direction}</span>
+            )}
+            {property.expansion && (
+              <span className="property-tag">{property.expansion}</span>
+            )}
+            {property.wardrobe && (
+              <span className="property-tag">{property.wardrobe}</span>
+            )}
           </div>
-          <div className="price-item">
-            <p>
-              보증금/월세 {property.deposit}/{property.monthPrice}
+          <div className="property-status">
+            <p
+              className={`property-status-text ${property.status.replace(/\s+/g, "")}`}
+            >
+              {property.status}
             </p>
           </div>
         </div>
-
-        <div className="contact-info">
-          <div className="info-row">
-            <div className="info-box">
-              <h4>소유주</h4>
-              <p>{property.ownerName}</p>
+        <div className="property-info">
+          <div className="pricing-info">
+            <div className="price-item">
+              <p>매매 {formatPrice(property.salePrice)}</p>
             </div>
-            <div className="info-box">
-              <h4>소유주 연락처</h4>
-              <p>{property.contact}</p>
+            <div className="price-item">
+              <p>전세 {formatPrice(property.jeonsePrice)}</p>
             </div>
-          </div>
-
-          <div className="info-row">
-            <div className="info-box">
-              <h4>입주인</h4>
-              <p>{property.tenant}</p>
-            </div>
-            <div className="info-box">
-              <h4>입주인 연락처</h4>
-              <p>{property.tenantContact}</p>
+            <div className="price-item">
+              <p>
+                보증금/월세 {property.deposit}/{property.monthPrice}
+              </p>
             </div>
           </div>
 
-          <div className="info-row">
-            <div className="info-box">
-              <h4>만기일</h4>
-              <p>{property.endDate}</p>
+          <div className="contact-info">
+            <div className="info-row">
+              <div className="info-box">
+                <h4>소유주</h4>
+                <p>{property.ownerName}</p>
+              </div>
+              <div className="info-box">
+                <h4>소유주 연락처</h4>
+                <p>{property.contact}</p>
+              </div>
             </div>
-            <div className="info-box">
-              <h4>등록일</h4>
-              <p>{property.startDate}</p>
+
+            <div className="info-row">
+              <div className="info-box">
+                <h4>입주인</h4>
+                <p>{property.tenant}</p>
+              </div>
+              <div className="info-box">
+                <h4>입주인 연락처</h4>
+                <p>{property.tenantContact}</p>
+              </div>
+            </div>
+
+            <div className="info-row">
+              <div className="info-box">
+                <h4>만기일</h4>
+                <p>{property.endDate}</p>
+              </div>
+              <div className="info-box">
+                <h4>등록일</h4>
+                <p>{property.startDate}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="note-section custom">
+            <p className="note-section-title">상담 내용</p>
+            <div className="note-content">
+              <p>{property.memo}</p>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="note-section custom">
-          <p className="note-section-title">상담 내용</p>
-          <div className="note-content">
-            <p>{property.memo}</p>
-          </div>
-        </div>
-
+      <div className="sidebar-footer">
         <div className="action-buttons">
           <button
             className="property-primary-button"
