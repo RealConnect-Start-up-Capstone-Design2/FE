@@ -25,7 +25,6 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    console.log(form);
     if (form.password !== form.passwordVerify) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
@@ -35,7 +34,7 @@ const Register = () => {
       return;
     }
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/register`, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/register`, {
         username: form.username,
         password: form.password,
         passwordVerify: form.passwordVerify,
