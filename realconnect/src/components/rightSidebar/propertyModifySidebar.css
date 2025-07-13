@@ -13,10 +13,30 @@
   box-shadow: -0.133rem 0 0.667rem rgba(0, 0, 0, 0.1);
   z-index: 100;
   overflow-y: auto;
-  padding: 3.4rem 2rem 1rem 2.2rem;
+  overflow-x: hidden;
+  padding: 0 2rem 1rem 2.2rem;
   border-left: 0.067rem solid #eee;
-  display: flex;
-  flex-direction: column;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+/* 스크롤바 스타일 개선 */
+.property-modify-sidebar::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+.property-modify-sidebar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 0.25rem;
+}
+
+.property-modify-sidebar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 0.25rem;
+}
+
+.property-modify-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 .modify-close-button {
@@ -34,6 +54,12 @@
   padding-bottom: 1rem;
   border-bottom: 0.067rem solid #eee;
   background-color: #f8f8f8;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin-top: -3.4rem;
+  padding-top: 3.4rem;
+  margin-bottom: 1rem;
 }
 
 .modify-sidebar-header-title {
@@ -45,8 +71,10 @@
   position: relative;
   width: 100%;
   height: 16.66rem;
+  min-height: 16.66rem;
+  max-height: 16.66rem;
   background-color: #f5f5f5;
-  margin-top: 1rem;
+  margin-top: 4rem;
   overflow: hidden;
 }
 
@@ -90,18 +118,31 @@
 }
 
 .modify-control-button {
-  padding: 0.3rem 0.5rem;
+  padding: 0.5rem 0.8rem;
   text-align: center;
-  background: none;
   border: none;
   cursor: pointer;
-  font-size: 0.66rem;
-  color: #fff;
-  background-color: #707482;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  background-color: #1b1b1b;
+  color: white;
+  border-radius: 0.25rem;
+}
+
+.modify-control-button:hover {
+  background-color: #2a2a2a;
 }
 
 .modify-control-button.active {
-  background-color: #1b1b1b;
+  background-color: #ffffff;
+  color: #1b1b1b;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.modify-control-button.active:hover {
+  background-color: #f0f0f0;
 }
 
 .modify-property-tags {
@@ -125,6 +166,7 @@
   display: flex;
   padding-top: 0.8rem;
   align-items: center;
+  margin-bottom: 1rem;
 }
 
 .modify-form-item:first-of-type {
@@ -214,7 +256,7 @@ textarea::placeholder {
 .modify-save-button {
   width: 100%;
   padding: 0.667rem 0;
-  margin-top: auto;
+  margin-top: 2rem;
   margin-bottom: 1.6667rem;
   border: none;
   border-radius: 0.533rem;
@@ -224,4 +266,55 @@ textarea::placeholder {
   text-align: center;
   background-color: #1b1b1b;
   color: white;
+}
+
+
+
+.modify-save-button:disabled {
+  background-color: #6c6c6c;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.modify-save-button:hover:not(:disabled) {
+  background-color: #2a2a2a;
+}
+
+/* 에러 메시지 스타일 */
+.error-message {
+  color: #e74c3c;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* 필수 필드 표시 */
+.required {
+  color: #e74c3c;
+  font-weight: 600;
+  margin-left: 0.2rem;
+}
+
+/* 에러 상태일 때 인풋 스타일 */
+.modify-info-box input.error,
+.modify-form input.error {
+  border-color: #e74c3c;
+  background-color: #fdf2f2;
+}
+
+/* 에러 상태일 때 인풋 포커스 스타일 */
+.modify-info-box input.error:focus,
+.modify-form input.error:focus {
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
+}
+
+/* 에러가 있는 필드의 여백 조정 */
+.modify-info-box:has(.error-message) {
+  margin-bottom: 1.5rem;
+}
+
+.modify-form-item:has(.error-message) {
+  margin-bottom: 1.5rem;
 }

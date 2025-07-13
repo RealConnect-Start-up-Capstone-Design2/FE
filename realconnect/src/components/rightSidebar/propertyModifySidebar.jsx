@@ -9,7 +9,9 @@ import axios from "axios";
 import useAuthStore from "../../store/authStore";
 
 const PropertyModifySidebar = ({ property, onClose, onSave }) => {
-  const [imageUrl, setImageUrl] = useState(null);
+  const [floorPlanImage, setFloorPlanImage] = useState(null);
+  const [viewImage, setViewImage] = useState(null);
+  const [activeTab, setActiveTab] = useState('floor');
   const accessToken = useAuthStore((state) => state.accessToken);
   const [formData, setFormData] = useState({
     expansion: "",
@@ -21,25 +23,112 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
     monthPrice: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   // property 객체 존재 여부 확인
   const isNewProperty = property.status;
 
+  // 유효성 검사 함수
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // 필수 필드 검사
+    if (!formData.startDate) {
+      newErrors.startDate = "등록일을 입력해주세요.";
+    }
+    
+    if (!formData.endDate) {
+      newErrors.endDate = "만기일을 입력해주세요.";
+    }
+    
+    // 날짜 유효성 검사
+    if (formData.startDate && formData.endDate) {
+      const startDate = new Date(formData.startDate);
+      const endDate = new Date(formData.endDate);
+      
+      if (startDate >= endDate) {
+        newErrors.endDate = "만기일은 등록일보다 늦은 날짜여야 합니다.";
+      }
+    }
+    
+    // 가격 중 하나는 반드시 입력해야 함
+    const hasSalePrice = formData.salePrice && formData.salePrice.replace(/,/g, "") !== "";
+    const hasJeonsePrice = formData.jeonsePrice && formData.jeonsePrice.replace(/,/g, "") !== "";
+    const hasMonthlyPrice = (formData.deposit && formData.deposit !== "") || (formData.monthPrice && formData.monthPrice !== "");
+    
+    if (!hasSalePrice && !hasJeonsePrice && !hasMonthlyPrice) {
+      newErrors.price = "매매, 전세, 월세 중 하나는 반드시 입력해주세요.";
+    }
+    
+    // 소유주 정보 검사
+    if (!formData.ownerName) {
+      newErrors.ownerName = "소유주 이름을 입력해주세요.";
+    }
+    
+    if (!formData.contact) {
+      newErrors.contact = "연락처를 입력해주세요(숫자만 입력)";
+    } else if (!/^\d{3}-\d{4}-\d{4}$/.test(formData.contact)) {
+      newErrors.contact = "올바른 연락처 형식으로 입력해주세요.";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // 에러 메시지 클리어 함수
+  const clearFieldError = (fieldName) => {
+    if (errors[fieldName]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+    }
+  };
+
   useEffect(() => {
     if (!property) return;
+
+    // "-" 값을 빈 문자열로 변환하는 함수
+    const convertDashToEmpty = (value) => {
+      return value === "-" ? "" : value || "";
+    };
+
+    // 숫자에 콤마 포맷팅을 적용하는 함수
+    const formatNumberWithCommas = (value) => {
+      if (!value || value === "-") return "";
+      const numValue = value.toString().replace(/[^0-9]/g, "");
+      return numValue ? numValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "";
+    };
 
     setFormData({
       expansion: property.expansion || "확장",
       wardrobe: property.wardrobe || "붙박이장",
       direction: property.direction || "남향",
       ...property,
+      // 가격 관련 필드들의 "-" 값을 빈 문자열로 처리하고 콤마 포맷팅 적용
+      salePrice: formatNumberWithCommas(property.salePrice),
+      jeonsePrice: formatNumberWithCommas(property.jeonsePrice),
+      deposit: formatNumberWithCommas(property.deposit),
+      monthPrice: formatNumberWithCommas(property.monthPrice),
+      // 기타 필드들의 "-" 값을 빈 문자열로 처리
+      ownerName: convertDashToEmpty(property.ownerName),
+      contact: convertDashToEmpty(property.contact),
+      tenant: convertDashToEmpty(property.tenant),
+      tenantContact: convertDashToEmpty(property.tenantContact),
+      note1: convertDashToEmpty(property.note1),
+      startDate: convertDashToEmpty(property.startDate),
+      endDate: convertDashToEmpty(property.endDate),
     });
 
-    // 이미지가 있으면 이미지 URL 생성
+  }, [property, accessToken]);
+
+  // 이미지 로딩을 위한 별도 useEffect
+  useEffect(() => {
+    // 평면도 이미지 로드
     if (property && property.img) {
-      const loadImage = async () => {
+      const loadFloorPlanImage = async () => {
         try {
-          // 이미지를 Blob으로 가져오기
           const response = await axios.get(
             `${import.meta.env.VITE_API_URL}${property.img}`,
             {
@@ -49,48 +138,60 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
               responseType: "blob",
             }
           );
-
-          // Blob URL 생성
           const url = URL.createObjectURL(response.data);
-          setImageUrl(url);
+          setFloorPlanImage(url);
         } catch (error) {
-          console.error("이미지 로드 실패:", error);
-          setImageUrl(null);
+          console.error("평면도 이미지 로드 실패:", error);
+          setFloorPlanImage(null);
         }
       };
 
-      loadImage();
-
-      // 컴포넌트 언마운트 시 Blob URL 해제
-      return () => {
-        if (imageUrl) {
-          URL.revokeObjectURL(imageUrl);
-        }
-      };
+      loadFloorPlanImage();
     }
+
+    // 전망 이미지 로드 (임시로 같은 이미지 사용, 추후 API에서 별도 필드로 받아올 수 있음)
+    if (property && property.viewImg) {
+      const loadViewImage = async () => {
+        try {
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_URL}${property.viewImg}`,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+              responseType: "blob",
+            }
+          );
+          const url = URL.createObjectURL(response.data);
+          setViewImage(url);
+        } catch (error) {
+          console.error("전망 이미지 로드 실패:", error);
+          setViewImage(null);
+        }
+      };
+
+      loadViewImage();
+    }
+
+    // 컴포넌트 언마운트 시 Blob URL 해제
+    return () => {
+      if (floorPlanImage) {
+        URL.revokeObjectURL(floorPlanImage);
+      }
+      if (viewImage) {
+        URL.revokeObjectURL(viewImage);
+      }
+    };
   }, [property, accessToken]);
 
-  useEffect(() => {
-    console.log(formData.id);
-    // 숫자 외의 문자 제거 후 세 자리마다 쉼표 추가
-    const formatWithCommas = (value) => {
-      // value가 문자열일 때만 처리
-      if (typeof value === "string" || typeof value === "number") {
-        return value
-          .toString() // 숫자라면 문자열로 변환
-          .replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 세 자리마다 쉼표 추가
-      }
-      return value;
-    };
-    setFormData((prev) => ({
-      ...prev,
-      salePrice: formatWithCommas(prev.salePrice),
-      jeonsePrice: formatWithCommas(prev.jeonsePrice),
-    }));
-  }, [formData.salePrice, formData.jeonsePrice]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // 필드 변경 시 해당 필드의 에러 메시지 클리어
+    clearFieldError(name);
+    clearFieldError('price'); // 가격 관련 필드 변경 시 가격 에러도 클리어
 
     // 필드 유형에 따라 다른 처리
     if (
@@ -108,8 +209,26 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
     }
     // 전화번호 필드 처리
     else if (name === "contact" || name === "tenantContact") {
+      // 빈 값이면 그대로 저장
+      if (value === "") {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: "",
+        }));
+        return;
+      }
+      
       // 숫자만 추출
       const numbersOnly = value.replace(/[^0-9]/g, "");
+      
+      // 숫자가 없으면 빈 문자열로 저장
+      if (numbersOnly === "") {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: "",
+        }));
+        return;
+      }
 
       // 전화번호 포맷팅 (xxx-xxxx-xxxx)
       let formattedPhone = "";
@@ -126,13 +245,32 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
         [name]: formattedPhone,
       }));
     }
-    // 가격 필드 처리 (기존 로직)
-    else {
-      // 숫자 외의 문자 제거 후 세 자리마다 쉼표 추가
-      let formattedValue = value.replace(/[^0-9]/g, ""); // 숫자 외의 문자 제거
-      formattedValue = formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 세 자리마다 쉼표 추가
-
-      // 업데이트된 값만 저장
+    // 가격 필드 처리 (매매, 전세)
+    else if (name === "salePrice" || name === "jeonsePrice") {
+      // 빈 값이면 그대로 저장
+      if (value === "") {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: "",
+        }));
+        return;
+      }
+      
+      // 숫자 외의 문자 제거
+      let numbersOnly = value.replace(/[^0-9]/g, "");
+      
+      // 숫자가 없으면 빈 문자열로 저장
+      if (numbersOnly === "") {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: "",
+        }));
+        return;
+      }
+      
+      // 세 자리마다 쉼표 추가
+      let formattedValue = numbersOnly.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      
       setFormData((prev) => ({
         ...prev,
         [name]: formattedValue,
@@ -141,6 +279,11 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
   };
 
   const handleSave = async () => {
+    // 유효성 검사
+    if (!validateForm()) {
+      return;
+    }
+
     // API 요청 시작
     setIsLoading(true);
 
@@ -222,11 +365,36 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
       }
     } catch (error) {
       console.error("매물 정보 저장 실패:", error);
-      alert(
-        isNewProperty
-          ? "매물 정보 추가에 실패했습니다."
-          : "매물 정보 수정에 실패했습니다."
-      );
+      
+      // 서버 에러 응답에 따른 구체적인 에러 메시지
+      let errorMessage = "";
+      if (error.response) {
+        switch (error.response.status) {
+          case 400:
+            errorMessage = "입력한 정보에 오류가 있습니다. 다시 확인해주세요.";
+            break;
+          case 401:
+            errorMessage = "로그인이 필요합니다. 다시 로그인해주세요.";
+            break;
+          case 403:
+            errorMessage = "권한이 없습니다.";
+            break;
+          case 404:
+            errorMessage = "해당 매물을 찾을 수 없습니다.";
+            break;
+          case 500:
+            errorMessage = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+            break;
+          default:
+            errorMessage = isNewProperty === "미등록"
+              ? "매물 정보 추가에 실패했습니다."
+              : "매물 정보 수정에 실패했습니다.";
+        }
+      } else {
+        errorMessage = "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.";
+      }
+      
+      alert(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -245,27 +413,47 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
 
       <div className="modify-property-image-placeholder">
         <div className="modify-floor-plan-placeholder">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={`${property.apartmentName} ${property.building} ${property.unit}`}
-              style={{
-                objectFit: "contain",
-                width: "100%",
-                height: "100%",
-                maxWidth: "100%",
-                maxHeight: "100%",
-              }}
-            />
-          ) : (
-            <div className="image-loading">
-              <p>이미지 로딩 중...</p>
-            </div>
-          )}
+          {(() => {
+            // 전망 이미지가 없으면 평면도 이미지로 대체
+            const currentImage = activeTab === 'floor' ? floorPlanImage : (viewImage || floorPlanImage);
+            const altText = activeTab === 'floor' ? '평면도' : '전망';
+            
+            if (currentImage) {
+              return (
+                <img
+                  src={currentImage}
+                  alt={`${property.apartmentName} ${property.building} ${property.unit} ${altText}`}
+                  style={{
+                    objectFit: "contain",
+                    width: "100%",
+                    height: "100%",
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                  }}
+                />
+              );
+            } else {
+              return (
+                <div className="image-loading">
+                  <p>{altText} 이미지 {activeTab === 'view' && !viewImage ? '(평면도로 대체)' : ''} 로딩 중...</p>
+                </div>
+              );
+            }
+          })()}
         </div>
         <div className="modify-image-control-buttons">
-          <button className="modify-control-button active">평면도</button>
-          <button className="modify-control-button">전망</button>
+          <button 
+            className={`modify-control-button ${activeTab === 'floor' ? 'active' : ''}`}
+            onClick={() => setActiveTab('floor')}
+          >
+            평면도
+          </button>
+          <button 
+            className={`modify-control-button ${activeTab === 'view' ? 'active' : ''}`}
+            onClick={() => setActiveTab('view')}
+          >
+            전망
+          </button>
         </div>
       </div>
 
@@ -307,6 +495,8 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
             name="salePrice"
             value={formData.salePrice}
             onChange={handleChange}
+            placeholder="매매 금액을 입력해주세요"
+            className={errors.price ? "error" : ""}
           />
         </div>
 
@@ -316,6 +506,8 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
             name="jeonsePrice"
             value={formData.jeonsePrice}
             onChange={handleChange}
+            placeholder="전세 보증금을 입력해주세요"
+            className={errors.price ? "error" : ""}
           />
         </div>
 
@@ -323,35 +515,74 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
           <label>보증금/월세</label>
           <input
             name="deposit"
-            value={`${formData.deposit}/${formData.monthPrice}`}
+            value={`${formData.deposit || ""}/${formData.monthPrice || ""}`}
             onChange={(e) => {
-              const [rent, month] = e.target.value.split("/");
+              const value = e.target.value;
+              
+              // 빈 값이면 둘 다 빈 문자열로 설정
+              if (value === "") {
+                setFormData((prev) => ({
+                  ...prev,
+                  deposit: "",
+                  monthPrice: "",
+                }));
+                clearFieldError('price');
+                return;
+              }
+              
+              const [rent, month] = value.split("/");
+              
+              // 숫자만 추출하고 포맷팅
+              const rentNumbers = rent ? rent.replace(/[^0-9]/g, "") : "";
+              const monthNumbers = month ? month.replace(/[^0-9]/g, "") : "";
+              
+              // 숫자가 있으면 쉼표 추가
+              const formattedRent = rentNumbers ? rentNumbers.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "";
+              const formattedMonth = monthNumbers ? monthNumbers.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "";
+              
               setFormData((prev) => ({
                 ...prev,
-                deposit: rent || "",
-                monthPrice: month || "",
+                deposit: formattedRent,
+                monthPrice: formattedMonth,
               }));
+              clearFieldError('price');
             }}
+            placeholder="보증금/월세를 입력해주세요"
+            className={errors.price ? "error" : ""}
           />
         </div>
+        {errors.price && (
+          <div className="error-message">{errors.price}</div>
+        )}
       </div>
+      
       <div className="modify-info-row">
         <div className="modify-info-row-box">
           <div className="modify-info-box">
-            <label>소유주</label>
+            <label>소유주 <span className="required">*</span></label>
             <input
               name="ownerName"
               value={formData.ownerName}
               onChange={handleChange}
+              placeholder="소유주 이름을 입력해주세요"
+              className={errors.ownerName ? "error" : ""}
             />
+            {errors.ownerName && (
+              <div className="error-message">{errors.ownerName}</div>
+            )}
           </div>
           <div className="modify-info-box">
-            <label>소유주 연락처</label>
+            <label>소유주 연락처 <span className="required">*</span></label>
             <input
               name="contact"
               value={formData.contact}
               onChange={handleChange}
+              placeholder="소유주 연락처를 입력해주세요"
+              className={errors.contact ? "error" : ""}
             />
+            {errors.contact && (
+              <div className="error-message">{errors.contact}</div>
+            )}
           </div>
         </div>
 
@@ -362,6 +593,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
               name="tenant"
               value={formData.tenant}
               onChange={handleChange}
+              placeholder="임차인 이름을 입력해주세요"
             />
           </div>
           <div className="modify-info-box">
@@ -370,30 +602,39 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
               name="tenantContact"
               value={formData.tenantContact}
               onChange={handleChange}
+              placeholder="임차인 연락처를 입력해주세요"
             />
           </div>
         </div>
 
         <div className="modify-info-row-box">
           <div className="modify-info-box">
-            <label>만기일</label>
+            <label>만기일 <span className="required">*</span></label>
             <input
               type="date"
               name="endDate"
               placeholder="yyyy-mm-dd"
               value={formData.endDate}
               onChange={handleChange}
+              className={errors.endDate ? "error" : ""}
             />
+            {errors.endDate && (
+              <div className="error-message">{errors.endDate}</div>
+            )}
           </div>
           <div className="modify-info-box">
-            <label>등록일</label>
+            <label>등록일 <span className="required">*</span></label>
             <input
               type="date"
               name="startDate"
               placeholder="yyyy-mm-dd"
               value={formData.startDate}
               onChange={handleChange}
+              className={errors.startDate ? "error" : ""}
             />
+            {errors.startDate && (
+              <div className="error-message">{errors.startDate}</div>
+            )}
           </div>
         </div>
       </div>
@@ -404,7 +645,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
           name="note1"
           value={formData.note1}
           onChange={handleChange}
-          placeholder={property.memo}
+          placeholder="상담 내용을 입력해주세요"
         />
       </div>
 
@@ -415,7 +656,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
       >
         {isLoading
           ? "저장 중..."
-          : isNewProperty
+          : isNewProperty === "미등록"
             ? "정보 추가하기"
             : "수정하기"}
       </button>
