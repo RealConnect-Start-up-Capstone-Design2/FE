@@ -108,43 +108,6 @@
   font-size: 1rem;
 }
 
-.modify-image-control-buttons {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  display: flex;
-  justify-content: flex-end;
-  z-index: 100;
-}
-
-.modify-control-button {
-  padding: 0.5rem 0.8rem;
-  text-align: center;
-  border: none;
-  cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 500;
-  transition: all 0.2s ease-in-out;
-  background-color: #1b1b1b;
-  color: white;
-  border-radius: 0.25rem;
-}
-
-.modify-control-button:hover {
-  background-color: #2a2a2a;
-}
-
-.modify-control-button.active {
-  background-color: #ffffff;
-  color: #1b1b1b;
-  font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.modify-control-button.active:hover {
-  background-color: #f0f0f0;
-}
-
 .modify-property-tags {
   display: flex;
   flex-wrap: nowrap;

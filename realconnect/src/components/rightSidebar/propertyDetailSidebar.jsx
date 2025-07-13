@@ -5,7 +5,9 @@ import axios from "axios";
 import CreateContractModal from "../../pages/modal/createContractModal";
 
 const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
-  const [imageUrl, setImageUrl] = useState(null);
+  const [floorPlanImage, setFloorPlanImage] = useState(null);
+  const [viewImage, setViewImage] = useState(null);
+  const [activeTab, setActiveTab] = useState('floor');
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isSubmittingContract, setIsSubmittingContract] = useState(false);
@@ -46,11 +48,11 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
 
   useEffect(() => {
     console.log(property);
-    // 이미지가 있으면 이미지 URL 생성
+    
+    // 평면도 이미지 로드
     if (property && property.img) {
-      const loadImage = async () => {
+      const loadFloorPlanImage = async () => {
         try {
-          // 이미지를 Blob으로 가져오기
           const response = await axios.get(
             `${import.meta.env.VITE_API_URL}${property.img}`,
             {
@@ -60,25 +62,50 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
               responseType: "blob",
             }
           );
-
-          // Blob URL 생성
           const url = URL.createObjectURL(response.data);
-          setImageUrl(url);
+          setFloorPlanImage(url);
         } catch (error) {
-          console.error("이미지 로드 실패:", error);
-          setImageUrl(null);
+          console.error("평면도 이미지 로드 실패:", error);
+          setFloorPlanImage(null);
         }
       };
 
-      loadImage();
-
-      // 컴포넌트 언마운트 시 Blob URL 해제
-      return () => {
-        if (imageUrl) {
-          URL.revokeObjectURL(imageUrl);
-        }
-      };
+      loadFloorPlanImage();
     }
+
+    // 전망 이미지 로드 (임시로 같은 이미지 사용, 추후 API에서 별도 필드로 받아올 수 있음)
+    if (property && property.viewImg) {
+      const loadViewImage = async () => {
+        try {
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_URL}${property.viewImg}`,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+              responseType: "blob",
+            }
+          );
+          const url = URL.createObjectURL(response.data);
+          setViewImage(url);
+        } catch (error) {
+          console.error("전망 이미지 로드 실패:", error);
+          setViewImage(null);
+        }
+      };
+
+      loadViewImage();
+    }
+
+    // 컴포넌트 언마운트 시 Blob URL 해제
+    return () => {
+      if (floorPlanImage) {
+        URL.revokeObjectURL(floorPlanImage);
+      }
+      if (viewImage) {
+        URL.revokeObjectURL(viewImage);
+      }
+    };
   }, [property, accessToken]);
 
   const handleContractButtonClick = () => {
@@ -117,21 +144,41 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
 
       <div className="sidebar-content">
         <div className="property-image-placeholder">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={`${property.apartmentName} ${property.building} ${property.unit}`}
-              style={{ objectFit: "contain" }} // 이미지 표시 모드 적용
-            />
-          ) : (
-            <div className="image-loading">
-              <p>이미지 로딩 중...</p>
-            </div>
-          )}
+          {(() => {
+            // 전망 이미지가 없으면 평면도 이미지로 대체
+            const currentImage = activeTab === 'floor' ? floorPlanImage : (viewImage || floorPlanImage);
+            const altText = activeTab === 'floor' ? '평면도' : '전망';
+            
+            if (currentImage) {
+              return (
+                <img
+                  src={currentImage}
+                  alt={`${property.apartmentName} ${property.building} ${property.unit} ${altText}`}
+                  style={{ objectFit: "contain" }}
+                />
+              );
+            } else {
+              return (
+                <div className="image-loading">
+                  <p>{altText} 이미지 {activeTab === 'view' && !viewImage ? '(평면도로 대체)' : ''} 로딩 중...</p>
+                </div>
+              );
+            }
+          })()}
           <div className="floor-plan-placeholder"></div>
           <div className="image-control-buttons">
-            <button className="control-button active">평면도</button>
-            <button className="control-button">전망</button>
+            <button 
+              className={`control-button ${activeTab === 'floor' ? 'active' : ''}`}
+              onClick={() => setActiveTab('floor')}
+            >
+              평면도
+            </button>
+            <button 
+              className={`control-button ${activeTab === 'view' ? 'active' : ''}`}
+              onClick={() => setActiveTab('view')}
+            >
+              전망
+            </button>
           </div>
         </div>
         {/* 특징, 거래 상태 */}
@@ -218,7 +265,6 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
         <div className="action-buttons">
           <button
             className="property-primary-button"
-            imageUrl={imageUrl}
             onClick={onEdit}
           >
             수정하기

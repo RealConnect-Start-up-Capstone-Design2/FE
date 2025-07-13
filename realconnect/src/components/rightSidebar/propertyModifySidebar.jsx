@@ -9,9 +9,7 @@ import axios from "axios";
 import useAuthStore from "../../store/authStore";
 
 const PropertyModifySidebar = ({ property, onClose, onSave }) => {
-  const [floorPlanImage, setFloorPlanImage] = useState(null);
-  const [viewImage, setViewImage] = useState(null);
-  const [activeTab, setActiveTab] = useState('floor');
+  const [imageUrl, setImageUrl] = useState(null);
   const accessToken = useAuthStore((state) => state.accessToken);
   const [formData, setFormData] = useState({
     expansion: "",
@@ -120,14 +118,12 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
       startDate: convertDashToEmpty(property.startDate),
       endDate: convertDashToEmpty(property.endDate),
     });
-
   }, [property, accessToken]);
 
-  // 이미지 로딩을 위한 별도 useEffect
+  // 이미지 로딩 useEffect
   useEffect(() => {
-    // 평면도 이미지 로드
     if (property && property.img) {
-      const loadFloorPlanImage = async () => {
+      const loadImage = async () => {
         try {
           const response = await axios.get(
             `${import.meta.env.VITE_API_URL}${property.img}`,
@@ -139,52 +135,23 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
             }
           );
           const url = URL.createObjectURL(response.data);
-          setFloorPlanImage(url);
+          setImageUrl(url);
         } catch (error) {
-          console.error("평면도 이미지 로드 실패:", error);
-          setFloorPlanImage(null);
+          console.error("이미지 로드 실패:", error);
+          setImageUrl(null);
         }
       };
 
-      loadFloorPlanImage();
-    }
+      loadImage();
 
-    // 전망 이미지 로드 (임시로 같은 이미지 사용, 추후 API에서 별도 필드로 받아올 수 있음)
-    if (property && property.viewImg) {
-      const loadViewImage = async () => {
-        try {
-          const response = await axios.get(
-            `${import.meta.env.VITE_API_URL}${property.viewImg}`,
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-              responseType: "blob",
-            }
-          );
-          const url = URL.createObjectURL(response.data);
-          setViewImage(url);
-        } catch (error) {
-          console.error("전망 이미지 로드 실패:", error);
-          setViewImage(null);
+      // 컴포넌트 언마운트 시 Blob URL 해제
+      return () => {
+        if (imageUrl) {
+          URL.revokeObjectURL(imageUrl);
         }
       };
-
-      loadViewImage();
     }
-
-    // 컴포넌트 언마운트 시 Blob URL 해제
-    return () => {
-      if (floorPlanImage) {
-        URL.revokeObjectURL(floorPlanImage);
-      }
-      if (viewImage) {
-        URL.revokeObjectURL(viewImage);
-      }
-    };
   }, [property, accessToken]);
-
-
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -413,47 +380,23 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
 
       <div className="modify-property-image-placeholder">
         <div className="modify-floor-plan-placeholder">
-          {(() => {
-            // 전망 이미지가 없으면 평면도 이미지로 대체
-            const currentImage = activeTab === 'floor' ? floorPlanImage : (viewImage || floorPlanImage);
-            const altText = activeTab === 'floor' ? '평면도' : '전망';
-            
-            if (currentImage) {
-              return (
-                <img
-                  src={currentImage}
-                  alt={`${property.apartmentName} ${property.building} ${property.unit} ${altText}`}
-                  style={{
-                    objectFit: "contain",
-                    width: "100%",
-                    height: "100%",
-                    maxWidth: "100%",
-                    maxHeight: "100%",
-                  }}
-                />
-              );
-            } else {
-              return (
-                <div className="image-loading">
-                  <p>{altText} 이미지 {activeTab === 'view' && !viewImage ? '(평면도로 대체)' : ''} 로딩 중...</p>
-                </div>
-              );
-            }
-          })()}
-        </div>
-        <div className="modify-image-control-buttons">
-          <button 
-            className={`modify-control-button ${activeTab === 'floor' ? 'active' : ''}`}
-            onClick={() => setActiveTab('floor')}
-          >
-            평면도
-          </button>
-          <button 
-            className={`modify-control-button ${activeTab === 'view' ? 'active' : ''}`}
-            onClick={() => setActiveTab('view')}
-          >
-            전망
-          </button>
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={`${property.apartmentName} ${property.building} ${property.unit} 평면도`}
+              style={{
+                objectFit: "contain",
+                width: "100%",
+                height: "100%",
+                maxWidth: "100%",
+                maxHeight: "100%",
+              }}
+            />
+          ) : (
+            <div className="image-loading">
+              <p>평면도 이미지 로딩 중...</p>
+            </div>
+          )}
         </div>
       </div>
 
