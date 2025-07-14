@@ -371,393 +371,400 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
 
       {isEditMode ? (
         <>
-          {/* 새로운 수정 모드 디자인 */}
-
-          {/* 관련 매물 정보 */}
-          <div className="edit-property-summary">
-            <div className="edit-related-property-info">
-              <div className="edit-property-link-container">
-                <img src={HomeIcon} alt="매물" />
-              </div>
-              <p className="edit-property-details">
-                {contract.apartment} {contract.dong}동-{contract.ho}호 (
-                {contract.area}㎡)
-              </p>
-            </div>
-            <button className="edit-change-property-button">변경하기</button>
-          </div>
-
-          {/* 편집 섹션 */}
-          <div className="edit-section-new">
-            <div className="edit-item-container">
-              <label className="edit-item-label">거래 가격</label>
-              <input
-                type="text"
-                name="price"
-                className="edit-item-input"
-                value={formData.price || ""}
-                onChange={handleChange}
-                placeholder="거래 가격을 입력하세요"
-                autoComplete="off"
-                readOnly={false}
-              />
-            </div>
-
-            <div className="edit-item-container">
-              <label className="edit-item-label">거래 유형</label>
-              <div className="edit-dropdown-container" ref={transactionTypeRef}>
-                <div
-                  className="edit-dropdown"
-                  onClick={() =>
-                    setIsTransactionTypeOpen(!isTransactionTypeOpen)
-                  }
-                >
-                  <span className="edit-dropdown-selected">
-                    {formData.transactionType || "선택하세요"}
-                  </span>
-                  <img
-                    src={
-                      isTransactionTypeOpen
-                        ? transactionTypeArrowUp
-                        : transactionTypeArrowDown
-                    }
-                    alt="dropdown arrow"
-                    className="edit-dropdown-arrow"
-                  />
+          {/* 편집 모드 - 스크롤 가능한 콘텐츠 영역 */}
+          <div className="sidebar-content">
+            {/* 관련 매물 정보 */}
+            <div className="edit-property-summary">
+              <div className="edit-related-property-info">
+                <div className="edit-property-link-container">
+                  <img src={HomeIcon} alt="매물" />
                 </div>
-
-                {isTransactionTypeOpen && (
-                  <div className="edit-dropdown-menu transaction-type-menu">
-                    {transactionTypeOptions.map((option) => (
-                      <div
-                        key={option}
-                        className="edit-dropdown-option"
-                        onClick={() => handleTransactionTypeSelect(option)}
-                      >
-                        <span>{option}</span>
-                        {formData.transactionType === option && (
-                          <img
-                            src={dropboxCheck}
-                            alt="selected"
-                            className="edit-dropdown-check"
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <p className="edit-property-details">
+                  {contract.apartment} {contract.dong}동-{contract.ho}호 (
+                  {contract.area}㎡)
+                </p>
               </div>
+              <button className="edit-change-property-button">변경하기</button>
             </div>
 
-            <div className="edit-item-container">
-              <label className="edit-item-label">거래 상태</label>
-              <div className="edit-dropdown-container" ref={statusRef}>
-                <div
-                  className="edit-dropdown"
-                  onClick={() => setIsStatusOpen(!isStatusOpen)}
-                >
-                  <span className="edit-dropdown-selected">
-                    {formData.status || "선택하세요"}
-                  </span>
-                  <img
-                    src={
-                      isStatusOpen
-                        ? transactionTypeArrowUp
-                        : transactionTypeArrowDown
+            {/* 편집 섹션 */}
+            <div className="edit-section-new">
+              <div className="edit-item-container">
+                <label className="edit-item-label">거래 가격</label>
+                <input
+                  type="text"
+                  name="price"
+                  className="edit-item-input"
+                  value={formData.price || ""}
+                  onChange={handleChange}
+                  placeholder="거래 가격을 입력하세요"
+                  autoComplete="off"
+                  readOnly={false}
+                />
+              </div>
+
+              <div className="edit-item-container">
+                <label className="edit-item-label">거래 유형</label>
+                <div className="edit-dropdown-container" ref={transactionTypeRef}>
+                  <div
+                    className="edit-dropdown"
+                    onClick={() =>
+                      setIsTransactionTypeOpen(!isTransactionTypeOpen)
                     }
-                    alt="dropdown arrow"
-                    className="edit-dropdown-arrow"
-                  />
-                </div>
-
-                {isStatusOpen && (
-                  <div className="edit-dropdown-menu status-menu">
-                    {contractStatusOptions.map((option) => (
-                      <div
-                        key={option}
-                        className="edit-dropdown-option"
-                        data-status={option}
-                        onClick={() => handleStatusSelect(option)}
-                      >
-                        <span>{option}</span>
-                        {formData.status === option && (
-                          <img
-                            src={dropboxCheck}
-                            alt="selected"
-                            className="edit-dropdown-check"
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* 계약 정보 */}
-          <div className="edit-contract-info">
-            <div className="edit-info-row">
-              <div className="edit-info-box">
-                <h4 className="edit-info-title"> 소유주(매도인)</h4>
-                <input
-                  type="text"
-                  name="owner"
-                  className="edit-info-input"
-                  value={formData.owner}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="edit-info-box">
-                <h4 className="edit-info-title"> 소유주 연락처</h4>
-                <input
-                  type="text"
-                  name="ownerContact"
-                  className="edit-info-input"
-                  value={formData.ownerContact}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="edit-info-row">
-              <div className="edit-info-box">
-                <h4 className="edit-info-title"> 임차인(매수인)</h4>
-                <input
-                  type="text"
-                  name="tenant"
-                  className="edit-info-input"
-                  value={formData.tenant}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="edit-info-box">
-                <h4 className="edit-info-title"> 임차인 연락처</h4>
-                <input
-                  type="text"
-                  name="tenantContact"
-                  className="edit-info-input"
-                  value={formData.tenantContact}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="edit-info-row">
-              <div className="edit-info-box">
-                <h4 className="edit-info-title"> 계약 일시</h4>
-                <input
-                  type="date"
-                  name="contractDate"
-                  className="edit-info-input"
-                  value={formData.contractDate}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="edit-info-box">
-                <h4 className="edit-info-title"> 만기일</h4>
-                <input
-                  type="date"
-                  name="expiryDate"
-                  className="edit-info-input"
-                  value={formData.expiryDate}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 계약서 파일 섹션 */}
-          <div className="edit-contract-file-section">
-            <h3 className="edit-file-title">계약서</h3>
-
-            <div className="edit-contract-file-info">
-              {formData.fileName ? (
-                <>
-                  <div className="file-icon">
-                    <img src={FileIcon} alt="계약서" />
-                  </div>
-                  <div className="file-details">
-                    <p className="file-name">{formData.fileName}</p>
-                    <p className="file-meta">
-                      {formData.fileSize} ·{" "}
-                      {new Date().toLocaleDateString("ko-KR")}
-                    </p>
-                  </div>
-                  <button className="edit-download-button">
-                    <img src={DownloadIcon} alt="다운로드" />
-                  </button>
-                  <button
-                    className="edit-delete-file-button"
-                    onClick={handleRemoveFile}
                   >
-                    <img src={XIcon} alt="삭제" />
-                  </button>
-                </>
-              ) : (
-                <div className="edit-no-file-message">
-                  등록된 계약서가 없습니다.
+                    <span className="edit-dropdown-selected">
+                      {formData.transactionType || "선택하세요"}
+                    </span>
+                    <img
+                      src={
+                        isTransactionTypeOpen
+                          ? transactionTypeArrowUp
+                          : transactionTypeArrowDown
+                      }
+                      alt="dropdown arrow"
+                      className="edit-dropdown-arrow"
+                    />
+                  </div>
+
+                  {isTransactionTypeOpen && (
+                    <div className="edit-dropdown-menu transaction-type-menu">
+                      {transactionTypeOptions.map((option) => (
+                        <div
+                          key={option}
+                          className="edit-dropdown-option"
+                          onClick={() => handleTransactionTypeSelect(option)}
+                        >
+                          <span>{option}</span>
+                          {formData.transactionType === option && (
+                            <img
+                              src={dropboxCheck}
+                              alt="selected"
+                              className="edit-dropdown-check"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+
+              <div className="edit-item-container">
+                <label className="edit-item-label">거래 상태</label>
+                <div className="edit-dropdown-container" ref={statusRef}>
+                  <div
+                    className="edit-dropdown"
+                    onClick={() => setIsStatusOpen(!isStatusOpen)}
+                  >
+                    <span className="edit-dropdown-selected">
+                      {formData.status || "선택하세요"}
+                    </span>
+                    <img
+                      src={
+                        isStatusOpen
+                          ? transactionTypeArrowUp
+                          : transactionTypeArrowDown
+                      }
+                      alt="dropdown arrow"
+                      className="edit-dropdown-arrow"
+                    />
+                  </div>
+
+                  {isStatusOpen && (
+                    <div className="edit-dropdown-menu status-menu">
+                      {contractStatusOptions.map((option) => (
+                        <div
+                          key={option}
+                          className="edit-dropdown-option"
+                          data-status={option}
+                          onClick={() => handleStatusSelect(option)}
+                        >
+                          <span>{option}</span>
+                          {formData.status === option && (
+                            <img
+                              src={dropboxCheck}
+                              alt="selected"
+                              className="edit-dropdown-check"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <div className="edit-file-upload-container">
-              <input
-                type="file"
-                id="edit-file-upload"
-                className="edit-file-input"
-                onChange={handleFileChange}
-                accept=".jpg,.jpeg,.png,.pdf,.docx"
-                ref={fileInputRef}
-              />
-              <label
-                htmlFor="edit-file-upload"
-                className="edit-file-upload-area"
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-              >
-                <img
-                  src={uploadIcon}
-                  alt="업로드"
-                  className="edit-upload-icon"
+            {/* 계약 정보 */}
+            <div className="edit-contract-info">
+              <div className="edit-info-row">
+                <div className="edit-info-box">
+                  <h4 className="edit-info-title"> 소유주(매도인)</h4>
+                  <input
+                    type="text"
+                    name="owner"
+                    className="edit-info-input"
+                    value={formData.owner}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="edit-info-box">
+                  <h4 className="edit-info-title"> 소유주 연락처</h4>
+                  <input
+                    type="text"
+                    name="ownerContact"
+                    className="edit-info-input"
+                    value={formData.ownerContact}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+              <div className="edit-info-row">
+                <div className="edit-info-box">
+                  <h4 className="edit-info-title"> 임차인(매수인)</h4>
+                  <input
+                    type="text"
+                    name="tenant"
+                    className="edit-info-input"
+                    value={formData.tenant}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="edit-info-box">
+                  <h4 className="edit-info-title"> 임차인 연락처</h4>
+                  <input
+                    type="text"
+                    name="tenantContact"
+                    className="edit-info-input"
+                    value={formData.tenantContact}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+              <div className="edit-info-row">
+                <div className="edit-info-box">
+                  <h4 className="edit-info-title"> 계약 일시</h4>
+                  <input
+                    type="date"
+                    name="contractDate"
+                    className="edit-info-input"
+                    value={formData.contractDate}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="edit-info-box">
+                  <h4 className="edit-info-title"> 만기일</h4>
+                  <input
+                    type="date"
+                    name="expiryDate"
+                    className="edit-info-input"
+                    value={formData.expiryDate}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 계약서 파일 섹션 */}
+            <div className="edit-contract-file-section">
+
+              <div className="edit-contract-file-info">
+                {formData.fileName ? (
+                  <>
+                    <div className="file-icon">
+                      <img src={FileIcon} alt="계약서" />
+                    </div>
+                    <div className="file-details">
+                      <p className="file-name">{formData.fileName}</p>
+                      <p className="file-meta">
+                        {formData.fileSize} ·{" "}
+                        {new Date().toLocaleDateString("ko-KR")}
+                      </p>
+                    </div>
+                    <button className="edit-download-button">
+                      <img src={DownloadIcon} alt="다운로드" />
+                    </button>
+                    <button
+                      className="edit-delete-file-button"
+                      onClick={handleRemoveFile}
+                    >
+                      <img src={XIcon} alt="삭제" />
+                    </button>
+                  </>
+                ) : (
+                  <div className="edit-no-file-message">
+                    등록된 계약서가 없습니다.
+                  </div>
+                )}
+              </div>
+
+              <div className="edit-file-upload-container">
+                <input
+                  type="file"
+                  id="edit-file-upload"
+                  className="edit-file-input"
+                  onChange={handleFileChange}
+                  accept=".jpg,.jpeg,.png,.pdf,.docx"
+                  ref={fileInputRef}
                 />
-                <p className="edit-upload-text">
-                  클릭하여 파일 업로드 또는 드래그 앤 드롭
-                </p>
-                <p className="edit-upload-description">
-                  JPG, PNG, PDF, DOCX 등 (최대 50MB)
-                </p>
-              </label>
+                <label
+                  htmlFor="edit-file-upload"
+                  className="edit-file-upload-area"
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                >
+                  <img
+                    src={uploadIcon}
+                    alt="업로드"
+                    className="edit-upload-icon"
+                  />
+                  <p className="edit-upload-text">
+                    클릭하여 파일 업로드 또는 드래그 앤 드롭
+                  </p>
+                  <p className="edit-upload-description">
+                    JPG, PNG, PDF, DOCX 등 (최대 50MB)
+                  </p>
+                </label>
+              </div>
             </div>
           </div>
 
-          {/* 저장하기, 취소 버튼 */}
-          <div className="edit-action-buttons">
-            <button className="edit-submit-button" onClick={handleSubmit}>
-              저장하기
-            </button>
-            <button className="edit-cancel-button" onClick={handleCancel}>
-              취소
-            </button>
+          {/* 편집 모드 - 하단 버튼 영역 */}
+          <div className="sidebar-footer">
+            <div className="edit-action-buttons">
+              <button className="edit-submit-button" onClick={handleSubmit}>
+                저장하기
+              </button>
+              <button className="edit-cancel-button" onClick={handleCancel}>
+                취소
+              </button>
+            </div>
           </div>
         </>
       ) : (
         <>
-          {/* 기존 읽기 모드는 그대로 유지 */}
-          {/* 속성 요약 영역 */}
-          <div className="property-summary">
-            <div className="property-summary-item">
-              <div
-                style={{
-                  display: "flex",
-                  backgroundColor: "#DDE2F2",
-                  width: "5rem",
-                  height: "5rem",
-                  marginRight: "0.8rem",
-                  borderRadius: "0.5rem",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              ></div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                }}
-              >
-                <div className="property-summary-item-icon">
-                  <img src={HomeIcon} alt="매물" />
-                  <p>{contract.apartment}</p>
+          {/* 읽기 모드 - 스크롤 가능한 콘텐츠 영역 */}
+          <div className="sidebar-content">
+            {/* 속성 요약 영역 */}
+            <div className="property-summary">
+              <div className="property-summary-item">
+                <div
+                  style={{
+                    display: "flex",
+                    backgroundColor: "#DDE2F2",
+                    width: "5rem",
+                    height: "5rem",
+                    marginRight: "0.8rem",
+                    borderRadius: "0.5rem",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                ></div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div className="property-summary-item-icon">
+                    <img src={HomeIcon} alt="매물" />
+                    <p>{contract.apartment}</p>
+                  </div>
+                  <div className="property-summary-item-text">
+                    <p>
+                      {contract.apartment} {contract.dong}동 {contract.ho}호 (
+                      {contract.area}m²)
+                    </p>
+                  </div>
                 </div>
-                <div className="property-summary-item-text">
+              </div>
+            </div>
+
+            {/* 계약 정보 영역 */}
+            <div className="contract-info">
+              {/* 가격 및 유형 정보 */}
+              <div className="pricing-info">
+                <div className="price-item">
+                  <p>거래 가격 {formatPrice(contract.contractPrice)}</p>
+                  <p>거래 유형 {getTransactionTypeText(contract.contractType)}</p>
                   <p>
-                    {contract.apartment} {contract.dong}동 {contract.ho}호 (
-                    {contract.area}m²)
+                    계약 상태 {getContractStatusText(contract.contractStatus)}
                   </p>
                 </div>
+              </div>
+
+              {/* 연락처 정보 */}
+              <div className="contact-info">
+                <div className="info-row">
+                  <div className="info-box">
+                    <h4>소유주(매도인)</h4>
+                    <p>{contract.ownerName}</p>
+                  </div>
+                  <div className="info-box">
+                    <h4>소유주 연락처</h4>
+                    <p>{contract.ownerPhone}</p>
+                  </div>
+                </div>
+
+                <div className="info-row">
+                  <div className="info-box">
+                    <h4>입주인(매수인)</h4>
+                    <p>{contract.tenantName}</p>
+                  </div>
+                  <div className="info-box">
+                    <h4>입주인 연락처</h4>
+                    <p>{contract.tenantPhone}</p>
+                  </div>
+                </div>
+
+                <div className="info-row">
+                  <div className="info-box">
+                    <h4>계약 일시</h4>
+                    <p>{contract.contractDate}</p>
+                  </div>
+                  <div className="info-box">
+                    <h4>만기일</h4>
+                    <p>{contract.dueDate}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 계약서 파일 정보 */}
+              <div className="contract-file-section">
+                <h3>계약서</h3>
+                {contract.contractFile ? (
+                  <div className="contract-file-info">
+                    <div className="file-icon">
+                      <img
+                        style={{ width: "2.1rem", height: "2.1rem" }}
+                        src={FileIcon}
+                        alt="계약서"
+                      />
+                    </div>
+                    <div className="file-details">
+                      <p className="file-name">{contract.contractFile}</p>
+                      <p className="file-meta">
+                        {contract.fileSize} · {contract.fileDate}
+                      </p>
+                    </div>
+                    <button className="download-button">
+                      <img
+                        style={{ width: "1.6rem", height: "1.6rem" }}
+                        src={DownloadIcon}
+                        alt="다운로드"
+                      />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="no-file-message">등록된 계약서가 없습니다.</div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* 계약 정보 영역 */}
-          <div className="contract-info">
-            {/* 가격 및 유형 정보 */}
-            <div className="pricing-info">
-              <div className="price-item">
-                <p>거래 가격 {formatPrice(contract.contractPrice)}</p>
-                <p>거래 유형 {getTransactionTypeText(contract.contractType)}</p>
-                <p>
-                  계약 상태 {getContractStatusText(contract.contractStatus)}
-                </p>
-              </div>
-            </div>
-
-            {/* 연락처 정보 */}
-            <div className="contact-info">
-              <div className="info-row">
-                <div className="info-box">
-                  <h4>소유주(매도인)</h4>
-                  <p>{contract.ownerName}</p>
-                </div>
-                <div className="info-box">
-                  <h4>소유주 연락처</h4>
-                  <p>{contract.ownerPhone}</p>
-                </div>
-              </div>
-
-              <div className="info-row">
-                <div className="info-box">
-                  <h4>입주인(매수인)</h4>
-                  <p>{contract.tenantName}</p>
-                </div>
-                <div className="info-box">
-                  <h4>입주인 연락처</h4>
-                  <p>{contract.tenantPhone}</p>
-                </div>
-              </div>
-
-              <div className="info-row">
-                <div className="info-box">
-                  <h4>계약 일시</h4>
-                  <p>{contract.contractDate}</p>
-                </div>
-                <div className="info-box">
-                  <h4>만기일</h4>
-                  <p>{contract.dueDate}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* 계약서 파일 정보 */}
-            <div className="contract-file-section">
-              <h3>계약서</h3>
-              {contract.contractFile ? (
-                <div className="contract-file-info">
-                  <div className="file-icon">
-                    <img
-                      style={{ width: "2.1rem", height: "2.1rem" }}
-                      src={FileIcon}
-                      alt="계약서"
-                    />
-                  </div>
-                  <div className="file-details">
-                    <p className="file-name">{contract.contractFile}</p>
-                    <p className="file-meta">
-                      {contract.fileSize} · {contract.fileDate}
-                    </p>
-                  </div>
-                  <button className="download-button">
-                    <img
-                      style={{ width: "1.6rem", height: "1.6rem" }}
-                      src={DownloadIcon}
-                      alt="다운로드"
-                    />
-                  </button>
-                </div>
-              ) : (
-                <div className="no-file-message">등록된 계약서가 없습니다.</div>
-              )}
-            </div>
-
+          {/* 읽기 모드 - 하단 버튼 영역 */}
+          <div className="sidebar-footer">
             <div className="action-buttons">
               <button
                 className="contract-primary-button"

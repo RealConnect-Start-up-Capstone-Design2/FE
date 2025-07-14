@@ -7,9 +7,7 @@
   background-color: #f8f8f8;
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
   z-index: 100;
-  overflow-y: auto;
   animation: slidein 0.3s ease-in-out;
-  padding: 3.4rem 2rem 1rem 2.2rem;
   border-left: 1px solid #eee;
   display: flex;
   flex-direction: column;
@@ -37,12 +35,14 @@
   }
 }
 
-/* 헤더 영역 */
+/* 헤더 영역 - 고정 */
 .sidebar-header {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 1rem;
+  padding: 3.4rem 2rem 1rem 2.2rem;
+  border-bottom: 1px solid #eee;
   background-color: #f8f8f8;
 }
 
@@ -135,6 +135,21 @@
 .contract-status-tag p.계약-만료 {
   background-color: #ebebeb;
   color: #8d8d8d;
+}
+
+/* 스크롤 가능한 콘텐츠 영역 */
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 2rem 0 2.2rem;
+}
+
+/* 하단 버튼 영역 - 고정 */
+.sidebar-footer {
+  flex-shrink: 0;
+  padding: 1rem 2rem 1rem 2.2rem;
+  background-color: #f8f8f8;
+  border-top: 1px solid #eee;
 }
 
 /* 계약 정보 영역 */
@@ -353,7 +368,6 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: auto;
   width: 100%;
 }
 
@@ -546,16 +560,13 @@
 
 /* 관련 매물 정보 */
 .edit-property-summary {
-  position: absolute;
-  top: 7.6rem; /* 114px / 15 */
-  right: 2rem; /* 30px / 15 */
-  left: 2rem; /* 30px / 15 */
-  width: 29.33rem; /* 440px / 15 */
+  width: 100%;
   height: 10.07rem; /* 151px / 15 */
+  margin-bottom: 1rem;
 }
 
 .edit-related-property-info {
-  width: 29.33rem; /* 440px / 15 */
+  width: 100%;
   height: 6.47rem; /* 97px / 15 */
   background-color: #ffffff;
   border: 1px solid #dde2f2;
@@ -591,9 +602,7 @@
 }
 
 .edit-change-property-button {
-  position: absolute;
-  top: 7.27rem; /* 109px / 15 */
-  width: 29.33rem; /* 440px / 15 */
+  width: 100%;
   height: 2.8rem; /* 42px / 15 */
   background-color: #ffffff;
   border: 1px solid #dde2f2;
@@ -604,23 +613,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-top: 0.8rem;
 }
 
 /* 편집 섹션 */
 .edit-section-new {
-  position: absolute;
-  top: 19.53rem; /* 293px / 15 */
-  right: 2rem; /* 30px / 15 */
-  left: 2rem; /* 30px / 15 */
-  width: 29.33rem; /* 440px / 15 */
+  width: 100%;
   height: 9.2rem; /* 138px / 15 */
   display: flex;
   flex-direction: column;
   gap: 0.8rem; /* 12px / 15 */
+  margin-bottom: 1rem;
 }
 
 .edit-item-container {
-  width: 29.33rem; /* 440px / 15 */
+  width: 100%;
   height: 2.53rem; /* 38px / 15 */
   position: relative;
 }
@@ -639,7 +646,7 @@
   position: absolute;
   top: 0;
   right: 0;
-  width: 23.2rem; /* 348px / 15 */
+  width: 70%; /* 상대적 너비로 변경 */
   height: 2.53rem; /* 38px / 15 */
   background-color: #ffffff;
   border: 1px solid #b1b6c7;
@@ -684,9 +691,9 @@
 
 .edit-dropdown-menu {
   position: absolute;
-  top: calc(100% + 3.07rem); /* 8px + 38px = 46px, 3.07rem */
+  top: calc(100% + 0.53rem); /* 8px 간격 */
   right: 0; /* edit-dropdown과 같은 right 위치 */
-  width: 23.2rem; /* 348px / 15 */
+  width: 70%; /* 상대적 너비로 변경 */
   background-color: #ffffff;
   border: 1px solid #b1b6c7;
   border-radius: 0.4rem;
@@ -704,7 +711,7 @@
 }
 
 .edit-dropdown-option {
-  width: 22.13rem; /* 332px / 15 */
+  width: calc(100% - 1.6rem); /* 좌우 패딩 고려 */
   height: 2.27rem; /* 34px / 15 */
   margin: 0 auto 0.53rem auto; /* 중앙 정렬 및 하단 8px 마진 */
   cursor: pointer;
@@ -757,15 +764,12 @@
 
 /* 계약 정보 */
 .edit-contract-info {
-  position: absolute;
-  top: 30.2rem; /* (454px) / 15 */
-  right: 2rem; /* 30px / 15 */
-  left: 2rem; /* 30px / 15 */
-  width: 29.33rem; /* 440px / 15 */
+  width: 100%;
   height: 16.47rem; /* 247px / 15 */
   display: flex;
   flex-direction: column;
   gap: 0.8rem; /* 12px / 15 */
+  margin-bottom: 1rem;
 }
 
 .edit-info-row {
@@ -774,7 +778,7 @@
 }
 
 .edit-info-box {
-  width: 14.27rem; /* 214px / 15 */
+  width: 48%; /* 상대적 너비로 변경 */
   height: 4.87rem; /* 73px / 15 */
   position: relative;
 }
@@ -826,29 +830,14 @@
 
 /* 계약서 파일 섹션 */
 .edit-contract-file-section {
-  position: absolute;
-  top: 48.93rem; /* 734px / 15 */
-  right: 2rem; /* 30px / 15 */
-  left: 2rem; /* 30px / 15 */
-  width: 29.33rem; /* 440px / 15 */
+  width: 100%;
   height: 13.4rem; /* 201px / 15 - 파일 높이 조정으로 원래 높이로 복원 */
+  margin-bottom: 1rem;
 }
 
-.edit-file-title {
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin: 0;
-  font-size: 1rem; /* 20px에서 15px로 변경 */
-  color: #000000;
-  font-weight: 500;
-}
 
 .edit-contract-file-info {
-  position: absolute;
-  top: 2.33rem; /* 35px / 15 */
-  left: 0;
-  right: 0;
+  width: 100%;
   height: 4.53rem; /* 68px / 15 - 440*68px로 수정 */
   display: flex;
   align-items: center;
@@ -856,6 +845,7 @@
   background-color: #ffffff;
   border: 1px solid #b1b6c7;
   border-radius: 0.4rem;
+  margin-bottom: 0.8rem;
 }
 
 .edit-contract-file-info .file-icon {
@@ -868,8 +858,9 @@
 
 .edit-download-button {
   position: absolute;
-  top: 1.47rem; /* 22px / 15 */
+  top: 50%;
   right: 3.4rem; /* 51px / 15 */
+  transform: translateY(-50%);
   width: 1.6rem;
   height: 1.6rem;
   background: none;
@@ -896,10 +887,7 @@
 }
 
 .edit-file-upload-container {
-  position: absolute;
-  top: 7.4rem; /* 111px / 15 - 파일 정보(35+68) + 간격(8) = 111px */
-  left: 0;
-  right: 0;
+  width: 100%;
   height: 6rem; /* 90px / 15 */
 }
 
@@ -918,15 +906,12 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  position: relative;
 }
 
 .edit-upload-icon {
-  position: absolute;
-  top: 0.87rem; /* 13px / 15 */
-  left: 13.73rem; /* 206px / 15 */
   width: 1.6rem;
   height: 1.6rem;
+  margin-bottom: 0.4rem;
 }
 
 .edit-upload-text {
@@ -934,7 +919,7 @@
   font-size: 0.87rem; /* 13px / 15 */
   color: #8d8d8d;
   text-align: center;
-  margin-top: 2.4rem;
+  margin-bottom: 0.4rem;
 }
 
 .edit-upload-description {
@@ -947,20 +932,14 @@
 
 /* 저장하기, 취소 버튼 */
 .edit-action-buttons {
-  position: absolute;
-  top: 63.13rem; /* 947px / 15 - 15px 위로 이동 (기존 962px에서 947px) */
-  left: 0;
-  right: 0;
-  width: 33.27rem; /* 499px / 15 */
-  height: 8.87rem; /* 133px / 15 */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
 }
 
 .edit-submit-button {
-  position: absolute;
-  top: 1.33rem; /* 20px / 15 */
-  left: 2rem; /* 30px / 15 */
-  right: 2rem; /* 30px / 15 */
-  width: 29.33rem; /* 440px / 15 */
+  width: 100%;
   height: 2.8rem; /* 42px / 15 */
   background-color: #1c2882;
   color: #ffffff;
@@ -977,11 +956,7 @@
 }
 
 .edit-cancel-button {
-  position: absolute;
-  top: 4.8rem; /* 72px / 15 */
-  left: 2rem; /* 30px / 15 */
-  right: 2rem; /* 30px / 15 */
-  width: 29.33rem; /* 440px / 15 */
+  width: 100%;
   height: 2.8rem; /* 42px / 15 */
   background-color: #1b1b1b;
   color: #ffffff;
