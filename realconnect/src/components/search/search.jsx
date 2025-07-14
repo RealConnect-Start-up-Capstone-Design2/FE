@@ -1,16 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./search.css";
 import searchIcon from "../../assets/icons/search.svg";
 
 const Search = ({ onSearch }) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const debounceTimeoutRef = useRef(null);
 
   const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-    if (onSearch) {
-      onSearch(e.target.value);
+    const value = e.target.value;
+    setSearchTerm(value);
+    
+    // 이전 타이머가 있으면 취소
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
     }
+    
+    // 300ms 후에 검색 실행 (디바운싱)
+    debounceTimeoutRef.current = setTimeout(() => {
+      if (onSearch) {
+        onSearch(value);
+      }
+    }, 300);
   };
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="search-container">

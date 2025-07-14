@@ -20,24 +20,29 @@ const Contracts = () => {
   const closingSidebarRef = useRef(false);
   const { accessToken } = useAuthStore();
 
-  const fetchContracts = async () => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/api/contract/searchContracts`,
-      {
+  const fetchContracts = async (keyword = "") => {
+    try {
+      const url = keyword
+        ? `${import.meta.env.VITE_API_URL}/api/contract/searchContracts?keyword=${encodeURIComponent(keyword)}`
+        : `${import.meta.env.VITE_API_URL}/api/contract/searchContracts`;
+
+      const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      }
-    );
+      });
 
-    // API 응답의 favorite 필드를 isFavorite로 변환
-    const contractsWithUnifiedFields = response.data.map((contract) => ({
-      ...contract,
-      isFavorite: contract.favorite, // favorite를 isFavorite로 변환
-    }));
+      // API 응답의 favorite 필드를 isFavorite로 변환
+      const contractsWithUnifiedFields = response.data.map((contract) => ({
+        ...contract,
+        isFavorite: contract.favorite, // favorite를 isFavorite로 변환
+      }));
 
-    setAllContracts(contractsWithUnifiedFields);
-    console.log(contractsWithUnifiedFields);
+      setAllContracts(contractsWithUnifiedFields);
+      console.log(contractsWithUnifiedFields);
+    } catch (error) {
+      console.error("계약 데이터를 가져오는 중 오류가 발생했습니다:", error);
+    }
   };
 
   useEffect(() => {
@@ -53,9 +58,15 @@ const Contracts = () => {
     setActiveView(view);
   };
 
-  const handleSearch = (searchTerm) => {
-    console.log(searchTerm);
-    // 검색 기능 구현
+    const handleSearch = (searchTerm) => {
+    console.log("검색어:", searchTerm);
+    
+    // 검색어가 있으면 검색 API 호출, 없으면 전체 데이터 가져오기
+    if (searchTerm.trim()) {
+      fetchContracts(searchTerm);
+    } else {
+      fetchContracts();
+    }
   };
 
   const handleContractSelect = (contract) => {
