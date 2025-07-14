@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import useAuthStore from "../store/authStore";
 import RegionalFilter from "../components/regionalFilter/regionalFilter";
@@ -15,11 +15,7 @@ const SharedInquiries = () => {
   const [loading, setLoading] = useState(true);
   const accessToken = useAuthStore((state) => state.accessToken);
   const userId = useAuthStore((state) => state.user?.id);
-  const [regionFilter, setRegionFilter] = useState({
-    l1: null,
-    l2: null,
-    l3: null,
-  });
+
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -58,9 +54,34 @@ const SharedInquiries = () => {
     }
   };
 
-  const handleRegionFilterChange = (filterData) => {
-    console.log("지역 필터 변경:", filterData);
-    setRegionFilter(filterData);
+  const handleRegionFilterChange = async (filterData) => {
+    try {
+      console.log("필터 데이터:", filterData);
+      setLoading(true);
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/shares`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: {
+            l1: filterData.l1,
+            l2: filterData.l2,
+            l3: filterData.l3,
+          },
+          withCredentials: true,
+        }
+      );
+      console.log("API 응답 데이터:", res.data);
+      console.log("응답 데이터 길이:", res.data.length);
+      console.log("응답 데이터 타입:", typeof res.data);
+      setSharedInquiries(res.data);
+    } catch (error) {
+      console.error("문의 공유 데이터 조회 중 오류 발생:", error);
+      setSharedInquiries([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const closeSidebar = () => {
@@ -80,39 +101,34 @@ const SharedInquiries = () => {
     // 수정 기능 구현
   };
 
-  const fetchSharedInquiries = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/shares`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-          params: {
-            l1: regionFilter.l1,
-            l2: regionFilter.l2,
-            l3: regionFilter.l3,
-          },
-          withCredentials: true,
-        }
-      );
-      console.log("API 응답 데이터:", res.data);
-      setSharedInquiries(res.data);
-    } catch (error) {
-      console.error("문의 공유 데이터 조회 중 오류 발생:", error);
-      setSharedInquiries([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [accessToken, regionFilter]);
-
-  // 지역 필터 변경 시 API 호출
+  // 초기 로딩 시 API 호출
   useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/shares`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+            withCredentials: true,
+          }
+        );
+        console.log("API 응답 데이터:", res.data);
+        setSharedInquiries(res.data);
+      } catch (error) {
+        console.error("문의 공유 데이터 조회 중 오류 발생:", error);
+        setSharedInquiries([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (accessToken) {
-      fetchSharedInquiries();
+      fetchInitialData();
     }
-  }, [fetchSharedInquiries, accessToken]);
+  }, [accessToken]);
 
   // 컴포넌트가 언마운트될 때 상태 초기화
   useEffect(() => {
@@ -154,7 +170,7 @@ const SharedInquiries = () => {
         }}
       >
         <div style={{ width: "30rem" }}>
-          <RegionalFilter onChange={handleRegionFilterChange} />
+          <RegionalFilter onFilterChange={handleRegionFilterChange} />
         </div>
         <div style={{ display: "flex", gap: "0.8rem" }}>
           <TransactionType />

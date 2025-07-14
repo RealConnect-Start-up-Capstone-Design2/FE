@@ -3,17 +3,14 @@ import filterIcon from "../../assets/icons/filter.svg";
 import CheckIcon from "../../assets/icons/check.svg";
 import "./regionalFilter.css";
 
-// 지역 이름 매핑 (API 요청용)
-// const REGION_NAME_MAPPING = {
-//   서울: "서울특별시",
-//   부산: "부산광역시",
-//   대구: "대구광역시",
-//   인천: "인천광역시",
-//   광주: "광주광역시",
-//   대전: "대전광역시",
-//   울산: "울산광역시",
-//   세종: "세종특별자치시",
-// };
+
+// 지역명 매핑 (UI 표시명 -> API 전송명)
+const REGION_MAPPING = {
+  서울: "서울특별시",
+  경기: "경기도",
+  인천: "인천광역시",
+  대전: "대전광역시",
+};
 
 // 예시 데이터 (실제 서비스에서는 외부에서 받아올 수 있음)
 const REGION_DATA = {
@@ -23,6 +20,7 @@ const REGION_DATA = {
     강남구: ["전체", "개포1동", "개포2동", "역삼동"],
     강동구: ["전체", "천호동", "길동"],
     강북구: ["전체", "수유동", "미아동"],
+    송파구: ["전체", "잠실동"],
   },
   경기: {
     전체: [],
@@ -71,19 +69,14 @@ const RegionalFilter = ({ onFilterChange }) => {
   // 선택값이 변경될 때마다 부모 컴포넌트에 알림
   useEffect(() => {
     if (onFilterChange) {
-      // 전체가 아닌 경우에만 값을 전달
-      const l1 = selectedSido !== "전체" ? selectedSido : null;
+      // 전체가 아닌 경우에만 값을 전달하고, 지역명 매핑 적용
+      const l1 = selectedSido !== "전체" ? (REGION_MAPPING[selectedSido] || selectedSido) : null;
       const l2 = selectedGugun !== "전체" ? selectedGugun : null;
       const l3 = selectedDong !== "전체" ? selectedDong : null;
 
-      // 지역 이름 매핑 적용 (서울 -> 서울특별시 등)
-      // if (l1 && REGION_NAME_MAPPING[l1]) {
-      //   l1 = REGION_NAME_MAPPING[l1];
-      // }
-
       onFilterChange({ l1, l2, l3 });
     }
-  }, [selectedSido, selectedGugun, selectedDong, onFilterChange]);
+  }, [selectedSido, selectedGugun, selectedDong]);
 
   // 구/군 리스트
   const gugunList =
