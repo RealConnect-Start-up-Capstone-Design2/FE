@@ -12,7 +12,9 @@ import "./sharedInquiries.css";
 const SharedInquiries = () => {
   const [activeView, setActiveView] = useState("all");
   const [sharedInquiries, setSharedInquiries] = useState([]);
+  const [mySharedInquiries, setMySharedInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMyShares, setLoadingMyShares] = useState(false);
   const accessToken = useAuthStore((state) => state.accessToken);
   const userId = useAuthStore((state) => state.user?.id);
 
@@ -23,6 +25,29 @@ const SharedInquiries = () => {
 
   const handleViewChange = (view) => {
     setActiveView(view);
+  };
+
+  // 내가 공유한 문의 가져오기
+  const fetchMySharedInquiries = async () => {
+    setLoadingMyShares(true);
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/shares/my`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          withCredentials: true,
+        }
+      );
+      console.log("내가 공유한 문의 데이터:", res.data);
+      setMySharedInquiries(res.data);
+    } catch (error) {
+      console.error("내가 공유한 문의 조회 중 오류 발생:", error);
+      setMySharedInquiries([]);
+    } finally {
+      setLoadingMyShares(false);
+    }
   };
 
   const handleSharedInquirySelect = async (inquiry) => {
@@ -127,6 +152,7 @@ const SharedInquiries = () => {
 
     if (accessToken) {
       fetchInitialData();
+      fetchMySharedInquiries();
     }
   }, [accessToken]);
 
@@ -136,6 +162,10 @@ const SharedInquiries = () => {
       setLoading(false);
     };
   }, []);
+
+  // 현재 표시할 데이터 결정
+  const currentData = activeView === "all" ? sharedInquiries : mySharedInquiries;
+  const currentLoading = activeView === "all" ? loading : loadingMyShares;
 
   return (
     <div className={`page_section ${sidebarOpen ? "with-sidebar" : ""}`}>
@@ -179,11 +209,11 @@ const SharedInquiries = () => {
         </div>
       </div>
       <div className={`page_content ${sidebarOpen ? "with-sidebar" : ""}`}>
-        {loading ? (
+        {currentLoading ? (
           <div>로딩 중...</div>
         ) : (
           <SharedInquiriesTable
-            sharedInquiries={sharedInquiries}
+            sharedInquiries={currentData}
             onSharedInquirySelect={handleSharedInquirySelect}
           />
         )}
