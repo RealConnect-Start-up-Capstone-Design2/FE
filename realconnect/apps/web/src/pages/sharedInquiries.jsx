@@ -100,7 +100,7 @@ const SharedInquiries = () => {
   const currentLoading = activeView === "all" ? isLoadingAll : isLoadingMy;
 
   return (
-    <div className="page_section">
+    <div className={`page_section ${sidebarOpen ? "with-sidebar" : ""}`}>
       <div className="page_header">
         <div className="header_left">
           <p className="page_title">문의 공유</p>

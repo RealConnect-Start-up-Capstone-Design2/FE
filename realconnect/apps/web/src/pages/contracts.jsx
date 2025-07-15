@@ -83,9 +83,13 @@ const Contracts = () => {
   });
 
   const handleSelectContract = (contract) => {
-    setSelectedContract(contract);
-    setIsSidebarOpen(true);
-    setIsClosing(false);
+    if (selectedContract && selectedContract.id === contract.id) {
+      handleCloseSidebar();
+    } else {
+      setSelectedContract(contract);
+      setIsSidebarOpen(true);
+      setIsClosing(false);
+    }
   };
   
   const handleCloseSidebar = () => {
@@ -105,7 +109,7 @@ const Contracts = () => {
   };
 
   return (
-    <div className="page_section">
+    <div className={`page_section ${isSidebarOpen ? "with-sidebar" : ""}`}>
       <div className="page_header">
         <div className="header_left">
           <p className="page_title">계약 관리</p>

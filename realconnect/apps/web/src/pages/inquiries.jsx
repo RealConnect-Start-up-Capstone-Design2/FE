@@ -217,10 +217,15 @@ const Inquiries = () => {
     if (closingSidebarRef.current) {
       return;
     }
-    if (isEditMode) {
-      setIsEditMode(false);
+    if (selectedInquiry && selectedInquiry.id === inquiry.id) {
+      closeSidebar();
+    } else {
+      setSelectedInquiry(inquiry);
+      setIsClosingSidebar(false);
+      if (isEditMode) {
+        setIsEditMode(false);
+      }
     }
-    setSelectedInquiry(inquiry);
   };
 
   const closeSidebar = () => {
@@ -248,7 +253,7 @@ const Inquiries = () => {
   };
 
   return (
-    <div className="page_section">
+    <div className={`page_section ${selectedInquiry || isAddingInquiry ? "with-sidebar" : ""}`}>
       <div className="page_header">
         <div className="header_left">
           <p className="page_title">문의 관리</p>
@@ -301,7 +306,7 @@ const Inquiries = () => {
           ) : (
             <InquiryTable
               inquiries={inquiries}
-              onSelect={handleInquirySelect}
+              onInquirySelect={handleInquirySelect}
               onFavoriteToggle={handleFavoriteToggle}
             />
           )}
