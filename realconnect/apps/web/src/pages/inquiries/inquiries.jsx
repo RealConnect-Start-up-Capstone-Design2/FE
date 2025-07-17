@@ -10,8 +10,8 @@ import {
 import Search from "../../components/common/search/search";
 import { Button, SortButton } from "@realconnect/shared-ui";
 import InquiriesTable from "../../components/domain/inquiries/inquiriesTable";
-import InquiryDetailSidebar from "../../components/domain/rightSidebar/inquiryDetailSidebar";
-import InquiryModifySidebar from "../../components/domain/rightSidebar/inquiryModifySidebar";
+import InquiryDetailSidebar from "../../components/domain/inquiries/inquiryDetailSidebar";
+import InquiryModifySidebar from "../../components/domain/inquiries/inquiryModifySidebar";
 
 // API 응답을 InquiryTable용 데이터로 변환
 const convertApiDataToInquiryTable = (apiData) => {

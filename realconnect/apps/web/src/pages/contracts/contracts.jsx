@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, SortButton } from "@realconnect/shared-ui";
 import ContractsTable from "@/components/domain/contracts/contractsTable";
-import ContractDetailSidebar from "@/components/domain/rightSidebar/contractDetailSidebar";
+import ContractDetailSidebar from "@/components/domain/contracts/contractDetailSidebar";
 import CreateContractModal from "@/pages/modal/createContractModal";
 import {
   getContracts,

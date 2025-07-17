@@ -1,10 +1,10 @@
 import React, { useState, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "../../store/authStore";
-import RegionalFilter from "../../components/domain/regionalFilter/regionalFilter";
+import RegionalFilter from "../../components/domain/sharedInquiries/regionalFilter";
 import { Button, SortButton } from "@realconnect/shared-ui";
 import SharedInquiriesTable from "../../components/domain/sharedInquiries/sharedInquiriesTable";
-import SharedInquiryDetailSidebar from "../../components/domain/rightSidebar/sharedInquiryDetailSidebar";
+import SharedInquiryDetailSidebar from "../../components/domain/sharedInquiries/sharedInquiryDetailSidebar";
 import {
   getSharedInquiries,
   getMySharedInquiries,

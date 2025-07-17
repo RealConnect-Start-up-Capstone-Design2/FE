@@ -6,8 +6,8 @@ import { getProperties, updateProperty } from "../../services/propertyService";
 import Search from "../../components/common/search/search";
 import { Button, SortButton } from "@realconnect/shared-ui";
 import PropertiesTable from "../../components/domain/propertiesManage/propertiesTable";
-import PropertyDetailSidebar from "../../components/domain/rightSidebar/propertyDetailSidebar";
-import PropertyModifySidebar from "../../components/domain/rightSidebar/propertyModifySidebar";
+import PropertyDetailSidebar from "../../components/domain/propertiesManage/propertyDetailSidebar";
+import PropertyModifySidebar from "../../components/domain/propertiesManage/propertyModifySidebar";
 
 // API 응답을 PropertyTable용 데이터로 변환
 const convertApiDataToTableData = (apiData) => {

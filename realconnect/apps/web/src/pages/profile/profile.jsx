@@ -1,7 +1,7 @@
 import React from "react";
 import "../../styles/global.css";
 import "./profile.css";
-import EditPropertyButton from "../../components/domain/editProperty/editProperty";
+import EditPropertyButton from "../../components/domain/profile/editProperty";
 
 const Profile = () => {
   return (
