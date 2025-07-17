@@ -8,6 +8,29 @@
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
+.content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.5em;
+  font-size: 0;
+}
+
+.icon.right {
+  margin-left: 0.5em;
+  margin-right: 0;
+}
+
+.label {
+  display: inline-block;
+}
+
 .primary {
   background-color: #1C2882;
   color: white;
@@ -19,9 +42,9 @@
 }
 
 .secondary {
-  background-color: #6c757d;
+  background-color: #B1B6C7;
   color: white;
-  border-color: #6c757d;
+  border-color: #B1B6C7;
 }
 
 .secondary:hover {

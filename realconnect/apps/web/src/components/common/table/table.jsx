@@ -12,7 +12,13 @@ const Table = ({ columns, data, loading, emptyMessage, onRowClick, rowClassName 
       <thead>
         <tr>
           {columns.map((col) => (
-            <th key={col.key}>{col.header}</th>
+            <th
+              key={col.key}
+              className={col.key === 'checkbox' ? styles.checkboxColumn : undefined}
+              style={col.key === 'checkbox' ? { width: '2.667rem' } : undefined}
+            >
+              {col.header}
+            </th>
           ))}
         </tr>
       </thead>
@@ -34,7 +40,11 @@ const Table = ({ columns, data, loading, emptyMessage, onRowClick, rowClassName 
               style={{ cursor: onRowClick ? 'pointer' : undefined }}
             >
               {columns.map((col) => (
-                <td key={col.key}>
+                <td
+                  key={col.key}
+                  className={col.key === 'checkbox' ? styles.checkboxColumn : undefined}
+                  style={col.key === 'checkbox' ? { width: '2.667rem' } : undefined}
+                >
                   {col.render ? col.render(row, i) : row[col.key]}
                 </td>
               ))}

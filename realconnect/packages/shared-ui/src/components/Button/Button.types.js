@@ -5,5 +5,7 @@
  * @property {boolean} [disabled] - 버튼이 비활성화되었는지 여부
  * @property {'primary' | 'secondary'} [variant] - 버튼의 스타일 변형
  * @property {boolean} [fullWidth] - 버튼이 전체 너비를 차지해야 하는지 여부
+ * @property {React.ReactNode} [icon] - 버튼 왼쪽 또는 오른쪽에 표시할 SVG 아이콘(ReactNode)
+ * @property {'left' | 'right'} [iconPosition] - 아이콘 위치(기본값: left)
  */
 export const _ = {}; 

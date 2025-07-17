@@ -8,6 +8,12 @@ import { Button, SortButton } from "@realconnect/shared-ui";
 import PropertiesTable from "../../components/domain/propertiesManage/propertiesTable";
 import PropertyDetailSidebar from "../../components/domain/propertiesManage/propertyDetailSidebar";
 import PropertyModifySidebar from "../../components/domain/propertiesManage/propertyModifySidebar";
+import TableHeaderControls from "../../components/common/TableHeaderControls";
+import ViewSelector from "../../components/common/ViewSelector";
+
+// 아이콘 불러오기  
+import PlusIcon from "../../assets/icons/plus.svg?react";
+import TrashIcon from "../../assets/icons/trash.svg?react";
 
 // API 응답을 PropertyTable용 데이터로 변환
 const convertApiDataToTableData = (apiData) => {
@@ -220,54 +226,37 @@ const Properties = () => {
             현재 등록된 또는 등록할 매물 목록입니다.
           </p>
         </div>
-        <div className="view_selector">
-          <button
-            className={`view_option ${
-              activeView === "전체" ? "view_option--active" : ""
-            }`}
-            onClick={() => handleViewChange("전체")}
-          >
-            전체
-          </button>
-          <button
-            className={`view_option ${
-              activeView === "내 물건" ? "view_option--active" : ""
-            }`}
-            onClick={() => handleViewChange("내 물건")}
-          >
-            내 물건
-          </button>
-        </div>
+        <ViewSelector
+          options={[
+            { value: "전체", label: "전체" },
+            { value: "내 물건", label: "내 물건" },
+          ]}
+          active={activeView}
+          onChange={handleViewChange}
+        />
       </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          width: "100%",
-          marginBottom: "1.6rem",
-        }}
-      >
-        <div style={{ width: "400px" }}>
-          <Search onSearch={handleSearch} />
-        </div>
-        <div style={{ display: "flex", gap: "0.8rem" }}>
-          <SortButton
-            options={SortStandardOptions}
-            value={sortStandard}
-            onChange={handleSortStandardChange}
-            placeholder="정렬 기준"
-          />
-          <SortButton
-            options={transactionTypeOptions}
-            value={transactionType}
-            onChange={handleTransactionTypeChange}
-            placeholder="거래 유형"
-          />
-          <Button label="매물 추가" onClick={() => {}} />
-          <Button label="매물 삭제" onClick={() => {}} variant="secondary" />
-        </div>
-      </div>
-      <div className="page_content">
+      <TableHeaderControls
+        search={<Search onSearch={handleSearch} />}
+        rightChildren={
+          <>
+            <SortButton
+              options={SortStandardOptions}
+              value={sortStandard}
+              onChange={handleSortStandardChange}
+              placeholder="정렬 기준"
+            />
+            <SortButton
+              options={transactionTypeOptions}
+              value={transactionType}
+              onChange={handleTransactionTypeChange}
+              placeholder="거래 유형"
+            />
+            <Button label="매물 추가" onClick={() => {}} icon={<PlusIcon />} />
+            <Button label="매물 삭제" onClick={() => {}} variant="secondary" icon={<TrashIcon />} />
+          </>
+        }
+      />
+      <div className="content_wrap">
         <PropertiesTable
           properties={filteredProperties}
           onPropertySelect={handlePropertySelect}

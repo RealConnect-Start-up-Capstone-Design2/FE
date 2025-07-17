@@ -12,6 +12,8 @@ import { Button, SortButton } from "@realconnect/shared-ui";
 import InquiriesTable from "../../components/domain/inquiries/inquiriesTable";
 import InquiryDetailSidebar from "../../components/domain/inquiries/inquiryDetailSidebar";
 import InquiryModifySidebar from "../../components/domain/inquiries/inquiryModifySidebar";
+import TableHeaderControls from "../../components/common/TableHeaderControls";
+import ViewSelector from "../../components/common/ViewSelector";
 
 // API 응답을 InquiryTable용 데이터로 변환
 const convertApiDataToInquiryTable = (apiData) => {
@@ -260,38 +262,26 @@ const Inquiries = () => {
             모든 문의 내역을 확인하고 관리합니다.
           </p>
         </div>
-        <div className="view_selector">
-          <button
-            className={`view_option ${
-              activeView === "전체" ? "view_option--active" : ""
-            }`}
-            onClick={() => handleViewChange("전체")}
-          >
-            전체
-          </button>
-          <button
-            className={`view_option ${
-              activeView === "즐겨찾기" ? "view_option--active" : ""
-            }`}
-            onClick={() => handleViewChange("즐겨찾기")}
-          >
-            즐겨찾기
-          </button>
-        </div>
+        <ViewSelector
+          options={[
+            { value: "전체", label: "전체" },
+            { value: "즐겨찾기", label: "즐겨찾기" },
+          ]}
+          active={activeView}
+          onChange={handleViewChange}
+        />
       </div>
 
       <div className="content_wrap">
-        <div className="table_wrap">
-          <div className="table_header">
-            <div className="table_controls" style={{justifyContent: 'space-between', width: '100%'}}>
-              <div style={{ display: "flex", gap: "0.8rem", alignItems: 'center' }}>
-                <Search onSearch={handleSearch} />
-                <SortButton
-                  options={transactionTypeOptions}
-                  value={inquiryType}
-                  onChange={handleTransactionTypeChange}
-                />
-              </div>
+        <TableHeaderControls
+          search={<Search onSearch={handleSearch} />}
+          rightChildren={
+            <>
+              <SortButton
+                options={transactionTypeOptions}
+                value={inquiryType}
+                onChange={handleTransactionTypeChange}
+              />
               <Button
                 label="+ 문의 추가"
                 onClick={handleAddInquiryClick}
@@ -299,8 +289,10 @@ const Inquiries = () => {
                 disabled={isAddingInquiry}
               />
               <Button label="문의 삭제" onClick={() => {}} variant="secondary" />
-            </div>
-          </div>
+            </>
+          }
+        />
+        <div className="table_wrap">
           {isLoading ? (
             <div>로딩 중...</div>
           ) : (
@@ -311,46 +303,50 @@ const Inquiries = () => {
             />
           )}
         </div>
-        {selectedInquiry ? (
-          isEditMode ? (
-            <InquiryModifySidebar
-              inquiry={selectedInquiry}
-              onClose={closeSidebar}
-              onSave={handleSaveInquiry}
-              isClosing={isClosingSidebar}
-            />
-          ) : (
-            <InquiryDetailSidebar
-              inquiry={selectedInquiry}
-              onClose={closeSidebar}
-              onDelete={handleDeleteSuccess}
-              onEdit={() => setIsEditMode(true)}
-              isClosing={isClosingSidebar}
-            />
-          )
-        ) : isAddingInquiry ? (
-          <InquiryModifySidebar
-            inquiry={{
-              id: null,
-              name: "",
-              phone: "",
-              apartmentName: "",
-              area: "",
-
-              inquiryType: "BUY",
-              status: "IN_PROGRESS",
-              salePrice: "",
-              deposit: "",
-              jeonsePrice: "",
-              monthPrice: "",
-              memo: "",
-              favorite: false,
-            }}
-            onClose={() => setIsAddingInquiry(false)}
-            onSave={handleSaveInquiry}
-            isClosing={isClosingSidebar}
-          />
-        ) : null}
+        {(selectedInquiry || isAddingInquiry) && (
+          <>
+            {selectedInquiry && (
+              isEditMode ? (
+                <InquiryModifySidebar
+                  inquiry={selectedInquiry}
+                  onClose={closeSidebar}
+                  onSave={handleSaveInquiry}
+                  isClosing={isClosingSidebar}
+                />
+              ) : (
+                <InquiryDetailSidebar
+                  inquiry={selectedInquiry}
+                  onClose={closeSidebar}
+                  onDelete={handleDeleteSuccess}
+                  onEdit={() => setIsEditMode(true)}
+                  isClosing={isClosingSidebar}
+                />
+              )
+            )}
+            {isAddingInquiry && !selectedInquiry && (
+              <InquiryModifySidebar
+                inquiry={{
+                  id: null,
+                  name: "",
+                  phone: "",
+                  apartmentName: "",
+                  area: "",
+                  inquiryType: "BUY",
+                  status: "IN_PROGRESS",
+                  salePrice: "",
+                  deposit: "",
+                  jeonsePrice: "",
+                  monthPrice: "",
+                  memo: "",
+                  favorite: false,
+                }}
+                onClose={() => setIsAddingInquiry(false)}
+                onSave={handleSaveInquiry}
+                isClosing={isClosingSidebar}
+              />
+            )}
+          </>
+        )}
       </div>
     </div>
   );

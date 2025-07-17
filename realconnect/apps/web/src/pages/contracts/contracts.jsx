@@ -10,6 +10,8 @@ import {
   updateContract,
 } from "@/services/contractService";
 import Search from "@/components/common/search/search";
+import TableHeaderControls from "../../components/common/TableHeaderControls";
+import ViewSelector from "../../components/common/ViewSelector";
 
 const Contracts = () => {
   const [selectedContract, setSelectedContract] = useState(null);
@@ -122,45 +124,35 @@ const Contracts = () => {
           <p className="page_title">계약 관리</p>
           <p className="page_description">모든 계약 내역을 확인하고 관리합니다.</p>
         </div>
-        <div className="view_selector">
-        <button
-            className={`view_option ${
-              activeView === "전체" ? "view_option--active" : ""
-            }`}
-            onClick={() => handleViewChange("전체")}
-          >
-            전체
-          </button>
-          <button
-            className={`view_option ${
-              activeView === "즐겨찾기" ? "view_option--active" : ""
-            }`}
-            onClick={() => handleViewChange("즐겨찾기")}
-          >
-            즐겨찾기
-          </button>
-        </div>
+        <ViewSelector
+          options={[
+            { value: "전체", label: "전체" },
+            { value: "즐겨찾기", label: "즐겨찾기" },
+          ]}
+          active={activeView}
+          onChange={handleViewChange}
+        />
       </div>
       <div className="content_wrap">
-      <div className="table_header">
-        <div className="table_controls" style={{justifyContent: 'space-between', width: '100%'}}>
-         <div style={{ display: "flex", gap: "0.8rem" }}>
-          <Search onSearch={handleSearch} />
+      <TableHeaderControls
+        search={<Search onSearch={handleSearch} />}
+        rightChildren={
+          <>
             <SortButton
-                options={transactionTypeOptions}
-                value={filters.transactionType || "ALL"}
-                onChange={(value) => handleFilterChange('transactionType', value)}
+              options={transactionTypeOptions}
+              value={filters.transactionType || "ALL"}
+              onChange={(value) => handleFilterChange('transactionType', value)}
             />
             <SortButton
-                options={contractStatusOptions}
-                value={filters.contractStatus || "ALL"}
-                onChange={(value) => handleFilterChange('contractStatus', value)}
+              options={contractStatusOptions}
+              value={filters.contractStatus || "ALL"}
+              onChange={(value) => handleFilterChange('contractStatus', value)}
             />
-         </div>
-         <Button label="계약 추가" onClick={() => {}} variant="primary" />
-         <Button label="계약 삭제" onClick={() => {}} variant="secondary" />
-        </div>
-      </div>
+            <Button label="계약 추가" onClick={() => {}} variant="primary" />
+            <Button label="계약 삭제" onClick={() => {}} variant="secondary" />
+          </>
+        }
+      />
       {isLoading ? (
         <div>로딩 중...</div>
       ) : error ? (

@@ -5,6 +5,8 @@ import RegionalFilter from "../../components/domain/sharedInquiries/regionalFilt
 import { Button, SortButton } from "@realconnect/shared-ui";
 import SharedInquiriesTable from "../../components/domain/sharedInquiries/sharedInquiriesTable";
 import SharedInquiryDetailSidebar from "../../components/domain/sharedInquiries/sharedInquiryDetailSidebar";
+import TableHeaderControls from "../../components/common/TableHeaderControls";
+import ViewSelector from "../../components/common/ViewSelector";
 import {
   getSharedInquiries,
   getMySharedInquiries,
@@ -106,36 +108,28 @@ const SharedInquiries = () => {
             타 부동산 업소와 공유하는 고객의 문의 목록입니다
           </p>
         </div>
-        <div className="view_selector">
-          <button
-            className={`view_option ${
-              activeView === "all" ? "view_option--active" : ""
-            }`}
-            onClick={() => handleViewChange("all")}
-          >
-            전체
-          </button>
-          <button
-            className={`view_option ${
-              activeView === "my" ? "view_option--active" : ""
-            }`}
-            onClick={() => handleViewChange("my")}
-          >
-            내 문의
-          </button>
-        </div>
+        <ViewSelector
+          options={[
+            { value: "all", label: "전체" },
+            { value: "my", label: "내 문의" },
+          ]}
+          active={activeView}
+          onChange={handleViewChange}
+        />
       </div>
       
-      <div className="table-controls" style={{justifyContent: 'flex-end', width: '100%'}}>
-        <div style={{ display: "flex", gap: "0.8rem" }}>
-          <RegionalFilter onFilterChange={handleRegionFilterChange} />
-          <SortButton
-            options={transactionTypeOptions}
-            value={transactionType}
-            onChange={handleTransactionTypeChange}
-          />
-        </div>
-      </div>
+      <TableHeaderControls
+        search={<RegionalFilter onFilterChange={handleRegionFilterChange} />}
+        rightChildren={
+          <>
+            <SortButton
+              options={transactionTypeOptions}
+              value={transactionType}
+              onChange={handleTransactionTypeChange}
+            />
+          </>
+        }
+      />
       <div className="table_section">
         {currentLoading ? (
           <div>로딩 중...</div>

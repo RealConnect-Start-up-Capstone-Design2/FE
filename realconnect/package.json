@@ -12,7 +12,8 @@
     "packages/*"
   ],
   "devDependencies": {
-    "turbo": "latest"
+    "turbo": "latest",
+    "vite-plugin-svgr": "^4.3.0"
   },
   "packageManager": "npm@10.9.2"
-} 
+}
