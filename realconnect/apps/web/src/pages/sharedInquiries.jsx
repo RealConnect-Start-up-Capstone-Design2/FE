@@ -3,8 +3,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "../store/authStore";
 import RegionalFilter from "../components/domain/regionalFilter/regionalFilter";
 import { Button, SortButton } from "@realconnect/shared-ui";
-import AddProperty from "../components/domain/addProperty/addProperty";
-import DeleteProperty from "../components/domain/deleteProperty/deleteProperty";
 import SharedInquiriesTable from "../components/domain/sharedInquiriesTable/sharedInquiriesTable";
 import SharedInquiryDetailSidebar from "../components/domain/rightSidebar/sharedInquiryDetailSidebar";
 import {

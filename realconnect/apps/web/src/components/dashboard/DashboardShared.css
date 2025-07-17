@@ -1,0 +1,91 @@
+.header_left {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 기존 페이지 콘텐츠 스타일 - 호환성 유지 */
+.page_contents {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+}
+
+.page_contents > div {
+  flex: 1;
+  min-width: 0; /* Prevents flex items from overflowing */
+}
+
+/* 새로운 대시보드 레이아웃 스타일 */
+.dashboard_layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2rem;
+  padding-bottom: 1rem; /* 컴포넌트 간 아래 여백 */
+}
+
+.dashboard_column {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  min-width: 0; /* Prevents flex items from overflowing */
+}
+
+.dashboard_bottom_section {
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+/* 섹션 박스 그림자 - 공통 스타일 */
+.section_box_shadow {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  filter: drop-shadow(0px 5px 5px rgba(0, 0, 0, 0.2));
+  border: 2px solid #dde2f2;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  padding: 2rem;
+}
+
+/* 섹션 타이틀 - 공통 스타일 */
+.section_title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #1b1b1b;
+}
+
+/* 카운트 관련 공통 스타일 */
+.count {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1b1b1b;
+}
+
+.count_sub {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #8d8d8d;
+  padding-top: 0.8rem;
+  padding-bottom: 1rem;
+}
+
+.count_bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+/* 반응형 대응 */
+@media (max-width: 1200px) {
+  .page_contents {
+    flex-direction: column;
+  }
+
+  .page_contents > div {
+    width: 100%;
+  }
+
+  .dashboard_layout {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,283 @@
+* {
+  font-family: "pretendard";
+  font-weight: 500;
+}
+
+.property-modify-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 33rem;
+  height: 100vh;
+  background-color: #f8f8f8;
+  box-shadow: -0.133rem 0 0.667rem rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 2rem 1rem 2.2rem;
+  border-left: 0.067rem solid #eee;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+/* 스크롤바 스타일 개선 */
+.property-modify-sidebar::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+.property-modify-sidebar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 0.25rem;
+}
+
+.property-modify-sidebar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 0.25rem;
+}
+
+.property-modify-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.modify-close-button {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #333;
+}
+
+.modify-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 0.067rem solid #eee;
+  background-color: #f8f8f8;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin-top: -3.4rem;
+  padding-top: 3.4rem;
+  margin-bottom: 1rem;
+}
+
+.modify-sidebar-header-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.modify-property-image-placeholder {
+  position: relative;
+  width: 100%;
+  height: 16.66rem;
+  min-height: 16.66rem;
+  max-height: 16.66rem;
+  background-color: #f5f5f5;
+  margin-top: 4rem;
+  overflow: hidden;
+}
+
+.modify-floor-plan-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.modify-floor-plan-placeholder img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.image-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.image-loading p {
+  color: #707482;
+  font-size: 1rem;
+}
+
+.modify-property-tags {
+  display: flex;
+  flex-wrap: nowrap;
+  margin-right: 10px;
+  margin-top: 14px;
+  width: 100%;
+}
+
+.tag-contract-button {
+  margin-left: auto;
+}
+
+.modify-form {
+  margin-top: 1.667rem;
+  margin-bottom: 1.667rem;
+}
+
+.modify-form-item {
+  display: flex;
+  padding-top: 0.8rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.modify-form-item:first-of-type {
+  padding-top: 0;
+}
+
+.modify-form input {
+  width: 100%;
+  padding-left: 0.8rem;
+  padding-top: 0.667rem;
+  padding-bottom: 0.667rem;
+  border: 0.067rem solid #b1b6c7;
+  border-radius: 0.4rem;
+  background-color: #ffffff;
+  min-height: 2.533rem;
+  font-size: 1rem;
+  color: #989898;
+}
+
+.modify-form label {
+  white-space: nowrap;
+  font-size: 1.333rem;
+  margin-right: 1.333rem;
+  color: #1b1b1b;
+}
+
+.modify-info-row {
+  padding-bottom: 1.867rem;
+}
+
+.modify-info-row-box {
+  display: flex;
+  margin-bottom: 0.933rem;
+}
+
+.modify-info-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-right: 0.8rem;
+  min-width: 0;
+}
+
+.modify-info-box label {
+  font-size: 1.333rem;
+  margin-bottom: 0.733rem;
+  color: #1b1b1b;
+  font-family: "pretendard";
+}
+
+.modify-info-box input {
+  border: 0.067rem solid #b1b6c7;
+  border-radius: 0.4rem;
+  font-size: 1rem;
+  color: #989898;
+  padding-left: 0.8rem;
+  padding-top: 0.667rem;
+  padding-bottom: 0.667rem;
+}
+
+input::placeholder {
+  color: #989898;
+}
+
+.modify-note-section label {
+  font-size: 1.333rem;
+  color: #1b1b1b;
+}
+
+textarea {
+  width: 100%;
+  min-height: 5.333rem;
+  margin-top: 0.733rem;
+  padding: 0.8rem;
+  font-size: 1rem;
+  border: 0.067rem solid #b1b6c7;
+  border-radius: 0.4rem;
+  box-sizing: border-box;
+}
+
+textarea::placeholder {
+  white-space: pre-line;
+  color: #8d8d8d;
+  font-family: "pretendard";
+}
+
+.modify-save-button {
+  width: 100%;
+  padding: 0.667rem 0;
+  margin-top: 2rem;
+  margin-bottom: 1.6667rem;
+  border: none;
+  border-radius: 0.533rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  background-color: #1b1b1b;
+  color: white;
+}
+
+
+
+.modify-save-button:disabled {
+  background-color: #6c6c6c;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.modify-save-button:hover:not(:disabled) {
+  background-color: #2a2a2a;
+}
+
+/* 에러 메시지 스타일 */
+.error-message {
+  color: #e74c3c;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* 필수 필드 표시 */
+.required {
+  color: #e74c3c;
+  font-weight: 600;
+  margin-left: 0.2rem;
+}
+
+/* 에러 상태일 때 인풋 스타일 */
+.modify-info-box input.error,
+.modify-form input.error {
+  border-color: #e74c3c;
+  background-color: #fdf2f2;
+}
+
+/* 에러 상태일 때 인풋 포커스 스타일 */
+.modify-info-box input.error:focus,
+.modify-form input.error:focus {
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
+}
+
+/* 에러가 있는 필드의 여백 조정 */
+.modify-info-box:has(.error-message) {
+  margin-bottom: 1.5rem;
+}
+
+.modify-form-item:has(.error-message) {
+  margin-bottom: 1.5rem;
+}

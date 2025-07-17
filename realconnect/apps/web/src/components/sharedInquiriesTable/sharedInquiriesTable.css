@@ -1,0 +1,334 @@
+.shared-inquiries-table-container {
+  width: 100%;
+  position: relative;
+  border: 0.067rem solid #eaeaea;
+  border-radius: 0.533rem;
+  overflow: auto;
+  box-shadow: 0 0.133rem 0.267rem rgba(0, 0, 0, 0.05);
+  height: calc(100vh - 23rem); /* 헤더와 검색바를 제외한 높이 */
+  flex: 1; /* 가능한 모든 공간 차지 */
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease-in-out;
+}
+
+.shared-inquiries-table-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 13.333rem;
+}
+
+.shared-inquiries-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  position: relative;
+}
+
+.checkbox-column input {
+  width: 1.2rem;
+  height: 1.2rem;
+  text-align: center;
+  padding-left: 1rem;
+}
+
+.shared-inquiries-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #e8edff;
+}
+
+.shared-inquiries-table th {
+  padding: 0.933rem 1.067rem;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+  border-bottom: 0.067rem solid #eaeaea;
+  transition: padding 0.3s ease-in-out;
+}
+
+.shared-inquiries-table tbody {
+  position: relative;
+  z-index: 0;
+  background-color: #fff;
+}
+
+.shared-inquiries-table tr {
+  border-bottom: 0.067rem solid #eaeaea;
+}
+
+.shared-inquiries-table tr:last-child {
+  border-bottom: none;
+}
+
+.shared-inquiries-table td {
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  color: #333;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 각 셀에 트랜지션 효과 적용 */
+.shared-inquiries-table th,
+.shared-inquiries-table td {
+  transition:
+    width 0.3s ease-in-out,
+    min-width 0.3s ease-in-out,
+    max-width 0.3s ease-in-out,
+    padding 0.3s ease-in-out,
+    font-size 0.3s ease-in-out;
+}
+
+.shared-inquiries-table th:first-child,
+.shared-inquiries-table td:first-child {
+  width: 2.667rem;
+  min-width: 2.667rem;
+  max-width: 2.667rem;
+  text-align: center;
+  padding-left: 1rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.shared-inquiries-table th:nth-child(2), /* 구  */
+.shared-inquiries-table td:nth-child(2) {
+  min-width: 5rem;
+  width: 5rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.shared-inquiries-table th:nth-child(3), /* 동  */
+.shared-inquiries-table td:nth-child(3) {
+  min-width: 5rem;
+  width: 5rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.shared-inquiries-table th:nth-child(4), /* 단지 */
+.shared-inquiries-table td:nth-child(4) {
+  min-width: 7rem;
+  width: 7rem;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.shared-inquiries-table th:nth-child(5), /* 면적 */
+.shared-inquiries-table td:nth-child(5) {
+  min-width: 5rem;
+  width: 5rem;
+}
+
+.shared-inquiries-table th:nth-child(6), /* 매매 */
+.shared-inquiries-table td:nth-child(6) {
+  min-width: 7rem;
+  width: 7rem;
+}
+
+.shared-inquiries-table th:nth-child(7), /* 전세 */
+.shared-inquiries-table td:nth-child(7) {
+  min-width: 6rem;
+  width: 6rem;
+}
+
+.shared-inquiries-table th:nth-child(8), /* 보증금/월세 */
+.shared-inquiries-table td:nth-child(8) {
+  min-width: 7rem;
+  width: 7rem;
+}
+
+.shared-inquiries-table th:nth-child(9), /* 문의 유형 */
+.shared-inquiries-table td:nth-child(9) {
+  min-width: 5rem;
+  width: 5rem;
+}
+
+.shared-inquiries-table td:nth-child(9) {
+  /* 문의 유형 셀 가운데 정렬 */
+  text-align: center;
+}
+
+.shared-inquiries-table th:nth-child(10), /* 문의 제목 */
+.shared-inquiries-table td:nth-child(10) {
+  min-width: 15rem;
+  width: 15rem;
+}
+
+.shared-inquiries-table th:nth-child(11), /* 업소 명 */
+.shared-inquiries-table td:nth-child(11) {
+  min-width: 10rem;
+  width: 10rem;
+}
+
+.shared-inquiries-table th:nth-child(12), /* 등록일 */
+.shared-inquiries-table td:nth-child(12) {
+  min-width: 10rem;
+  width: 10rem;
+}
+
+.shared-inquiries-table th:nth-child(13), /* 진행 상태 */
+.shared-inquiries-table td:nth-child(13) {
+  min-width: 10rem;
+  width: 10rem;
+}
+
+.shared-inquiries-table th:nth-child(14), /* 즐겨찾기 */
+.shared-inquiries-table td:nth-child(14) {
+  min-width: 6rem;
+  width: 6rem;
+}
+
+.shared-inquiries-table td:nth-child(14) {
+  /* 즐겨찾기 셀 가운데 정렬 */
+  text-align: center;
+}
+
+/* 사이드바가 열렸을 때의 스타일 */
+.page_section.with-sidebar .shared-inquiries-table th,
+.page_section.with-sidebar .shared-inquiries-table td {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.page_section.with-sidebar .shared-inquiries-table th:first-child,
+.page_section.with-sidebar .shared-inquiries-table td:first-child {
+  padding-left: 0.5rem;
+  width: 2rem;
+  min-width: 2rem;
+}
+
+.page_section.with-sidebar .shared-inquiries-table th:nth-child(2), /* 구 */
+.page_section.with-sidebar .shared-inquiries-table td:nth-child(2) {
+  min-width: 4rem;
+  width: 4rem;
+}
+
+.page_section.with-sidebar .shared-inquiries-table th:nth-child(3), /* 동 */
+.page_section.with-sidebar .shared-inquiries-table td:nth-child(3) {
+  min-width: 4rem;
+  width: 4rem;
+}
+
+.page_section.with-sidebar .shared-inquiries-table th:nth-child(4), /* 단지 */
+.page_section.with-sidebar .shared-inquiries-table td:nth-child(4) {
+  min-width: 6rem;
+  width: 6rem;
+}
+
+.page_section.with-sidebar .shared-inquiries-table th:nth-child(5), /* 면적 */
+.page_section.with-sidebar .shared-inquiries-table td:nth-child(5) {
+  min-width: 4rem;
+  width: 4rem;
+}
+
+.page_section.with-sidebar .shared-inquiries-table th:nth-child(6), /* 매매 */
+.page_section.with-sidebar .shared-inquiries-table td:nth-child(6) {
+  min-width: 5rem;
+  width: 5rem;
+}
+
+.page_section.with-sidebar .shared-inquiries-table th:nth-child(7), /* 전세 */
+.page_section.with-sidebar .shared-inquiries-table td:nth-child(7) {
+  min-width: 5rem;
+  width: 5rem;
+}
+
+.page_section.with-sidebar .shared-inquiries-table th:nth-child(8), /* 보증금/월세 */
+.page_section.with-sidebar .shared-inquiries-table td:nth-child(8) {
+  min-width: 6rem;
+  width: 6rem;
+}
+
+.page_section.with-sidebar .shared-inquiries-table th:nth-child(9), /* 문의 유형 */
+.page_section.with-sidebar .shared-inquiries-table td:nth-child(9) {
+  min-width: 4rem;
+  width: 4rem;
+}
+
+.page_section.with-sidebar .shared-inquiries-table th:nth-child(10), /* 문의 제목 */
+.page_section.with-sidebar .shared-inquiries-table td:nth-child(10) {
+  min-width: 7rem;
+  width: 7rem;
+}
+
+.page_section.with-sidebar .shared-inquiries-table th:nth-child(11), /* 업소 명 */
+.page_section.with-sidebar .shared-inquiries-table td:nth-child(11) {
+  min-width: 7rem;
+  width: 7rem;
+}
+
+.page_section.with-sidebar .shared-inquiries-table th:nth-child(12), /* 등록일 */
+.page_section.with-sidebar .shared-inquiries-table td:nth-child(12) {
+  min-width: 7rem;
+  width: 7rem;
+}
+
+.page_section.with-sidebar .shared-inquiries-table th:nth-child(13), /* 진행 상태 */
+.page_section.with-sidebar .shared-inquiries-table td:nth-child(13) {
+  min-width: 5rem;
+  width: 5rem;
+}
+
+.page_section.with-sidebar .shared-inquiries-table th:nth-child(14), /* 즐겨찾기 */
+.page_section.with-sidebar .shared-inquiries-table td:nth-child(14) {
+  min-width: 4.5rem;
+  width: 4.5rem;
+}
+
+/* 문의 제목 텍스트 스타일 */
+.inquiry-title-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  width: 100%;
+  max-width: 15rem;
+}
+
+.page_section.with-sidebar .apartment-name-text {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 7ch;
+  max-width: 7ch;
+  text-overflow: ellipsis;
+  align-items: center;
+}
+
+/* 사이드바가 열렸을 때 문의 제목 텍스트 제한 */
+.page_section.with-sidebar .inquiry-title-text {
+  display: inline-block;
+  width: 8ch;
+  max-width: 8ch;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inquiry-type-text {
+  display: inline-block;
+  width: 100%;
+  padding: 0.333rem 0.667rem;
+  background-color: #e8edff;
+  max-width: 15rem;
+  font-size: 0.9rem;
+  border-radius: 99rem;
+}
+
+.inquiry-status-text {
+  display: inline-block;
+  padding: 0.333rem 0.667rem;
+  background-color: #f1f8ff;
+  color: #0077ff;
+  font-size: 0.8rem;
+  border-radius: 99rem;
+}

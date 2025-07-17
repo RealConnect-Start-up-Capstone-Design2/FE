@@ -4,9 +4,7 @@ import { getProperties, updateProperty } from "../services/propertyService";
 
 // 컴포넌트 불러오기
 import Search from "../components/common/search/search";
-import { Button } from "@realconnect/shared-ui";
-import AddProperty from "../components/domain/addProperty/addProperty";
-import DeleteProperty from "../components/domain/deleteProperty/deleteProperty";
+import { Button, SortButton } from "@realconnect/shared-ui";
 import PropertyTable from "../components/domain/PropertyTable/PropertyTable";
 import PropertyDetailSidebar from "../components/domain/rightSidebar/propertyDetailSidebar";
 import PropertyModifySidebar from "../components/domain/rightSidebar/propertyModifySidebar";
@@ -82,6 +80,11 @@ const Properties = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const closingSidebarRef = useRef(false);
   const queryClient = useQueryClient();
+  const [sortStandard, setSortStandard] = useState("DONG_HO");
+
+  const handleSortStandardChange = (value) => {
+    setSortStandard(value);
+  };
 
   const { data: propertiesData, isLoading } = useQuery({
     queryKey: ["properties"],
@@ -154,6 +157,12 @@ const Properties = () => {
     { value: "BUY", label: "매매" },
     { value: "JEONSE", label: "전세" },
     { value: "MONTH_RENT", label: "월세" },
+  ];
+
+  const SortStandardOptions = [
+    { value: "DONG_HO", label: "동호수 기준" },
+    { value: "END_DATE", label: "만기일 기준" },
+    { value: "CREATED_AT", label: "등록일 기준" },
   ];
 
   const handleViewChange = (view) => {
@@ -242,14 +251,20 @@ const Properties = () => {
           <Search onSearch={handleSearch} />
         </div>
         <div style={{ display: "flex", gap: "0.8rem" }}>
-          <Button
+          <SortButton
+            options={SortStandardOptions}
+            value={sortStandard}
+            onChange={handleSortStandardChange}
+            placeholder="정렬 기준"
+          />
+          <SortButton
             options={transactionTypeOptions}
             value={transactionType}
             onChange={handleTransactionTypeChange}
             placeholder="거래 유형"
           />
-          <AddProperty />
-          <DeleteProperty />
+          <Button label="매물 추가" onClick={() => {}} />
+          <Button label="매물 삭제" onClick={() => {}} variant="secondary" />
         </div>
       </div>
       <div className="page_content">

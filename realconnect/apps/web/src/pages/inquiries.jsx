@@ -9,7 +9,6 @@ import {
 // 컴포넌트 불러오기
 import Search from "../components/common/search/search";
 import { Button, SortButton } from "@realconnect/shared-ui";
-import DeleteInquiry from "../components/domain/deleteInquiry/deleteInquiry";
 import InquiryTable from "../components/domain/inquiriesTable/inquiryTable";
 import InquiryDetailSidebar from "../components/domain/rightSidebar/inquiryDetailSidebar";
 import InquiryModifySidebar from "../components/domain/rightSidebar/inquiryModifySidebar";
@@ -299,6 +298,7 @@ const Inquiries = () => {
                 variant="primary"
                 disabled={isAddingInquiry}
               />
+              <Button label="문의 삭제" onClick={() => {}} variant="secondary" />
             </div>
           </div>
           {isLoading ? (

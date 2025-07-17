@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./search.css";
-import searchIcon from "../../../assets/icons/search.svg";
+import searchIcon from "../../assets/icons/search.svg";
 
 const Search = ({ onSearch }) => {
   const [searchTerm, setSearchTerm] = useState("");

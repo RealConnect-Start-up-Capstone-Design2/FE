@@ -9,12 +9,15 @@ import {
   createContract,
   updateContract,
 } from "@/services/contractService";
+import Search from "@/components/common/search/search";
 
 const Contracts = () => {
   const [selectedContract, setSelectedContract] = useState(null);
+  const [activeView, setActiveView] = useState("전체");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState("");
   const queryClient = useQueryClient();
 
   const [filters, setFilters] = useState({
@@ -37,17 +40,12 @@ const Contracts = () => {
     { value: "EXPIRED", label: "계약만료" },
   ];
 
-  const sortByOptions = [
-    { value: "contractDate,desc", label: "최신 계약일순" },
-    { value: "dueDate,asc", label: "만기일 임박순" },
-  ];
-
   const {
     data: contracts,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["contracts", filters],
+    queryKey: ["contracts", {filters, searchKeyword}],
     queryFn: () => {
       const params = {
         transactionType:
@@ -55,6 +53,7 @@ const Contracts = () => {
         contractStatus:
           filters.contractStatus === "ALL" ? null : filters.contractStatus,
         sort: filters.sort,
+        keyword: searchKeyword || undefined,
       };
       // sort 파라미터가 null이 아닐 때만 요청에 포함
       if (!params.sort) {
@@ -82,6 +81,10 @@ const Contracts = () => {
     },
   });
 
+  const handleSearch = (searchTerm) => {
+    setSearchKeyword(searchTerm);
+  };
+
   const handleSelectContract = (contract) => {
     if (selectedContract && selectedContract.id === contract.id) {
       handleCloseSidebar();
@@ -108,6 +111,10 @@ const Contracts = () => {
     setFilters(prev => ({ ...prev, [filterName]: value }));
   };
 
+  const handleViewChange = (view) => {
+    setActiveView(view);
+  };
+
   return (
     <div className={`page_section ${isSidebarOpen ? "with-sidebar" : ""}`}>
       <div className="page_header">
@@ -115,17 +122,30 @@ const Contracts = () => {
           <p className="page_title">계약 관리</p>
           <p className="page_description">모든 계약 내역을 확인하고 관리합니다.</p>
         </div>
-        <div className="header_right">
-          <Button
-            label="+ 계약 추가하기"
-            onClick={() => setIsModalOpen(true)}
-            variant="primary"
-          />
+        <div className="view_selector">
+        <button
+            className={`view_option ${
+              activeView === "전체" ? "view_option--active" : ""
+            }`}
+            onClick={() => handleViewChange("전체")}
+          >
+            전체
+          </button>
+          <button
+            className={`view_option ${
+              activeView === "즐겨찾기" ? "view_option--active" : ""
+            }`}
+            onClick={() => handleViewChange("즐겨찾기")}
+          >
+            즐겨찾기
+          </button>
         </div>
       </div>
-      
-      <div className="table-controls">
+      <div className="content_wrap">
+      <div className="table_header">
+        <div className="table_controls" style={{justifyContent: 'space-between', width: '100%'}}>
          <div style={{ display: "flex", gap: "0.8rem" }}>
+          <Search onSearch={handleSearch} />
             <SortButton
                 options={transactionTypeOptions}
                 value={filters.transactionType || "ALL"}
@@ -137,13 +157,10 @@ const Contracts = () => {
                 onChange={(value) => handleFilterChange('contractStatus', value)}
             />
          </div>
-         <SortButton
-            options={sortByOptions}
-            value={filters.sort || "contractDate,desc"} // UI에서는 기본값을 보여주도록 처리
-            onChange={(value) => handleFilterChange('sort', value)}
-         />
+         <Button label="계약 추가" onClick={() => {}} variant="primary" />
+         <Button label="계약 삭제" onClick={() => {}} variant="secondary" />
+        </div>
       </div>
-
       {isLoading ? (
         <div>로딩 중...</div>
       ) : error ? (
@@ -172,6 +189,7 @@ const Contracts = () => {
         onClose={() => setIsModalOpen(false)}
         onSubmit={(contractData) => createContractMutation.mutate(contractData)}
       />
+    </div>
     </div>
   );
 };
