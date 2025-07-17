@@ -8,10 +8,10 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 
 // 페이지 컴포넌트
 import Dashboard from "./pages/dashboard/dashboard";
-import Properties from "./pages/propertiesManage";
-import Inquiries from "./pages/inquiries";
-import Contracts from "./pages/contracts";
-import SharedInquiries from "./pages/sharedInquiries";
+import Properties from "./pages/propertiesManage/propertiesManage";
+import Inquiries from "./pages/inquiries/inquiries";
+import Contracts from "./pages/contracts/contracts";
+import SharedInquiries from "./pages/sharedInquiries/sharedInquiries";
 import Settings from "./pages/settings";
 import Logout from "./pages/logout";
 import OnboardingLogin from "./pages/onboardingLogin/onboardingLogin";

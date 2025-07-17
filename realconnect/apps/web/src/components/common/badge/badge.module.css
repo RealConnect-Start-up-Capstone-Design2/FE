@@ -1,0 +1,57 @@
+.badge {
+  display: inline-block;
+  padding: 0.3em 0.9em;
+  border-radius: 99rem;
+  font-size: 0.95em;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  vertical-align: middle;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* 계약 상태 */
+.계약중 {
+  background: #fff8b8;
+  color: #c38b11;
+}
+.계약완료 {
+  background: #defcdc;
+  color: #189554;
+}
+.계약파기 {
+  background: #fcdcdc;
+  color: #b72525;
+}
+.계약만료 {
+  background: #eaeaea;
+  color: #888;
+}
+
+/* 거래 유형 */
+.매매 {
+  background: #e8edff;
+  color: #1c2882;
+}
+.전세 {
+  background: #e8edff;
+  color: #1c2882;
+}
+.월세 {
+  background: #e8edff;
+  color: #1c2882;
+}
+
+/* 진행 상태 등 기타 */
+.진행중 {
+  background: #e8edff;
+  color: #1c2882;
+}
+.완료 {
+  background: #defcdc;
+  color: #189554;
+}
+.취소 {
+  background: #fcdcdc;
+  color: #b72525;
+} 
