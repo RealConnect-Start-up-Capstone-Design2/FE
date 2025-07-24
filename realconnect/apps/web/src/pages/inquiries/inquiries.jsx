@@ -14,68 +14,12 @@ import InquiryDetailSidebar from "../../components/domain/inquiries/inquiryDetai
 import InquiryModifySidebar from "../../components/domain/inquiries/inquiryModifySidebar";
 import TableHeaderControls from "../../components/common/TableHeaderControls";
 import ViewSelector from "../../components/common/ViewSelector";
+import { toInquiryTableRow } from "../../../../../packages/shared-model/InquiryModel";
+import { toInquiryViewRow } from "../../../../../packages/web-viewmodel/inquiryViewModel";
 
 // 아이콘 불러오기
 import PlusIcon from "../../assets/icons/plus.svg?react";
 import TrashIcon from "../../assets/icons/trash.svg?react";
-
-// API 응답을 InquiryTable용 데이터로 변환
-const convertApiDataToInquiryTable = (apiData) => {
-  return apiData.map((item) => {
-    // 날짜 포맷 변환 함수
-    const formatDate = (dateString) => {
-      if (!dateString) return "-";
-      try {
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return "-"; // 유효하지 않은 날짜
-
-        // YYYY-MM-DD 형태로 포맷팅
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-
-        return `${year}-${month}-${day}`;
-      } catch {
-        return "-";
-      }
-    };
-
-    return {
-      id: item.id,
-      name: item.name,
-      phone: item.phone,
-      apartmentName: item.apartmentName,
-      area: item.area ? `${item.area}` : "-",
-      inquiryType:
-        item.inquiryType === "BUY"
-          ? "매매"
-          : item.inquiryType === "JEONSE"
-            ? "전세"
-            : item.inquiryType === "MONTH_RENT"
-              ? "월세"
-              : "-",
-      status:
-        item.status === "IN_PROGRESS"
-          ? "진행 중"
-          : item.status === "COMPLETED"
-            ? "완료"
-            : item.status === "CANCEL"
-              ? "취소"
-              : "-",
-      salePrice: item.salePrice
-        ? (item.salePrice / 100000000).toFixed(1) + "억"
-        : "-",
-      deposit: item.deposit ? item.deposit.toLocaleString() : "-",
-      jeonsePrice: item.jeonsePrice
-        ? (item.jeonsePrice / 100000000).toFixed(1) + "억"
-        : "-",
-      monthPrice: item.monthPrice ? item.monthPrice.toLocaleString() : "-",
-      memo: item.memo || "-",
-      favorite: item.favorite === true,
-      createdAt: formatDate(item.createdAt),
-    };
-  });
-};
 
 const Inquiries = () => {
   const [selectedInquiry, setSelectedInquiry] = useState(null);
@@ -101,10 +45,13 @@ const Inquiries = () => {
 
   const saveInquiryMutation = useMutation({
     mutationFn: (inquiryData) => {
+      // inquiryType -> type 변환
+      const requestBody = { ...inquiryData, type: inquiryData.inquiryType };
+      delete requestBody.inquiryType;
       if (inquiryData.id) {
-        return updateInquiry(inquiryData.id, inquiryData);
+        return updateInquiry(inquiryData.id, requestBody);
       } else {
-        return createInquiry(inquiryData);
+        return createInquiry(requestBody);
       }
     },
     onSuccess: () => {
@@ -116,7 +63,12 @@ const Inquiries = () => {
   });
 
   const updateFavoriteMutation = useMutation({
-    mutationFn: (inquiry) => updateInquiry(inquiry.id, inquiry),
+    mutationFn: (inquiry) => {
+      // inquiryType -> type 변환
+      const requestBody = { ...inquiry, type: inquiry.inquiryType };
+      delete requestBody.inquiryType;
+      return updateInquiry(inquiry.id, requestBody);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(["inquiries"]);
     },
@@ -130,9 +82,10 @@ const Inquiries = () => {
     }
   };
 
-  const inquiries = React.useMemo(() => {
+  // Model과 ViewModel 배열을 모두 관리
+  const models = React.useMemo(() => {
     if (!rawInquiries) return [];
-    let processedData = convertApiDataToInquiryTable(rawInquiries);
+    let processedData = rawInquiries.map(toInquiryTableRow);
     processedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     if (activeView === "즐겨찾기") {
       return processedData.filter((inquiry) => inquiry.favorite);
@@ -140,16 +93,19 @@ const Inquiries = () => {
     return processedData;
   }, [rawInquiries, activeView]);
 
+  // ViewModel로 변환
+  const viewRows = React.useMemo(() => models.map(toInquiryViewRow), [models]);
+
   useEffect(() => {
-    if (selectedInquiry && inquiries.length > 0) {
-      const updatedInquiry = inquiries.find(
+    if (selectedInquiry && models.length > 0) {
+      const updatedInquiry = models.find(
         (inquiry) => inquiry.id === selectedInquiry.id
       );
       if (updatedInquiry) {
         setSelectedInquiry(updatedInquiry);
       }
     }
-  }, [inquiries, selectedInquiry]);
+  }, [models, selectedInquiry]);
 
   const transactionTypeOptions = [
     { value: "ALL", label: "전체" },
@@ -170,48 +126,16 @@ const Inquiries = () => {
     setInquiryType(type);
   };
 
-  const handleFavoriteToggle = (inquiry) => {
-    const apiData = {
-      name: inquiry.name,
-      phone: inquiry.phone,
-      apartmentName: inquiry.apartmentName,
-      area: inquiry.area === "-" ? null : parseInt(inquiry.area),
-      inquiryType:
-        inquiry.inquiryType === "매매"
-          ? "BUY"
-          : inquiry.inquiryType === "전세"
-            ? "JEONSE"
-            : "MONTH_RENT",
-      status:
-        inquiry.status === "진행 중"
-          ? "IN_PROGRESS"
-          : inquiry.status === "완료"
-            ? "COMPLETED"
-            : "CANCEL",
-      salePrice:
-        inquiry.salePrice === "-"
-          ? null
-          : Math.round(
-              parseFloat(inquiry.salePrice.replace("억", "")) * 100000000
-            ),
-      deposit:
-        inquiry.deposit === "-"
-          ? null
-          : parseInt(inquiry.deposit.replace(/,/g, "")),
-      jeonsePrice:
-        inquiry.jeonsePrice === "-"
-          ? null
-          : Math.round(
-              parseFloat(inquiry.jeonsePrice.replace("억", "")) * 100000000
-            ),
-      monthPrice:
-        inquiry.monthPrice === "-"
-          ? null
-          : parseInt(inquiry.monthPrice.replace(/,/g, "")),
-      memo: inquiry.memo === "-" ? null : inquiry.memo,
-      favorite: !inquiry.favorite,
-    };
-    updateFavoriteMutation.mutate(apiData);
+  // 즐겨찾기 토글 시 Model을 찾아서 서버로 전달
+  const handleFavoriteToggle = (viewRow) => {
+    // viewRow에서 id 추출
+    const model = models.find((item) => item.id === viewRow.id);
+    if (!model) return;
+    // rawInquiries에서 원본 entity 찾기
+    const original = rawInquiries?.find((item) => item.id === model.id);
+    if (!original) return;
+    const updated = { ...original, favorite: !original.favorite };
+    updateFavoriteMutation.mutate(updated);
   };
 
   const handleInquirySelect = (inquiry) => {
@@ -308,7 +232,7 @@ const Inquiries = () => {
             <div>로딩 중...</div>
           ) : (
             <InquiriesTable
-              inquiries={inquiries}
+              inquiries={viewRows}
               onInquirySelect={handleInquirySelect}
               onFavoriteToggle={handleFavoriteToggle}
             />

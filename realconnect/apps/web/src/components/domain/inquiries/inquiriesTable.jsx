@@ -37,7 +37,9 @@ const InquiriesTable = ({ inquiries, onInquirySelect, onFavoriteToggle }) => {
         <input
           type="checkbox"
           onChange={toggleSelectAll}
-          checked={selectedItems.length === inquiries.length && inquiries.length > 0}
+          checked={
+            selectedItems.length === inquiries.length && inquiries.length > 0
+          }
         />
       ),
       render: (row) => (
@@ -50,31 +52,26 @@ const InquiriesTable = ({ inquiries, onInquirySelect, onFavoriteToggle }) => {
       ),
     },
     { key: "apartmentName", header: "단지" },
-    { key: "memo", header: "문의 내용" },
-    { key: "area", header: "면적" },
+    { key: "memoText", header: "문의 내용" },
+    { key: "areaText", header: "면적" },
     {
       key: "inquiryType",
       header: "문의 유형",
       render: (row) => (
-        <Badge label={row.inquiryType} variant={row.inquiryType} />
+        <Badge label={row.inquiryTypeText} variant={row.inquiryTypeText} />
       ),
     },
-    { key: "salePrice", header: "매매" },
-    { key: "jeonsePrice", header: "전세" },
-    {
-      key: "depositMonth",
-      header: "보증금/월세",
-      render: (row) => `${row.deposit}/${row.monthPrice}`,
-    },
+    { key: "salePriceText", header: "매매" },
+    { key: "jeonsePriceText", header: "전세" },
+    { key: "depositText", header: "보증금" },
+    { key: "monthPriceText", header: "월세" },
     { key: "name", header: "문의자" },
     { key: "phone", header: "연락처" },
-    { key: "createdAt", header: "등록일" },
+    { key: "createdAtText", header: "등록일" },
     {
       key: "status",
       header: "진행 상태",
-      render: (row) => (
-        <Badge label={row.status} variant={row.status} />
-      ),
+      render: (row) => <Badge label={row.statusText} variant={row.status} />,
     },
     {
       key: "favorite",
@@ -111,4 +108,4 @@ const InquiriesTable = ({ inquiries, onInquirySelect, onFavoriteToggle }) => {
   );
 };
 
-export default InquiriesTable; 
+export default InquiriesTable;

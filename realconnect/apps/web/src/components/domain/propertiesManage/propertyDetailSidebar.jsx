@@ -9,7 +9,7 @@ import InfoBox from "@/components/common/info/InfoBox";
 const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
   const [floorPlanImage, setFloorPlanImage] = useState(null);
   const [viewImage, setViewImage] = useState(null);
-  const [activeTab, setActiveTab] = useState('floor');
+  const [activeTab, setActiveTab] = useState("floor");
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isSubmittingContract, setIsSubmittingContract] = useState(false);
@@ -50,7 +50,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
 
   useEffect(() => {
     console.log(property);
-    
+
     // 평면도 이미지 로드
     if (property && property.img) {
       const loadFloorPlanImage = async () => {
@@ -148,9 +148,12 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
         <div className="property-image-placeholder">
           {(() => {
             // 전망 이미지가 없으면 평면도 이미지로 대체
-            const currentImage = activeTab === 'floor' ? floorPlanImage : (viewImage || floorPlanImage);
-            const altText = activeTab === 'floor' ? '평면도' : '전망';
-            
+            const currentImage =
+              activeTab === "floor"
+                ? floorPlanImage
+                : viewImage || floorPlanImage;
+            const altText = activeTab === "floor" ? "평면도" : "전망";
+
             if (currentImage) {
               return (
                 <img
@@ -162,22 +165,28 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
             } else {
               return (
                 <div className="image-loading">
-                  <p>{altText} 이미지 {activeTab === 'view' && !viewImage ? '(평면도로 대체)' : ''} 로딩 중...</p>
+                  <p>
+                    {altText} 이미지{" "}
+                    {activeTab === "view" && !viewImage
+                      ? "(평면도로 대체)"
+                      : ""}{" "}
+                    로딩 중...
+                  </p>
                 </div>
               );
             }
           })()}
           <div className="floor-plan-placeholder"></div>
           <div className="image-control-buttons">
-            <button 
-              className={`control-button ${activeTab === 'floor' ? 'active' : ''}`}
-              onClick={() => setActiveTab('floor')}
+            <button
+              className={`control-button ${activeTab === "floor" ? "active" : ""}`}
+              onClick={() => setActiveTab("floor")}
             >
               평면도
             </button>
-            <button 
-              className={`control-button ${activeTab === 'view' ? 'active' : ''}`}
-              onClick={() => setActiveTab('view')}
+            <button
+              className={`control-button ${activeTab === "view" ? "active" : ""}`}
+              onClick={() => setActiveTab("view")}
             >
               전망
             </button>
@@ -245,10 +254,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
 
       <div className="sidebar-footer">
         <div className="action-buttons">
-          <button
-            className="property-primary-button"
-            onClick={onEdit}
-          >
+          <button className="property-primary-button" onClick={onEdit}>
             수정하기
           </button>
           <button

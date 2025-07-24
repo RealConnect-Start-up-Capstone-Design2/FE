@@ -12,10 +12,10 @@ export interface PropertyTableRow {
   img: string | null;
   transactionType: string;
   status: string;
-  salePrice: number | null;
-  jeonsePrice: number | null;
-  deposit: number | null;
-  monthPrice: number | null;
+  salePrice: number | string;
+  jeonsePrice: number | string;
+  deposit: number | string;
+  monthPrice: number | string;
   ownerName: string;
   ownerPhone: string;
 }
@@ -55,7 +55,6 @@ export function toPropertyTableRow(entity: PropertyEntity): PropertyTableRow {
     img: entity.img,
     transactionType: getTransactionType(entity.property),
     status: getStatusText(entity.property?.status),
-    // 빨간 줄이 나오는 이유 : TS 문법 오류(number지만 문자열로 null값 처리 중임)
     salePrice: entity.property?.salePrice ?? "-",
     jeonsePrice: entity.property?.jeonsePrice ?? "-",
     deposit: entity.property?.deposit ?? "-",

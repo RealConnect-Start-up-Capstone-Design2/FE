@@ -50,46 +50,6 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
     closeContractModal();
   };
 
-  // 문의 정보를 계약 모달용 데이터로 변환
-  const convertInquiryToContractData = () => {
-    // 한국어 통화 형식을 쉼표 포함 숫자로 변환하는 함수
-    const convertCurrencyToNumber = (currencyStr) => {
-      if (!currencyStr || currencyStr === "-") return "";
-
-      if (currencyStr.includes("억")) {
-        const number = parseFloat(currencyStr.replace("억", ""));
-        const result = number * 100000000;
-        return result.toLocaleString(); // 쉼표 포함 형태로 변환
-      }
-
-      if (currencyStr.includes("천만")) {
-        const number = parseFloat(currencyStr.replace("천만", ""));
-        const result = number * 10000000;
-        return result.toLocaleString();
-      }
-
-      // 이미 숫자 형태인 경우
-      const numericValue = currencyStr.replace(/[^0-9]/g, "");
-      if (numericValue) {
-        return parseInt(numericValue).toLocaleString();
-      }
-
-      return currencyStr;
-    };
-
-    return {
-      apartmentName: inquiry.apartmentName,
-      inquiryType: inquiry.inquiryType,
-      salePrice: convertCurrencyToNumber(inquiry.salePrice),
-      jeonsePrice: convertCurrencyToNumber(inquiry.jeonsePrice),
-      deposit: convertCurrencyToNumber(inquiry.deposit),
-      monthPrice: inquiry.monthPrice, // 월세는 보통 만원 단위라서 그대로
-      area: inquiry.area,
-      tenant: inquiry.name, // 문의자가 임차인(매수인)이 됨
-      tenantPhone: inquiry.phone,
-    };
-  };
-
   return (
     <div className={`inquiry-detail-sidebar ${isClosing ? "closing" : ""}`}>
       <div className="sidebar-header">
@@ -138,7 +98,13 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
           <InfoRow>
             <InfoBox title="문의 유형" value={inquiry.inquiryType} />
             <InfoBox title="진행 상태">
-              <p className={inquiry.status.replace(/\s+/g, "")}>{inquiry.status}</p>
+              <p
+                className={
+                  inquiry.status ? inquiry.status.replace(/\s+/g, "") : ""
+                }
+              >
+                {inquiry.status || "-"}
+              </p>
             </InfoBox>
           </InfoRow>
         </div>
@@ -184,7 +150,7 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
         isOpen={isContractModalOpen}
         onClose={closeContractModal}
         onSubmit={handleContractSubmit}
-        property={convertInquiryToContractData()}
+        property={inquiry}
       />
     </div>
   );
