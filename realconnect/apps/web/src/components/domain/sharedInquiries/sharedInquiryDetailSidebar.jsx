@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
 import "./sharedInquiryDetailSidebar.css";
+import InfoRow from "@/components/common/info/InfoRow";
+import InfoBox from "@/components/common/info/InfoBox";
 
 const SharedInquiryDetailSidebar = ({
   inquiry,
@@ -86,59 +88,37 @@ const SharedInquiryDetailSidebar = ({
 
         {/* 문의자 정보 - 자신의 문의일 경우에만 표시 */}
         <div className="contact-info">
-          <div className="info-row">
-            <div className="info-box">
-              <h4>문의자</h4>
-              <p>{inquiry.customerName || "등록 부동산에 문의"}</p>
-            </div>
-            <div className="info-box">
-              <h4>문의자 연락처</h4>
-              <p>{inquiry.customerPhone || "등록 부동산에 문의"}</p>
-            </div>
-          </div>
+          <InfoRow>
+            <InfoBox title="문의자" value={inquiry.customerName || "등록 부동산에 문의"} />
+            <InfoBox title="문의자 연락처" value={inquiry.customerPhone || "등록 부동산에 문의"} />
+          </InfoRow>
         </div>
 
         <div className="inquiry-info">
-          <div className="info-row">
-            <div className="info-box">
-              <h4>문의 유형</h4>
-              <p>{formatInquiryType(inquiry.type)}</p>
-            </div>
-            <div className="info-box">
-              <h4>진행 상태</h4>
-              <p className={inquiry.status?.replace(/\s+/g, "")}>
-                {inquiry.status || "미등록"}
-              </p>
-            </div>
-          </div>
+          <InfoRow>
+            <InfoBox title="문의 유형" value={formatInquiryType(inquiry.type)} />
+            <InfoBox title="진행 상태">
+              <p className={inquiry.status?.replace(/\s+/g, "")}>{inquiry.status || "미등록"}</p>
+            </InfoBox>
+          </InfoRow>
         </div>
 
         <div className="property-details">
-          <div className="info-row">
-            <div className="info-box">
-              <h4>면적</h4>
-              <p>{inquiry.area} m²</p>
-            </div>
-            <div className="info-box">
-              <h4>등록일</h4>
-              <p>{inquiry.createdAt || "-"}</p>
-            </div>
-          </div>
+          <InfoRow>
+            <InfoBox title="면적" value={`${inquiry.area} m²`} />
+            <InfoBox title="등록일" value={inquiry.createdAt || "-"} />
+          </InfoRow>
         </div>
 
         <div className="property-details">
-          <div className="info-row">
-            <div className="info-box">
-              <h4>연락처</h4>
-              <p>{inquiry.agentPhone}</p>
-            </div>
-            <div className="info-box">
-              <h4>시/구/동</h4>
+          <InfoRow>
+            <InfoBox title="연락처" value={inquiry.agentPhone} />
+            <InfoBox title="시/구/동">
               <p>
                 {inquiry.l1}/{inquiry.l2}/{inquiry.l3}
               </p>
-            </div>
-          </div>
+            </InfoBox>
+          </InfoRow>
         </div>
 
         <div className="inquiry-content">

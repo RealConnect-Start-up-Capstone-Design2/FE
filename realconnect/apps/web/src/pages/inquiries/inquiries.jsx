@@ -15,6 +15,10 @@ import InquiryModifySidebar from "../../components/domain/inquiries/inquiryModif
 import TableHeaderControls from "../../components/common/TableHeaderControls";
 import ViewSelector from "../../components/common/ViewSelector";
 
+// 아이콘 불러오기
+import PlusIcon from "../../assets/icons/plus.svg?react";
+import TrashIcon from "../../assets/icons/trash.svg?react";
+
 // API 응답을 InquiryTable용 데이터로 변환
 const convertApiDataToInquiryTable = (apiData) => {
   return apiData.map((item) => {
@@ -117,7 +121,6 @@ const Inquiries = () => {
       queryClient.invalidateQueries(["inquiries"]);
     },
   });
-
 
   const handleAddInquiryClick = () => {
     setIsAddingInquiry(true);
@@ -254,7 +257,9 @@ const Inquiries = () => {
   };
 
   return (
-    <div className={`page_section ${selectedInquiry || isAddingInquiry ? "with-sidebar" : ""}`}>
+    <div
+      className={`page_section ${selectedInquiry || isAddingInquiry ? "with-sidebar" : ""}`}
+    >
       <div className="page_header">
         <div className="header_left">
           <p className="page_title">문의 관리</p>
@@ -283,12 +288,18 @@ const Inquiries = () => {
                 onChange={handleTransactionTypeChange}
               />
               <Button
-                label="+ 문의 추가"
+                label="문의 추가"
                 onClick={handleAddInquiryClick}
                 variant="primary"
                 disabled={isAddingInquiry}
+                icon={<PlusIcon />}
               />
-              <Button label="문의 삭제" onClick={() => {}} variant="secondary" />
+              <Button
+                label="문의 삭제"
+                onClick={() => {}}
+                variant="secondary"
+                icon={<TrashIcon />}
+              />
             </>
           }
         />
@@ -305,8 +316,8 @@ const Inquiries = () => {
         </div>
         {(selectedInquiry || isAddingInquiry) && (
           <>
-            {selectedInquiry && (
-              isEditMode ? (
+            {selectedInquiry &&
+              (isEditMode ? (
                 <InquiryModifySidebar
                   inquiry={selectedInquiry}
                   onClose={closeSidebar}
@@ -321,8 +332,7 @@ const Inquiries = () => {
                   onEdit={() => setIsEditMode(true)}
                   isClosing={isClosingSidebar}
                 />
-              )
-            )}
+              ))}
             {isAddingInquiry && !selectedInquiry && (
               <InquiryModifySidebar
                 inquiry={{

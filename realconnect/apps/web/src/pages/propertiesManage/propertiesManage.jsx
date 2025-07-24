@@ -11,71 +11,12 @@ import PropertyModifySidebar from "../../components/domain/propertiesManage/prop
 import TableHeaderControls from "../../components/common/TableHeaderControls";
 import ViewSelector from "../../components/common/ViewSelector";
 
-// 아이콘 불러오기  
+// 아이콘 불러오기
 import PlusIcon from "../../assets/icons/plus.svg?react";
 import TrashIcon from "../../assets/icons/trash.svg?react";
 
 // API 응답을 PropertyTable용 데이터로 변환
-const convertApiDataToTableData = (apiData) => {
-  return apiData.map((item) => {
-    const p = item.property || {};
-    return {
-      id: item.apartmentId,
-      apartmentName: item.apartmentName,
-      building: item.dong ? `${item.dong}동` : "",
-      unit: item.ho ? `${item.ho}호` : "",
-      area: item.area ? `${item.area} m²` : "",
-      salePrice: p.salePrice || "-",
-      deposit: p.deposit || "-",
-      jeonsePrice: p.jeonsePrice || "-",
-      // 월세
-      monthPrice: p.monthPrice ? p.monthPrice.toLocaleString() : "-",
-      transactionType: getTransactionType(p),
-      ownerName: p.ownerName || "-",
-      contact: p.ownerPhone || "-",
-      tenant: p.tenantName || "-",
-      tenantContact: p.tenantPhone || "-",
-      // API 응답의 원본 상태값을 한글로 변환하여 저장
-      status: getStatusText(p.status) || "미등록",
-      memo: p.memo || "",
-      img: item.img || null,
-      // 추가 정보 저장
-      startDate: p.startDate || "-",
-      endDate: p.endDate || "-",
-      // 원본 데이터도 저장 (필요 시 활용)
-      rawData: item,
-    };
-  });
-};
-
-// 거래 유형 반환 함수
-const getTransactionType = (property) => {
-  if (!property || !property.status) return "-";
-
-  // 상태값에 따른 거래 유형 분류
-  if (property.salePrice && property.salePrice > 0) return "매매";
-  if (property.jeonsePrice && property.jeonsePrice > 0) return "전세";
-  if (property.deposit && property.monthPrice) return "월세";
-
-  return "-";
-};
-
-// 상태 텍스트 변환 함수
-const getStatusText = (status) => {
-  if (!status) return "미등록";
-
-  // 상태값 한글화
-  switch (status) {
-    case "CONTRACTED":
-      return "계약 완료";
-    case "RESERVED":
-      return "계약 중";
-    case "WAITING":
-      return "계약 전";
-    default:
-      return status;
-  }
-};
+import { toPropertyTableRow } from "../../../../../packages/shared-model/PropertyTableRow";
 
 const Properties = () => {
   const [activeView, setActiveView] = useState("전체");
@@ -87,7 +28,7 @@ const Properties = () => {
   const closingSidebarRef = useRef(false);
   const queryClient = useQueryClient();
   const [sortStandard, setSortStandard] = useState("DONG_HO");
-
+  console.log(toPropertyTableRow);
   const handleSortStandardChange = (value) => {
     setSortStandard(value);
   };
@@ -107,7 +48,7 @@ const Properties = () => {
   const properties = useMemo(
     () =>
       propertiesData
-        ? convertApiDataToTableData(propertiesData.content || [])
+        ? (propertiesData.content || []).map(toPropertyTableRow)
         : [],
     [propertiesData]
   );
@@ -252,7 +193,12 @@ const Properties = () => {
               placeholder="거래 유형"
             />
             <Button label="매물 추가" onClick={() => {}} icon={<PlusIcon />} />
-            <Button label="매물 삭제" onClick={() => {}} variant="secondary" icon={<TrashIcon />} />
+            <Button
+              label="매물 삭제"
+              onClick={() => {}}
+              variant="secondary"
+              icon={<TrashIcon />}
+            />
           </>
         }
       />

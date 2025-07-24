@@ -23,7 +23,10 @@ export const getProperties = async (params) => {
  */
 export const updateProperty = async (propertyId, propertyData) => {
   try {
-    const response = await api.put(`/api/properties/${propertyId}`, propertyData);
+    const response = await api.put(
+      `/api/properties/${propertyId}`,
+      propertyData
+    );
     return response.data;
   } catch (error) {
     console.error("매물 정보 업데이트에 실패했습니다.", error);
@@ -58,4 +61,4 @@ export const deleteProperty = async (propertyId) => {
     console.error("매물 삭제에 실패했습니다.", error);
     throw error;
   }
-}; 
+};

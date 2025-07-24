@@ -3,6 +3,8 @@ import "./propertyDetailSidebar.css";
 import useAuthStore from "@/store/authStore";
 import axios from "axios";
 import CreateContractModal from "@/pages/modal/createContractModal";
+import InfoRow from "@/components/common/info/InfoRow";
+import InfoBox from "@/components/common/info/InfoBox";
 
 const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
   const [floorPlanImage, setFloorPlanImage] = useState(null);
@@ -218,38 +220,18 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
           </div>
 
           <div className="contact-info">
-            <div className="info-row">
-              <div className="info-box">
-                <h4>소유주</h4>
-                <p>{property.ownerName}</p>
-              </div>
-              <div className="info-box">
-                <h4>소유주 연락처</h4>
-                <p>{property.contact}</p>
-              </div>
-            </div>
-
-            <div className="info-row">
-              <div className="info-box">
-                <h4>입주인</h4>
-                <p>{property.tenant}</p>
-              </div>
-              <div className="info-box">
-                <h4>입주인 연락처</h4>
-                <p>{property.tenantContact}</p>
-              </div>
-            </div>
-
-            <div className="info-row">
-              <div className="info-box">
-                <h4>만기일</h4>
-                <p>{property.endDate}</p>
-              </div>
-              <div className="info-box">
-                <h4>등록일</h4>
-                <p>{property.startDate}</p>
-              </div>
-            </div>
+            <InfoRow>
+              <InfoBox title="소유주" value={property.ownerName} />
+              <InfoBox title="소유주 연락처" value={property.contact} />
+            </InfoRow>
+            <InfoRow>
+              <InfoBox title="입주인" value={property.tenant} />
+              <InfoBox title="입주인 연락처" value={property.tenantContact} />
+            </InfoRow>
+            <InfoRow>
+              <InfoBox title="만기일" value={property.endDate} />
+              <InfoBox title="등록일" value={property.startDate} />
+            </InfoRow>
           </div>
 
           <div className="note-section custom">

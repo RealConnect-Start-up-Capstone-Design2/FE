@@ -64,7 +64,9 @@ const ContractsTable = ({ contracts, onContractSelect, onContractUpdate }) => {
         <input
           type="checkbox"
           onChange={toggleSelectAll}
-          checked={selectedItems.length === contracts.length && contracts.length > 0}
+          checked={
+            selectedItems.length === contracts.length && contracts.length > 0
+          }
         />
       ),
       render: (row) => (
@@ -86,10 +88,17 @@ const ContractsTable = ({ contracts, onContractSelect, onContractUpdate }) => {
       key: "contractType",
       header: "거래 유형",
       render: (row) => (
-        <Badge label={getTransactionTypeText(row.contractType)} variant={getTransactionTypeText(row.contractType)} />
+        <Badge
+          label={getTransactionTypeText(row.contractType)}
+          variant={getTransactionTypeText(row.contractType)}
+        />
       ),
     },
-    { key: "contractPrice", header: "거래 가격", render: (row) => formatPrice(row.contractPrice) },
+    {
+      key: "contractPrice",
+      header: "거래 가격",
+      render: (row) => formatPrice(row.contractPrice),
+    },
     { key: "contractDate", header: "계약일시" },
     { key: "dueDate", header: "만기일" },
     {
@@ -97,7 +106,10 @@ const ContractsTable = ({ contracts, onContractSelect, onContractUpdate }) => {
       header: "계약서",
       render: (row) =>
         row.contractFile ? (
-          <button className={styles.viewContractButton} onClick={(e) => e.stopPropagation()}>
+          <button
+            className={styles.viewContractButton}
+            onClick={(e) => e.stopPropagation()}
+          >
             계약서 보기
           </button>
         ) : (
@@ -108,7 +120,10 @@ const ContractsTable = ({ contracts, onContractSelect, onContractUpdate }) => {
       key: "contractStatus",
       header: "계약 상태",
       render: (row) => (
-        <Badge label={getContractStatusText(row.contractStatus)} variant={getContractStatusText(row.contractStatus)} />
+        <Badge
+          label={getContractStatusText(row.contractStatus)}
+          variant={getContractStatusText(row.contractStatus)}
+        />
       ),
     },
     {
@@ -146,4 +161,4 @@ const ContractsTable = ({ contracts, onContractSelect, onContractUpdate }) => {
   );
 };
 
-export default ContractsTable; 
+export default ContractsTable;

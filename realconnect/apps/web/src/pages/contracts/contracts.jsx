@@ -13,6 +13,10 @@ import Search from "@/components/common/search/search";
 import TableHeaderControls from "../../components/common/TableHeaderControls";
 import ViewSelector from "../../components/common/ViewSelector";
 
+// 아이콘 불러오기
+import PlusIcon from "../../assets/icons/plus.svg?react";
+import TrashIcon from "../../assets/icons/trash.svg?react";
+
 const Contracts = () => {
   const [selectedContract, setSelectedContract] = useState(null);
   const [activeView, setActiveView] = useState("전체");
@@ -47,7 +51,7 @@ const Contracts = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["contracts", {filters, searchKeyword}],
+    queryKey: ["contracts", { filters, searchKeyword }],
     queryFn: () => {
       const params = {
         transactionType:
@@ -75,8 +79,7 @@ const Contracts = () => {
   });
 
   const updateContractMutation = useMutation({
-    mutationFn: (contractData) =>
-      updateContract(contractData.id, contractData),
+    mutationFn: (contractData) => updateContract(contractData.id, contractData),
     onSuccess: () => {
       queryClient.invalidateQueries(["contracts"]);
       handleCloseSidebar();
@@ -96,7 +99,7 @@ const Contracts = () => {
       setIsClosing(false);
     }
   };
-  
+
   const handleCloseSidebar = () => {
     setIsClosing(true);
     setTimeout(() => {
@@ -104,13 +107,13 @@ const Contracts = () => {
       setSelectedContract(null);
     }, 300);
   };
-  
+
   const handleUpdateContract = (updatedContract) => {
     updateContractMutation.mutate(updatedContract);
   };
-  
+
   const handleFilterChange = (filterName, value) => {
-    setFilters(prev => ({ ...prev, [filterName]: value }));
+    setFilters((prev) => ({ ...prev, [filterName]: value }));
   };
 
   const handleViewChange = (view) => {
@@ -122,7 +125,9 @@ const Contracts = () => {
       <div className="page_header">
         <div className="header_left">
           <p className="page_title">계약 관리</p>
-          <p className="page_description">모든 계약 내역을 확인하고 관리합니다.</p>
+          <p className="page_description">
+            모든 계약 내역을 확인하고 관리합니다.
+          </p>
         </div>
         <ViewSelector
           options={[
@@ -134,54 +139,70 @@ const Contracts = () => {
         />
       </div>
       <div className="content_wrap">
-      <TableHeaderControls
-        search={<Search onSearch={handleSearch} />}
-        rightChildren={
-          <>
-            <SortButton
-              options={transactionTypeOptions}
-              value={filters.transactionType || "ALL"}
-              onChange={(value) => handleFilterChange('transactionType', value)}
-            />
-            <SortButton
-              options={contractStatusOptions}
-              value={filters.contractStatus || "ALL"}
-              onChange={(value) => handleFilterChange('contractStatus', value)}
-            />
-            <Button label="계약 추가" onClick={() => {}} variant="primary" />
-            <Button label="계약 삭제" onClick={() => {}} variant="secondary" />
-          </>
-        }
-      />
-      {isLoading ? (
-        <div>로딩 중...</div>
-      ) : error ? (
-        <div>계약 목록을 불러오는 데 실패했습니다.</div>
-      ) : (
-        <div className="table_section">
+        <TableHeaderControls
+          search={<Search onSearch={handleSearch} />}
+          rightChildren={
+            <>
+              <SortButton
+                options={transactionTypeOptions}
+                value={filters.transactionType || "ALL"}
+                onChange={(value) =>
+                  handleFilterChange("transactionType", value)
+                }
+              />
+              <SortButton
+                options={contractStatusOptions}
+                value={filters.contractStatus || "ALL"}
+                onChange={(value) =>
+                  handleFilterChange("contractStatus", value)
+                }
+              />
+              <Button
+                label="계약 추가"
+                onClick={() => {}}
+                variant="primary"
+                icon={<PlusIcon />}
+              />
+              <Button
+                label="계약 삭제"
+                onClick={() => {}}
+                variant="secondary"
+                icon={<TrashIcon />}
+              />
+            </>
+          }
+        />
+        {isLoading ? (
+          <div>로딩 중...</div>
+        ) : error ? (
+          <div>계약 목록을 불러오는 데 실패했습니다.</div>
+        ) : (
+          <div className="table_section">
             <ContractsTable
               contracts={contracts}
               onContractSelect={handleSelectContract}
               onContractUpdate={handleUpdateContract}
             />
-        </div>
-      )}
-      
-      {isSidebarOpen && selectedContract && (
-        <ContractDetailSidebar
-          contract={selectedContract}
-          onClose={handleCloseSidebar}
-          isClosing={isClosing}
-          onUpdate={handleUpdateContract}
-        />
-      )}
+          </div>
+        )}
 
-      <CreateContractModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={(contractData) => createContractMutation.mutate(contractData)}
-      />
-    </div>
+        {isSidebarOpen && selectedContract && (
+          <ContractDetailSidebar
+            contract={selectedContract}
+            onClose={handleCloseSidebar}
+            isClosing={isClosing}
+            onUpdate={handleUpdateContract}
+          />
+        )}
+
+        <CreateContractModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={(contractData) =>
+            createContractMutation.mutate(contractData)
+          }
+        />
+      </div>
     </div>
   );
 };

@@ -4,6 +4,8 @@ import ShareInquiryModal from "@/pages/modal/shareInquiryModal";
 import CreateContractModal from "@/pages/modal/createContractModal";
 import axios from "axios";
 import useAuthStore from "@/store/authStore";
+import InfoRow from "@/components/common/info/InfoRow";
+import InfoBox from "@/components/common/info/InfoBox";
 
 const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -126,44 +128,26 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
         </div>
 
         <div className="contact-info">
-          <div className="info-row">
-            <div className="info-box">
-              <h4>문의자</h4>
-              <p>{inquiry?.name || "김규식"}</p>
-            </div>
-            <div className="info-box">
-              <h4>연락처</h4>
-              <p>{inquiry?.phone || "010-1234-2334"}</p>
-            </div>
-          </div>
+          <InfoRow>
+            <InfoBox title="문의자" value={inquiry?.name || "김규식"} />
+            <InfoBox title="연락처" value={inquiry?.phone || "010-1234-2334"} />
+          </InfoRow>
         </div>
 
         <div className="inquiry-info">
-          <div className="info-row">
-            <div className="info-box">
-              <h4>문의 유형</h4>
-              <p>{inquiry.inquiryType}</p>
-            </div>
-            <div className="info-box">
-              <h4>진행 상태</h4>
-              <p className={inquiry.status.replace(/\s+/g, "")}>
-                {inquiry.status}
-              </p>
-            </div>
-          </div>
+          <InfoRow>
+            <InfoBox title="문의 유형" value={inquiry.inquiryType} />
+            <InfoBox title="진행 상태">
+              <p className={inquiry.status.replace(/\s+/g, "")}>{inquiry.status}</p>
+            </InfoBox>
+          </InfoRow>
         </div>
 
         <div className="property-details">
-          <div className="info-row">
-            <div className="info-box">
-              <h4>면적</h4>
-              <p>{inquiry.area} m²</p>
-            </div>
-            <div className="info-box">
-              <h4>등록일</h4>
-              <p>{inquiry.createdAt}</p>
-            </div>
-          </div>
+          <InfoRow>
+            <InfoBox title="면적" value={`${inquiry.area} m²`} />
+            <InfoBox title="등록일" value={inquiry.createdAt} />
+          </InfoRow>
         </div>
 
         <div className="inquiry-content">

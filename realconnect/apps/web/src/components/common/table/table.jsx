@@ -6,7 +6,14 @@ import styles from "./table.module.css";
  * loading: boolean
  * emptyMessage: string
  */
-const Table = ({ columns, data, loading, emptyMessage, onRowClick, rowClassName }) => (
+const Table = ({
+  columns,
+  data,
+  loading,
+  emptyMessage,
+  onRowClick,
+  rowClassName,
+}) => (
   <div className={styles.tableWrapper}>
     <table className={styles.commonTable}>
       <thead>
@@ -14,8 +21,10 @@ const Table = ({ columns, data, loading, emptyMessage, onRowClick, rowClassName 
           {columns.map((col) => (
             <th
               key={col.key}
-              className={col.key === 'checkbox' ? styles.checkboxColumn : undefined}
-              style={col.key === 'checkbox' ? { width: '2.667rem' } : undefined}
+              className={
+                col.key === "checkbox" ? styles.checkboxColumn : undefined
+              }
+              style={col.key === "checkbox" ? { width: "2.667rem" } : undefined}
             >
               {col.header}
             </th>
@@ -37,13 +46,17 @@ const Table = ({ columns, data, loading, emptyMessage, onRowClick, rowClassName 
               key={row.id || i}
               className={rowClassName}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
-              style={{ cursor: onRowClick ? 'pointer' : undefined }}
+              style={{ cursor: onRowClick ? "pointer" : undefined }}
             >
               {columns.map((col) => (
                 <td
                   key={col.key}
-                  className={col.key === 'checkbox' ? styles.checkboxColumn : undefined}
-                  style={col.key === 'checkbox' ? { width: '2.667rem' } : undefined}
+                  className={
+                    col.key === "checkbox" ? styles.checkboxColumn : undefined
+                  }
+                  style={
+                    col.key === "checkbox" ? { width: "2.667rem" } : undefined
+                  }
                 >
                   {col.render ? col.render(row, i) : row[col.key]}
                 </td>
@@ -56,4 +69,4 @@ const Table = ({ columns, data, loading, emptyMessage, onRowClick, rowClassName 
   </div>
 );
 
-export default Table; 
+export default Table;

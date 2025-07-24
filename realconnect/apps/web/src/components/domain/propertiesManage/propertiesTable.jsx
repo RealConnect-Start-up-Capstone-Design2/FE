@@ -52,7 +52,9 @@ const PropertiesTable = ({ properties, onPropertySelect }) => {
         <input
           type="checkbox"
           onChange={toggleSelectAll}
-          checked={selectedItems.length === properties.length && properties.length > 0}
+          checked={
+            selectedItems.length === properties.length && properties.length > 0
+          }
         />
       ),
       render: (row) => (
@@ -65,27 +67,39 @@ const PropertiesTable = ({ properties, onPropertySelect }) => {
       ),
     },
     { key: "apartmentName", header: "단지" },
-    { key: "building", header: "동" },
-    { key: "unit", header: "호수" },
+    { key: "dong", header: "동" },
+    { key: "ho", header: "호수" },
     { key: "area", header: "면적" },
-    { key: "salePrice", header: "매매", render: (row) => formatPrice(row.salePrice) },
-    { key: "jeonsePrice", header: "전세", render: (row) => formatPrice(row.jeonsePrice) },
     {
-      key: "depositMonth",
+      key: "salePrice",
+      header: "매매",
+      render: (row) => formatPrice(row.salePrice),
+    },
+    {
+      key: "jeonsePrice",
+      header: "전세",
+      render: (row) => formatPrice(row.jeonsePrice),
+    },
+    {
+      key: "deposit",
       header: "보증금/월세",
       render: (row) => `${row.deposit}/${row.monthPrice}`,
     },
     {
       key: "transactionType",
       header: "거래 유형",
-      render: (row) => <Badge label={row.transactionType} variant={row.transactionType} />,
+      render: (row) => (
+        <Badge label={row.transactionType} variant={row.transactionType} />
+      ),
     },
     { key: "ownerName", header: "소유자" },
-    { key: "contact", header: "연락처" },
+    { key: "ownerPhone", header: "연락처" },
     {
       key: "status",
       header: "거래 상태",
-      render: (row) => <Badge label={row.status} variant={row.status.replace(/\s+/g, "")} />,
+      render: (row) => (
+        <Badge label={row.status} variant={row.status.replace(/\s+/g, "")} />
+      ),
     },
   ];
 
@@ -101,4 +115,4 @@ const PropertiesTable = ({ properties, onPropertySelect }) => {
   );
 };
 
-export default PropertiesTable; 
+export default PropertiesTable;

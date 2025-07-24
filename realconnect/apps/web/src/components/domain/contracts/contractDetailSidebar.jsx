@@ -10,6 +10,8 @@ import XIcon from "@/assets/icons/x.svg";
 import transactionTypeArrowUp from "@/assets/icons/transactionTypeArrow^.svg";
 import transactionTypeArrowDown from "@/assets/icons/transactionTypeArrowV.svg";
 import dropboxCheck from "@/assets/icons/dropboxCheck.svg";
+import InfoRow from "@/components/common/info/InfoRow";
+import InfoBox from "@/components/common/info/InfoBox";
 
 const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
   const [isEditMode, setIsEditMode] = useState(false);
@@ -635,38 +637,18 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
 
               {/* 연락처 정보 */}
               <div className="contact-info">
-                <div className="info-row">
-                  <div className="info-box">
-                    <h4>소유주(매도인)</h4>
-                    <p>{contract.ownerName}</p>
-                  </div>
-                  <div className="info-box">
-                    <h4>소유주 연락처</h4>
-                    <p>{contract.ownerPhone}</p>
-                  </div>
-                </div>
-
-                <div className="info-row">
-                  <div className="info-box">
-                    <h4>입주인(매수인)</h4>
-                    <p>{contract.tenantName}</p>
-                  </div>
-                  <div className="info-box">
-                    <h4>입주인 연락처</h4>
-                    <p>{contract.tenantPhone}</p>
-                  </div>
-                </div>
-
-                <div className="info-row">
-                  <div className="info-box">
-                    <h4>계약 일시</h4>
-                    <p>{contract.contractDate}</p>
-                  </div>
-                  <div className="info-box">
-                    <h4>만기일</h4>
-                    <p>{contract.dueDate}</p>
-                  </div>
-                </div>
+                <InfoRow>
+                  <InfoBox title="소유주(매도인)" value={contract.ownerName} />
+                  <InfoBox title="소유주 연락처" value={contract.ownerPhone} />
+                </InfoRow>
+                <InfoRow>
+                  <InfoBox title="입주인(매수인)" value={contract.tenantName} />
+                  <InfoBox title="입주인 연락처" value={contract.tenantPhone} />
+                </InfoRow>
+                <InfoRow>
+                  <InfoBox title="계약 일시" value={contract.contractDate} />
+                  <InfoBox title="만기일" value={contract.dueDate} />
+                </InfoRow>
               </div>
 
               {/* 계약서 파일 정보 */}
