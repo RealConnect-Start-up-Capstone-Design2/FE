@@ -13,6 +13,7 @@ const Table = ({
   emptyMessage,
   onRowClick,
   rowClassName,
+  observerRef,
 }) => (
   <div className={styles.tableWrapper}>
     <table className={styles.commonTable}>
@@ -41,28 +42,40 @@ const Table = ({
             <td colSpan={columns.length}>{emptyMessage || "데이터 없음"}</td>
           </tr>
         ) : (
-          data.map((row, i) => (
-            <tr
-              key={row.id || i}
-              className={rowClassName}
-              onClick={onRowClick ? () => onRowClick(row) : undefined}
-              style={{ cursor: onRowClick ? "pointer" : undefined }}
-            >
-              {columns.map((col) => (
+          <>
+            {data.map((row, i) => (
+              <tr
+                key={row.id || i}
+                className={rowClassName}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                style={{ cursor: onRowClick ? "pointer" : undefined }}
+              >
+                {columns.map((col) => (
+                  <td
+                    key={col.key}
+                    className={
+                      col.key === "checkbox" ? styles.checkboxColumn : undefined
+                    }
+                    style={
+                      col.key === "checkbox" ? { width: "2.667rem" } : undefined
+                    }
+                  >
+                    {col.render ? col.render(row, i) : row[col.key]}
+                  </td>
+                ))}
+              </tr>
+            ))}
+            {/* Intersection Observer를 위한 마지막 행 */}
+            {observerRef && (
+              <tr>
                 <td
-                  key={col.key}
-                  className={
-                    col.key === "checkbox" ? styles.checkboxColumn : undefined
-                  }
-                  style={
-                    col.key === "checkbox" ? { width: "2.667rem" } : undefined
-                  }
-                >
-                  {col.render ? col.render(row, i) : row[col.key]}
-                </td>
-              ))}
-            </tr>
-          ))
+                  colSpan={columns.length}
+                  ref={observerRef}
+                  style={{ height: "1px", padding: 0 }}
+                />
+              </tr>
+            )}
+          </>
         )}
       </tbody>
     </table>

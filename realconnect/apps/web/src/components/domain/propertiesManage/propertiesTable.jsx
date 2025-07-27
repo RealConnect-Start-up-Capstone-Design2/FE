@@ -23,7 +23,13 @@ const formatPrice = (price) => {
   }
 };
 
-const PropertiesTable = ({ properties, onPropertySelect }) => {
+const PropertiesTable = ({
+  properties,
+  onPropertySelect,
+  isLoading,
+  isFetchingNextPage,
+  observerRef,
+}) => {
   const [selectedItems, setSelectedItems] = useState([]);
 
   const toggleSelectAll = (e) => {
@@ -104,14 +110,22 @@ const PropertiesTable = ({ properties, onPropertySelect }) => {
   ];
 
   return (
-    <Table
-      columns={columns}
-      data={properties}
-      loading={false}
-      emptyMessage="표시할 매물이 없습니다."
-      onRowClick={onPropertySelect}
-      rowClassName={styles.propertyRow}
-    />
+    <>
+      <Table
+        columns={columns}
+        data={properties}
+        loading={isLoading}
+        emptyMessage="표시할 매물이 없습니다."
+        onRowClick={onPropertySelect}
+        rowClassName={styles.propertyRow}
+        observerRef={observerRef}
+      />
+      {isFetchingNextPage && (
+        <div style={{ textAlign: "center", padding: "20px" }}>
+          더 많은 매물을 불러오는 중...
+        </div>
+      )}
+    </>
   );
 };
 

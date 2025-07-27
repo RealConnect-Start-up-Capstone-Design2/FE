@@ -18,7 +18,7 @@
 }
 
 .commonTable thead tr {
-  background-color: #E8EDFF;
+  background-color: #e8edff;
 }
 
 .commonTable thead {
@@ -83,4 +83,4 @@
   cursor: pointer;
   border-radius: 0.2rem;
   border: 0.067rem solid #d0d5dd;
-} 
+}

@@ -1,5 +1,9 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import React, { useState, useRef, useMemo, useEffect } from "react";
+import {
+  useInfiniteQuery,
+  useQueryClient,
+  useMutation,
+} from "@tanstack/react-query";
 import { getProperties, updateProperty } from "../../services/propertyService";
 
 // 컴포넌트 불러오기
@@ -21,22 +25,78 @@ import { toPropertyTableRow } from "../../../../../packages/shared-model/Propert
 const Properties = () => {
   const [activeView, setActiveView] = useState("전체");
   const [transactionType, setTransactionType] = useState("ALL");
-  const [filteredProperties, setFilteredProperties] = useState([]);
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [isClosingSidebar, setIsClosingSidebar] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const closingSidebarRef = useRef(false);
   const queryClient = useQueryClient();
   const [sortStandard, setSortStandard] = useState("DONG_HO");
-  console.log(toPropertyTableRow);
+  const observerRef = useRef();
+
   const handleSortStandardChange = (value) => {
     setSortStandard(value);
   };
 
-  const { data: propertiesData } = useQuery({
-    queryKey: ["properties"],
-    queryFn: () => getProperties({ page: 0, size: 30 }),
+  // useInfiniteQuery로 변경
+  const {
+    data: propertiesData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["properties", activeView, transactionType, sortStandard],
+    queryFn: ({ pageParam = 0 }) =>
+      getProperties({
+        page: pageParam,
+        size: 20, // 한 번에 가져올 아이템 수
+        sort: sortStandard,
+        // 필터링 파라미터 추가
+        view: activeView,
+        transactionType:
+          transactionType !== "ALL" ? transactionType : undefined,
+      }),
+    getNextPageParam: (lastPage, allPages) => {
+      // 마지막 페이지가 아니면 다음 페이지 번호 반환
+      return lastPage.last ? undefined : allPages.length;
+    },
+    initialPageParam: 0,
   });
+
+  // 모든 페이지의 데이터를 하나의 배열로 합치기
+  const allProperties = useMemo(() => {
+    if (!propertiesData?.pages) return [];
+    return propertiesData.pages.flatMap((page) =>
+      (page.content || []).map(toPropertyTableRow)
+    );
+  }, [propertiesData]);
+
+  // Intersection Observer를 사용한 무한 스크롤
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasNextPage &&
+          !isFetchingNextPage &&
+          !isLoading
+        ) {
+          console.log("Loading next page...");
+          fetchNextPage();
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: "100px", // 스크롤 끝에서 100px 전에 로드 시작
+      }
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, isLoading, fetchNextPage]);
 
   const updatePropertyMutation = useMutation({
     mutationFn: ({ propertyId, data }) => updateProperty(propertyId, data),
@@ -45,59 +105,10 @@ const Properties = () => {
     },
   });
 
-  const properties = useMemo(
-    () =>
-      propertiesData
-        ? (propertiesData.content || []).map(toPropertyTableRow)
-        : [],
-    [propertiesData]
-  );
-
-  // 필터링 함수: 모든 필터 적용
-  const applyFilters = (propertiesList, view, type) => {
-    let filtered = [...propertiesList];
-
-    // 1. 내 물건 필터 적용
-    if (view === "내 물건") {
-      filtered = filtered.filter((property) => {
-        return (
-          (property.ownerName && property.ownerName !== "-") ||
-          (property.contact && property.contact !== "-") ||
-          (property.tenant && property.tenant !== "-") ||
-          (property.tenantContact && property.tenantContact !== "-") ||
-          (property.salePrice && property.salePrice !== "-") ||
-          (property.deposit && property.deposit !== "-") ||
-          (property.jeonsePrice && property.jeonsePrice !== "-") ||
-          (property.monthPrice && property.monthPrice !== "-") ||
-          (property.startDate && property.startDate !== "-") ||
-          (property.endDate && property.endDate !== "-") ||
-          (property.memo && property.memo !== "")
-        );
-      });
-    }
-
-    // 2. 거래 유형 필터 적용
-    if (type !== "ALL") {
-      const typeMapping = {
-        BUY: "매매",
-        JEONSE: "전세",
-        MONTH_RENT: "월세",
-      };
-      const displayType = typeMapping[type];
-      if (displayType) {
-        filtered = filtered.filter(
-          (property) => property.transactionType === displayType
-        );
-      }
-    }
-
-    setFilteredProperties(filtered);
-  };
-
-  // activeView나 transactionType이 변경될 때마다 필터링 적용
-  useEffect(() => {
-    applyFilters(properties, activeView, transactionType);
-  }, [activeView, transactionType, properties]);
+  // 필터링된 매물 목록 (서버에서 이미 필터링된 데이터 사용)
+  const filteredProperties = useMemo(() => {
+    return allProperties;
+  }, [allProperties]);
 
   const transactionTypeOptions = [
     { value: "ALL", label: "전체" },
@@ -206,6 +217,9 @@ const Properties = () => {
         <PropertiesTable
           properties={filteredProperties}
           onPropertySelect={handlePropertySelect}
+          isLoading={isLoading}
+          isFetchingNextPage={isFetchingNextPage}
+          observerRef={observerRef}
         />
       </div>
       {selectedProperty &&

@@ -2,12 +2,24 @@ import api from "./api";
 
 /**
  * 매물 목록을 조회하는 함수
- * @param {object} params - 필터링 및 정렬을 위한 파라미터 (e.g., { page: 0, size: 30 })
+ * @param {object} params - 필터링 및 정렬을 위한 파라미터
+ * @param {number} params.page - 페이지 번호 (0부터 시작)
+ * @param {number} params.size - 페이지 크기
+ * @param {string} params.sort - 정렬 기준 (DONG_HO, END_DATE, CREATED_AT)
+ * @param {string} params.view - 뷰 필터 (전체, 내 물건)
+ * @param {string} params.transactionType - 거래 유형 필터 (BUY, JEONSE, MONTH_RENT)
  * @returns {Promise<object>} - 매물 목록과 페이징 정보를 포함하는 객체
  */
 export const getProperties = async (params) => {
   try {
-    const response = await api.get("/api/apartments-properties", { params });
+    // undefined 값들은 제거
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([, value]) => value !== undefined)
+    );
+
+    const response = await api.get("/api/apartments-properties", {
+      params: cleanParams,
+    });
     return response.data;
   } catch (error) {
     console.error("매물 목록 조회에 실패했습니다.", error);

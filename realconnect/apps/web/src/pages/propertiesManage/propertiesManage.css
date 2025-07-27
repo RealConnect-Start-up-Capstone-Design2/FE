@@ -1,25 +1,22 @@
-/* .page_content {
-  position: relative;
-  width: 100%;
-  flex: 1;
-  overflow: hidden;
+/* global.css의 스타일을 오버라이드하지 않고 보완 */
+.page_section {
+  /* global.css의 설정을 유지하면서 추가 설정 */
+  height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
-.page_content.with-sidebar .property-table-container {
-  width: calc(100% - 33rem);
+.page_header {
+  flex-shrink: 0 !important;
 }
 
-.property-detail-sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  height: 100vh;
-  width: 33rem;
-  z-index: 100;
+.content_wrap {
+  flex: 1 !important;
+  /* 스크롤을 테이블 내부에서 처리하도록 설정 */
+  overflow: hidden !important;
+  position: relative !important;
 }
 
-.property-table-container {
-  flex: 1;
-  overflow: auto;
-  max-height: 100%;
-} */
+.page_section.with-sidebar .content_wrap {
+  width: calc(100% - 33rem) !important;
+}
