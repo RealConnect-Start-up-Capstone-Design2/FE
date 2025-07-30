@@ -58,7 +58,10 @@ const InquiriesTable = ({ inquiries, onInquirySelect, onFavoriteToggle }) => {
       key: "inquiryType",
       header: "문의 유형",
       render: (row) => (
-        <Badge label={row.inquiryTypeText} variant={row.inquiryTypeText} />
+        <Badge
+          label={row.inquiryTypeText}
+          variant={row.inquiryTypeText.replace(/\s+/g, "")}
+        />
       ),
     },
     { key: "salePriceText", header: "매매" },

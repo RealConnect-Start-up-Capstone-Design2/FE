@@ -21,6 +21,7 @@ import TrashIcon from "../../assets/icons/trash.svg?react";
 
 // API 응답을 PropertyTable용 데이터로 변환
 import { toPropertyTableRow } from "../../../../../packages/shared-model/PropertyTableRow";
+import { toPropertyDetailModel } from "../../../../../packages/shared-model/PropertyDetailModel";
 
 const Properties = () => {
   const [activeView, setActiveView] = useState("전체");
@@ -69,6 +70,12 @@ const Properties = () => {
     return propertiesData.pages.flatMap((page) =>
       (page.content || []).map(toPropertyTableRow)
     );
+  }, [propertiesData]);
+
+  // 원본 Entity 데이터도 저장 (상세보기용)
+  const allPropertyEntities = useMemo(() => {
+    if (!propertiesData?.pages) return [];
+    return propertiesData.pages.flatMap((page) => page.content || []);
   }, [propertiesData]);
 
   // Intersection Observer를 사용한 무한 스크롤
@@ -134,11 +141,36 @@ const Properties = () => {
   const handlePropertySelect = (property) => {
     if (closingSidebarRef.current) return;
 
-    if (selectedProperty && selectedProperty.id === property.id) {
+    // 매물을 식별할 수 있는 고유한 키 생성
+    const createPropertyKey = (prop) => {
+      return prop.apartmentId; // apartmentId만 사용 (매물별로 고유)
+    };
+
+    const currentPropertyKey = selectedProperty
+      ? createPropertyKey(selectedProperty)
+      : null;
+    const newPropertyKey = createPropertyKey(property);
+    if (selectedProperty && currentPropertyKey === newPropertyKey) {
       closeSidebar();
     } else {
       setIsClosingSidebar(false);
-      setSelectedProperty(property);
+      // 원본 Entity에서 해당 property 찾기
+      const originalEntity = allPropertyEntities.find(
+        (entity) =>
+          entity.apartmentId === property.apartmentId &&
+          entity.dong === property.dong.replace("동", "") &&
+          entity.ho === property.ho.replace("호", "")
+      );
+
+      if (originalEntity) {
+        // Entity를 상세보기 모델로 변환
+        const detailProperty = toPropertyDetailModel(originalEntity);
+        setSelectedProperty(detailProperty);
+      } else {
+        // 원본 Entity를 찾을 수 없는 경우 테이블 데이터 사용
+        setSelectedProperty(property);
+      }
+
       if (isEditMode) {
         setIsEditMode(false);
       }

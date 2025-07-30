@@ -29,24 +29,27 @@
 }
 
 .commonTable th {
-  padding: 0.933rem 1.067rem;
-  text-align: left;
+  padding: 0.933rem 0;
+  text-align: center;
   font-size: 1rem;
   font-weight: 500;
   color: #333;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   border-bottom: 0.067rem solid #eaeaea;
   transition: padding 0.3s ease-in-out;
 }
 
 .commonTable td {
-  padding: 0.8rem 1rem;
+  padding: 0.8rem 0;
   font-size: 1rem;
+  text-align: center;
   color: #333;
   vertical-align: middle;
   white-space: nowrap;
-  overflow: visible;
-  text-overflow: clip;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: padding 0.3s ease-in-out;
 }
 

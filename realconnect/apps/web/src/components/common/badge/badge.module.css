@@ -7,7 +7,9 @@
   line-height: 1.2;
   white-space: nowrap;
   vertical-align: middle;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 /* 계약 상태 */
@@ -27,6 +29,14 @@
   background: #eaeaea;
   color: #888;
 }
+.계약전 {
+  background: #fcdcdc;
+  color: #b72525;
+}
+.미등록 {
+  background: #e8edff;
+  color: #1c2882;
+}
 
 /* 거래 유형 */
 .매매 {
@@ -43,15 +53,15 @@
 }
 
 /* 진행 상태 등 기타 */
-.진행중 {
-  background: #e8edff;
-  color: #1c2882;
+.IN_PROGRESS {
+  background: #fff8b8;
+  color: #c38b11;
 }
-.완료 {
+.COMPLETED {
   background: #defcdc;
   color: #189554;
 }
-.취소 {
+.CANCEL {
   background: #fcdcdc;
   color: #b72525;
-} 
+}

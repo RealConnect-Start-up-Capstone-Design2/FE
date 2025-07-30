@@ -13,7 +13,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isSubmittingContract, setIsSubmittingContract] = useState(false);
-
+  console.log(property);
   // 가격 포맷팅 함수
   const formatPrice = (price) => {
     if (!price || price === "-") return "-";
@@ -137,7 +137,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
     <div className={`property-detail-sidebar ${isClosing ? "closing" : ""}`}>
       <div className="sidebar-header">
         <div className="sidebar-header-title">
-          {property.apartmentName} {property.building} {property.unit}
+          {`${property.apartmentName} ${property.dong}동 ${property.ho}호`}
         </div>
         <button className="close-button" onClick={onClose}>
           ×
@@ -158,7 +158,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
               return (
                 <img
                   src={currentImage}
-                  alt={`${property.apartmentName} ${property.building} ${property.unit} ${altText}`}
+                  alt={`${property.apartmentName} ${property.dong} ${property.ho} ${altText}`}
                   style={{ objectFit: "contain" }}
                 />
               );
@@ -231,11 +231,11 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
           <div className="contact-info">
             <InfoRow>
               <InfoBox title="소유주" value={property.ownerName} />
-              <InfoBox title="소유주 연락처" value={property.contact} />
+              <InfoBox title="소유주 연락처" value={property.ownerPhone} />
             </InfoRow>
             <InfoRow>
-              <InfoBox title="입주인" value={property.tenant} />
-              <InfoBox title="입주인 연락처" value={property.tenantContact} />
+              <InfoBox title="입주인" value={property.tenantName} />
+              <InfoBox title="입주인 연락처" value={property.tenantPhone} />
             </InfoRow>
             <InfoRow>
               <InfoBox title="만기일" value={property.endDate} />
