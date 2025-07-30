@@ -5,33 +5,6 @@ import BlackStarIcon from "@/assets/icons/blankStar.svg";
 import FilledStarIcon from "@/assets/icons/filledStar.svg";
 import Badge from "../../common/badge/Badge";
 
-const getTransactionTypeText = (contractType) => {
-  const typeMap = { BUY: "매매", JEONSE: "전세", MONTH_RENT: "월세" };
-  return typeMap[contractType] || contractType;
-};
-
-const formatPrice = (price) => {
-  if (!price) return "-";
-  const numPrice = parseInt(price, 10);
-  if (numPrice >= 100000000) {
-    const eok = numPrice / 100000000;
-    return `${eok.toFixed(1)}억`;
-  } else {
-    const man = numPrice / 10000;
-    return `${man.toLocaleString()}만원`;
-  }
-};
-
-const getContractStatusText = (status) => {
-  const statusMap = {
-    ACTIVE: "계약중",
-    COMPLETED: "계약완료",
-    TERMINATED: "계약파기",
-    EXPIRED: "계약만료",
-  };
-  return statusMap[status] || status;
-};
-
 const ContractsTable = ({ contracts, onContractSelect, onContractUpdate }) => {
   const [selectedItems, setSelectedItems] = useState([]);
 
@@ -78,29 +51,38 @@ const ContractsTable = ({ contracts, onContractSelect, onContractUpdate }) => {
         />
       ),
     },
-    { key: "apartment", header: "단지" },
-    { key: "dong", header: "동", render: (row) => `${row.dong}동` },
-    { key: "ho", header: "호수", render: (row) => `${row.ho}호` },
-    { key: "area", header: "면적", render: (row) => `${row.area}m²` },
-    { key: "ownerName", header: "소유주(매도인)" },
-    { key: "tenantName", header: "입주인(매수인)" },
+    { key: "apartment", header: "단지", render: (row) => row.apartmentText },
+    { key: "dong", header: "동", render: (row) => row.dongText },
+    { key: "ho", header: "호수", render: (row) => row.hoText },
+    { key: "area", header: "면적", render: (row) => row.areaText },
+    {
+      key: "ownerName",
+      header: "소유주(매도인)",
+      render: (row) => row.ownerNameText,
+    },
+    {
+      key: "tenantName",
+      header: "입주인(매수인)",
+      render: (row) => row.tenantNameText,
+    },
     {
       key: "contractType",
       header: "거래 유형",
       render: (row) => (
-        <Badge
-          label={getTransactionTypeText(row.contractType)}
-          variant={getTransactionTypeText(row.contractType)}
-        />
+        <Badge label={row.contractTypeText} variant={row.contractTypeText} />
       ),
     },
     {
       key: "contractPrice",
       header: "거래 가격",
-      render: (row) => formatPrice(row.contractPrice),
+      render: (row) => row.contractPriceText,
     },
-    { key: "contractDate", header: "계약일시" },
-    { key: "dueDate", header: "만기일" },
+    {
+      key: "contractDate",
+      header: "계약일시",
+      render: (row) => row.contractDateText,
+    },
+    { key: "dueDate", header: "만기일", render: (row) => row.dueDateText },
     {
       key: "contractFile",
       header: "계약서",
@@ -121,8 +103,8 @@ const ContractsTable = ({ contracts, onContractSelect, onContractUpdate }) => {
       header: "계약 상태",
       render: (row) => (
         <Badge
-          label={getContractStatusText(row.contractStatus)}
-          variant={getContractStatusText(row.contractStatus)}
+          label={row.contractStatusText}
+          variant={row.contractStatusText}
         />
       ),
     },
@@ -135,8 +117,8 @@ const ContractsTable = ({ contracts, onContractSelect, onContractUpdate }) => {
           onClick={(e) => handleFavoriteToggle(row, e)}
         >
           <img
-            src={row.isFavorite ? FilledStarIcon : BlackStarIcon}
-            alt={row.isFavorite ? "즐겨찾기 됨" : "즐겨찾기"}
+            src={row.favorite ? FilledStarIcon : BlackStarIcon}
+            alt={row.favorite ? "즐겨찾기 됨" : "즐겨찾기"}
           />
         </button>
       ),

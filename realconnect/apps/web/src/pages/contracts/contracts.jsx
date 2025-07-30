@@ -12,6 +12,8 @@ import {
 import Search from "@/components/common/search/search";
 import TableHeaderControls from "../../components/common/TableHeaderControls";
 import ViewSelector from "../../components/common/ViewSelector";
+import { toContractTableRow } from "../../../../../packages/shared-model/contractModel";
+import { toContractViewRow } from "../../../../../packages/web-viewmodel/contractViewModel";
 
 // 아이콘 불러오기
 import PlusIcon from "../../assets/icons/plus.svg?react";
@@ -120,6 +122,14 @@ const Contracts = () => {
     setActiveView(view);
   };
 
+  // Model과 ViewModel 배열을 모두 관리
+  const models = React.useMemo(() => {
+    if (!contracts) return [];
+    return contracts.map(toContractTableRow);
+  }, [contracts]);
+
+  const viewRows = React.useMemo(() => models.map(toContractViewRow), [models]);
+
   return (
     <div className={`page_section ${isSidebarOpen ? "with-sidebar" : ""}`}>
       <div className="page_header">
@@ -179,7 +189,7 @@ const Contracts = () => {
         ) : (
           <div className="table_section">
             <ContractsTable
-              contracts={contracts}
+              contracts={viewRows}
               onContractSelect={handleSelectContract}
               onContractUpdate={handleUpdateContract}
             />
