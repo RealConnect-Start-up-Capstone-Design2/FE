@@ -13,7 +13,6 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isSubmittingContract, setIsSubmittingContract] = useState(false);
-  console.log(property);
   // 가격 포맷팅 함수
   const formatPrice = (price) => {
     if (!price || price === "-") return "-";
@@ -49,8 +48,6 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
   };
 
   useEffect(() => {
-    console.log(property);
-
     // 평면도 이미지 로드
     if (property && property.img) {
       const loadFloorPlanImage = async () => {

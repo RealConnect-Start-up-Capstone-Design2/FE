@@ -9,12 +9,12 @@ const Search = ({ onSearch }) => {
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-    
+
     // 이전 타이머가 있으면 취소
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
-    
+
     // 300ms 후에 검색 실행 (디바운싱)
     debounceTimeoutRef.current = setTimeout(() => {
       if (onSearch) {

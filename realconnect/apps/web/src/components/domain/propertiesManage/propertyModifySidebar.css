@@ -114,10 +114,7 @@
   margin-right: 10px;
   margin-top: 14px;
   width: 100%;
-}
-
-.tag-contract-button {
-  margin-left: auto;
+  gap: 0.5rem;
 }
 
 .modify-form {
@@ -194,9 +191,15 @@ input::placeholder {
   color: #989898;
 }
 
+.modify-note-section {
+  margin-bottom: 1rem;
+}
+
 .modify-note-section label {
   font-size: 1.333rem;
   color: #1b1b1b;
+  display: block;
+  margin-bottom: 0.733rem;
 }
 
 textarea {
@@ -208,6 +211,7 @@ textarea {
   border: 0.067rem solid #b1b6c7;
   border-radius: 0.4rem;
   box-sizing: border-box;
+  resize: vertical;
 }
 
 textarea::placeholder {
@@ -229,9 +233,8 @@ textarea::placeholder {
   text-align: center;
   background-color: #1b1b1b;
   color: white;
+  transition: background-color 0.2s;
 }
-
-
 
 .modify-save-button:disabled {
   background-color: #6c6c6c;

@@ -88,7 +88,6 @@ const Properties = () => {
           !isFetchingNextPage &&
           !isLoading
         ) {
-          console.log("Loading next page...");
           fetchNextPage();
         }
       },
@@ -158,17 +157,25 @@ const Properties = () => {
       const originalEntity = allPropertyEntities.find(
         (entity) =>
           entity.apartmentId === property.apartmentId &&
-          entity.dong === property.dong.replace("동", "") &&
-          entity.ho === property.ho.replace("호", "")
+          entity.dong === property.dong?.replace("동", "") &&
+          entity.ho === property.ho?.replace("호", "")
       );
 
       if (originalEntity) {
-        // Entity를 상세보기 모델로 변환
+        // Entity를 상세보기 모델로 변환하고 rawData 추가
         const detailProperty = toPropertyDetailModel(originalEntity);
-        setSelectedProperty(detailProperty);
+        const selectedPropertyWithRawData = {
+          ...detailProperty,
+          rawData: originalEntity,
+        };
+        setSelectedProperty(selectedPropertyWithRawData);
       } else {
-        // 원본 Entity를 찾을 수 없는 경우 테이블 데이터 사용
-        setSelectedProperty(property);
+        // 원본 Entity를 찾을 수 없는 경우 테이블 데이터 사용하고 rawData 추가
+        const selectedPropertyWithRawData = {
+          ...property,
+          rawData: property,
+        };
+        setSelectedProperty(selectedPropertyWithRawData);
       }
 
       if (isEditMode) {
