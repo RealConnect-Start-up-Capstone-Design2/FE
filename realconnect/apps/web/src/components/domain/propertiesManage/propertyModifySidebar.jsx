@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from "react";
 import "./propertyModifySidebar.css";
 import { SortButton } from "@realconnect/shared-ui";
-import axios from "axios";
+import {
+  createProperty,
+  updateProperty,
+} from "../../../services/propertyService";
 import useAuthStore from "../../../store/authStore";
 
-const PropertyModifySidebar = ({ property, onClose, onSave }) => {
+const PropertyModifySidebar = ({
+  property,
+  onClose,
+  onSave,
+  onUpdateProperty,
+}) => {
   const [imageUrl, setImageUrl] = useState(null);
   const accessToken = useAuthStore((state) => state.accessToken);
   const [formData, setFormData] = useState({
@@ -34,19 +42,23 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
       const loadImage = async () => {
         try {
           // 이미지를 Blob으로 가져오기
-          const response = await axios.get(
+          const response = await fetch(
             `${import.meta.env.VITE_API_URL}${property.img}`,
             {
               headers: {
                 Authorization: `Bearer ${accessToken}`,
               },
-              responseType: "blob",
             }
           );
 
-          // Blob URL 생성
-          const url = URL.createObjectURL(response.data);
-          setImageUrl(url);
+          if (response.ok) {
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            setImageUrl(url);
+          } else {
+            console.error("이미지 로드 실패:", response.status);
+            setImageUrl(null);
+          }
         } catch (error) {
           console.error("이미지 로드 실패:", error);
           setImageUrl(null);
@@ -138,41 +150,40 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
     setIsLoading(true);
 
     try {
-      // API 요청 데이터 준비
+      // 기존 매물 데이터와 수정된 데이터를 병합
+      const existingProperty = property;
+
+      // API 요청 데이터 준비 - 기존 데이터 유지하면서 수정된 부분만 업데이트
       const apiData = {
-        ...(isNewProperty === "미등록"
-          ? {
-              apartmentId: formData.id, // 아파트 ID 사용
-            }
-          : {}),
-        ownerName: formData.ownerName || "",
-        ownerPhone: formData.contact || "",
-        tenantName: formData.tenant || "",
-        tenantPhone: formData.tenantContact || "",
+        // 기존 데이터 유지
+        ownerName: formData.ownerName || existingProperty.ownerName || "",
+        ownerPhone: formData.ownerPhone || existingProperty.ownerPhone || "",
+        tenantName: formData.tenantName || existingProperty.tenantName || "",
+        tenantPhone: formData.tenantPhone || existingProperty.tenantPhone || "",
         salePrice: formData.salePrice
           ? (() => {
               const parsed = parseInt(formData.salePrice.replace(/,/g, ""));
               return isNaN(parsed) ? 0 : parsed;
             })()
-          : 0,
+          : existingProperty.salePrice || 0,
         jeonsePrice: formData.jeonsePrice
           ? (() => {
               const parsed = parseInt(formData.jeonsePrice.replace(/,/g, ""));
               return isNaN(parsed) ? 0 : parsed;
             })()
-          : 0,
+          : existingProperty.jeonsePrice || 0,
         deposit: formData.deposit
           ? (() => {
               const parsed = parseInt(formData.deposit);
               return isNaN(parsed) ? 0 : parsed;
             })()
-          : 0,
+          : existingProperty.deposit || 0,
         monthPrice: formData.monthPrice
           ? (() => {
               const parsed = parseInt(formData.monthPrice);
               return isNaN(parsed) ? 0 : parsed;
             })()
-          : 0,
+          : existingProperty.monthPrice || 0,
         status:
           formData.status === "계약 전"
             ? "WAITING"
@@ -180,67 +191,81 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
               ? "RESERVED"
               : formData.status === "계약 완료"
                 ? "CONTRACTED"
-                : "WAITING",
-        memo: formData.note1 || "",
-        startDate: formData.startDate || null,
-        endDate: formData.endDate || null,
-        // 추가 필드: 태그 정보
-        direction: formData.direction || "",
-        expansion: formData.expansion || "",
-        wardrobe: formData.wardrobe || "",
+                : existingProperty.status || "WAITING",
+        memo: formData.note1 || existingProperty.memo || "",
+        startDate: formData.startDate || existingProperty.startDate || null,
+        endDate: formData.endDate || existingProperty.endDate || null,
       };
 
-      let response;
+      // 새로운 매물 생성인지 확인 (id가 없는 경우)
+      if (!property.id) {
+        // 새로운 매물 생성 시에는 apartmentId 추가
+        const createData = {
+          ...apiData,
+          apartmentId: property.apartmentId, // property의 apartmentId 사용
+        };
+        // propertyService의 createProperty 함수 사용
+        const response = await createProperty(createData);
+        console.log("새 매물 정보 생성 성공:", response);
 
-      // property 객체가 없는 경우 POST 요청
-      if (isNewProperty === "미등록") {
-        // POST 요청 보내기 (새로운 매물 생성)
-        response = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/properties`,
-          apiData,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        console.log("새 매물 정보 생성 성공:", response.data);
+        // 성공 시 부모 컴포넌트에 알림
+        if (onSave) {
+          onSave({
+            ...property,
+            ...formData,
+            id: response.id,
+          });
+        }
+
+        // 생성 완료 후 사이드바 닫기
+        if (onClose) {
+          onClose();
+        }
       } else {
-        // PUT 요청 보내기 (기존 매물 수정) - rawData.property.id 사용
-        const propertyId =
-          property.rawData?.property?.id || property.apartmentId;
+        // 기존 매물 수정의 경우 - 선택 시 전달받은 id 사용
+        const propertyId = property.id;
 
-        response = await axios.put(
-          `${import.meta.env.VITE_API_URL}/api/properties/${propertyId}`,
-          apiData,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              "Content-Type": "application/json",
-            },
+        if (!propertyId) {
+          console.error("매물 ID를 찾을 수 없습니다:", property);
+          alert("매물 ID를 찾을 수 없습니다. 다시 시도해주세요.");
+          return;
+        }
+
+        if (onUpdateProperty) {
+          // 부모 컴포넌트의 mutation을 통해 업데이트
+          onUpdateProperty({
+            propertyId: propertyId,
+            data: apiData,
+          });
+          // onUpdateProperty가 호출되면 onSave는 호출하지 않음 (중복 방지)
+
+          // 수정 완료 후 사이드바 닫기
+          if (onClose) {
+            onClose();
           }
-        );
-        console.log("매물 정보 업데이트 성공:", response.data);
-      }
+        } else {
+          // fallback: propertyService의 updateProperty 함수 사용
+          const response = await updateProperty(propertyId, apiData);
+          console.log("매물 정보 업데이트 성공:", response);
 
-      // 성공 시 부모 컴포넌트에 알림 - 수정된 데이터 전달
-      if (onSave) {
-        const propertyId =
-          property.rawData?.property?.id || property.apartmentId;
-        onSave({
-          ...property,
-          ...formData,
-          id: propertyId, // 올바른 propertyId 사용
-        });
+          // fallback의 경우에만 onSave 호출
+          if (onSave) {
+            onSave({
+              ...property,
+              ...formData,
+              id: propertyId,
+            });
+          }
+
+          // 수정 완료 후 사이드바 닫기
+          if (onClose) {
+            onClose();
+          }
+        }
       }
     } catch (error) {
       console.error("매물 정보 저장 실패:", error);
-      alert(
-        isNewProperty
-          ? "매물 정보 추가에 실패했습니다."
-          : "매물 정보 수정에 실패했습니다."
-      );
+      alert("매물 정보 저장에 실패했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -342,7 +367,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
           <label>매매</label>
           <input
             name="salePrice"
-            value={formData.salePrice}
+            value={formData.salePrice || ""}
             onChange={handleChange}
           />
         </div>
@@ -351,7 +376,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
           <label>전세</label>
           <input
             name="jeonsePrice"
-            value={formData.jeonsePrice}
+            value={formData.jeonsePrice || ""}
             onChange={handleChange}
           />
         </div>
@@ -360,7 +385,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
           <label>보증금/월세</label>
           <input
             name="deposit"
-            value={`${formData.deposit}/${formData.monthPrice}`}
+            value={`${formData.deposit || ""}/${formData.monthPrice || ""}`}
             onChange={(e) => {
               const [rent, month] = e.target.value.split("/");
               setFormData((prev) => ({
@@ -378,7 +403,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
             <label>소유주</label>
             <input
               name="ownerName"
-              value={formData.ownerName}
+              value={formData.ownerName || ""}
               onChange={handleChange}
             />
           </div>
@@ -386,7 +411,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
             <label>소유주 연락처</label>
             <input
               name="ownerPhone"
-              value={formData.ownerPhone}
+              value={formData.ownerPhone || ""}
               onChange={handleChange}
             />
           </div>
@@ -397,7 +422,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
             <label>임차인</label>
             <input
               name="tenantName"
-              value={formData.tenantName}
+              value={formData.tenantName || ""}
               onChange={handleChange}
             />
           </div>
@@ -405,7 +430,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
             <label>임차인 연락처</label>
             <input
               name="tenantPhone"
-              value={formData.tenantPhone}
+              value={formData.tenantPhone || ""}
               onChange={handleChange}
             />
           </div>
@@ -418,7 +443,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
               type="date"
               name="endDate"
               placeholder="yyyy-mm-dd"
-              value={formData.endDate}
+              value={formData.endDate || ""}
               onChange={handleChange}
             />
           </div>
@@ -428,7 +453,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
               type="date"
               name="startDate"
               placeholder="yyyy-mm-dd"
-              value={formData.startDate}
+              value={formData.startDate || ""}
               onChange={handleChange}
             />
           </div>
@@ -439,7 +464,7 @@ const PropertyModifySidebar = ({ property, onClose, onSave }) => {
         <label>상담 내용</label>
         <textarea
           name="note1"
-          value={formData.note1}
+          value={formData.note1 || ""}
           onChange={handleChange}
           placeholder={property.memo}
         />

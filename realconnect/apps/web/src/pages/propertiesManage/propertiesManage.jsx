@@ -71,6 +71,7 @@ const Properties = () => {
       (page.content || []).map(toPropertyTableRow)
     );
   }, [propertiesData]);
+  console.log("allProperties", allProperties);
 
   // 원본 Entity 데이터도 저장 (상세보기용)
   const allPropertyEntities = useMemo(() => {
@@ -157,25 +158,21 @@ const Properties = () => {
       const originalEntity = allPropertyEntities.find(
         (entity) =>
           entity.apartmentId === property.apartmentId &&
-          entity.dong === property.dong?.replace("동", "") &&
-          entity.ho === property.ho?.replace("호", "")
+          entity.dong === property.dong.replace("동", "") &&
+          entity.ho === property.ho.replace("호", "")
       );
 
       if (originalEntity) {
         // Entity를 상세보기 모델로 변환하고 rawData 추가
         const detailProperty = toPropertyDetailModel(originalEntity);
-        const selectedPropertyWithRawData = {
-          ...detailProperty,
-          rawData: originalEntity,
-        };
-        setSelectedProperty(selectedPropertyWithRawData);
+        // property 객체의 id를 추가
+        if (property.property?.id) {
+          detailProperty.id = property.property.id;
+        }
+        setSelectedProperty(detailProperty);
       } else {
-        // 원본 Entity를 찾을 수 없는 경우 테이블 데이터 사용하고 rawData 추가
-        const selectedPropertyWithRawData = {
-          ...property,
-          rawData: property,
-        };
-        setSelectedProperty(selectedPropertyWithRawData);
+        // 원본 Entity를 찾을 수 없는 경우 테이블 데이터 사용
+        setSelectedProperty(property);
       }
 
       if (isEditMode) {
@@ -267,6 +264,7 @@ const Properties = () => {
             property={selectedProperty}
             onClose={closeSidebar}
             onSave={handleSaveProperty}
+            onUpdateProperty={updatePropertyMutation.mutate}
             isClosing={isClosingSidebar}
           />
         ) : (
