@@ -6,6 +6,7 @@ import ContractDetailSidebar from "@/components/domain/contracts/contractDetailS
 import CreateContractModal from "@/pages/modal/createContractModal";
 import {
   getContracts,
+  getFavoriteContracts,
   createContract,
   updateContract,
 } from "@/services/contractService";
@@ -26,6 +27,7 @@ const Contracts = () => {
   const [isClosing, setIsClosing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [showFavorites, setShowFavorites] = useState(false);
   const queryClient = useQueryClient();
 
   const [filters, setFilters] = useState({
@@ -53,8 +55,14 @@ const Contracts = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["contracts", { filters, searchKeyword }],
+    queryKey: ["contracts", { filters, searchKeyword, showFavorites }],
     queryFn: () => {
+      // 즐겨찾기 필터가 활성화된 경우
+      if (showFavorites) {
+        return getFavoriteContracts();
+      }
+
+      // 일반 필터 적용
       const params = {
         transactionType:
           filters.transactionType === "ALL" ? null : filters.transactionType,
@@ -120,6 +128,12 @@ const Contracts = () => {
 
   const handleViewChange = (view) => {
     setActiveView(view);
+    // 즐겨찾기 뷰가 선택된 경우 즐겨찾기 필터 활성화
+    if (view === "즐겨찾기") {
+      setShowFavorites(true);
+    } else {
+      setShowFavorites(false);
+    }
   };
 
   // Model과 ViewModel 배열을 모두 관리
@@ -169,7 +183,7 @@ const Contracts = () => {
               />
               <Button
                 label="계약 추가"
-                onClick={() => {}}
+                onClick={() => setIsModalOpen(true)}
                 variant="primary"
                 icon={<PlusIcon />}
               />

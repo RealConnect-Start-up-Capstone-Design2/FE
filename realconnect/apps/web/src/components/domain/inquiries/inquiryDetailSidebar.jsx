@@ -6,6 +6,11 @@ import axios from "axios";
 import useAuthStore from "@/store/authStore";
 import InfoRow from "@/components/common/info/InfoRow";
 import InfoBox from "@/components/common/info/InfoBox";
+import {
+  toDisplayInquiryType,
+  toDisplayStatus,
+} from "../../../../../../packages/shared-utils/src/labelMaps.js";
+import { formatDate } from "../../../../../../packages/shared-utils/src/formatters.js";
 
 const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -96,14 +101,17 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
 
         <div className="inquiry-info">
           <InfoRow>
-            <InfoBox title="문의 유형" value={inquiry.inquiryType} />
+            <InfoBox
+              title="문의 유형"
+              value={toDisplayInquiryType(inquiry.inquiryType)}
+            />
             <InfoBox title="진행 상태">
               <p
                 className={
                   inquiry.status ? inquiry.status.replace(/\s+/g, "") : ""
                 }
               >
-                {inquiry.status || "-"}
+                {toDisplayStatus(inquiry.status) || "-"}
               </p>
             </InfoBox>
           </InfoRow>
@@ -112,7 +120,7 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
         <div className="property-details">
           <InfoRow>
             <InfoBox title="면적" value={`${inquiry.area} m²`} />
-            <InfoBox title="등록일" value={inquiry.createdAt} />
+            <InfoBox title="등록일" value={formatDate(inquiry.createdAt)} />
           </InfoRow>
         </div>
 

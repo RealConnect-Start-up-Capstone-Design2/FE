@@ -1,29 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./contractDetailSidebar.css";
 import { updateContract } from "@/services/contractService"; // 서비스 import
+import { formatPrice } from "../../../../../../packages/shared-utils/src/formatters.js";
+import { SortButton } from "@realconnect/shared-ui";
 
 import FileIcon from "@/assets/icons/file-text.svg";
 import DownloadIcon from "@/assets/icons/download.svg";
 import uploadIcon from "@/assets/icons/upload.svg";
 import HomeIcon from "@/assets/icons/home.svg";
 import XIcon from "@/assets/icons/x.svg";
-import transactionTypeArrowUp from "@/assets/icons/transactionTypeArrow^.svg";
-import transactionTypeArrowDown from "@/assets/icons/transactionTypeArrowV.svg";
-import dropboxCheck from "@/assets/icons/dropboxCheck.svg";
 import InfoRow from "@/components/common/info/InfoRow";
 import InfoBox from "@/components/common/info/InfoBox";
 
 const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const fileInputRef = useRef(null);
-  
-  // 드롭박스 상태
-  const [isTransactionTypeOpen, setIsTransactionTypeOpen] = useState(false);
-  const [isStatusOpen, setIsStatusOpen] = useState(false);
-
-  // 드롭박스 외부 클릭 감지를 위한 ref
-  const transactionTypeRef = useRef(null);
-  const statusRef = useRef(null);
 
   // 거래 유형 변환 함수들
   const getTransactionTypeText = (contractType) => {
@@ -38,27 +29,10 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
 
   const transactionTypeOptions = ["매매", "전세", "월세"];
 
-  // 거래 가격 포맷팅 (원 → 만원/억 단위)
-  const formatPrice = (price) => {
-    if (!price) return "-";
-    const numPrice = parseInt(price, 10);
-
-    if (numPrice >= 100000000) {
-      // 1억 이상
-      const eok = numPrice / 100000000;
-      return `${eok.toFixed(1)}억`;
-    } else {
-      // 1억 미만
-      const man = numPrice / 10000;
-      return `${man.toLocaleString()}만원`;
-    }
-  };
-
   // 계약 상태를 한국어로 변환
   const getContractStatusText = (status) => {
     const statusMap = {
       ACTIVE: "계약 중",
-      COMPLETED: "계약 완료",
       TERMINATED: "계약 파기",
       EXPIRED: "계약 만료",
     };
@@ -69,19 +43,14 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
   const getContractStatusValue = (statusKo) => {
     const statusMap = {
       "계약 중": "ACTIVE",
-      "계약 완료": "COMPLETED",
+      "계약 완료": "ACTIVE", // COMPLETED 대신 ACTIVE로 매핑
       "계약 파기": "TERMINATED",
       "계약 만료": "EXPIRED",
     };
     return statusMap[statusKo] || statusKo;
   };
 
-  const contractStatusOptions = [
-    "계약 중",
-    "계약 완료",
-    "계약 파기",
-    "계약 만료",
-  ];
+  const contractStatusOptions = ["계약 중", "계약 파기", "계약 만료"];
 
   // 날짜 형식 변환 함수들
   const formatDateForInput = (dateString) => {
@@ -139,26 +108,6 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
     }
   }, [contract]);
 
-  // 외부 클릭 시 드롭박스 닫기
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        transactionTypeRef.current &&
-        !transactionTypeRef.current.contains(event.target)
-      ) {
-        setIsTransactionTypeOpen(false);
-      }
-      if (statusRef.current && !statusRef.current.contains(event.target)) {
-        setIsStatusOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
   if (!contract) return null;
 
   const handleChange = (e) => {
@@ -174,7 +123,6 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
       ...prevData,
       transactionType: type,
     }));
-    setIsTransactionTypeOpen(false);
   };
 
   const handleStatusSelect = (status) => {
@@ -182,7 +130,6 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
       ...prevData,
       status: status,
     }));
-    setIsStatusOpen(false);
   };
 
   const handleEditMode = () => {
@@ -191,9 +138,6 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
 
   const handleCancel = () => {
     setIsEditMode(false);
-    // 드롭박스도 닫기
-    setIsTransactionTypeOpen(false);
-    setIsStatusOpen(false);
     // 초기 데이터로 다시 설정
     setFormData({
       contractDate: formatDateForInput(contract.contractDate),
@@ -222,13 +166,13 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
         apartment: contract.apartment,
         dong: contract.dong,
         ho: contract.ho,
-        area: formData.area,
+        area: String(formData.area), // String으로 변환
         ownerName: formData.owner,
         ownerPhone: formData.ownerContact,
         tenantName: formData.tenant,
         tenantPhone: formData.tenantContact,
         contractType: getTransactionTypeValue(formData.transactionType),
-        contractPrice: formData.price,
+        contractPrice: String(formData.price), // String으로 변환
         contractDate: formData.contractDate, // 이미 YYYY-MM-DD 형식
         dueDate: formData.expiryDate, // 이미 YYYY-MM-DD 형식
         contractStatus: getContractStatusValue(formData.status),
@@ -240,7 +184,6 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
       // 부모 컴포넌트에 변경사항 전파
       onUpdate(updatedContract);
       setIsEditMode(false);
-      
     } catch (error) {
       console.error("계약 정보 저장 실패:", error);
       alert("계약 정보 저장에 실패했습니다.");
@@ -346,93 +289,28 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
 
               <div className="edit-item-container">
                 <label className="edit-item-label">거래 유형</label>
-                <div className="edit-dropdown-container" ref={transactionTypeRef}>
-                  <div
-                    className="edit-dropdown"
-                    onClick={() =>
-                      setIsTransactionTypeOpen(!isTransactionTypeOpen)
-                    }
-                  >
-                    <span className="edit-dropdown-selected">
-                      {formData.transactionType || "선택하세요"}
-                    </span>
-                    <img
-                      src={
-                        isTransactionTypeOpen
-                          ? transactionTypeArrowUp
-                          : transactionTypeArrowDown
-                      }
-                      alt="dropdown arrow"
-                      className="edit-dropdown-arrow"
-                    />
-                  </div>
-
-                  {isTransactionTypeOpen && (
-                    <div className="edit-dropdown-menu transaction-type-menu">
-                      {transactionTypeOptions.map((option) => (
-                        <div
-                          key={option}
-                          className="edit-dropdown-option"
-                          onClick={() => handleTransactionTypeSelect(option)}
-                        >
-                          <span>{option}</span>
-                          {formData.transactionType === option && (
-                            <img
-                              src={dropboxCheck}
-                              alt="selected"
-                              className="edit-dropdown-check"
-                            />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <SortButton
+                  options={transactionTypeOptions.map((opt) => ({
+                    value: opt,
+                    label: opt,
+                  }))}
+                  value={formData.transactionType}
+                  onChange={handleTransactionTypeSelect}
+                  placeholder="선택하세요"
+                />
               </div>
 
               <div className="edit-item-container">
                 <label className="edit-item-label">거래 상태</label>
-                <div className="edit-dropdown-container" ref={statusRef}>
-                  <div
-                    className="edit-dropdown"
-                    onClick={() => setIsStatusOpen(!isStatusOpen)}
-                  >
-                    <span className="edit-dropdown-selected">
-                      {formData.status || "선택하세요"}
-                    </span>
-                    <img
-                      src={
-                        isStatusOpen
-                          ? transactionTypeArrowUp
-                          : transactionTypeArrowDown
-                      }
-                      alt="dropdown arrow"
-                      className="edit-dropdown-arrow"
-                    />
-                  </div>
-
-                  {isStatusOpen && (
-                    <div className="edit-dropdown-menu status-menu">
-                      {contractStatusOptions.map((option) => (
-                        <div
-                          key={option}
-                          className="edit-dropdown-option"
-                          data-status={option}
-                          onClick={() => handleStatusSelect(option)}
-                        >
-                          <span>{option}</span>
-                          {formData.status === option && (
-                            <img
-                              src={dropboxCheck}
-                              alt="selected"
-                              className="edit-dropdown-check"
-                            />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <SortButton
+                  options={contractStatusOptions.map((opt) => ({
+                    value: opt,
+                    label: opt,
+                  }))}
+                  value={formData.status}
+                  onChange={handleStatusSelect}
+                  placeholder="선택하세요"
+                />
               </div>
             </div>
 
@@ -508,7 +386,6 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
 
             {/* 계약서 파일 섹션 */}
             <div className="edit-contract-file-section">
-
               <div className="edit-contract-file-info">
                 {formData.fileName ? (
                   <>
@@ -628,7 +505,9 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
               <div className="pricing-info">
                 <div className="price-item">
                   <p>거래 가격 {formatPrice(contract.contractPrice)}</p>
-                  <p>거래 유형 {getTransactionTypeText(contract.contractType)}</p>
+                  <p>
+                    거래 유형 {getTransactionTypeText(contract.contractType)}
+                  </p>
                   <p>
                     계약 상태 {getContractStatusText(contract.contractStatus)}
                   </p>
@@ -678,7 +557,9 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
                     </button>
                   </div>
                 ) : (
-                  <div className="no-file-message">등록된 계약서가 없습니다.</div>
+                  <div className="no-file-message">
+                    등록된 계약서가 없습니다.
+                  </div>
                 )}
               </div>
             </div>

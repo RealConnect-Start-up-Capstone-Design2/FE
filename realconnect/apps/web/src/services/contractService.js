@@ -16,6 +16,22 @@ export const getContracts = async (params) => {
 };
 
 /**
+ * 즐겨찾기된 계약 목록을 조회하는 함수
+ * @returns {Promise<Array>} - 즐겨찾기된 계약 목록
+ */
+export const getFavoriteContracts = async () => {
+  try {
+    const response = await api.get("/api/contract/searchContracts", {
+      params: { favorite: true },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("즐겨찾기 계약 목록 조회에 실패했습니다.", error);
+    throw error;
+  }
+};
+
+/**
  * 계약 정보를 수정하는 함수
  * @param {string} id - 계약 ID
  * @param {object} contractData - 수정할 계약 데이터
@@ -23,7 +39,10 @@ export const getContracts = async (params) => {
  */
 export const updateContract = async (contractId, contractData) => {
   try {
-    const response = await api.put(`/api/contract/${contractId}`, contractData);
+    const response = await api.put(
+      `/api/contract/update/${contractId}`,
+      contractData
+    );
     return response.data;
   } catch (error) {
     console.error("Error updating contract:", error);
@@ -44,4 +63,4 @@ export const createContract = async (contractData) => {
     console.error("Error creating contract:", error);
     throw error;
   }
-}; 
+};

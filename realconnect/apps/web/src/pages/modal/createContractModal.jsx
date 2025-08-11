@@ -2,13 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import Modal from "./modal.jsx";
 import "./createContractModal.css";
 import uploadIcon from "../../assets/icons/upload.svg";
-import { createContract } from "../../services/contractService.js";
 
 const CreateContractModal = ({
   isOpen,
   onClose,
   onSubmit,
   property = null,
+  isSubmitting = false,
 }) => {
   const fileInputRef = useRef(null);
 
@@ -30,7 +30,6 @@ const CreateContractModal = ({
   };
 
   const [formData, setFormData] = useState(initialFormData);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // property 정보가 있으면 폼 데이터 초기화
   useEffect(() => {
@@ -285,62 +284,35 @@ const CreateContractModal = ({
     return true;
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     // 유효성 검사
     if (!validateFormData()) {
       return;
     }
 
-    setIsSubmitting(true);
+    // API 요청 데이터 구성 (통일된 형식)
+    const requestData = {
+      apartment: formData.complex,
+      dong: formData.building ? formData.building.replace(/동$/, "") : "",
+      ho: formData.unit ? formData.unit.replace(/호$/, "") : "",
+      area: property?.area ? property.area.replace(/[^0-9.]/g, "") : "55", // 문의에서 면적 정보 가져오기
+      ownerName: formData.owner,
+      ownerPhone: property?.ownerPhone || "010-1111-1111", // 소유주 연락처
+      tenantName: formData.tenant,
+      tenantPhone: property?.tenantPhone || "010-1234-5678", // 임차인 연락처
+      contractType: getContractTypeApiValue(formData.transactionType),
+      contractPrice: convertPrice(formData.price).toString(), // String으로 변환
+      contractDate: formData.contractDate,
+      dueDate: formData.expiryDate,
+      contractStatus: "ACTIVE", // 기본값을 ACTIVE로 설정
+      favorite: false,
+    };
 
-    try {
-      // API 요청 데이터 구성 (통일된 형식)
-      const requestData = {
-        apartment: formData.complex,
-        dong: formData.building ? formData.building.replace(/동$/, "") : "",
-        ho: formData.unit ? formData.unit.replace(/호$/, "") : "",
-        area: property?.area ? property.area.replace(/[^0-9.]/g, "") : "55", // 문의에서 면적 정보 가져오기
-        ownerName: formData.owner,
-        ownerPhone: property?.ownerPhone || "010-1111-1111", // 소유주 연락처
-        tenantName: formData.tenant,
-        tenantPhone: property?.tenantPhone || "010-1234-5678", // 임차인 연락처
-        contractType: getContractTypeApiValue(formData.transactionType),
-        contractPrice: convertPrice(formData.price).toString(), // String으로 변환
-        contractDate: formData.contractDate,
-        dueDate: formData.expiryDate,
-        contractStatus: "ACTIVE", // 기본값을 ACTIVE로 설정
-        favorite: false,
-      };
+    console.log("계약 요청 데이터:", requestData);
 
-      console.log("계약 요청 데이터:", requestData);
-
-      try {
-        const response = await createContract(requestData);
-        console.log("계약 등록 성공:", response);
-
-        if (onSubmit) {
-          onSubmit(response);
-        }
-        onClose();
-      } catch (apiError) {
-        console.error("API 호출 실패:", apiError);
-
-        // 응답 데이터가 있는 경우 출력
-        if (apiError.response) {
-          console.error("API 응답 상태:", apiError.response.status);
-          console.error("API 응답 데이터:", apiError.response.data);
-        }
-
-        // 원본 에러를 다시 throw하여 상위 catch 블록에서 처리
-        throw new Error(
-          `API 오류: ${apiError.response?.data?.message || apiError.message}`
-        );
-      }
-    } catch (error) {
-      console.error("계약 등록 실패:", error);
-      alert(`계약 등록에 실패했습니다: ${error.message}`);
-    } finally {
-      setIsSubmitting(false);
+    // 부모 컴포넌트에 데이터 전달
+    if (onSubmit) {
+      onSubmit(requestData);
     }
   };
 

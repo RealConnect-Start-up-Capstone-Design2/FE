@@ -10,7 +10,12 @@ import checkIcon from "../../../assets/icons/check.svg";
  *   placeholder?: string;
  * }} props
  */
-export const SortButton = ({ options, value, onChange, placeholder = "선택" }) => {
+export const SortButton = ({
+  options,
+  value,
+  onChange,
+  placeholder = "선택",
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -32,7 +37,8 @@ export const SortButton = ({ options, value, onChange, placeholder = "선택" })
     setIsOpen(false);
   };
 
-  const selectedLabel = options.find(opt => opt.value === value)?.label || placeholder;
+  const selectedLabel =
+    options.find((opt) => opt.value === value)?.label || placeholder;
 
   return (
     <div className={styles.dropdown} ref={dropdownRef}>
@@ -65,11 +71,7 @@ export const SortButton = ({ options, value, onChange, placeholder = "선택" })
               >
                 <div className={styles.checkContainer}>
                   {value === option.value ? (
-                    <img
-                      src={checkIcon}
-                      alt="check"
-                      className={styles.icon}
-                    />
+                    <img src={checkIcon} alt="check" className={styles.icon} />
                   ) : (
                     <div className={styles.iconPlaceholder}></div>
                   )}
@@ -86,4 +88,4 @@ export const SortButton = ({ options, value, onChange, placeholder = "선택" })
       )}
     </div>
   );
-}; 
+};

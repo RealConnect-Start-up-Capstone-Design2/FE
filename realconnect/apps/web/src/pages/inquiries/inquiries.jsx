@@ -16,6 +16,8 @@ import TableHeaderControls from "../../components/common/TableHeaderControls";
 import ViewSelector from "../../components/common/ViewSelector";
 import { toInquiryTableRow } from "../../../../../packages/shared-model/InquiryModel";
 import { toInquiryViewRow } from "../../../../../packages/web-viewmodel/inquiryViewModel";
+import { getInquiryTypeOptions } from "../../../../../packages/shared-utils/src/labelMaps.js";
+import useAuthStore from "../../store/authStore";
 
 // 아이콘 불러오기
 import PlusIcon from "../../assets/icons/plus.svg?react";
@@ -31,6 +33,12 @@ const Inquiries = () => {
   const closingSidebarRef = useRef(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const queryClient = useQueryClient();
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  console.log("현재 로그인 상태:", {
+    hasToken: !!accessToken,
+    tokenLength: accessToken ? accessToken.length : 0,
+  });
 
   const { data: rawInquiries, isLoading } = useQuery({
     queryKey: ["inquiries", { searchKeyword, inquiryType }],
@@ -45,9 +53,9 @@ const Inquiries = () => {
 
   const saveInquiryMutation = useMutation({
     mutationFn: (inquiryData) => {
-      // inquiryType -> type 변환
-      const requestBody = { ...inquiryData, type: inquiryData.inquiryType };
-      delete requestBody.inquiryType;
+      // API 요청 형식에 맞게 데이터 변환
+      const requestBody = { ...inquiryData };
+
       if (inquiryData.id) {
         return updateInquiry(inquiryData.id, requestBody);
       } else {
@@ -60,13 +68,16 @@ const Inquiries = () => {
       setIsAddingInquiry(false);
       setIsEditMode(false);
     },
+    onError: (error) => {
+      console.error("문의 저장 실패:", error);
+      alert("문의 저장에 실패했습니다. 모든 필드를 확인해주세요.");
+    },
   });
 
   const updateFavoriteMutation = useMutation({
     mutationFn: (inquiry) => {
-      // inquiryType -> type 변환
-      const requestBody = { ...inquiry, type: inquiry.inquiryType };
-      delete requestBody.inquiryType;
+      // PUT 요청에서는 inquiryType 그대로 사용
+      const requestBody = { ...inquiry };
       return updateInquiry(inquiry.id, requestBody);
     },
     onSuccess: () => {
@@ -109,9 +120,7 @@ const Inquiries = () => {
 
   const transactionTypeOptions = [
     { value: "ALL", label: "전체" },
-    { value: "BUY", label: "매매" },
-    { value: "JEONSE", label: "전세" },
-    { value: "MONTH_RENT", label: "월세" },
+    ...getInquiryTypeOptions(),
   ];
 
   const handleViewChange = (view) => {
@@ -145,10 +154,15 @@ const Inquiries = () => {
     if (closingSidebarRef.current) {
       return;
     }
+
+    // viewRow에서 id를 사용해서 원본 model 데이터를 찾기
+    const originalModel = models.find((model) => model.id === inquiry.id);
+
     if (selectedInquiry && selectedInquiry.id === inquiry.id) {
       closeSidebar();
     } else {
-      setSelectedInquiry(inquiry);
+      // 원본 model 데이터를 선택
+      setSelectedInquiry(originalModel);
       setIsClosingSidebar(false);
       if (isEditMode) {
         setIsEditMode(false);
@@ -177,7 +191,15 @@ const Inquiries = () => {
   };
 
   const handleSaveInquiry = (inquiryData) => {
-    saveInquiryMutation.mutate(inquiryData);
+    // inquiryData가 false인 경우 (에러 발생 시) 처리하지 않음
+    if (inquiryData === false) {
+      return;
+    }
+
+    // inquiryData가 객체인 경우 (정상 데이터) mutation 실행
+    if (typeof inquiryData === "object" && inquiryData !== null) {
+      saveInquiryMutation.mutate(inquiryData);
+    }
   };
 
   return (
@@ -253,7 +275,7 @@ const Inquiries = () => {
                   inquiry={selectedInquiry}
                   onClose={closeSidebar}
                   onDelete={handleDeleteSuccess}
-                  onEdit={() => setIsEditMode(true)}
+                  onModify={() => setIsEditMode(true)}
                   isClosing={isClosingSidebar}
                 />
               ))}

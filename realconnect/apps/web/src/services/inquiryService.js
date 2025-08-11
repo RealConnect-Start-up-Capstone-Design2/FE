@@ -38,10 +38,22 @@ export const updateInquiry = async (inquiryId, inquiryData) => {
  */
 export const createInquiry = async (inquiryData) => {
   try {
+    console.log("createInquiry 요청:", {
+      url: "/api/inquiries",
+      method: "POST",
+      data: inquiryData,
+    });
+
     const response = await api.post("/api/inquiries", inquiryData);
+    console.log("createInquiry 성공:", response.data);
     return response.data;
   } catch (error) {
     console.error("문의 생성에 실패했습니다.", error);
+    console.error("에러 상세:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+    });
     throw error;
   }
 };
@@ -58,4 +70,4 @@ export const deleteInquiry = async (inquiryId) => {
     console.error("문의 삭제에 실패했습니다.", error);
     throw error;
   }
-}; 
+};

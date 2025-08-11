@@ -5,6 +5,7 @@ import axios from "axios";
 import CreateContractModal from "@/pages/modal/createContractModal";
 import InfoRow from "@/components/common/info/InfoRow";
 import InfoBox from "@/components/common/info/InfoBox";
+import { formatPrice } from "../../../../../../packages/shared-utils/src/formatters.js";
 
 const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
   const [floorPlanImage, setFloorPlanImage] = useState(null);
@@ -13,39 +14,6 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isSubmittingContract, setIsSubmittingContract] = useState(false);
-  // 가격 포맷팅 함수
-  const formatPrice = (price) => {
-    if (!price || price === "-") return "-";
-
-    // 문자열이면서 쉼표가 포함된 경우 처리
-    let numericValue;
-    if (typeof price === "string") {
-      // 쉼표 제거
-      const cleanPrice = price.replace(/,/g, "");
-      numericValue = Number(cleanPrice);
-
-      // 변환 실패시 기본값 반환
-      if (isNaN(numericValue)) return "-";
-    } else {
-      numericValue = Number(price);
-    }
-
-    // 0원이면 "-" 표시
-    if (numericValue === 0) return "-";
-
-    // 1억 이상인 경우
-    if (numericValue >= 100000000) {
-      // 억 단위로 변환 (반올림 없이 소수점 첫째자리까지)
-      const billions = Math.floor(numericValue / 10000000) / 10;
-      return billions.toFixed(1) + "억";
-    }
-    // 1억 미만인 경우
-    else {
-      // 만원 단위로 표시
-      const tenThousands = Math.floor(numericValue / 10000);
-      return tenThousands.toLocaleString() + "만원";
-    }
-  };
 
   useEffect(() => {
     // 평면도 이미지 로드
