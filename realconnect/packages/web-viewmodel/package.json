@@ -4,6 +4,6 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "@realconnect/shared-utils": "0.0.0"
+    "@realconnect/shared-utils": "workspace:*"
   }
 }

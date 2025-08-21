@@ -10,8 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@realconnect/shared-ui": "0.0.0",
-    "@realconnect/shared-utils": "0.0.0",
+    "@realconnect/shared-ui": "workspace:*",
+    "@realconnect/shared-utils": "workspace:*",
     "@tanstack/react-query": "^5.83.0",
     "axios": "^1.9.0",
     "react": "^19.0.0",

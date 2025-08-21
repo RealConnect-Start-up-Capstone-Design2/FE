@@ -15,5 +15,5 @@
     "turbo": "latest",
     "vite-plugin-svgr": "^4.3.0"
   },
-  "packageManager": "npm@10.9.2"
+  "packageManager": "pnpm@10.15.0"
 }
