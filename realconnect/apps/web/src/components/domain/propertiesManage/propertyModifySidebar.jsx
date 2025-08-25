@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./propertyModifySidebar.css";
 import { SortButton } from "@realconnect/shared-ui";
+import BaseSidebar from "@/components/common/rightSidebar/BaseSidebar";
+import { FormInput } from "@/components/common/form";
 import {
   createProperty,
   updateProperty,
@@ -298,23 +300,31 @@ const PropertyModifySidebar = ({
     { value: "계약 완료", label: "계약 완료" },
   ];
 
-  return (
-    <div className="property-modify-sidebar">
-      <div className="modify-sidebar-header">
-        <div className="modify-sidebar-header-title">
-          {property.apartmentName} {property.building} {property.unit}
-        </div>
-        <button className="modify-close-button" onClick={onClose}>
-          ×
-        </button>
-      </div>
+  // 푸터 컨텐츠 준비
+  const footerContent = (
+    <button
+      className="modify-save-button"
+      onClick={handleSave}
+      disabled={isLoading}
+    >
+      {isLoading ? "저장 중..." : isNewProperty ? "정보 추가하기" : "수정하기"}
+    </button>
+  );
 
+  return (
+    <BaseSidebar
+      title={`${property.apartmentName} ${property.dong}동 ${property.ho}호`}
+      onClose={onClose}
+      isClosing={false}
+      footerContent={footerContent}
+      className="property-modify-sidebar"
+    >
       <div className="modify-property-image-placeholder">
         <div className="modify-floor-plan-placeholder">
           {imageUrl ? (
             <img
               src={imageUrl}
-              alt={`${property.apartmentName} ${property.building} ${property.unit}`}
+              alt={`${property.apartmentName} ${property.dong} ${property.ho}`}
               style={{
                 objectFit: "contain",
                 width: "100%",
@@ -364,8 +374,9 @@ const PropertyModifySidebar = ({
 
       <div className="modify-form">
         <div className="modify-form-item">
-          <label>매매</label>
-          <input
+          <FormInput
+            type="price"
+            label="매매"
             name="salePrice"
             value={formData.salePrice || ""}
             onChange={handleChange}
@@ -373,8 +384,9 @@ const PropertyModifySidebar = ({
         </div>
 
         <div className="modify-form-item">
-          <label>전세</label>
-          <input
+          <FormInput
+            type="price"
+            label="전세"
             name="jeonsePrice"
             value={formData.jeonsePrice || ""}
             onChange={handleChange}
@@ -399,89 +411,71 @@ const PropertyModifySidebar = ({
       </div>
       <div className="modify-info-row">
         <div className="modify-info-row-box">
-          <div className="modify-info-box">
-            <label>소유주</label>
-            <input
-              name="ownerName"
-              value={formData.ownerName || ""}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="modify-info-box">
-            <label>소유주 연락처</label>
-            <input
-              name="ownerPhone"
-              value={formData.ownerPhone || ""}
-              onChange={handleChange}
-            />
-          </div>
+          <FormInput
+            type="text"
+            label="소유주"
+            name="ownerName"
+            value={formData.ownerName || ""}
+            onChange={handleChange}
+          />
+          <FormInput
+            type="phone"
+            label="소유주 연락처"
+            name="ownerPhone"
+            value={formData.ownerPhone || ""}
+            onChange={handleChange}
+          />
         </div>
 
         <div className="modify-info-row-box">
-          <div className="modify-info-box">
-            <label>임차인</label>
-            <input
-              name="tenantName"
-              value={formData.tenantName || ""}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="modify-info-box">
-            <label>임차인 연락처</label>
-            <input
-              name="tenantPhone"
-              value={formData.tenantPhone || ""}
-              onChange={handleChange}
-            />
-          </div>
+          <FormInput
+            type="text"
+            label="임차인"
+            name="tenantName"
+            value={formData.tenantName || ""}
+            onChange={handleChange}
+          />
+          <FormInput
+            type="phone"
+            label="임차인 연락처"
+            name="tenantPhone"
+            value={formData.tenantPhone || ""}
+            onChange={handleChange}
+          />
         </div>
 
         <div className="modify-info-row-box">
-          <div className="modify-info-box">
-            <label>만기일</label>
-            <input
-              type="date"
-              name="endDate"
-              placeholder="yyyy-mm-dd"
-              value={formData.endDate || ""}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="modify-info-box">
-            <label>등록일</label>
-            <input
-              type="date"
-              name="startDate"
-              placeholder="yyyy-mm-dd"
-              value={formData.startDate || ""}
-              onChange={handleChange}
-            />
-          </div>
+          <FormInput
+            type="date"
+            label="만기일"
+            name="endDate"
+            placeholder="yyyy-mm-dd"
+            value={formData.endDate || ""}
+            onChange={handleChange}
+          />
+          <FormInput
+            type="date"
+            label="등록일"
+            name="startDate"
+            placeholder="yyyy-mm-dd"
+            value={formData.startDate || ""}
+            onChange={handleChange}
+          />
         </div>
       </div>
 
       <div className="modify-note-section">
-        <label>상담 내용</label>
-        <textarea
+        <FormInput
+          type="textarea"
+          label="상담 내용"
           name="note1"
           value={formData.note1 || ""}
           onChange={handleChange}
           placeholder={property.memo}
+          rows={8}
         />
       </div>
-
-      <button
-        className="modify-save-button"
-        onClick={handleSave}
-        disabled={isLoading}
-      >
-        {isLoading
-          ? "저장 중..."
-          : isNewProperty
-            ? "정보 추가하기"
-            : "수정하기"}
-      </button>
-    </div>
+    </BaseSidebar>
   );
 };
 

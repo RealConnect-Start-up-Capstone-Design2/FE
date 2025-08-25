@@ -5,6 +5,7 @@ import axios from "axios";
 import CreateContractModal from "@/pages/modal/createContractModal";
 import InfoRow from "@/components/common/info/InfoRow";
 import InfoBox from "@/components/common/info/InfoBox";
+import BaseSidebar from "@/components/common/rightSidebar/BaseSidebar";
 import { formatPrice } from "../../../../../../packages/shared-utils/src/formatters.js";
 
 const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
@@ -98,18 +99,32 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
   };
 
   if (!property) return null;
-  return (
-    <div className={`property-detail-sidebar ${isClosing ? "closing" : ""}`}>
-      <div className="sidebar-header">
-        <div className="sidebar-header-title">
-          {`${property.apartmentName} ${property.dong}동 ${property.ho}호`}
-        </div>
-        <button className="close-button" onClick={onClose}>
-          ×
-        </button>
-      </div>
 
-      <div className="sidebar-content">
+  // 푸터 컨텐츠 준비
+  const footerContent = (
+    <div className="action-buttons">
+      <button className="property-primary-button" onClick={onEdit}>
+        수정하기
+      </button>
+      <button
+        className="secondary-button"
+        onClick={handleContractButtonClick}
+        disabled={isSubmittingContract}
+      >
+        {isSubmittingContract ? "처리 중..." : "계약 작성"}
+      </button>
+    </div>
+  );
+
+  return (
+    <>
+      <BaseSidebar
+        title={`${property.apartmentName} ${property.dong}동 ${property.ho}호`}
+        onClose={onClose}
+        isClosing={isClosing}
+        footerContent={footerContent}
+        className="property-detail-sidebar"
+      >
         <div className="property-image-placeholder">
           {(() => {
             // 전망 이미지가 없으면 평면도 이미지로 대체
@@ -215,22 +230,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="sidebar-footer">
-        <div className="action-buttons">
-          <button className="property-primary-button" onClick={onEdit}>
-            수정하기
-          </button>
-          <button
-            className="secondary-button"
-            onClick={handleContractButtonClick}
-            disabled={isSubmittingContract}
-          >
-            {isSubmittingContract ? "처리 중..." : "계약 작성"}
-          </button>
-        </div>
-      </div>
+      </BaseSidebar>
 
       {/* 계약 작성 모달 */}
       <CreateContractModal
@@ -239,7 +239,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
         onSubmit={handleContractSubmit}
         property={property}
       />
-    </div>
+    </>
   );
 };
 

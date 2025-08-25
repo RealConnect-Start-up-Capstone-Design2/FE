@@ -1,4 +1,8 @@
+import { createApiService } from "@realconnect/shared-utils";
 import api from "./api";
+
+// 매물 서비스용 API 헬퍼 생성
+const propertyApi = createApiService(api, "PropertyService");
 
 /**
  * 매물 목록을 조회하는 함수
@@ -11,20 +15,7 @@ import api from "./api";
  * @returns {Promise<object>} - 매물 목록과 페이징 정보를 포함하는 객체
  */
 export const getProperties = async (params) => {
-  try {
-    // undefined 값들은 제거
-    const cleanParams = Object.fromEntries(
-      Object.entries(params).filter(([, value]) => value !== undefined)
-    );
-
-    const response = await api.get("/api/apartments-properties", {
-      params: cleanParams,
-    });
-    return response.data;
-  } catch (error) {
-    console.error("매물 목록 조회에 실패했습니다.", error);
-    throw error;
-  }
+  return propertyApi.get("/api/apartments-properties", params);
 };
 
 /**
@@ -34,16 +25,7 @@ export const getProperties = async (params) => {
  * @returns {Promise<object>} - 수정된 매물 정보
  */
 export const updateProperty = async (propertyId, propertyData) => {
-  try {
-    const response = await api.put(
-      `/api/properties/${propertyId}`,
-      propertyData
-    );
-    return response.data;
-  } catch (error) {
-    console.error("매물 정보 업데이트에 실패했습니다.", error);
-    throw error;
-  }
+  return propertyApi.put(`/api/properties/${propertyId}`, propertyData);
 };
 
 /**
@@ -52,13 +34,7 @@ export const updateProperty = async (propertyId, propertyData) => {
  * @returns {Promise<object>} - 생성된 매물 정보
  */
 export const createProperty = async (propertyData) => {
-  try {
-    const response = await api.post("/api/properties", propertyData);
-    return response.data;
-  } catch (error) {
-    console.error("매물 생성에 실패했습니다.", error);
-    throw error;
-  }
+  return propertyApi.post("/api/properties", propertyData);
 };
 
 /**
@@ -67,10 +43,5 @@ export const createProperty = async (propertyData) => {
  * @returns {Promise<void>}
  */
 export const deleteProperty = async (propertyId) => {
-  try {
-    await api.delete(`/api/properties/${propertyId}`);
-  } catch (error) {
-    console.error("매물 삭제에 실패했습니다.", error);
-    throw error;
-  }
+  return propertyApi.delete(`/api/properties/${propertyId}`);
 };

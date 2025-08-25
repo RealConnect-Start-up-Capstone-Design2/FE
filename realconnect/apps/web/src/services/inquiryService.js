@@ -1,4 +1,8 @@
+import { createApiService } from "@realconnect/shared-utils";
 import api from "./api";
+
+// 문의 서비스용 API 헬퍼 생성
+const inquiryApi = createApiService(api, "InquiryService");
 
 /**
  * 문의 목록을 조회하는 함수
@@ -6,13 +10,7 @@ import api from "./api";
  * @returns {Promise<Array>} - 문의 목록
  */
 export const getInquiries = async (params) => {
-  try {
-    const response = await api.get("/api/inquiries", { params });
-    return response.data;
-  } catch (error) {
-    console.error("문의 목록 조회에 실패했습니다.", error);
-    throw error;
-  }
+  return inquiryApi.get("/api/inquiries", params);
 };
 
 /**
@@ -22,13 +20,7 @@ export const getInquiries = async (params) => {
  * @returns {Promise<object>} - 수정된 문의 정보
  */
 export const updateInquiry = async (inquiryId, inquiryData) => {
-  try {
-    const response = await api.put(`/api/inquiries/${inquiryId}`, inquiryData);
-    return response.data;
-  } catch (error) {
-    console.error("문의 정보 업데이트에 실패했습니다.", error);
-    throw error;
-  }
+  return inquiryApi.put(`/api/inquiries/${inquiryId}`, inquiryData);
 };
 
 /**
@@ -37,25 +29,7 @@ export const updateInquiry = async (inquiryId, inquiryData) => {
  * @returns {Promise<object>} - 생성된 문의 정보
  */
 export const createInquiry = async (inquiryData) => {
-  try {
-    console.log("createInquiry 요청:", {
-      url: "/api/inquiries",
-      method: "POST",
-      data: inquiryData,
-    });
-
-    const response = await api.post("/api/inquiries", inquiryData);
-    console.log("createInquiry 성공:", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("문의 생성에 실패했습니다.", error);
-    console.error("에러 상세:", {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-    });
-    throw error;
-  }
+  return inquiryApi.post("/api/inquiries", inquiryData);
 };
 
 /**
@@ -64,10 +38,5 @@ export const createInquiry = async (inquiryData) => {
  * @returns {Promise<void>}
  */
 export const deleteInquiry = async (inquiryId) => {
-  try {
-    await api.delete(`/api/inquiries/${inquiryId}`);
-  } catch (error) {
-    console.error("문의 삭제에 실패했습니다.", error);
-    throw error;
-  }
+  return inquiryApi.delete(`/api/inquiries/${inquiryId}`);
 };

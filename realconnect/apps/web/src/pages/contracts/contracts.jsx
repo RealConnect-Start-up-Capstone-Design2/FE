@@ -25,6 +25,7 @@ const Contracts = () => {
   const [activeView, setActiveView] = useState("전체");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [showFavorites, setShowFavorites] = useState(false);

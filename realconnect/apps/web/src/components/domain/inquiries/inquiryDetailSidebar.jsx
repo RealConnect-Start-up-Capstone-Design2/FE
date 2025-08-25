@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./inquiryDetailSidebar.css";
 import ShareInquiryModal from "@/pages/modal/shareInquiryModal";
 import CreateContractModal from "@/pages/modal/createContractModal";
+import BaseSidebar from "@/components/common/rightSidebar/BaseSidebar";
 import axios from "axios";
 import useAuthStore from "@/store/authStore";
 import InfoRow from "@/components/common/info/InfoRow";
@@ -55,17 +56,32 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
     closeContractModal();
   };
 
-  return (
-    <div className={`inquiry-detail-sidebar ${isClosing ? "closing" : ""}`}>
-      <div className="sidebar-header">
-        <div className="sidebar-header-title">{inquiry.apartmentName}</div>
-        <button className="close-button" onClick={onClose}>
-          ×
+  // 푸터 컨텐츠 준비
+  const footerContent = (
+    <div className="action-buttons">
+      <button className="inquiry-primary-button" onClick={onModify}>
+        수정하기
+      </button>
+      <div className="button-group">
+        <button className="secondary-button" onClick={openContractModal}>
+          계약 작성
+        </button>
+        <button className="secondary-button" onClick={openModal}>
+          공유하기
         </button>
       </div>
+    </div>
+  );
 
-      {/* 스크롤 가능한 콘텐츠 영역 */}
-      <div className="sidebar-content">
+  return (
+    <>
+      <BaseSidebar
+        title={inquiry.apartmentName}
+        onClose={onClose}
+        isClosing={isClosing}
+        footerContent={footerContent}
+        className="inquiry-detail-sidebar"
+      >
         <div className="property-addresses">
           <div className="property-address">
             <div className="address-icon">🏠</div>
@@ -128,24 +144,7 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
           <h3>문의 내용</h3>
           <p>{inquiry.memo}</p>
         </div>
-      </div>
-
-      {/* 하단 버튼 영역 */}
-      <div className="sidebar-footer">
-        <div className="action-buttons">
-          <button className="inquiry-primary-button" onClick={onModify}>
-            수정하기
-          </button>
-          <div className="button-group">
-            <button className="secondary-button" onClick={openContractModal}>
-              계약 작성
-            </button>
-            <button className="secondary-button" onClick={openModal}>
-              공유하기
-            </button>
-          </div>
-        </div>
-      </div>
+      </BaseSidebar>
 
       <ShareInquiryModal
         isOpen={isModalOpen}
@@ -160,7 +159,7 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
         onSubmit={handleContractSubmit}
         property={inquiry}
       />
-    </div>
+    </>
   );
 };
 

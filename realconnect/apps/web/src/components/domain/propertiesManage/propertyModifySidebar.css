@@ -3,69 +3,7 @@
   font-weight: 500;
 }
 
-.property-modify-sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 33rem;
-  height: 100vh;
-  background-color: #f8f8f8;
-  box-shadow: -0.133rem 0 0.667rem rgba(0, 0, 0, 0.1);
-  z-index: 100;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 0 2rem 1rem 2.2rem;
-  border-left: 0.067rem solid #eee;
-  box-sizing: border-box;
-  scroll-behavior: smooth;
-}
-
-/* 스크롤바 스타일 개선 */
-.property-modify-sidebar::-webkit-scrollbar {
-  width: 0.5rem;
-}
-
-.property-modify-sidebar::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 0.25rem;
-}
-
-.property-modify-sidebar::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 0.25rem;
-}
-
-.property-modify-sidebar::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-.modify-close-button {
-  background: none;
-  border: none;
-  font-size: 2rem;
-  cursor: pointer;
-  color: #333;
-}
-
-.modify-sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 1rem;
-  border-bottom: 0.067rem solid #eee;
-  background-color: #f8f8f8;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  margin-top: -3.4rem;
-  padding-top: 3.4rem;
-  margin-bottom: 1rem;
-}
-
-.modify-sidebar-header-title {
-  font-size: 1.6rem;
-  font-weight: 600;
-}
+/* BaseSidebar로 대체된 CSS들은 제거됨 */
 
 .modify-property-image-placeholder {
   position: relative;
