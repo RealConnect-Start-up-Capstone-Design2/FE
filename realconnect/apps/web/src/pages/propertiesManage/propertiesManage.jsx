@@ -19,9 +19,10 @@ import ViewSelector from "../../components/common/ViewSelector";
 import PlusIcon from "../../assets/icons/plus.svg?react";
 import TrashIcon from "../../assets/icons/trash.svg?react";
 
-// API 응답을 PropertyTable용 데이터로 변환
+// API 응답을 UI용 데이터로 변환
 import { toPropertyTableRow } from "../../../../../packages/shared-model/PropertyTableRow";
 import { toPropertyDetailModel } from "../../../../../packages/shared-model/PropertyDetailModel";
+import { toPropertyTableViewModel } from "../../../../../packages/web-viewmodel/propertyViewModel";
 
 const Properties = () => {
   const [activeView, setActiveView] = useState("전체");
@@ -64,11 +65,14 @@ const Properties = () => {
     initialPageParam: 0,
   });
 
-  // 모든 페이지의 데이터를 하나의 배열로 합치기
+  // 모든 페이지의 데이터를 UI용으로 변환 (Entity → Model → ViewModel)
   const allProperties = useMemo(() => {
     if (!propertiesData?.pages) return [];
-    return propertiesData.pages.flatMap((page) =>
-      (page.content || []).map(toPropertyTableRow)
+    return propertiesData.pages.flatMap(
+      (page) =>
+        (page.content || [])
+          .map(toPropertyTableRow) // Entity → Model
+          .map(toPropertyTableViewModel) // Model → ViewModel
     );
   }, [propertiesData]);
   console.log("allProperties", allProperties);
@@ -271,7 +275,19 @@ const Properties = () => {
           <PropertyDetailSidebar
             property={selectedProperty}
             onClose={closeSidebar}
-            onEdit={() => setIsEditMode(true)}
+            onEdit={(updatedData) => {
+              if (updatedData) {
+                // 수정된 데이터가 있으면 캐시 새로고침
+                console.log("Property updated:", updatedData);
+                // 선택된 매물 정보도 업데이트
+                setSelectedProperty(updatedData);
+                // React Query 캐시 무효화하여 최신 데이터 가져오기
+                queryClient.invalidateQueries(["properties"]);
+              } else {
+                // 데이터가 없으면 편집 모드 진입
+                setIsEditMode(true);
+              }
+            }}
             isClosing={isClosingSidebar}
           />
         ))}

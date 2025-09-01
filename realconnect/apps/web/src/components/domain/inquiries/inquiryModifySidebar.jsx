@@ -2,20 +2,24 @@ import React, { useState, useEffect } from "react";
 import "./inquiryModifySidebar.css";
 import { SortButton } from "@realconnect/shared-ui";
 import BaseSidebar from "@/components/common/rightSidebar/BaseSidebar";
-import { FormInput } from "@/components/common/form";
+import { FormInput } from "@realconnect/shared-ui";
 import {
-  toDisplayStatus,
-  toApiStatus,
-  toDisplayInquiryType,
-  toApiInquiryType,
-  getInquiryTypeOptions,
-  getStatusOptions,
-} from "../../../../../../packages/shared-utils/src/labelMaps.js";
-import { formatDate } from "../../../../../../packages/shared-utils/src/formatters.js";
+  getTransactionTypeText,
+  getTransactionTypeCode,
+  getTransactionTypeOptions,
+  getInquiryStatusText,
+  getInquiryStatusCode,
+  getInquiryStatusOptions,
+  formatDate,
+} from "../../../../../../packages/shared-utils";
+import { updateInquiry, createInquiry } from "../../../services/inquiryService";
 
 const InquiryModifySidebar = ({ inquiry, onClose, onSave, isClosing }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const isEditMode = inquiry && inquiry.id; // 수정 모드인지 판단
+
   const getStatusDisplayValue = (apiStatus) => {
-    return toDisplayStatus(apiStatus);
+    return getInquiryStatusText(apiStatus);
   };
 
   // "10.0억" 형태를 "1,000,000,000" 형태로 변환하는 함수
@@ -102,8 +106,6 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave, isClosing }) => {
   };
 
   const handleSave = async () => {
-    const isEditMode = inquiry?.id; // id가 있으면 수정 모드
-
     try {
       // 가격 변환 함수
       const parsePrice = (value) => {
@@ -143,21 +145,44 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave, isClosing }) => {
         apiData = {
           id: inquiry.id,
           ...baseData,
-          type: toApiInquiryType(formData.inquiryType),
-          status: toApiStatus(formData.status),
+          type: getTransactionTypeCode(formData.inquiryType),
+          status: getInquiryStatusCode(formData.status),
           favorite: Boolean(formData.favorite),
         };
       } else {
         // 생성 모드
         apiData = {
           ...baseData,
-          inquiryType: toApiInquiryType(formData.inquiryType),
+          inquiryType: getTransactionTypeCode(formData.inquiryType),
         };
       }
 
-      // onSave 콜백을 통해 상위 컴포넌트에서 처리하도록 함
-      if (onSave) {
-        onSave(apiData);
+      // API 요청 시작
+      setIsLoading(true);
+
+      if (isEditMode) {
+        // 수정 모드: updateInquiry API 호출
+        const response = await updateInquiry(inquiry.id, apiData);
+        console.log("문의 수정 성공:", response);
+
+        // 성공 시 콜백 호출 (업데이트된 데이터 전달)
+        if (onSave) {
+          onSave(response);
+        }
+      } else {
+        // 생성 모드: createInquiry API 호출
+        const response = await createInquiry(apiData);
+        console.log("문의 생성 성공:", response);
+
+        // 성공 시 콜백 호출 (새로 생성된 데이터 전달)
+        if (onSave) {
+          onSave(response);
+        }
+      }
+
+      // 성공 시 사이드바 닫기
+      if (onClose) {
+        onClose();
       }
     } catch (error) {
       console.error(isEditMode ? "문의 수정 실패:" : "문의 추가 실패:", error);
@@ -171,12 +196,14 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave, isClosing }) => {
       if (onSave) {
         onSave(false);
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // inquiryType 변환 (한글 → 영어)
   const handleInquiryTypeChange = (displayValue) => {
-    const apiValue = toApiInquiryType(displayValue);
+    const apiValue = getTransactionTypeCode(displayValue);
 
     setFormData({
       ...formData,
@@ -186,7 +213,7 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave, isClosing }) => {
 
   // status 변환 (UI 표시 형식 → API 요청 형식)
   const handleStatusChange = (displayValue) => {
-    const apiValue = toApiStatus(displayValue);
+    const apiValue = getInquiryStatusCode(displayValue);
 
     setFormData({
       ...formData,
@@ -196,12 +223,12 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave, isClosing }) => {
   };
 
   // SortButton용 옵션 변환
-  const inquiryTypeOptions = getInquiryTypeOptions().map((option) => ({
+  const inquiryTypeOptions = getTransactionTypeOptions().map((option) => ({
     value: option.label,
     label: option.label,
   }));
 
-  const statusOptions = getStatusOptions().map((option) => ({
+  const statusOptions = getInquiryStatusOptions().map((option) => ({
     value: option.label,
     label: option.label,
   }));
@@ -211,9 +238,10 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave, isClosing }) => {
     <button
       className="inquiry-save-button"
       onClick={handleSave}
-      style={{ cursor: "pointer" }}
+      disabled={isLoading}
+      style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
     >
-      저장하기
+      {isLoading ? "저장 중..." : "저장하기"}
     </button>
   );
 
@@ -323,7 +351,7 @@ const InquiryModifySidebar = ({ inquiry, onClose, onSave, isClosing }) => {
               <label>문의 유형</label>
               <SortButton
                 options={inquiryTypeOptions}
-                value={toDisplayInquiryType(formData.inquiryType)}
+                value={getTransactionTypeText(formData.inquiryType)}
                 onChange={handleInquiryTypeChange}
               />
             </div>

@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import "./propertyModifySidebar.css";
 import { SortButton } from "@realconnect/shared-ui";
 import BaseSidebar from "@/components/common/rightSidebar/BaseSidebar";
-import { FormInput } from "@/components/common/form";
+import { FormInput } from "@realconnect/shared-ui";
 import {
   createProperty,
   updateProperty,
 } from "../../../services/propertyService";
 import useAuthStore from "../../../store/authStore";
+import { useImageLoader } from "../../../../../../packages/shared-utils";
 
 const PropertyModifySidebar = ({
   property,
@@ -15,8 +16,14 @@ const PropertyModifySidebar = ({
   onSave,
   onUpdateProperty,
 }) => {
-  const [imageUrl, setImageUrl] = useState(null);
   const accessToken = useAuthStore((state) => state.accessToken);
+
+  // 새로운 useImageLoader Hook 사용
+  const {
+    imageUrl,
+    loading: imageLoading,
+    error: imageError,
+  } = useImageLoader(property?.img, accessToken, { enabled: !!property?.img });
   const [formData, setFormData] = useState({
     expansion: "",
     wardrobe: "",
@@ -39,43 +46,7 @@ const PropertyModifySidebar = ({
       ...property,
     });
 
-    // 이미지가 있으면 이미지 URL 생성
-    if (property && property.img) {
-      const loadImage = async () => {
-        try {
-          // 이미지를 Blob으로 가져오기
-          const response = await fetch(
-            `${import.meta.env.VITE_API_URL}${property.img}`,
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-            }
-          );
-
-          if (response.ok) {
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            setImageUrl(url);
-          } else {
-            console.error("이미지 로드 실패:", response.status);
-            setImageUrl(null);
-          }
-        } catch (error) {
-          console.error("이미지 로드 실패:", error);
-          setImageUrl(null);
-        }
-      };
-
-      loadImage();
-
-      // 컴포넌트 언마운트 시 Blob URL 해제
-      return () => {
-        if (imageUrl) {
-          URL.revokeObjectURL(imageUrl);
-        }
-      };
-    }
+    // 이미지 로딩 로직이 useImageLoader Hook으로 대체되었습니다
   }, [property, accessToken]);
 
   useEffect(() => {

@@ -275,7 +275,19 @@ const Inquiries = () => {
                   inquiry={selectedInquiry}
                   onClose={closeSidebar}
                   onDelete={handleDeleteSuccess}
-                  onModify={() => setIsEditMode(true)}
+                  onModify={(updatedData) => {
+                    if (updatedData) {
+                      // 수정된 데이터가 있으면 캐시 새로고침
+                      console.log("Inquiry updated:", updatedData);
+                      // 선택된 문의 정보도 업데이트
+                      setSelectedInquiry(updatedData);
+                      // React Query 캐시 무효화하여 최신 데이터 가져오기
+                      queryClient.invalidateQueries(["inquiries"]);
+                    } else {
+                      // 데이터가 없으면 편집 모드 진입
+                      setIsEditMode(true);
+                    }
+                  }}
                   isClosing={isClosingSidebar}
                 />
               ))}

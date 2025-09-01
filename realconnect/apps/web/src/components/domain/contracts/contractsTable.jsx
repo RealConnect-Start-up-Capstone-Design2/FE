@@ -1,27 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 import Table from "../../common/table/Table";
 import styles from "./contracts.module.css";
+import tableStyles from "../../../styles/table.module.css";
 import BlackStarIcon from "@/assets/icons/blankStar.svg";
 import FilledStarIcon from "@/assets/icons/filledStar.svg";
-import Badge from "../../common/badge/Badge";
+import { Badge } from "@realconnect/shared-ui";
+import { useTableSelection } from "../../../../../../packages/shared-utils";
 
 const ContractsTable = ({ contracts, onContractSelect, onContractUpdate }) => {
-  const [selectedItems, setSelectedItems] = useState([]);
-
-  const toggleSelectAll = (e) => {
-    if (e.target.checked) {
-      setSelectedItems(contracts.map((c) => c.id));
-    } else {
-      setSelectedItems([]);
-    }
-  };
-
-  const toggleSelect = (e, id) => {
-    e.stopPropagation();
-    setSelectedItems((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
+  const { toggleSelectAll, toggleSelect, isAllSelected, isSelected } =
+    useTableSelection(contracts || []);
 
   const handleFavoriteToggle = (contract, e) => {
     e.stopPropagation();
@@ -37,17 +25,15 @@ const ContractsTable = ({ contracts, onContractSelect, onContractUpdate }) => {
         <input
           type="checkbox"
           onChange={toggleSelectAll}
-          checked={
-            selectedItems.length === contracts.length && contracts.length > 0
-          }
+          checked={isAllSelected}
         />
       ),
       render: (row) => (
         <input
           type="checkbox"
-          checked={selectedItems.includes(row.id)}
+          checked={isSelected(row.id)}
           onChange={(e) => toggleSelect(e, row.id)}
-          className={styles.checkbox}
+          className={tableStyles.checkbox}
         />
       ),
     },
@@ -126,18 +112,18 @@ const ContractsTable = ({ contracts, onContractSelect, onContractUpdate }) => {
   ];
 
   if (!contracts || contracts.length === 0) {
-    return <div className={styles.empty}>등록된 계약이 없습니다.</div>;
+    return <div className={tableStyles.empty}>등록된 계약이 없습니다.</div>;
   }
 
   return (
-    <div className={styles.container}>
+    <div className={tableStyles.container}>
       <Table
         columns={columns}
         data={contracts}
         loading={false}
         emptyMessage="등록된 계약이 없습니다."
         onRowClick={onContractSelect}
-        rowClassName={styles.contractRow}
+        rowClassName={tableStyles.row}
       />
     </div>
   );

@@ -1,47 +1,42 @@
 import { ContractTableRow } from "../shared-model/contractModel";
-import { formatPrice, formatDate } from "../shared-utils/src/formatters.js";
+import {
+  getTransactionTypeText,
+  getContractStatusText,
+  formatPrice,
+  formatDate,
+  formatArea,
+  formatDongHo,
+  formatPhoneNumber,
+} from "../shared-utils";
 
-export function getTransactionTypeText(contractType: string | null): string {
-  switch (contractType) {
-    case "BUY":
-      return "매매";
-    case "JEONSE":
-      return "전세";
-    case "MONTH_RENT":
-      return "월세";
-    default:
-      return contractType ?? "-";
-  }
-}
-
-export function getContractStatusText(status: string | null): string {
-  switch (status) {
-    case "ACTIVE":
-      return "계약중";
-    case "COMPLETED":
-      return "계약완료";
-    case "TERMINATED":
-      return "계약파기";
-    case "EXPIRED":
-      return "계약만료";
-    default:
-      return status ?? "-";
-  }
-}
-
+/**
+ * ContractTableRow를 웹 UI에서 표시할 수 있는 형태로 변환
+ * 새로운 Utils 함수들을 활용하여 비즈니스 로직과 포맷팅 적용
+ */
 export function toContractViewRow(model: ContractTableRow) {
+  const { dongText, hoText } = formatDongHo(model.dong, model.ho);
+
   return {
     ...model,
+    // 비즈니스 로직 적용 (Utils 사용)
     contractTypeText: getTransactionTypeText(model.contractType),
-    contractPriceText: formatPrice(model.contractPrice),
     contractStatusText: getContractStatusText(model.contractStatus),
-    areaText: model.area ? `${model.area}m²` : "-",
+
+    // 포맷팅 적용
+    contractPriceText: formatPrice(model.contractPrice),
     contractDateText: formatDate(model.contractDate),
     dueDateText: formatDate(model.dueDate),
+
+    // UI 표시 포맷팅
+    areaText: formatArea(model.area),
+    dongText,
+    hoText,
+    ownerPhoneText: formatPhoneNumber(model.ownerPhone),
+    tenantPhoneText: formatPhoneNumber(model.tenantPhone),
+
+    // 기본 null 처리
     ownerNameText: model.ownerName ?? "-",
     tenantNameText: model.tenantName ?? "-",
     apartmentText: model.apartment ?? "-",
-    dongText: model.dong ? `${model.dong}동` : "-",
-    hoText: model.ho ? `${model.ho}호` : "-",
   };
 }

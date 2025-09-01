@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import "./contractDetailSidebar.css";
 import { formatPrice } from "../../../../../../packages/shared-utils/src/formatters.js";
-import BaseSidebar from "@/components/common/rightSidebar/BaseSidebar";
+import { toContractViewRow } from "../../../../../../packages/web-viewmodel/contractViewModel";
+import DetailSidebar from "@/components/common/rightSidebar/DetailSidebar";
 
 import FileIcon from "@/assets/icons/file-text.svg";
 import DownloadIcon from "@/assets/icons/download.svg";
@@ -11,58 +12,29 @@ import InfoBox from "@/components/common/info/InfoBox";
 import ContractModifySidebar from "./contractModifySidebar";
 
 const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
-  const [isEditMode, setIsEditMode] = useState(false);
-  // 거래 유형 변환 함수
-  const getTransactionTypeText = (contractType) => {
-    const typeMap = { BUY: "매매", JEONSE: "전세", MONTH_RENT: "월세" };
-    return typeMap[contractType] || contractType;
-  };
-
-  // 계약 상태를 한국어로 변환
-  const getContractStatusText = (status) => {
-    const statusMap = {
-      ACTIVE: "계약 중",
-      TERMINATED: "계약 파기",
-      EXPIRED: "계약 만료",
-    };
-    return statusMap[status] || status;
-  };
+  // ViewModel을 통해 포맷팅된 데이터 생성
+  const contractView = toContractViewRow(contract);
 
   if (!contract) return null;
 
-  // 편집 모드일 때는 수정 사이드바 렌더링
-  if (isEditMode) {
-    return (
-      <ContractModifySidebar
-        contract={contract}
-        onClose={() => setIsEditMode(false)}
-        onSave={(updatedContract) => {
-          if (onUpdate) onUpdate(updatedContract);
-          setIsEditMode(false);
-        }}
-        isClosing={isClosing}
-      />
-    );
-  }
-
-  // 푸터 컨텐츠 준비
-  const footerContent = (
-    <div className="action-buttons">
-      <button
-        className="contract-primary-button"
-        onClick={() => setIsEditMode(true)}
-      >
-        수정하기
-      </button>
-    </div>
-  );
+  // 액션 버튼 설정
+  const actions = [
+    {
+      label: "수정하기",
+      type: "edit",
+      className: "contract-primary-button",
+    },
+  ];
 
   return (
-    <BaseSidebar
+    <DetailSidebar
       title="계약 상세 정보"
       onClose={onClose}
       isClosing={isClosing}
-      footerContent={footerContent}
+      actions={actions}
+      editComponent={ContractModifySidebar}
+      onUpdate={onUpdate}
+      data={contract}
       className="contract-detail-sidebar"
     >
       {/* 속성 요약 영역 */}
@@ -107,8 +79,8 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
         <div className="pricing-info">
           <div className="price-item">
             <p>거래 가격 {formatPrice(contract.contractPrice)}</p>
-            <p>거래 유형 {getTransactionTypeText(contract.contractType)}</p>
-            <p>계약 상태 {getContractStatusText(contract.contractStatus)}</p>
+            <p>거래 유형 {contractView.contractTypeText}</p>
+            <p>계약 상태 {contractView.contractStatusText}</p>
           </div>
         </div>
 
@@ -159,7 +131,7 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
           )}
         </div>
       </div>
-    </BaseSidebar>
+    </DetailSidebar>
   );
 };
 

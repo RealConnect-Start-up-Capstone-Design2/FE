@@ -2,16 +2,17 @@ import React, { useState } from "react";
 import "./inquiryDetailSidebar.css";
 import ShareInquiryModal from "@/pages/modal/shareInquiryModal";
 import CreateContractModal from "@/pages/modal/createContractModal";
-import BaseSidebar from "@/components/common/rightSidebar/BaseSidebar";
+import DetailSidebar from "@/components/common/rightSidebar/DetailSidebar";
+import InquiryModifySidebar from "./inquiryModifySidebar";
 import axios from "axios";
 import useAuthStore from "@/store/authStore";
 import InfoRow from "@/components/common/info/InfoRow";
 import InfoBox from "@/components/common/info/InfoBox";
 import {
-  toDisplayInquiryType,
-  toDisplayStatus,
-} from "../../../../../../packages/shared-utils/src/labelMaps.js";
-import { formatDate } from "../../../../../../packages/shared-utils/src/formatters.js";
+  getTransactionTypeText,
+  getInquiryStatusText,
+  formatDate,
+} from "../../../../../../packages/shared-utils";
 
 const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,30 +57,37 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
     closeContractModal();
   };
 
-  // 푸터 컨텐츠 준비
-  const footerContent = (
-    <div className="action-buttons">
-      <button className="inquiry-primary-button" onClick={onModify}>
-        수정하기
-      </button>
-      <div className="button-group">
-        <button className="secondary-button" onClick={openContractModal}>
-          계약 작성
-        </button>
-        <button className="secondary-button" onClick={openModal}>
-          공유하기
-        </button>
-      </div>
-    </div>
-  );
+  // 액션 버튼 구성
+  const actions = [
+    {
+      label: "수정하기",
+      type: "edit",
+      className: "inquiry-primary-button",
+    },
+    {
+      label: "계약 작성",
+      onClick: openContractModal,
+      className: "secondary-button",
+      group: "secondary",
+    },
+    {
+      label: "공유하기",
+      onClick: openModal,
+      className: "secondary-button",
+      group: "secondary",
+    },
+  ];
 
   return (
     <>
-      <BaseSidebar
+      <DetailSidebar
         title={inquiry.apartmentName}
         onClose={onClose}
         isClosing={isClosing}
-        footerContent={footerContent}
+        actions={actions}
+        editComponent={InquiryModifySidebar}
+        data={inquiry}
+        onUpdate={onModify}
         className="inquiry-detail-sidebar"
       >
         <div className="property-addresses">
@@ -119,7 +127,7 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
           <InfoRow>
             <InfoBox
               title="문의 유형"
-              value={toDisplayInquiryType(inquiry.inquiryType)}
+              value={getTransactionTypeText(inquiry.inquiryType)}
             />
             <InfoBox title="진행 상태">
               <p
@@ -127,7 +135,7 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
                   inquiry.status ? inquiry.status.replace(/\s+/g, "") : ""
                 }
               >
-                {toDisplayStatus(inquiry.status) || "-"}
+                {getInquiryStatusText(inquiry.status) || "-"}
               </p>
             </InfoBox>
           </InfoRow>
@@ -144,7 +152,7 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
           <h3>문의 내용</h3>
           <p>{inquiry.memo}</p>
         </div>
-      </BaseSidebar>
+      </DetailSidebar>
 
       <ShareInquiryModal
         isOpen={isModalOpen}

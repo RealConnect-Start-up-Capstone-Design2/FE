@@ -4,7 +4,12 @@ import { updateContract } from "@/services/contractService";
 
 import { SortButton } from "@realconnect/shared-ui";
 import BaseSidebar from "@/components/common/rightSidebar/BaseSidebar";
-import { FormInput } from "@/components/common/form";
+import { FormInput } from "@realconnect/shared-ui";
+import {
+  getTransactionTypeText,
+  getTransactionTypeCode,
+  getTransactionTypeOptions,
+} from "../../../../../../packages/shared-utils";
 
 import FileIcon from "@/assets/icons/file-text.svg";
 import DownloadIcon from "@/assets/icons/download.svg";
@@ -15,18 +20,10 @@ import XIcon from "@/assets/icons/x.svg";
 const ContractModifySidebar = ({ contract, onClose, onSave, isClosing }) => {
   const fileInputRef = useRef(null);
 
-  // 거래 유형 변환 함수들
-  const getTransactionTypeText = (contractType) => {
-    const typeMap = { BUY: "매매", JEONSE: "전세", MONTH_RENT: "월세" };
-    return typeMap[contractType] || contractType;
-  };
-
-  const getTransactionTypeValue = (contractTypeKo) => {
-    const typeMap = { 매매: "BUY", 전세: "JEONSE", 월세: "MONTH_RENT" };
-    return typeMap[contractTypeKo] || contractTypeKo;
-  };
-
-  const transactionTypeOptions = ["매매", "전세", "월세"];
+  // Utils에서 제공하는 옵션 사용
+  const transactionTypeOptions = getTransactionTypeOptions().map(
+    (option) => option.label
+  );
 
   // 계약 상태를 한국어로 변환
   const getContractStatusText = (status) => {
@@ -143,7 +140,7 @@ const ContractModifySidebar = ({ contract, onClose, onSave, isClosing }) => {
         ownerPhone: formData.ownerContact,
         tenantName: formData.tenant,
         tenantPhone: formData.tenantContact,
-        contractType: getTransactionTypeValue(formData.transactionType),
+        contractType: getTransactionTypeCode(formData.transactionType),
         contractPrice: String(formData.price), // String으로 변환
         contractDate: formData.contractDate, // 이미 YYYY-MM-DD 형식
         dueDate: formData.expiryDate, // 이미 YYYY-MM-DD 형식

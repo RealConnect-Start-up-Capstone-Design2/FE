@@ -5,76 +5,35 @@ import axios from "axios";
 import CreateContractModal from "@/pages/modal/createContractModal";
 import InfoRow from "@/components/common/info/InfoRow";
 import InfoBox from "@/components/common/info/InfoBox";
-import BaseSidebar from "@/components/common/rightSidebar/BaseSidebar";
-import { formatPrice } from "../../../../../../packages/shared-utils/src/formatters.js";
+import DetailSidebar from "@/components/common/rightSidebar/DetailSidebar";
+import PropertyModifySidebar from "./propertyModifySidebar";
+import {
+  formatPrice,
+  useImageLoader,
+} from "../../../../../../packages/shared-utils";
 
 const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
-  const [floorPlanImage, setFloorPlanImage] = useState(null);
-  const [viewImage, setViewImage] = useState(null);
   const [activeTab, setActiveTab] = useState("floor");
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isSubmittingContract, setIsSubmittingContract] = useState(false);
 
-  useEffect(() => {
-    // 평면도 이미지 로드
-    if (property && property.img) {
-      const loadFloorPlanImage = async () => {
-        try {
-          const response = await axios.get(
-            `${import.meta.env.VITE_API_URL}${property.img}`,
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-              responseType: "blob",
-            }
-          );
-          const url = URL.createObjectURL(response.data);
-          setFloorPlanImage(url);
-        } catch (error) {
-          console.error("평면도 이미지 로드 실패:", error);
-          setFloorPlanImage(null);
-        }
-      };
+  // 새로운 useImageLoader Hook 사용
+  const {
+    imageUrl: floorPlanImage,
+    loading: floorPlanLoading,
+    error: floorPlanError,
+  } = useImageLoader(property?.img, accessToken, { enabled: !!property?.img });
 
-      loadFloorPlanImage();
-    }
+  const {
+    imageUrl: viewImage,
+    loading: viewLoading,
+    error: viewError,
+  } = useImageLoader(property?.viewImg, accessToken, {
+    enabled: !!property?.viewImg,
+  });
 
-    // 전망 이미지 로드 (임시로 같은 이미지 사용, 추후 API에서 별도 필드로 받아올 수 있음)
-    if (property && property.viewImg) {
-      const loadViewImage = async () => {
-        try {
-          const response = await axios.get(
-            `${import.meta.env.VITE_API_URL}${property.viewImg}`,
-            {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-              responseType: "blob",
-            }
-          );
-          const url = URL.createObjectURL(response.data);
-          setViewImage(url);
-        } catch (error) {
-          console.error("전망 이미지 로드 실패:", error);
-          setViewImage(null);
-        }
-      };
-
-      loadViewImage();
-    }
-
-    // 컴포넌트 언마운트 시 Blob URL 해제
-    return () => {
-      if (floorPlanImage) {
-        URL.revokeObjectURL(floorPlanImage);
-      }
-      if (viewImage) {
-        URL.revokeObjectURL(viewImage);
-      }
-    };
-  }, [property, accessToken]);
+  // 기존 복잡한 이미지 로딩 로직이 useImageLoader Hook으로 대체되었습니다
 
   const handleContractButtonClick = () => {
     setIsContractModalOpen(true);
@@ -100,29 +59,31 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
 
   if (!property) return null;
 
-  // 푸터 컨텐츠 준비
-  const footerContent = (
-    <div className="action-buttons">
-      <button className="property-primary-button" onClick={onEdit}>
-        수정하기
-      </button>
-      <button
-        className="secondary-button"
-        onClick={handleContractButtonClick}
-        disabled={isSubmittingContract}
-      >
-        {isSubmittingContract ? "처리 중..." : "계약 작성"}
-      </button>
-    </div>
-  );
+  // 액션 버튼 구성
+  const actions = [
+    {
+      label: "수정하기",
+      type: "edit",
+      className: "property-primary-button",
+    },
+    {
+      label: isSubmittingContract ? "처리 중..." : "계약 작성",
+      onClick: handleContractButtonClick,
+      className: "secondary-button",
+      disabled: isSubmittingContract,
+    },
+  ];
 
   return (
     <>
-      <BaseSidebar
+      <DetailSidebar
         title={`${property.apartmentName} ${property.dong}동 ${property.ho}호`}
         onClose={onClose}
         isClosing={isClosing}
-        footerContent={footerContent}
+        actions={actions}
+        editComponent={PropertyModifySidebar}
+        data={property}
+        onUpdate={onEdit}
         className="property-detail-sidebar"
       >
         <div className="property-image-placeholder">
@@ -230,7 +191,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
             </div>
           </div>
         </div>
-      </BaseSidebar>
+      </DetailSidebar>
 
       {/* 계약 작성 모달 */}
       <CreateContractModal

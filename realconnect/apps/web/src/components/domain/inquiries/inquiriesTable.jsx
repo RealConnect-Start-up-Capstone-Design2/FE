@@ -1,27 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 import Table from "../../common/table/Table";
-import Badge from "../../common/badge/Badge";
-import styles from "./inquiriesTable.module.css";
+import { Badge } from "@realconnect/shared-ui";
+// import styles from "./inquiriesTable.module.css";
+import tableStyles from "../../../styles/table.module.css";
 import FilledStarIcon from "../../../assets/icons/filledStar.svg";
 import BlackStarIcon from "../../../assets/icons/blankStar.svg";
+import { useTableSelection } from "../../../../../../packages/shared-utils";
 
 const InquiriesTable = ({ inquiries, onInquirySelect, onFavoriteToggle }) => {
-  const [selectedItems, setSelectedItems] = useState([]);
-
-  const toggleSelectAll = (e) => {
-    if (e.target.checked) {
-      setSelectedItems(inquiries.map((inq) => inq.id));
-    } else {
-      setSelectedItems([]);
-    }
-  };
-
-  const toggleSelect = (e, id) => {
-    e.stopPropagation();
-    setSelectedItems((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
+  const { toggleSelectAll, toggleSelect, isAllSelected, isSelected } =
+    useTableSelection(inquiries || []);
 
   const handleFavoriteToggle = (inquiry, e) => {
     e.stopPropagation();
@@ -37,17 +25,15 @@ const InquiriesTable = ({ inquiries, onInquirySelect, onFavoriteToggle }) => {
         <input
           type="checkbox"
           onChange={toggleSelectAll}
-          checked={
-            selectedItems.length === inquiries.length && inquiries.length > 0
-          }
+          checked={isAllSelected}
         />
       ),
       render: (row) => (
         <input
           type="checkbox"
-          checked={selectedItems.includes(row.id)}
+          checked={isSelected(row.id)}
           onChange={(e) => toggleSelect(e, row.id)}
-          className={styles.checkbox}
+          className={tableStyles.checkbox}
         />
       ),
     },
@@ -78,10 +64,10 @@ const InquiriesTable = ({ inquiries, onInquirySelect, onFavoriteToggle }) => {
     },
     {
       key: "favorite",
-      header: <span className={styles.favoriteColumn}>즐겨찾기</span>,
+      header: <span className={tableStyles.favoriteColumn}>즐겨찾기</span>,
       render: (row) => (
         <button
-          className={styles.favoriteButton}
+          className={tableStyles.favoriteButton}
           onClick={(e) => handleFavoriteToggle(row, e)}
         >
           <img
@@ -94,18 +80,18 @@ const InquiriesTable = ({ inquiries, onInquirySelect, onFavoriteToggle }) => {
   ];
 
   if (!inquiries || inquiries.length === 0) {
-    return <div className={styles.empty}>표시할 문의가 없습니다.</div>;
+    return <div className={tableStyles.empty}>표시할 문의가 없습니다.</div>;
   }
 
   return (
-    <div className={styles.container}>
+    <div className={tableStyles.container}>
       <Table
         columns={columns}
         data={inquiries}
         loading={false}
         emptyMessage="표시할 문의가 없습니다."
         onRowClick={onInquirySelect}
-        rowClassName={styles.inquiryRow}
+        rowClassName={tableStyles.row}
       />
     </div>
   );

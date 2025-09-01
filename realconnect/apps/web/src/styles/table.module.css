@@ -1,0 +1,155 @@
+/* 
+ * 공통 테이블 스타일
+ * 모든 도메인 테이블에서 재사용 가능한 스타일들
+ */
+
+/* 테이블 컨테이너 - 모든 테이블에서 공통 사용 */
+.container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border: 0.067rem solid #eaeaea;
+  border-radius: 0.533rem;
+  overflow: auto;
+  box-shadow: 0 0.133rem 0.267rem rgba(0, 0, 0, 0.05);
+  max-height: calc(100vh - 23rem);
+  overflow-x: auto;
+  transition: width 0.3s ease-in-out;
+}
+
+/* 특별한 높이가 필요한 경우 (properties 전용) */
+.containerWithFixedHeight {
+  composes: container;
+  height: calc(100vh - 23rem);
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+}
+
+/* 빈 상태 스타일 */
+.empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 13.333rem;
+  background-color: #f9fafb;
+  border: 0.067rem solid #eaeaea;
+  border-radius: 0.533rem;
+  color: #6b7280;
+  font-size: 1.067rem;
+  text-align: center;
+}
+
+/* 테이블 행 공통 스타일 */
+.row {
+  border-bottom: 0.067rem solid #eaeaea;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row:hover {
+  background-color: #f3f6ff;
+}
+
+/* 체크박스 공통 스타일 */
+.checkbox {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+  border-radius: 0.2rem;
+  border: 0.067rem solid #d0d5dd;
+  accent-color: #1c2882;
+}
+
+/* 즐겨찾기 버튼 공통 스타일 */
+.favoriteButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem;
+}
+
+.favoriteButton img {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+/* 즐겨찾기 컬럼 헤더 */
+.favoriteColumn {
+  text-align: center;
+  font-weight: 500;
+}
+
+/* 상태 컬럼 공통 스타일 */
+.statusColumn {
+  min-width: 5.333rem;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+  .statusColumn {
+    font-size: 0.867rem;
+  }
+
+  .container {
+    max-height: calc(100vh - 20rem);
+  }
+}
+
+/* 컬럼 너비 표준화 */
+.apartmentNameCol {
+  min-width: 5.333rem;
+  width: 5.333rem;
+}
+
+.buildingCol {
+  min-width: 4rem;
+  width: 4rem;
+}
+
+.unitCol {
+  min-width: 4rem;
+  width: 4rem;
+}
+
+.areaCol {
+  min-width: 5.333rem;
+  width: 5.333rem;
+}
+
+.salePriceCol {
+  min-width: 7.333rem;
+  width: 7.333rem;
+}
+
+.jeonsePriceCol {
+  min-width: 6rem;
+  width: 6rem;
+}
+
+.depositMonthCol {
+  min-width: 7rem;
+  width: 7rem;
+}
+
+.transactionTypeCol {
+  min-width: 5rem;
+  width: 5rem;
+}
+
+.ownerNameCol {
+  min-width: 7rem;
+  width: 7rem;
+}
+
+.contactCol {
+  min-width: 10rem;
+  width: 10rem;
+}
