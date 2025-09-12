@@ -106,10 +106,10 @@ const CreateContractModal = ({
         ...initialFormData,
         id: 100,
         owner: property.ownerName || "",
-        tenant: property.tenant || "",
+        tenant: property.tenantName || "",
         complex: property.apartmentName || "",
-        building: property.building || "",
-        unit: property.unit || "",
+        building: property.dong || "",
+        unit: property.ho || "",
         transactionType: transactionType,
         price: price,
         contractDate: new Date().toISOString().split("T")[0], // 오늘 날짜

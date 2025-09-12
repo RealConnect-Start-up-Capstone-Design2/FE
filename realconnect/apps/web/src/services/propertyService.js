@@ -19,6 +19,18 @@ export const getProperties = async (params) => {
 };
 
 /**
+ * 매물을 검색하는 함수
+ * @param {object} params - 검색을 위한 파라미터
+ * @param {string} params.q - 검색어
+ * @param {number} params.page - 페이지 번호 (기본값 0)
+ * @param {number} params.size - 페이지 크기 (기본값 1000)
+ * @returns {Promise<object>} - 검색된 매물 목록과 페이징 정보를 포함하는 객체
+ */
+export const searchProperties = async (params) => {
+  return propertyApi.get("/api/apartments-properties/search", params);
+};
+
+/**
  * 매물 정보를 수정하는 함수
  * @param {string} propertyId - 매물 ID
  * @param {object} propertyData - 수정할 매물 데이터

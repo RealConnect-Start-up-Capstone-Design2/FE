@@ -40,8 +40,11 @@ const OnboardingLogin = () => {
     setError("");
     try {
       // API 호출 로직을 서비스 함수로 대체
-      const { accessToken, username } = await login(form.username, form.password);
-      
+      const { accessToken, username } = await login(
+        form.username,
+        form.password
+      );
+
       setAuth({ accessToken, username });
       navigate("/");
     } catch (error) {
@@ -65,7 +68,7 @@ const OnboardingLogin = () => {
             <img src={loginLogo} alt="로고" className="login-logo-icon-img" />
           </span>
         </div>
-        <h1 className="login-title">RealConnect</h1>
+        <p className="login-title">RealConnect</p>
         <p className="login-desc">부동산 관리 시스템에 오신 것을 환영합니다</p>
         <div className="login-card">
           <h2 className="login-card-title">로그인</h2>

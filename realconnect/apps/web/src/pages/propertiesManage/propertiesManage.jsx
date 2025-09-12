@@ -4,7 +4,11 @@ import {
   useQueryClient,
   useMutation,
 } from "@tanstack/react-query";
-import { getProperties, updateProperty } from "../../services/propertyService";
+import {
+  getProperties,
+  updateProperty,
+  searchProperties,
+} from "../../services/propertyService";
 
 // 컴포넌트 불러오기
 import Search from "../../components/common/search/search";
@@ -30,10 +34,16 @@ const Properties = () => {
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [isClosingSidebar, setIsClosingSidebar] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState("");
   const closingSidebarRef = useRef(false);
   const queryClient = useQueryClient();
   const [sortStandard, setSortStandard] = useState("DONG_HO");
   const observerRef = useRef();
+
+  // 페이지 마운트 시 무한스크롤 캐시 리셋
+  useEffect(() => {
+    queryClient.resetQueries(["properties"]);
+  }, [queryClient]); // queryClient를 의존성에 추가
 
   const handleSortStandardChange = (value) => {
     setSortStandard(value);
@@ -47,17 +57,33 @@ const Properties = () => {
     isFetchingNextPage,
     isLoading,
   } = useInfiniteQuery({
-    queryKey: ["properties", activeView, transactionType, sortStandard],
-    queryFn: ({ pageParam = 0 }) =>
-      getProperties({
-        page: pageParam,
-        size: 20, // 한 번에 가져올 아이템 수
-        sort: sortStandard,
-        // 필터링 파라미터 추가
-        view: activeView,
-        transactionType:
-          transactionType !== "ALL" ? transactionType : undefined,
-      }),
+    queryKey: [
+      "properties",
+      activeView,
+      transactionType,
+      sortStandard,
+      searchKeyword,
+    ],
+    queryFn: ({ pageParam = 0 }) => {
+      // 검색어가 있으면 검색 API 사용, 없으면 일반 API 사용
+      if (searchKeyword) {
+        return searchProperties({
+          q: searchKeyword,
+          page: pageParam,
+          size: 20,
+        });
+      } else {
+        return getProperties({
+          page: pageParam,
+          size: 20, // 한 번에 가져올 아이템 수
+          sort: sortStandard,
+          // 필터링 파라미터 추가
+          view: activeView,
+          transactionType:
+            transactionType !== "ALL" ? transactionType : undefined,
+        });
+      }
+    },
     getNextPageParam: (lastPage, allPages) => {
       // 마지막 페이지가 아니면 다음 페이지 번호 반환
       return lastPage.last ? undefined : allPages.length;
@@ -98,7 +124,7 @@ const Properties = () => {
       },
       {
         threshold: 0.1,
-        rootMargin: "100px", // 스크롤 끝에서 100px 전에 로드 시작
+        rootMargin: "20px", // 스크롤 끝에서 20px 전에 로드 시작 (100px에서 축소)
       }
     );
 
@@ -139,15 +165,15 @@ const Properties = () => {
   };
 
   const handleSearch = (searchTerm) => {
-    console.log(searchTerm);
+    setSearchKeyword(searchTerm);
   };
 
   const handlePropertySelect = (property) => {
     if (closingSidebarRef.current) return;
 
-    // 매물을 식별할 수 있는 고유한 키 생성
+    // 매물을 식별할 수 있는 고유한 키 생성 (동/호수 포함)
     const createPropertyKey = (prop) => {
-      return prop.apartmentId; // apartmentId만 사용 (매물별로 고유)
+      return `${prop.apartmentId}-${prop.dong}-${prop.ho}`; // apartmentId + 동/호수로 고유 키 생성
     };
 
     const currentPropertyKey = selectedProperty

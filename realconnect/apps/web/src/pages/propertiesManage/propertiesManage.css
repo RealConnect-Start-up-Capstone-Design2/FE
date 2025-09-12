@@ -13,10 +13,8 @@
 .content_wrap {
   flex: 1 !important;
   /* 스크롤을 테이블 내부에서 처리하도록 설정 */
-  overflow: hidden !important;
+  overflow: visible !important;
   position: relative !important;
 }
 
-.page_section.with-sidebar .content_wrap {
-  width: calc(100% - 33rem) !important;
-}
+/* 사이드바 열림 시 레이아웃은 global.css의 padding-right 방식 사용 */

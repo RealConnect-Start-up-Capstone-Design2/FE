@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./propertyDetailSidebar.css";
 import useAuthStore from "@/store/authStore";
-import axios from "axios";
 import CreateContractModal from "@/pages/modal/createContractModal";
 import InfoRow from "@/components/common/info/InfoRow";
 import InfoBox from "@/components/common/info/InfoBox";
 import DetailSidebar from "@/components/common/rightSidebar/DetailSidebar";
 import PropertyModifySidebar from "./propertyModifySidebar";
+import { createContract } from "@/services/contractService";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   formatPrice,
   useImageLoader,
@@ -17,23 +18,40 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isSubmittingContract, setIsSubmittingContract] = useState(false);
+  const queryClient = useQueryClient();
 
   // 새로운 useImageLoader Hook 사용
-  const {
-    imageUrl: floorPlanImage,
-    loading: floorPlanLoading,
-    error: floorPlanError,
-  } = useImageLoader(property?.img, accessToken, { enabled: !!property?.img });
+  const { imageUrl: floorPlanImage } = useImageLoader(
+    property?.img,
+    accessToken,
+    { enabled: !!property?.img }
+  );
 
-  const {
-    imageUrl: viewImage,
-    loading: viewLoading,
-    error: viewError,
-  } = useImageLoader(property?.viewImg, accessToken, {
-    enabled: !!property?.viewImg,
-  });
+  const { imageUrl: viewImage } = useImageLoader(
+    property?.viewImg,
+    accessToken,
+    {
+      enabled: !!property?.viewImg,
+    }
+  );
 
   // 기존 복잡한 이미지 로딩 로직이 useImageLoader Hook으로 대체되었습니다
+
+  // 계약 생성 mutation
+  const createContractMutation = useMutation({
+    mutationFn: createContract,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["contracts"]);
+      alert("계약이 성공적으로 생성되었습니다.");
+      setIsContractModalOpen(false);
+      setIsSubmittingContract(false);
+    },
+    onError: (error) => {
+      console.error("계약 생성 실패:", error);
+      alert("계약 생성에 실패했습니다. 다시 시도해주세요.");
+      setIsSubmittingContract(false);
+    },
+  });
 
   const handleContractButtonClick = () => {
     setIsContractModalOpen(true);
@@ -41,20 +59,13 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
 
   const handleContractModalClose = () => {
     setIsContractModalOpen(false);
+    setIsSubmittingContract(false);
   };
 
   const handleContractSubmit = (contractData) => {
     setIsSubmittingContract(true);
-
     console.log("계약 데이터 저장:", contractData);
-
-    // 성공 메시지 표시
-    if (contractData) {
-      alert("계약이 성공적으로 생성되었습니다.");
-    }
-
-    setIsSubmittingContract(false);
-    setIsContractModalOpen(false);
+    createContractMutation.mutate(contractData);
   };
 
   if (!property) return null;
@@ -77,7 +88,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
   return (
     <>
       <DetailSidebar
-        title={`${property.apartmentName} ${property.dong}동 ${property.ho}호`}
+        title={`${property.apartmentName || "매물"} ${property.dong || ""}동 ${property.ho || ""}호`}
         onClose={onClose}
         isClosing={isClosing}
         actions={actions}
@@ -99,7 +110,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
               return (
                 <img
                   src={currentImage}
-                  alt={`${property.apartmentName} ${property.dong} ${property.ho} ${altText}`}
+                  alt={`${property.apartmentName || "매물"} ${property.dong || ""} ${property.ho || ""} ${altText}`}
                   style={{ objectFit: "contain" }}
                 />
               );
@@ -148,46 +159,53 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
           </div>
           <div className="property-status">
             <p
-              className={`property-status-text ${property.status.replace(/\s+/g, "")}`}
+              className={`property-status-text ${property.status ? property.status.replace(/\s+/g, "") : ""}`}
             >
-              {property.status}
+              {property.status || "상태 미지정"}
             </p>
           </div>
         </div>
         <div className="property-info">
           <div className="pricing-info">
             <div className="price-item">
-              <p>매매 {formatPrice(property.salePrice)}</p>
+              <p>매매 {formatPrice(property.salePrice || 0)}</p>
             </div>
             <div className="price-item">
-              <p>전세 {formatPrice(property.jeonsePrice)}</p>
+              <p>전세 {formatPrice(property.jeonsePrice || 0)}</p>
             </div>
             <div className="price-item">
               <p>
-                보증금/월세 {property.deposit}/{property.monthPrice}
+                보증금/월세 {property.deposit || "미정"}/
+                {property.monthPrice || "미정"}
               </p>
             </div>
           </div>
 
           <div className="contact-info">
             <InfoRow>
-              <InfoBox title="소유주" value={property.ownerName} />
-              <InfoBox title="소유주 연락처" value={property.ownerPhone} />
+              <InfoBox title="소유주" value={property.ownerName || "미입력"} />
+              <InfoBox
+                title="소유주 연락처"
+                value={property.ownerPhone || "미입력"}
+              />
             </InfoRow>
             <InfoRow>
-              <InfoBox title="입주인" value={property.tenantName} />
-              <InfoBox title="입주인 연락처" value={property.tenantPhone} />
+              <InfoBox title="입주인" value={property.tenantName || "미입력"} />
+              <InfoBox
+                title="입주인 연락처"
+                value={property.tenantPhone || "미입력"}
+              />
             </InfoRow>
             <InfoRow>
-              <InfoBox title="만기일" value={property.endDate} />
-              <InfoBox title="등록일" value={property.startDate} />
+              <InfoBox title="만기일" value={property.endDate || "미입력"} />
+              <InfoBox title="등록일" value={property.startDate || "미입력"} />
             </InfoRow>
           </div>
 
           <div className="note-section custom">
             <p className="note-section-title">상담 내용</p>
             <div className="note-content">
-              <p>{property.memo}</p>
+              <p>{property.memo || "상담 내용이 없습니다."}</p>
             </div>
           </div>
         </div>
@@ -199,6 +217,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
         onClose={handleContractModalClose}
         onSubmit={handleContractSubmit}
         property={property}
+        isSubmitting={isSubmittingContract}
       />
     </>
   );

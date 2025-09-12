@@ -214,6 +214,16 @@ const ShareInquiryModal = ({ isOpen, onClose, onSubmit, inquiry }) => {
   };
 
   const handleSubmit = () => {
+    const toNumber = (value) => {
+      if (value === null || value === undefined || value === "") return 0;
+      if (typeof value === "number") return value;
+      if (typeof value === "string") {
+        const cleaned = value.replace(/[^0-9.]/g, "");
+        return cleaned ? Number(cleaned) : 0;
+      }
+      return 0;
+    };
+
     // 지역 정보 합치기
     const location = {
       sido: formData.sido
@@ -243,14 +253,15 @@ const ShareInquiryModal = ({ isOpen, onClose, onSubmit, inquiry }) => {
           ? "BUY"
           : inquiry.inquiryType === "전세"
             ? "JEONSE"
-            : "RENT",
+            : "MONTH_RENT",
       customerName: inquiry.name,
       customerPhone: inquiry.phone,
       apartmentName: inquiry.apartmentName,
-      area: parseFloat(inquiry.area) || 0,
-      salePrice: inquiry.salePrice
-        ? parseInt(inquiry.salePrice.replace(/[^0-9]/g, ""))
-        : 0,
+      area: toNumber(inquiry.area),
+      salePrice: toNumber(inquiry.salePrice),
+      jeonsePrice: toNumber(inquiry.jeonsePrice),
+      deposit: toNumber(inquiry.deposit),
+      monthPrice: toNumber(inquiry.monthPrice),
       memo: formData.memo || inquiry.memo || "",
     };
 

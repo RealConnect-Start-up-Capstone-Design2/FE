@@ -14,8 +14,14 @@ const PropertiesTable = ({
   isFetchingNextPage,
   observerRef,
 }) => {
+  // 각 매물에 고유한 ID 추가 (property.id 사용)
+  const propertiesWithId = (properties || []).map((property) => ({
+    ...property,
+    id: property.property?.id,
+  }));
+
   const { toggleSelectAll, toggleSelect, isAllSelected, isSelected } =
-    useTableSelection(properties || []);
+    useTableSelection(propertiesWithId);
 
   const columns = [
     {
@@ -106,7 +112,7 @@ const PropertiesTable = ({
     <>
       <Table
         columns={columns}
-        data={properties}
+        data={propertiesWithId}
         loading={isLoading}
         emptyMessage="표시할 매물이 없습니다."
         onRowClick={onPropertySelect}

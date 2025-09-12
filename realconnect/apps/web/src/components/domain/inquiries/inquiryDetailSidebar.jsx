@@ -8,6 +8,8 @@ import axios from "axios";
 import useAuthStore from "@/store/authStore";
 import InfoRow from "@/components/common/info/InfoRow";
 import InfoBox from "@/components/common/info/InfoBox";
+import { createContract } from "@/services/contractService";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getTransactionTypeText,
   getInquiryStatusText,
@@ -17,7 +19,9 @@ import {
 const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
+  const [isSubmittingContract, setIsSubmittingContract] = useState(false);
   const accessToken = useAuthStore((state) => state.accessToken);
+  const queryClient = useQueryClient();
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -33,6 +37,7 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
 
   const closeContractModal = () => {
     setIsContractModalOpen(false);
+    setIsSubmittingContract(false);
   };
 
   const handleSubmit = async (data) => {
@@ -51,10 +56,25 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
     closeModal();
   };
 
+  // 계약 생성 mutation
+  const createContractMutation = useMutation({
+    mutationFn: createContract,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["contracts"]);
+      alert("계약이 성공적으로 생성되었습니다.");
+      closeContractModal();
+    },
+    onError: (error) => {
+      console.error("계약 생성 실패:", error);
+      alert("계약 생성에 실패했습니다. 다시 시도해주세요.");
+      setIsSubmittingContract(false);
+    },
+  });
+
   const handleContractSubmit = (contractData) => {
+    setIsSubmittingContract(true);
     console.log("계약 작성 완료:", contractData);
-    // 계약 작성 성공 후 처리 로직
-    closeContractModal();
+    createContractMutation.mutate(contractData);
   };
 
   // 액션 버튼 구성
@@ -65,10 +85,11 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
       className: "inquiry-primary-button",
     },
     {
-      label: "계약 작성",
+      label: isSubmittingContract ? "처리 중..." : "계약 작성",
       onClick: openContractModal,
       className: "secondary-button",
       group: "secondary",
+      disabled: isSubmittingContract,
     },
     {
       label: "공유하기",
@@ -166,6 +187,7 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
         onClose={closeContractModal}
         onSubmit={handleContractSubmit}
         property={inquiry}
+        isSubmitting={isSubmittingContract}
       />
     </>
   );
