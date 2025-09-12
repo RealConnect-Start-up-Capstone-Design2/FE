@@ -12,7 +12,24 @@ export default defineConfig({
     alias: [
       {
         find: "@",
-        replacement: path.resolve(path.dirname(new URL(import.meta.url).pathname), "src"),
+        replacement: path.resolve(
+          path.dirname(new URL(import.meta.url).pathname),
+          "src"
+        ),
+      },
+      {
+        find: "@realconnect/shared-utils",
+        replacement: path.resolve(
+          path.dirname(new URL(import.meta.url).pathname),
+          "../../packages/shared-utils"
+        ),
+      },
+      {
+        find: "@realconnect/shared-ui",
+        replacement: path.resolve(
+          path.dirname(new URL(import.meta.url).pathname),
+          "../../packages/shared-ui"
+        ),
       },
     ],
   },
