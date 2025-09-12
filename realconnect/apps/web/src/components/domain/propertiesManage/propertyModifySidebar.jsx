@@ -20,19 +20,44 @@ const PropertyModifySidebar = ({
 
   // property가 없는 경우 에러 방지
   if (!property) {
+    console.log("PropertyModifySidebar: property is null/undefined");
+    console.log("Props received:", {
+      property,
+      onClose,
+      onSave,
+      onUpdateProperty,
+    });
+
     return (
       <BaseSidebar
-        title="매물 정보 로딩 중..."
+        title="매물 정보 로딩 실패"
         onClose={onClose}
         isClosing={false}
         className="property-modify-sidebar"
       >
         <div className="loading-container">
-          <p>매물 정보를 불러오는 중입니다...</p>
+          <p>매물 정보를 불러오는 중 오류가 발생했습니다.</p>
+          <p>잠시 후 다시 시도해주세요.</p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: "10px",
+              padding: "8px 16px",
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            페이지 새로고침
+          </button>
         </div>
       </BaseSidebar>
     );
   }
+
+  console.log("PropertyModifySidebar received property:", property);
 
   // 새로운 useImageLoader Hook 사용
   const {

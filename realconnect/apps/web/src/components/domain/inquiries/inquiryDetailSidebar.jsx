@@ -107,6 +107,7 @@ const InquiryDetailSidebar = ({ inquiry, onClose, isClosing, onModify }) => {
         isClosing={isClosing}
         actions={actions}
         editComponent={InquiryModifySidebar}
+        editPropName="inquiry"
         data={inquiry}
         onUpdate={onModify}
         className="inquiry-detail-sidebar"

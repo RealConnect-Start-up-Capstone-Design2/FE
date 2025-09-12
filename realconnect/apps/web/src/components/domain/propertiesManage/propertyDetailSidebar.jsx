@@ -94,6 +94,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
         isClosing={isClosing}
         actions={actions}
         editComponent={PropertyModifySidebar}
+        editPropName="property"
         data={property}
         onUpdate={onEdit}
         className="property-detail-sidebar"

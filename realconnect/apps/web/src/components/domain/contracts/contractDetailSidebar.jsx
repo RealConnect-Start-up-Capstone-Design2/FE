@@ -33,6 +33,7 @@ const ContractDetailSidebar = ({ contract, onClose, isClosing, onUpdate }) => {
       isClosing={isClosing}
       actions={actions}
       editComponent={ContractModifySidebar}
+      editPropName="contract"
       onUpdate={onUpdate}
       data={contract}
       className="contract-detail-sidebar"

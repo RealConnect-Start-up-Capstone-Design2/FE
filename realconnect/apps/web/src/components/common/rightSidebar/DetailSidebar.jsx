@@ -11,6 +11,7 @@ import BaseSidebar from "./BaseSidebar";
  * @param {React.ReactNode} children - 상세 내용 컴포넌트
  * @param {Array} actions - 액션 버튼 배열
  * @param {React.Component} editComponent - 편집 모드 컴포넌트
+ * @param {string} editPropName - 편집 컴포넌트에 전달할 명시적 prop 이름 (예: "property", "inquiry")
  * @param {function} onUpdate - 업데이트 콜백
  * @param {Object} data - 편집할 데이터
  * @param {string} className - 추가 CSS 클래스
@@ -22,6 +23,7 @@ const DetailSidebar = ({
   children,
   actions = [],
   editComponent: EditComponent = null,
+  editPropName = null, // 명시적 prop 이름 (null이면 기존 방식 사용)
   onUpdate,
   data,
   className = "",
@@ -30,9 +32,20 @@ const DetailSidebar = ({
 
   // 편집 모드일 때는 편집 컴포넌트 렌더링
   if (isEditMode && EditComponent) {
+    // 명시적 prop 이름이 있으면 사용, 없으면 기존 추론 방식 사용 (하위 호환성)
+    const propName = editPropName || getDataPropName(EditComponent);
+
+    // 디버깅을 위한 로그 (프로덕션에서 문제 추적 가능)
+    console.log("DetailSidebar editMode:", {
+      editPropName,
+      propName,
+      componentName: EditComponent?.name,
+      hasData: !!data,
+    });
+
     return (
       <EditComponent
-        {...{ [getDataPropName(EditComponent)]: data }}
+        {...{ [propName]: data }}
         onClose={() => setIsEditMode(false)}
         onSave={(updatedData) => {
           if (onUpdate) onUpdate(updatedData);

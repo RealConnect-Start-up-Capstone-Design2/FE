@@ -148,7 +148,7 @@ const Properties = () => {
     mutationFn: async (propertyIds) => {
       // 빈 값으로 설정할 데이터 (서버 API 형식에 맞춤)
       const emptyPropertyData = {
-        status: null, // 기본 상태로 설정
+        status: "WAITING", // 기본 상태로 설정
         ownerName: "",
         ownerPhone: "",
         tenantName: "",
@@ -382,6 +382,11 @@ const Properties = () => {
             property={selectedProperty}
             onClose={closeSidebar}
             onEdit={(updatedData) => {
+              console.log(
+                "PropertyDetailSidebar onEdit called with:",
+                updatedData
+              );
+              console.log("Current selectedProperty:", selectedProperty);
               if (updatedData) {
                 // 수정된 데이터가 있으면 캐시 새로고침
                 console.log("Property updated:", updatedData);
@@ -391,6 +396,7 @@ const Properties = () => {
                 queryClient.invalidateQueries(["properties"]);
               } else {
                 // 데이터가 없으면 편집 모드 진입
+                console.log("Entering edit mode");
                 setIsEditMode(true);
               }
             }}
