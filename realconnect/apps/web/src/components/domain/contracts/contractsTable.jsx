@@ -1,5 +1,5 @@
 import React from "react";
-import Table from "../../common/table/Table";
+import Table from "../../common/table/table";
 import styles from "./contracts.module.css";
 import tableStyles from "../../../styles/table.module.css";
 import BlackStarIcon from "@/assets/icons/blankStar.svg";

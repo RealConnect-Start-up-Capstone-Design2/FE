@@ -1,5 +1,5 @@
 import React from "react";
-import Table from "../../common/table/Table";
+import Table from "../../common/table/table";
 import { Badge } from "@realconnect/shared-ui";
 // import styles from "./inquiriesTable.module.css";
 import tableStyles from "../../../styles/table.module.css";
