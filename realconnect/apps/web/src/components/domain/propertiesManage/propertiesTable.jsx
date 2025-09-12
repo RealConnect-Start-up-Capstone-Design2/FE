@@ -10,18 +10,37 @@ import { useTableSelection } from "../../../../../../packages/shared-utils";
 const PropertiesTable = ({
   properties,
   onPropertySelect,
+  onSelectionChange,
   isLoading,
   isFetchingNextPage,
   observerRef,
 }) => {
-  // 각 매물에 고유한 ID 추가 (property.id 사용)
-  const propertiesWithId = (properties || []).map((property) => ({
-    ...property,
-    id: property.property?.id,
-  }));
+  // 각 매물에 고유한 ID 추가 - property.id가 유효한 경우만 사용
+  const propertiesWithId = (properties || []).map((property, index) => {
+    const validId = property.property?.id;
+    return {
+      ...property,
+      id:
+        validId ||
+        `temp-${property.apartmentId}-${property.dong}-${property.ho}-${index}`,
+    };
+  });
 
-  const { toggleSelectAll, toggleSelect, isAllSelected, isSelected } =
-    useTableSelection(propertiesWithId);
+  const {
+    selectedItems,
+    toggleSelectAll,
+    toggleSelect,
+    isAllSelected,
+    isSelected,
+    clearSelection,
+  } = useTableSelection(propertiesWithId);
+
+  // 선택된 항목이 변경될 때마다 부모 컴포넌트에 알림
+  React.useEffect(() => {
+    if (onSelectionChange) {
+      onSelectionChange(selectedItems, clearSelection);
+    }
+  }, [selectedItems, onSelectionChange, clearSelection]);
 
   const columns = [
     {

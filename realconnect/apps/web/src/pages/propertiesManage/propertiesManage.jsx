@@ -39,6 +39,8 @@ const Properties = () => {
   const queryClient = useQueryClient();
   const [sortStandard, setSortStandard] = useState("DONG_HO");
   const observerRef = useRef();
+  const [selectedPropertyIds, setSelectedPropertyIds] = useState([]);
+  const clearSelectionRef = useRef(null);
 
   // 페이지 마운트 시 무한스크롤 캐시 리셋
   useEffect(() => {
@@ -142,6 +144,47 @@ const Properties = () => {
     },
   });
 
+  const clearPropertiesMutation = useMutation({
+    mutationFn: async (propertyIds) => {
+      // 빈 값으로 설정할 데이터 (서버 API 형식에 맞춤)
+      const emptyPropertyData = {
+        status: null, // 기본 상태로 설정
+        ownerName: "",
+        ownerPhone: "",
+        tenantName: "",
+        tenantPhone: "",
+        salePrice: 0, // null 대신 0 사용
+        jeonsePrice: 0, // null 대신 0 사용
+        deposit: 0, // null 대신 0 사용
+        monthPrice: 0, // null 대신 0 사용
+        memo: "",
+        startDate: null,
+        endDate: null,
+      };
+
+      // 각 매물에 대해 기존 updateProperty 함수 사용
+      const updatePromises = propertyIds.map((propertyId) =>
+        updateProperty(propertyId, emptyPropertyData)
+      );
+
+      return Promise.all(updatePromises);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["properties"]);
+      // 선택 상태 초기화
+      if (clearSelectionRef.current) {
+        clearSelectionRef.current();
+      }
+      alert("선택된 매물들의 정보가 초기화되었습니다.");
+    },
+    onError: (error) => {
+      console.error("매물 정보 초기화 중 오류 발생:", error);
+      alert(
+        `매물 정보 초기화에 실패했습니다.\n오류: ${error.message || "알 수 없는 오류"}`
+      );
+    },
+  });
+
   // 필터링된 매물 목록 (서버에서 이미 필터링된 데이터 사용)
   const filteredProperties = useMemo(() => {
     return allProperties;
@@ -235,6 +278,38 @@ const Properties = () => {
     }, 300);
   };
 
+  // 선택된 매물 변경 핸들러 - useCallback으로 메모이제이션
+  const handleSelectionChange = React.useCallback((selectedIds, clearFn) => {
+    setSelectedPropertyIds(selectedIds);
+    clearSelectionRef.current = clearFn;
+  }, []);
+
+  // 매물 삭제(빈값 초기화) 핸들러
+  const handleDeleteProperties = () => {
+    if (selectedPropertyIds.length === 0) {
+      alert("삭제할 매물을 선택해주세요.");
+      return;
+    }
+
+    // 실제 property.id가 있는 매물만 필터링 (임시 ID 제외)
+    const validPropertyIds = selectedPropertyIds.filter(
+      (id) =>
+        typeof id === "number" ||
+        (typeof id === "string" && !id.startsWith("temp-"))
+    );
+
+    if (validPropertyIds.length === 0) {
+      alert("선택된 매물 중 삭제 가능한 매물이 없습니다.");
+      return;
+    }
+
+    const confirmMessage = `선택된 ${validPropertyIds.length}개 매물의 모든 정보를 빈값으로 초기화하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`;
+
+    if (window.confirm(confirmMessage)) {
+      clearPropertiesMutation.mutate(validPropertyIds);
+    }
+  };
+
   return (
     <div className={`page_section ${selectedProperty ? "with-sidebar" : ""}`}>
       <div className="page_header">
@@ -272,9 +347,13 @@ const Properties = () => {
             <Button label="매물 추가" onClick={() => {}} icon={<PlusIcon />} />
             <Button
               label="매물 삭제"
-              onClick={() => {}}
+              onClick={handleDeleteProperties}
               variant="secondary"
               icon={<TrashIcon />}
+              disabled={
+                selectedPropertyIds.length === 0 ||
+                clearPropertiesMutation.isPending
+              }
             />
           </>
         }
@@ -283,6 +362,7 @@ const Properties = () => {
         <PropertiesTable
           properties={filteredProperties}
           onPropertySelect={handlePropertySelect}
+          onSelectionChange={handleSelectionChange}
           isLoading={isLoading}
           isFetchingNextPage={isFetchingNextPage}
           observerRef={observerRef}
