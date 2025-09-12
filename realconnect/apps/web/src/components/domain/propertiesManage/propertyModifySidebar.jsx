@@ -18,6 +18,22 @@ const PropertyModifySidebar = ({
 }) => {
   const accessToken = useAuthStore((state) => state.accessToken);
 
+  // property가 없는 경우 에러 방지
+  if (!property) {
+    return (
+      <BaseSidebar
+        title="매물 정보 로딩 중..."
+        onClose={onClose}
+        isClosing={false}
+        className="property-modify-sidebar"
+      >
+        <div className="loading-container">
+          <p>매물 정보를 불러오는 중입니다...</p>
+        </div>
+      </BaseSidebar>
+    );
+  }
+
   // 새로운 useImageLoader Hook 사용
   const {
     imageUrl,
@@ -36,7 +52,7 @@ const PropertyModifySidebar = ({
   const [isLoading, setIsLoading] = useState(false);
 
   // property 객체 존재 여부 확인
-  const isNewProperty = property.status;
+  const isNewProperty = property?.status;
   useEffect(() => {
     if (!property) return;
     setFormData({

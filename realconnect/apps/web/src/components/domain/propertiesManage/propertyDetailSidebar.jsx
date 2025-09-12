@@ -6,6 +6,7 @@ import InfoRow from "@/components/common/info/InfoRow";
 import InfoBox from "@/components/common/info/InfoBox";
 import DetailSidebar from "@/components/common/rightSidebar/DetailSidebar";
 import PropertyModifySidebar from "./propertyModifySidebar";
+import ErrorBoundary from "@/components/common/ErrorBoundary";
 import { createContract } from "@/services/contractService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -86,7 +87,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
   ];
 
   return (
-    <>
+    <ErrorBoundary>
       <DetailSidebar
         title={`${property.apartmentName || "매물"} ${property.dong || ""}동 ${property.ho || ""}호`}
         onClose={onClose}
@@ -159,9 +160,9 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
           </div>
           <div className="property-status">
             <p
-              className={`property-status-text ${property.status ? property.status.replace(/\s+/g, "") : ""}`}
+              className={`property-status-text ${property?.status ? property.status.replace(/\s+/g, "") : ""}`}
             >
-              {property.status || "상태 미지정"}
+              {property?.status || "상태 미지정"}
             </p>
           </div>
         </div>
@@ -219,7 +220,7 @@ const PropertyDetailSidebar = ({ property, onClose, isClosing, onEdit }) => {
         property={property}
         isSubmitting={isSubmittingContract}
       />
-    </>
+    </ErrorBoundary>
   );
 };
 
