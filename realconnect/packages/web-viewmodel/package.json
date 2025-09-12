@@ -1,0 +1,9 @@
+{
+  "name": "@realconnect/web-viewmodel",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "peerDependencies": {
+    "@realconnect/shared-utils": "workspace:*"
+  }
+}

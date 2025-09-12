@@ -1,79 +1,269 @@
-# RealConnect Web
+# 🏢 RealConnect - 부동산 통합 관리 플랫폼
 
-## 1. Setting
+> **Turborepo + React 기반의 확장 가능한 부동산 관리 시스템**  
+> 웹과 모바일을 지원하는 모노레포 아키텍처로 구축된 현대적인 프론트엔드 애플리케이션
 
-```bash
-# Install dependencies
-yarn install
+[![React](https://img.shields.io/badge/React-19.0.0-blue.svg)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-6.3.1-646CFF.svg)](https://vitejs.dev/)
+[![Turborepo](https://img.shields.io/badge/Turborepo-latest-red.svg)](https://turbo.build/)
+[![pnpm](https://img.shields.io/badge/pnpm-10.15.0-orange.svg)](https://pnpm.io/)
 
-# Start development server
-yarn run dev
+## 📋 프로젝트 개요
 
-# Build for production
-yarn build
+RealConnect는 부동산 매물 관리, 고객 문의, 계약 관리를 통합한 올인원 플랫폼입니다. Entity-Model-ViewModel 아키텍처를 기반으로 비즈니스 로직과 UI를 분리하여 웹과 React Native 앱에서 코드를 재사용할 수 있도록 설계되었습니다.
 
-# Run tests
-yarn test
-```
+### 🎯 주요 기능
 
-## 2. Project Structure
+- **매물 관리**: 아파트 매물 등록, 수정, 상태 관리
+- **문의 관리**: 고객 문의 접수, 처리, 상태 추적
+- **계약 관리**: 계약서 작성, 관리, 파일 업로드
+- **공유 문의**: 지역별 문의 공유 및 협업
+- **대시보드**: 진행 중인 업무, 알림, 통계 현황
+
+## 🏗️ 아키텍처
+
+### 📦 모노레포 구조
 
 ```
 realconnect/
-├── node_modules/    
-├── public/          
-├── src/
-│   ├── assets/             
-│   ├── components/  
-│   ├── pages/
-│   ├── hooks/  
-│   ├── styles/        
-│   ├── index.js
-│   ├── Main.js      
-│   └── App.js     
-├── package.json
-├── index.html
-├── vite.config.js
-└── README.md        
+├── apps/                    # 애플리케이션
+│   ├── web/                # React 웹 앱
+│   └── mobile/             # React Native 앱 (예정)
+└── packages/               # 공유 패키지
+    ├── shared-entity/      # 도메인 엔티티
+    ├── shared-model/       # UI 모델
+    ├── shared-ui/          # 공통 컴포넌트
+    ├── shared-utils/       # 유틸리티 함수
+    ├── web-viewmodel/      # 웹 뷰모델
+    └── mobile-viewmodel/   # 모바일 뷰모델 (예정)
 ```
 
-## 3. Branch Convention
+### 🔄 데이터 플로우
 
-### Example:
-```bash
-ex) feat/map-ui
+```
+Backend API → Entity → Model → ViewModel → UI Components
+             ↓         ↓        ↓
+           순수 데이터  구조화   플랫폼별 최적화
 ```
 
-- main: 서비스 운영
-- develop: 배포 전 개발용
-- feat: 기능 단위 구현
-- page: 페이지 단위 구현
-- refactor: 코드 리팩토링
-- hotfix: 배포 버전 버그 수정
+#### 레이어별 역할
 
-## 4. Commit Convention
+- **Entity**: 백엔드 API 응답 데이터의 순수한 타입 정의
+- **Model**: Entity를 UI에서 사용하기 편한 구조로 변환 (비즈니스 로직 제외)
+- **Utils**: 재사용 가능한 비즈니스 로직과 포맷팅 함수
+- **ViewModel**: Model + Utils를 조합하여 플랫폼별 UI에 최적화된 데이터 생성
 
-### Example:
-```bash
-ex) feat: 로그인 기능 추가
-```
+## 🚀 빠른 시작
 
-- feat: 새로운 기능 추가
-- add: 새로운 파일 추가
-- fix: 버그 수정
-- docs: 문서 수정
-- style: 코드 스타일 변경 (포맷팅, 세미콜론 추가 등)
-- refactor: 코드 리팩토링 (기능 수정 없이 코드 개선)
-- test: 테스트 추가/수정
-- chore: 기타 작업 (빌드 프로세스, 의존성 업데이트 등)
-- hotfix: 긴급 버그 수정
+### 📋 필수 요구사항
 
-### 추가 규칙(선택 사항)
-커밋 메시지의 본문에 추가적인 설명이 필요한 경우 추가합니다.
+- **Node.js**: 18.0.0 이상
+- **pnpm**: 10.15.0 이상
+
+### 🛠️ 설치 및 실행
 
 ```bash
-git commit -m "feat: 로그인 기능 추가
+# 저장소 클론
+git clone https://github.com/your-org/realconnect.git
+cd realconnect
 
-로그인 기능을 추가하여 사용자가 이메일과 비밀번호로 로그인할 수 있습니다.
-이 기능은 세션 관리와 함께 작동합니다."
+# 의존성 설치
+pnpm install
+
+# 개발 서버 실행 (모든 앱)
+pnpm dev
+
+# 웹 앱만 실행
+pnpm --filter web dev
+
+# 빌드
+pnpm build
 ```
+
+## 💻 개발 가이드
+
+### 📁 컴포넌트 구조
+
+```
+src/components/
+├── common/          # 공통 컴포넌트
+│   ├── Layout.jsx
+│   ├── form/
+│   ├── table/
+│   └── sidebar/
+└── domain/          # 도메인별 컴포넌트
+    ├── contracts/
+    ├── inquiries/
+    └── properties/
+```
+
+### 🎨 스타일링 컨벤션
+
+#### CSS Module 사용
+
+```jsx
+// ✅ 올바른 방식
+import styles from "./Component.module.css";
+
+function Component() {
+  return <div className={styles.container}>...</div>;
+}
+```
+
+#### 네이밍 컨벤션
+
+- **파일명**: `camelCase.module.css`
+- **클래스명**: `camelCase`
+- **컴포넌트**: `PascalCase`
+
+### 🔧 상태 관리
+
+#### Tanstack Query (서버 상태)
+
+```jsx
+import { useQuery } from "@tanstack/react-query";
+
+function PropertyList() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["properties"],
+    queryFn: fetchProperties,
+  });
+}
+```
+
+#### Zustand (클라이언트 상태)
+
+```jsx
+import useAuthStore from "@/store/authStore";
+
+function Header() {
+  const { user, logout } = useAuthStore();
+}
+```
+
+### 📦 패키지 간 의존성
+
+#### 올바른 import 경로
+
+```jsx
+// Entity 사용
+import { PropertyEntity } from "@realconnect/shared-entity";
+
+// Model 변환
+import { toPropertyTableRow } from "@realconnect/shared-model";
+
+// Utils 활용
+import { formatPrice } from "@realconnect/shared-utils";
+
+// ViewModel 적용
+import { toPropertyViewModel } from "@realconnect/web-viewmodel";
+```
+
+### 🔄 새 기능 개발 플로우
+
+1. **Entity 정의** (필요시)
+
+   ```typescript
+   // packages/shared-entity/NewEntity.ts
+   export interface NewEntity {
+     id: number;
+     name: string;
+   }
+   ```
+
+2. **Model 생성**
+
+   ```typescript
+   // packages/shared-model/NewModel.ts
+   export function toNewTableRow(entity: NewEntity) {
+     return {
+       id: entity.id,
+       displayName: entity.name,
+     };
+   }
+   ```
+
+3. **Utils 추가** (비즈니스 로직)
+
+   ```javascript
+   // packages/shared-utils/src/newUtils.js
+   export function calculateNewScore(data) {
+     // 비즈니스 로직
+   }
+   ```
+
+4. **ViewModel 구현**
+
+   ```typescript
+   // packages/web-viewmodel/newViewModel.ts
+   export function toNewViewModel(model) {
+     return {
+       ...model,
+       scoreText: calculateNewScore(model),
+     };
+   }
+   ```
+
+5. **컴포넌트 개발**
+   ```jsx
+   // apps/web/src/components/domain/new/NewComponent.jsx
+   function NewComponent() {
+     // ViewModel 사용
+   }
+   ```
+
+## 🧪 테스트
+
+```bash
+# 단위 테스트 실행
+pnpm test
+
+# 특정 패키지 테스트
+pnpm --filter shared-utils test
+
+# 테스트 커버리지
+pnpm test:coverage
+```
+
+## 📚 추가 문서
+
+- [API 문서](./docs/api.md)
+- [컴포넌트 가이드](./docs/components.md)
+- [배포 가이드](./docs/deployment.md)
+- [기여 가이드](./CONTRIBUTING.md)
+
+## 🛣️ 로드맵
+
+### ✅ 완료된 기능
+
+- [x] 웹 앱 기본 구조
+- [x] Entity-Model-ViewModel 아키텍처
+- [x] 매물/문의/계약 관리 기능
+
+### 🚧 진행 중
+
+- [ ] 비즈니스 로직 Utils 분리
+- [ ] 컴포넌트 중복 제거
+- [ ] 디자인 시스템 구축
+
+### 📋 계획
+
+- [ ] React Native 앱 개발
+- [ ] 네이티브 앱 전환
+- [ ] Storybook 도입
+- [ ] E2E 테스트
+
+## 🤝 기여하기
+
+1. 이슈 생성 또는 할당받기
+2. 기능 브랜치 생성: `git checkout -b feature/new-feature`
+3. 변경사항 커밋: `git commit -m 'Add new feature'`
+4. 브랜치 푸시: `git push origin feature/new-feature`
+5. Pull Request 생성
+
+## 📄 라이선스
+
+이 프로젝트는 [MIT 라이선스](LICENSE) 하에 있습니다.
+
+---
+

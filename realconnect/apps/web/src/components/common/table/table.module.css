@@ -1,0 +1,90 @@
+.tableWrapper {
+  width: 100%;
+  position: relative;
+  border: 0.067rem solid #eaeaea;
+  border-radius: 0.533rem;
+  overflow: auto;
+  box-shadow: 0 0.133rem 0.267rem rgba(0, 0, 0, 0.05);
+  max-height: calc(100vh - 23rem);
+  /* 사이드바 열림 시 높이 조정 */
+  display: flex;
+  flex-direction: column;
+}
+
+.commonTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  position: relative;
+}
+
+.commonTable thead tr {
+  background-color: #e8edff;
+}
+
+.commonTable thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #e8edff;
+}
+
+.commonTable th {
+  padding: 0.933rem 0;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 0.067rem solid #eaeaea;
+  transition: padding 0.3s ease-in-out;
+}
+
+.commonTable td {
+  padding: 0.8rem 0;
+  font-size: 1rem;
+  text-align: center;
+  color: #333;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: padding 0.3s ease-in-out;
+}
+
+.commonTable tr {
+  border-bottom: 0.067rem solid #eaeaea;
+}
+
+.commonTable tr:last-child {
+  border-bottom: none;
+}
+
+.commonTableEmpty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 13.333rem;
+  background-color: #f9fafb;
+  border: 0.067rem solid #eaeaea;
+  border-radius: 0.533rem;
+  color: #6b7280;
+  font-size: 1.067rem;
+  text-align: center;
+}
+
+.checkboxColumn {
+  width: 2.667rem;
+  text-align: center;
+}
+
+.commonTable input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+  border-radius: 0.2rem;
+  border: 0.067rem solid #d0d5dd;
+}

@@ -1,0 +1,105 @@
+/* contracts.module.css */
+.container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border: 0.067rem solid #eaeaea;
+  border-radius: 0.533rem;
+  overflow: auto;
+  box-shadow: 0 0.133rem 0.267rem rgba(0, 0, 0, 0.05);
+  max-height: calc(100vh - 23rem);
+  overflow-x: auto;
+  transition: width 0.3s ease-in-out;
+}
+
+.empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 13.333rem;
+  background-color: #f9fafb;
+  border: 0.067rem solid #eaeaea;
+  border-radius: 0.533rem;
+  color: #6b7280;
+  font-size: 1.067rem;
+  text-align: center;
+}
+
+.contractRow {
+  border-bottom: 0.067rem solid #eaeaea;
+}
+.contractRow:last-child {
+  border-bottom: none;
+}
+.contractRow:hover {
+  background-color: #f3f6ff;
+}
+
+.transactionType {
+  background-color: #e8edff;
+  color: #1c2882;
+  display: inline-block;
+  text-align: center;
+  padding: 0.33rem 0.66rem;
+  border-radius: 99rem;
+  font-weight: 500;
+}
+
+.contractStatus {
+  font-weight: 500;
+  padding: 0.2rem 0.7rem;
+  border-radius: 99rem;
+  display: inline-block;
+}
+.contractStatus.계약완료 {
+  background: #e0f7e9;
+  color: #1c824b;
+}
+.contractStatus.계약중 {
+  background: #e8edff;
+  color: #1c2882;
+}
+.contractStatus.계약파기 {
+  background: #ffeaea;
+  color: #d32f2f;
+}
+.contractStatus.계약만료 {
+  background: #f9fafb;
+  color: #6b7280;
+}
+
+.favoriteButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem;
+}
+.favoriteButton img {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.viewContractButton {
+  background: #dde2f2;
+  color: #1c2882;
+  border: none;
+  border-radius: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.viewContractButton:hover {
+  background: #c7d0ee;
+}
+
+.checkbox {
+  accent-color: #1c2882;
+}
+
+.favoriteColumn {
+  text-align: center;
+  font-weight: 500;
+} 

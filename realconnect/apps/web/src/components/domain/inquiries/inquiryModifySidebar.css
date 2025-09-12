@@ -1,0 +1,198 @@
+/* BaseSidebar로 대체된 CSS들은 제거됨 */
+
+/* 커스텀 헤더를 위한 래퍼 */
+.inquiry-modify-wrapper {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 33rem;
+  height: 100vh;
+  z-index: 999;
+}
+
+/* 커스텀 헤더 스타일 */
+.inquiry-modify-custom-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3.4rem 2rem 1rem 2.2rem;
+  border-bottom: 1px solid #eee;
+  background-color: #f8f8f8;
+  z-index: 1000;
+}
+
+.inquiry-title-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #333;
+  outline: none;
+}
+
+.inquiry-title-input::placeholder {
+  color: #999;
+}
+
+.inquiry-close-button {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #333;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  transition: color 0.2s ease;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inquiry-close-button:hover {
+  color: #666;
+}
+
+/* BaseSidebar 헤더 숨기기 */
+.inquiry-modify-sidebar .sidebar-header {
+  display: none;
+}
+
+/* BaseSidebar 컨텐츠 상단 패딩 조정 */
+.inquiry-modify-sidebar .sidebar-content {
+  padding-top: 6rem; /* 커스텀 헤더 높이만큼 */
+}
+
+/* 기존 컨텐츠 스타일들 복원 */
+.inquiry-property-addresses {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.inquiry-property-address {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #ffffff;
+  border: 1px solid #dde2f2;
+  border-radius: 0.5rem;
+}
+
+.inquiry-address-icon {
+  font-size: 1.5rem;
+}
+
+.inquiry-change-button {
+  padding: 0.5rem 1rem;
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #666;
+  text-align: center;
+}
+
+.inquiry-change-button:hover {
+  background-color: #e0e0e0;
+}
+
+.inquiry-price-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.inquiry-price-label {
+  padding: 0.5rem;
+  background-color: #f9f9f9;
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.inquiry-contact-info {
+  margin-bottom: 2rem;
+}
+
+.inquiry-info-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.inquiry-info-box {
+  flex: 1;
+}
+
+.inquiry-info-box label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.inquiry-info-box input,
+.inquiry-info-box select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #dde2f2;
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
+  background-color: white;
+}
+
+.inquiry-info-box input:focus,
+.inquiry-info-box select:focus {
+  outline: none;
+  border-color: #1c2882;
+}
+
+.inquiry-info-box input:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.inquiry-property-tags {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.inquiry-note-section {
+  margin-bottom: 2rem;
+}
+
+.inquiry-save-button {
+  width: 100%;
+  padding: 1rem;
+  background-color: #1c2882;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.inquiry-save-button:hover {
+  background-color: #151f6b;
+}
+
+.inquiry-save-button:active {
+  background-color: #0f1954;
+}

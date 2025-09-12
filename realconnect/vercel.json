@@ -1,8 +1,8 @@
 {
   "framework": "vite",
-  "buildCommand": "yarn build",
-  "installCommand": "yarn install",
-  "outputDirectory": "dist",
+  "buildCommand": "cd apps/web && pnpm build",
+  "installCommand": "pnpm install --no-frozen-lockfile",
+  "outputDirectory": "apps/web/dist",
   "rewrites": [
     {
       "source": "/(.*)",
