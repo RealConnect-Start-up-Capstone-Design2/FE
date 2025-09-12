@@ -48,6 +48,11 @@ body,
   padding-right: 33rem;
 }
 
+/* 사이드바 열림 시 테이블 높이 조정 */
+.page_section.with-sidebar .tableWrapper {
+  max-height: calc(100vh - 23rem);
+}
+
 /* 속성 페이지 헤더 */
 .page_header {
   display: flex;

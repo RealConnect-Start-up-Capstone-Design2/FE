@@ -14,7 +14,7 @@ const ContractsTable = ({ contracts, onContractSelect, onContractUpdate }) => {
   const handleFavoriteToggle = (contract, e) => {
     e.stopPropagation();
     if (onContractUpdate) {
-      onContractUpdate({ ...contract, isFavorite: !contract.isFavorite });
+      onContractUpdate({ ...contract, favorite: !contract.favorite });
     }
   };
 

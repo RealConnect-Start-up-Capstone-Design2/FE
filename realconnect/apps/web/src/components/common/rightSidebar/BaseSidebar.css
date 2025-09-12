@@ -10,6 +10,7 @@
   background-color: transparent;
   z-index: 998;
   animation: fadeIn 0.3s ease-in-out;
+  pointer-events: none; /* 클릭 이벤트가 아래 요소로 전달되도록 설정 */
 }
 
 .sidebar-overlay.closing {
