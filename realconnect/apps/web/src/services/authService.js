@@ -34,7 +34,7 @@ export const login = async (username, password) => {
  * @returns {Promise<string>} - 새로운 액세스 토큰
  */
 export const refreshAccessToken = async () => {
-  const response = await api.get("/refresh-token", {
+  const response = await api.get("/api/refresh-token", {
     withCredentials: true, // 쿠키(리프레시 토큰) 전송을 위함
   });
 
