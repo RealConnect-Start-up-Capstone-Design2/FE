@@ -72,12 +72,12 @@ const Properties = () => {
         return searchProperties({
           q: searchKeyword,
           page: pageParam,
-          size: 20,
+          size: 100,
         });
       } else {
         return getProperties({
           page: pageParam,
-          size: 20, // 한 번에 가져올 아이템 수
+          size: 100, // 한 번에 가져올 아이템 수
           sort: sortStandard,
           // 필터링 파라미터 추가
           view: activeView,
