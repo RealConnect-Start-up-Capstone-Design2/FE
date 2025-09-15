@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./styles/global.css";
 
 // 레이아웃 컴포넌트
 import Layout from "./components/common/Layout";
 import ProtectedRoute from "./components/common/ProtectedRoute";
+import useAuthStore from "./store/authStore";
+import { refreshAccessToken } from "./services/authService";
 
 // 페이지 컴포넌트
 import Dashboard from "./pages/dashboard/dashboard";
@@ -18,6 +20,55 @@ import OnboardingLogin from "./pages/onboardingLogin/onboardingLogin";
 import Profile from "./pages/profile/profile";
 import Register from "./pages/onboardingLogin/register";
 function App() {
+  const { setAuth, setLoading, isLoading } = useAuthStore();
+
+  // 앱 시작 시 토큰 복구 시도
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        // 쿠키에 저장된 refresh token으로 access token 복구 시도
+        const newAccessToken = await refreshAccessToken();
+
+        // 성공하면 인증 정보 설정 (username은 토큰에서 추출하거나 별도 API 호출 필요)
+        setAuth({
+          accessToken: newAccessToken,
+          username: null, // 필요시 별도 API로 사용자 정보 가져오기
+        });
+      } catch (error) {
+        // refresh token이 없거나 만료된 경우 - 정상적인 상황
+        console.log("토큰 복구 실패 - 로그인 필요:", error.message);
+        console.log(
+          "Error details:",
+          error.response?.status,
+          error.response?.data
+        );
+      } finally {
+        // 로딩 완료
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
+  }, [setAuth, setLoading]);
+
+  // 토큰 복구 중이면 로딩 화면 표시
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          fontSize: "18px",
+          color: "#666",
+        }}
+      >
+        로딩 중...
+      </div>
+    );
+  }
+
   return (
     <BrowserRouter>
       <Routes>
