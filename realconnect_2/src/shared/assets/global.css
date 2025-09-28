@@ -1,0 +1,167 @@
+@media screen {
+  :root {
+    font-size: clamp(10px, calc(0.4vw + 0.6vh), 20px);
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* 앱 레이아웃 */
+.app_layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+/* 메인 콘텐츠 영역 */
+.main_content {
+  width: 100%;
+  flex-grow: 1;
+  background-color: #fdfefe;
+  font-family: "Pretendard-Regular";
+  margin: 3rem 3.8rem 5.5rem;
+}
+
+/* 속성 페이지 */
+.page_section {
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  transition: all 0.3s ease-in-out;
+  margin: 50px;
+}
+
+.page_section.with-sidebar {
+  padding-right: 33rem;
+}
+
+/* 사이드바 열림 시 테이블 높이 조정 */
+.page_section.with-sidebar .tableWrapper {
+  max-height: calc(100vh - 23rem);
+}
+
+/* 속성 페이지 헤더 */
+.page_header {
+  display: flex;
+  position: relative;
+  margin-bottom: 3rem;
+}
+
+.header_left {
+  width: 400px;
+}
+
+/* 페이지 제목 */
+.page_title {
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: #1c2882;
+  line-height: 1.2;
+}
+
+/* 페이지 설명 */
+.page_description {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #989898;
+  margin-top: 0.5rem;
+}
+
+/* 뷰 선택기 컨테이너 */
+.view_selector {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1.5rem;
+}
+
+/* 뷰 선택기 버튼 */
+.view_option {
+  padding: 0.5rem 0;
+  font-size: 1.2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666666;
+  font-weight: 600;
+  position: relative;
+  transition: color 0.2s ease;
+  text-align: center;
+}
+
+.view_option:hover {
+  color: #1b1b1b;
+}
+
+.view_option--active {
+  color: #1b1b1b;
+  font-weight: 600;
+}
+
+/* 활성화된 탭에 밑줄 효과 */
+.view_option--active::after {
+  content: "";
+  position: absolute;
+  bottom: -0.5rem;
+  left: 0;
+  width: 100%;
+  height: 0.2rem;
+  background-color: #1b1b1b;
+  z-index: 1;
+}
+
+/* 프로퍼티 콘텐츠 영역 */
+.page_content {
+  margin-top: 1.5rem;
+}
+
+/* 콘텐츠 랩퍼 */
+.content_wrap {
+  margin-top: 1.5rem;
+}
+
+/* 미디어 쿼리 */
+@media screen and (max-width: 768px) {
+  .main_content {
+    margin: 2rem 1.5rem;
+  }
+
+  .properties_header {
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 120px; /* 선택기를 위한 충분한 공간 확보 */
+  }
+
+  .header_left {
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  .properties_view_selector {
+    position: relative;
+    left: 0;
+    transform: none;
+    width: 100%;
+    margin-top: 1rem;
+    justify-content: center;
+  }
+
+  .properties_view_option {
+    padding: 0.7rem 1rem;
+  }
+}

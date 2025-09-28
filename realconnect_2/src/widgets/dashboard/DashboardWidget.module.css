@@ -1,0 +1,38 @@
+.dashboardWidget {
+  width: 100%;
+  height: 100%;
+}
+
+.dashboardLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2rem;
+  height: 100%;
+}
+
+.dashboardColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #eee;
+}
+
+.card h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.card p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}

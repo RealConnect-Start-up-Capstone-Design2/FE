@@ -17,7 +17,6 @@ import ViewSelector from "../../components/common/ViewSelector";
 import { toInquiryTableRow } from "../../../../../packages/shared-model/InquiryModel";
 import { toInquiryViewRow } from "../../../../../packages/web-viewmodel/inquiryViewModel";
 import { getInquiryTypeOptions } from "../../../../../packages/shared-utils/src/labelMaps.js";
-import useAuthStore from "../../store/authStore";
 
 // 아이콘 불러오기
 import PlusIcon from "../../assets/icons/plus.svg?react";
@@ -33,12 +32,6 @@ const Inquiries = () => {
   const closingSidebarRef = useRef(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const queryClient = useQueryClient();
-  const accessToken = useAuthStore((state) => state.accessToken);
-
-  console.log("현재 로그인 상태:", {
-    hasToken: !!accessToken,
-    tokenLength: accessToken ? accessToken.length : 0,
-  });
 
   const { data: rawInquiries, isLoading } = useQuery({
     queryKey: ["inquiries", { searchKeyword, inquiryType }],
