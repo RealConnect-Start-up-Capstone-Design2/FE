@@ -1,269 +1,89 @@
-# 🏢 RealConnect - 부동산 통합 관리 플랫폼
+# Realconnect v2
 
-> **Turborepo + React 기반의 확장 가능한 부동산 관리 시스템**  
-> 웹과 모바일을 지원하는 모노레포 아키텍처로 구축된 현대적인 프론트엔드 애플리케이션
+Realconnect v2는 React와 TypeScript, Vite(SWC)를 기반으로 구축한 프론트엔드 프로젝트입니다. Tailwind CSS와 shadcn/ui 컴포넌트를 활용하며 Pretendard 폰트를 기본값으로 사용합니다. 기능 모듈과 공통 리소스를 분리한 구조를 적용해 확장성과 유지보수성을 높였습니다.
 
-[![React](https://img.shields.io/badge/React-19.0.0-blue.svg)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-6.3.1-646CFF.svg)](https://vitejs.dev/)
-[![Turborepo](https://img.shields.io/badge/Turborepo-latest-red.svg)](https://turbo.build/)
-[![pnpm](https://img.shields.io/badge/pnpm-10.15.0-orange.svg)](https://pnpm.io/)
+## 기술 스택
 
-## 📋 프로젝트 개요
+- React 19 + TypeScript
+- Vite 7 (SWC)
+- Tailwind CSS 3 + tailwindcss-animate
+- shadcn/ui (CLI 설정 포함)
+- pnpm 패키지 매니저
+- Pretendard 폰트 (@fontsource)
 
-RealConnect는 부동산 매물 관리, 고객 문의, 계약 관리를 통합한 올인원 플랫폼입니다. Entity-Model-ViewModel 아키텍처를 기반으로 비즈니스 로직과 UI를 분리하여 웹과 React Native 앱에서 코드를 재사용할 수 있도록 설계되었습니다.
-
-### 🎯 주요 기능
-
-- **매물 관리**: 아파트 매물 등록, 수정, 상태 관리
-- **문의 관리**: 고객 문의 접수, 처리, 상태 추적
-- **계약 관리**: 계약서 작성, 관리, 파일 업로드
-- **공유 문의**: 지역별 문의 공유 및 협업
-- **대시보드**: 진행 중인 업무, 알림, 통계 현황
-
-## 🏗️ 아키텍처
-
-### 📦 모노레포 구조
-
-```
-realconnect/
-├── apps/                    # 애플리케이션
-│   ├── web/                # React 웹 앱
-│   └── mobile/             # React Native 앱 (예정)
-└── packages/               # 공유 패키지
-    ├── shared-entity/      # 도메인 엔티티
-    ├── shared-model/       # UI 모델
-    ├── shared-ui/          # 공통 컴포넌트
-    ├── shared-utils/       # 유틸리티 함수
-    ├── web-viewmodel/      # 웹 뷰모델
-    └── mobile-viewmodel/   # 모바일 뷰모델 (예정)
-```
-
-### 🔄 데이터 플로우
-
-```
-Backend API → Entity → Model → ViewModel → UI Components
-             ↓         ↓        ↓
-           순수 데이터  구조화   플랫폼별 최적화
-```
-
-#### 레이어별 역할
-
-- **Entity**: 백엔드 API 응답 데이터의 순수한 타입 정의
-- **Model**: Entity를 UI에서 사용하기 편한 구조로 변환 (비즈니스 로직 제외)
-- **Utils**: 재사용 가능한 비즈니스 로직과 포맷팅 함수
-- **ViewModel**: Model + Utils를 조합하여 플랫폼별 UI에 최적화된 데이터 생성
-
-## 🚀 빠른 시작
-
-### 📋 필수 요구사항
-
-- **Node.js**: 18.0.0 이상
-- **pnpm**: 10.15.0 이상
-
-### 🛠️ 설치 및 실행
+## 시작하기
 
 ```bash
-# 저장소 클론
-git clone https://github.com/your-org/realconnect.git
-cd realconnect
-
-# 의존성 설치
 pnpm install
-
-# 개발 서버 실행 (모든 앱)
 pnpm dev
-
-# 웹 앱만 실행
-pnpm --filter web dev
-
-# 빌드
-pnpm build
 ```
 
-## 💻 개발 가이드
+## 사용 가능한 스크립트
 
-### 📁 컴포넌트 구조
+- `pnpm dev` – 로컬 개발 서버 실행
+- `pnpm build` – 타입 검사 후 프로덕션 번들 생성
+- `pnpm preview` – 빌드 결과를 미리보기 서버로 확인
+- `pnpm lint` – ESLint 기본 규칙으로 정적 분석
+
+## 프로젝트 구조
 
 ```
-src/components/
-├── common/          # 공통 컴포넌트
-│   ├── Layout.jsx
-│   ├── form/
-│   ├── table/
-│   └── sidebar/
-└── domain/          # 도메인별 컴포넌트
-    ├── contracts/
-    ├── inquiries/
-    └── properties/
+realconnect_v2/
+├─ src/
+│  ├─ App.tsx               # 루트 컴포넌트
+│  ├─ components/
+│  │  ├─ common/            # 전역 Provider 등 공통 컴포넌트
+│  │  └─ ui/                # shadcn/ui 패턴 컴포넌트 (예: Button)
+│  ├─ features/
+│  │  └─ auth/
+│  │     ├─ components/
+│  │     ├─ hooks/
+│  │     ├─ stores/
+│  │     └─ types/
+│  ├─ hooks/                # 전역 훅
+│  ├─ pages/                # 페이지 컴포넌트 (예: pages/home)
+│  ├─ shared/
+│  │  ├─ api/
+│  │  ├─ constants/
+│  │  │  └─ fonts.ts
+│  │  ├─ types/
+│  │  └─ utils/             # 유틸 함수 (예: cn)
+│  ├─ stores/               # 전역 상태 관리
+│  └─ styles/
+│     └─ index.css          # 전역 스타일 & Tailwind 계층
+└─ components.json          # shadcn/ui CLI 설정
 ```
 
-### 🎨 스타일링 컨벤션
+현재 `pages/home`에 샘플 홈 화면이 구현되어 있으며, `components/ui`에는 shadcn 패턴을 따른 `Button` 컴포넌트와 유틸리티(`cn`)가 포함되어 있습니다.
 
-#### CSS Module 사용
+## 스타일 & UI 가이드
 
-```jsx
-// ✅ 올바른 방식
-import styles from "./Component.module.css";
+- 전역 스타일은 `src/styles/index.css`에 정의되어 있으며 Tailwind base/utility 계층과 색상 토큰, Pretendard 폰트가 세팅되어 있습니다.
+- Tailwind 설정은 `tailwind.config.ts`에서 관리하며, shadcn/ui를 위해 `tailwindcss-animate` 플러그인을 추가했습니다.
+- shadcn/ui 컴포넌트는 `@/components/ui`에서 관리하고, 공용 유틸은 `@/shared/utils`에서 가져옵니다.
 
-function Component() {
-  return <div className={styles.container}>...</div>;
-}
-```
+## shadcn/ui 컴포넌트 추가
 
-#### 네이밍 컨벤션
-
-- **파일명**: `camelCase.module.css`
-- **클래스명**: `camelCase`
-- **컴포넌트**: `PascalCase`
-
-### 🔧 상태 관리
-
-#### Tanstack Query (서버 상태)
-
-```jsx
-import { useQuery } from "@tanstack/react-query";
-
-function PropertyList() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["properties"],
-    queryFn: fetchProperties,
-  });
-}
-```
-
-#### Zustand (클라이언트 상태)
-
-```jsx
-import useAuthStore from "@/store/authStore";
-
-function Header() {
-  const { user, logout } = useAuthStore();
-}
-```
-
-### 📦 패키지 간 의존성
-
-#### 올바른 import 경로
-
-```jsx
-// Entity 사용
-import { PropertyEntity } from "@realconnect/shared-entity";
-
-// Model 변환
-import { toPropertyTableRow } from "@realconnect/shared-model";
-
-// Utils 활용
-import { formatPrice } from "@realconnect/shared-utils";
-
-// ViewModel 적용
-import { toPropertyViewModel } from "@realconnect/web-viewmodel";
-```
-
-### 🔄 새 기능 개발 플로우
-
-1. **Entity 정의** (필요시)
-
-   ```typescript
-   // packages/shared-entity/NewEntity.ts
-   export interface NewEntity {
-     id: number;
-     name: string;
-   }
-   ```
-
-2. **Model 생성**
-
-   ```typescript
-   // packages/shared-model/NewModel.ts
-   export function toNewTableRow(entity: NewEntity) {
-     return {
-       id: entity.id,
-       displayName: entity.name,
-     };
-   }
-   ```
-
-3. **Utils 추가** (비즈니스 로직)
-
-   ```javascript
-   // packages/shared-utils/src/newUtils.js
-   export function calculateNewScore(data) {
-     // 비즈니스 로직
-   }
-   ```
-
-4. **ViewModel 구현**
-
-   ```typescript
-   // packages/web-viewmodel/newViewModel.ts
-   export function toNewViewModel(model) {
-     return {
-       ...model,
-       scoreText: calculateNewScore(model),
-     };
-   }
-   ```
-
-5. **컴포넌트 개발**
-   ```jsx
-   // apps/web/src/components/domain/new/NewComponent.jsx
-   function NewComponent() {
-     // ViewModel 사용
-   }
-   ```
-
-## 🧪 테스트
+CLI 설정(`components.json`)을 기반으로 필요 컴포넌트를 추가할 수 있습니다.
 
 ```bash
-# 단위 테스트 실행
-pnpm test
-
-# 특정 패키지 테스트
-pnpm --filter shared-utils test
-
-# 테스트 커버리지
-pnpm test:coverage
+pnpm dlx shadcn@latest add <component-name>
 ```
 
-## 📚 추가 문서
+CLI가 `@/components/ui` 폴더에 컴포넌트를 생성하고, 유틸 경로는 `@/shared/utils`를 사용합니다.
 
-- [API 문서](./docs/api.md)
-- [컴포넌트 가이드](./docs/components.md)
-- [배포 가이드](./docs/deployment.md)
-- [기여 가이드](./CONTRIBUTING.md)
+## 코드 품질 도구
 
-## 🛣️ 로드맵
+- ESLint: `eslint.config.js`의 기본 권장 규칙을 사용합니다.
+- Prettier: `.prettierrc`에 기본 옵션(`{}`)을 적용했으므로, 별도 설정 없이 포맷할 수 있습니다.
 
-### ✅ 완료된 기능
+## 배포 전 점검
 
-- [x] 웹 앱 기본 구조
-- [x] Entity-Model-ViewModel 아키텍처
-- [x] 매물/문의/계약 관리 기능
+1. `pnpm lint`로 정적 분석을 통과합니다.
+2. `pnpm build`로 타입 검사 및 번들을 생성합니다.
+3. 필요 시 `pnpm preview`로 결과를 검증합니다.
 
-### 🚧 진행 중
+## 참고
 
-- [ ] 비즈니스 로직 Utils 분리
-- [ ] 컴포넌트 중복 제거
-- [ ] 디자인 시스템 구축
-
-### 📋 계획
-
-- [ ] React Native 앱 개발
-- [ ] 네이티브 앱 전환
-- [ ] Storybook 도입
-- [ ] E2E 테스트
-
-## 🤝 기여하기
-
-1. 이슈 생성 또는 할당받기
-2. 기능 브랜치 생성: `git checkout -b feature/new-feature`
-3. 변경사항 커밋: `git commit -m 'Add new feature'`
-4. 브랜치 푸시: `git push origin feature/new-feature`
-5. Pull Request 생성
-
-## 📄 라이선스
-
-이 프로젝트는 [MIT 라이선스](LICENSE) 하에 있습니다.
-
----
-
+- 기본 폰트는 Pretendard이며, 관련 상수는 `src/shared/constants/fonts.ts`에서 관리합니다.
+- 추가 의존성은 상황에 맞게 `pnpm add` 또는 `pnpm add -D`로 설치해 주세요.
