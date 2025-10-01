@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui"
+import { Button } from "@/components/ui";
 
 export function HomePage() {
   return (
@@ -24,5 +24,5 @@ export function HomePage() {
         </Button>
       </div>
     </main>
-  )
+  );
 }
