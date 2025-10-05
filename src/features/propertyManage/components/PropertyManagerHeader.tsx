@@ -18,7 +18,7 @@ export function PropertyManagerHeader() {
 
   return (
     <PageHeader title="매물장">
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-2.5 min-w-[1100px]">
         <div className="flex flex-row gap-3 justify-between">
           <div className="flex flex-row gap-3">
             <Button className="bg-[#1B1B1B]">
@@ -31,7 +31,6 @@ export function PropertyManagerHeader() {
               options={options}
             />
           </div>
-          <div className="w-80">{/* 검색창 영역 */}</div>
         </div>
         <div className="flex flex-row gap-3 justify-between">
           <div className="flex flex-row gap-3">

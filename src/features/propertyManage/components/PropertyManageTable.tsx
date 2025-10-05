@@ -110,11 +110,11 @@ export function PropertyManageTable() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen flex-col gap-8 py-3 whitespace-nowrap">
+    <main className="mx-auto flex min-h-screen flex-col gap-8 py-3 whitespace-nowrap min-w-[1100px]">
       <div className="w-full">
-        <div className="rounded-md border overflow-visible">
+        <div className="rounded-md border overflow-visible min-w-[1100px]">
           <Table>
-            <TableHeader className="sticky top-0 bg-[#E8EDFF] z-[100] border border-[#DDE2F2]">
+            <TableHeader className="sticky top-0 bg-[#E8EDFF] z-40 border border-[#DDE2F2]">
               <TableRow>
                 <TableHead className="w-16 px-2">즐겨찾기</TableHead>
                 <TableHead>동</TableHead>

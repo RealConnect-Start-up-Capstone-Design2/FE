@@ -8,11 +8,11 @@ interface LayoutProps {
 
 export function Layout({ showSidebar = true }: LayoutProps) {
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 min-w-[1200px]">
       {showSidebar && <Sidebar />}
       <main
         className={cn(
-          "flex-1 overflow-auto px-[52px]",
+          "flex-1 overflow-auto px-[52px] min-w-[1200px] bg-gray-50",
           showSidebar && "ml-[270px]"
         )}
       >

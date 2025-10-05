@@ -5,7 +5,7 @@ import {
 
 export function PropertyManagePage() {
   return (
-    <div className="overflow-visible">
+    <div className="overflow-visible bg-gray-50 min-h-screen">
       <PropertyManagerHeader />
       <PropertyManageTable />
     </div>
