@@ -1,5 +1,5 @@
-import type { Config } from "tailwindcss"
-import tailwindcssAnimate from "tailwindcss-animate"
+import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 const config = {
   darkMode: ["class"],
@@ -21,6 +21,10 @@ const config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        brand: {
+          DEFAULT: "hsl(var(--brand))",
+          foreground: "hsl(var(--brand-foreground))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -72,6 +76,6 @@ const config = {
     },
   },
   plugins: [tailwindcssAnimate],
-} satisfies Config
+} satisfies Config;
 
-export default config
+export default config;

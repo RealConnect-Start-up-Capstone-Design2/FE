@@ -68,16 +68,16 @@ export function DropdownMenu({
           }
         }}
         className={cn(
-          "flex w-full items-center justify-between rounded-md border border-grayscale-400 whitespace-nowrap bg-rgba(255, 255, 255, 1) px-4 py-3.5 text-left text-grayscale-black text-body-1 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60",
+          "flex w-full items-center justify-between rounded-md border border-grayscale-400 whitespace-nowrap bg-primary px-4 py-3 gap-1 text-left text-primary-foreground text-body-1 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60",
           buttonClassName
         )}
       >
-        <span className={selectedOption ? "" : "text-grayscale-black"}>
+        <span className={selectedOption ? "" : "text-primary-foreground"}>
           {selectedOption?.label ?? placeholder}
         </span>
         <ChevronDown
           className={cn(
-            "h-4 w-4 text-grayscale-black transition-transform duration-150",
+            "h-6 w-6 text-primary-foreground transition-transform duration-150",
             isOpen && "rotate-180"
           )}
         />
@@ -85,7 +85,7 @@ export function DropdownMenu({
       {isOpen && !disabled && (
         <ul
           className={cn(
-            "absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-grayscale-300 bg-grayscale-white shadow-md",
+            "absolute z-[101] mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-grayscale-300 bg-primary shadow-md",
             listClassName
           )}
         >
@@ -98,10 +98,10 @@ export function DropdownMenu({
                   setIsOpen(false);
                 }}
                 className={cn(
-                  "flex w-full items-center justify-between px-4 py-2 text-left hover:bg-brand-50 hover:text-brand-500",
+                  "flex w-full items-center justify-between px-4 py-2 text-left",
                   value === option.value
-                    ? "bg-brand-50 text-brand-500"
-                    : "text-grayscale-black",
+                    ? "bg-primary text-primary-foreground"
+                    : "text-primary-foreground",
                   optionClassName
                 )}
               >
