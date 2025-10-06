@@ -39,16 +39,18 @@ export function PropertyManagerHeader() {
               placeholder="즐겨찾기"
               options={options}
             />
-            <DropdownMenu
-              className="font-semibold"
-              placeholder="동 선택"
-              options={options}
-            />
-            <DropdownMenu
-              className="font-semibold"
-              placeholder="호 선택"
-              options={options}
-            />
+            <InputGroup className="w-36">
+              <InputGroupAddon align="block-start">
+                <InputGroupInput placeholder="동 검색" />
+                <Search />
+              </InputGroupAddon>
+            </InputGroup>
+            <InputGroup className="w-36">
+              <InputGroupAddon align="block-start">
+                <InputGroupInput placeholder="호 검색" />
+                <Search />
+              </InputGroupAddon>
+            </InputGroup>
             <DropdownMenu
               className="font-semibold"
               placeholder="면적 선택"
