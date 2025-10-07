@@ -1,7 +1,6 @@
+@import "tailwindcss";
 @import "pretendard/dist/web/variable/pretendardvariable.css";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@config "../../tailwind.config.ts";
 
 @layer base {
   :root {

@@ -37,7 +37,6 @@ export function DropdownMenuCell({
   disabled = false,
 }: DropdownMenuCellProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isListAbove, setIsListAbove] = useState(false);
   const [listPosition, setListPosition] = useState({ top: 0, left: 0 });
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -55,7 +54,6 @@ export function DropdownMenuCell({
 
         // Simple heuristic: if less space below than above, show above
         const shouldBeAbove = spaceBelow < spaceAbove && spaceAbove > 150;
-        setIsListAbove(shouldBeAbove);
 
         // Simple fixed position calculation
         const top = shouldBeAbove ? rect.top - 200 : rect.bottom + 8;

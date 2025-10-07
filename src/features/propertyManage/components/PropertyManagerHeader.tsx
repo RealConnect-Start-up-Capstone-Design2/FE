@@ -39,7 +39,7 @@ export function PropertyManagerHeader() {
               placeholder="즐겨찾기"
               options={options}
             />
-            <InputGroup className="w-36">
+            <InputGroup className="w-36 h-12">
               <InputGroupAddon align="block-start">
                 <InputGroupInput placeholder="동 검색" />
                 <Search />
