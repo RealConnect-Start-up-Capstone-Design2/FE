@@ -18,7 +18,7 @@ export function PropertyManagerHeader() {
 
   return (
     <PageHeader title="매물장">
-      <div className="flex flex-col gap-2.5 min-w-[1100px]">
+      <div className="flex w-full flex-col gap-2.5">
         <div className="flex flex-row gap-3 justify-between">
           <div className="flex flex-row gap-3">
             <Button className="bg-[#1B1B1B]">
@@ -39,13 +39,13 @@ export function PropertyManagerHeader() {
               placeholder="즐겨찾기"
               options={options}
             />
-            <InputGroup className="w-36 h-12">
+            <InputGroup className="w-32 h-12">
               <InputGroupAddon align="block-start">
                 <InputGroupInput placeholder="동 검색" />
                 <Search />
               </InputGroupAddon>
             </InputGroup>
-            <InputGroup className="w-36">
+            <InputGroup className="w-32">
               <InputGroupAddon align="block-start">
                 <InputGroupInput placeholder="호 검색" />
                 <Search />

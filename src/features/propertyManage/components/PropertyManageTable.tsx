@@ -42,8 +42,8 @@ const dummyProperties: Property[] = [
     status: "거래 전",
     sellPrice: 10000000,
     rentPrice: 10000000,
-    depositPrice: 10000000,
-    monthlyRent: 10000000,
+    depositPrice: 1000,
+    monthlyRent: 100,
     contact: "010-1234-5678",
     contractDate: "2025.01.01",
   },
@@ -57,8 +57,8 @@ const dummyProperties: Property[] = [
     status: "거래 전",
     sellPrice: 10000000,
     rentPrice: 10000000,
-    depositPrice: 10000000,
-    monthlyRent: 10000000,
+    depositPrice: 2000,
+    monthlyRent: 1000,
     contact: "010-1234-5678",
     contractDate: "2025.01.01",
   },
@@ -72,8 +72,8 @@ const dummyProperties: Property[] = [
     status: "거래 전",
     sellPrice: 10000000,
     rentPrice: 10000000,
-    depositPrice: 10000000,
-    monthlyRent: 10000000,
+    depositPrice: 1000,
+    monthlyRent: 50,
     contact: "010-1234-5678",
     contractDate: "2025.01.01",
   },
@@ -94,7 +94,13 @@ const statusOptions = [
   { label: "없음", value: "없음" },
 ];
 
-export function PropertyManageTable() {
+interface PropertyManageTableProps {
+  onPropertyClick?: (propertyId: string | number) => void;
+}
+
+export function PropertyManageTable({
+  onPropertyClick,
+}: PropertyManageTableProps) {
   // 상태 관리 - 즐겨찾기 토글을 위한 상태
   const [properties, setProperties] = useState<Property[]>(dummyProperties);
 
@@ -110,74 +116,77 @@ export function PropertyManageTable() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen flex-col gap-8 py-3 whitespace-nowrap min-w-[1100px]">
-      <div className="w-full">
-        <div className="rounded-md border overflow-visible min-w-[1100px]">
-          <Table>
-            <TableHeader className="sticky top-0 bg-[#E8EDFF] z-40 border border-[#DDE2F2]">
-              <TableRow>
-                <TableHead className="w-16 px-2">즐겨찾기</TableHead>
-                <TableHead>동</TableHead>
-                <TableHead>호수</TableHead>
-                <TableHead>면적</TableHead>
-                <TableHead>의뢰 유형</TableHead>
-                <TableHead>매물 상태</TableHead>
-                <TableHead>매매</TableHead>
-                <TableHead>전세</TableHead>
-                <TableHead>보증금/월세</TableHead>
-                <TableHead>연락처</TableHead>
-                <TableHead>계약일</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {properties.map((property) => (
-                <TableRow key={property.id}>
-                  <TableCell className="w-16 px-2 text-center">
-                    <button
-                      onClick={() => toggleFavorite(property.id)}
-                      className={`inline-flex items-center justify-center w-full h-full transition-colors ${
-                        property.isFavorite
-                          ? "text-yellow-500"
-                          : "text-muted-foreground hover:text-yellow-500"
-                      }`}
-                    >
-                      {property.isFavorite ? (
-                        <img src={FilledStar} alt="filled-star" />
-                      ) : (
-                        <img src={UnfilledStar} alt="unfilled-star" />
-                      )}
-                    </button>
-                  </TableCell>
-                  <TableCell>{property.building}</TableCell>
-                  <TableCell>{property.unit}</TableCell>
-                  <TableCell>{property.area}</TableCell>
-                  <TableCell>
-                    <DropdownMenuCell
-                      options={typeOptions}
-                      value={property.type}
-                      onChange={() => {}}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenuCell
-                      options={statusOptions}
-                      value={property.status}
-                      onChange={() => {}}
-                    />
-                  </TableCell>
-                  <TableCell>{property.sellPrice}</TableCell>
-                  <TableCell>{property.rentPrice}</TableCell>
-                  <TableCell>
-                    {property.depositPrice} / {property.monthlyRent}
-                  </TableCell>
-                  <TableCell>{property.contact}</TableCell>
-                  <TableCell>{property.contractDate}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-    </main>
+    <section className="w-full rounded-lg border border-[#DDE2F2] bg-white shadow-sm">
+      <Table className="min-w-[1100px] whitespace-nowrap">
+        <TableHeader className="sticky top-0 z-40 border border-[#DDE2F2] bg-[#E8EDFF]">
+          <TableRow>
+            <TableHead className="w-16 px-2">즐겨찾기</TableHead>
+            <TableHead>동</TableHead>
+            <TableHead>호수</TableHead>
+            <TableHead>면적</TableHead>
+            <TableHead>의뢰 유형</TableHead>
+            <TableHead>매물 상태</TableHead>
+            <TableHead>매매</TableHead>
+            <TableHead>전세</TableHead>
+            <TableHead>보증금/월세</TableHead>
+            <TableHead>연락처</TableHead>
+            <TableHead>계약일</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {properties.map((property) => (
+            <TableRow
+              key={property.id}
+              className="cursor-pointer transition-colors hover:bg-gray-50"
+              onClick={() => onPropertyClick?.(property.id)}
+            >
+              <TableCell className="w-16 px-2 text-center">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFavorite(property.id);
+                  }}
+                  className={`inline-flex h-full w-full items-center justify-center transition-colors ${
+                    property.isFavorite
+                      ? "text-yellow-500"
+                      : "text-muted-foreground hover:text-yellow-500"
+                  }`}
+                >
+                  {property.isFavorite ? (
+                    <img src={FilledStar} alt="filled-star" />
+                  ) : (
+                    <img src={UnfilledStar} alt="unfilled-star" />
+                  )}
+                </button>
+              </TableCell>
+              <TableCell>{property.building}</TableCell>
+              <TableCell>{property.unit}</TableCell>
+              <TableCell>{property.area}</TableCell>
+              <TableCell>
+                <DropdownMenuCell
+                  options={typeOptions}
+                  value={property.type}
+                  onChange={() => {}}
+                />
+              </TableCell>
+              <TableCell>
+                <DropdownMenuCell
+                  options={statusOptions}
+                  value={property.status}
+                  onChange={() => {}}
+                />
+              </TableCell>
+              <TableCell>{property.sellPrice}</TableCell>
+              <TableCell>{property.rentPrice}</TableCell>
+              <TableCell>
+                {property.depositPrice} / {property.monthlyRent}
+              </TableCell>
+              <TableCell>{property.contact}</TableCell>
+              <TableCell>{property.contractDate}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </section>
   );
 }
