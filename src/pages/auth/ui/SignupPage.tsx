@@ -1,4 +1,9 @@
-// 회원가입 구현하면 됨.
+import { SignupForm } from "@/features/auth";
+
 export function SignupPage() {
-  return <div>SignupPage</div>;
+  return (
+    <div className="flex items-center justify-center">
+      <SignupForm />
+    </div>
+  );
 }

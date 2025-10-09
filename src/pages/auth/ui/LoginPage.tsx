@@ -1,5 +1,9 @@
-// 로그인 구현하면 됨.
+import { LoginForm } from "@/features/auth";
 
 export function LoginPage() {
-  return <div>LoginPage</div>;
+  return (
+    <div className="flex items-center justify-center">
+      <LoginForm />
+    </div>
+  );
 }
