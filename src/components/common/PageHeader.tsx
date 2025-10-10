@@ -7,7 +7,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, children }: PageHeaderProps) {
   return (
-    <div>
+    <div onClick={(e) => e.stopPropagation()}>
       <p className="text-[28px] text-brand -text-brand-foreground font-bold pb-11">
         {title}
       </p>

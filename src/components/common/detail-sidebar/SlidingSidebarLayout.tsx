@@ -1,5 +1,5 @@
 import { cn } from "@/shared/utils";
-import type { PropsWithChildren, ReactNode } from "react";
+import type { PropsWithChildren, ReactNode, RefObject } from "react";
 import { SidebarToggleButton } from "./SidebarToggleButton";
 
 interface SlidingSidebarLayoutProps extends PropsWithChildren {
@@ -10,6 +10,7 @@ interface SlidingSidebarLayoutProps extends PropsWithChildren {
   contentClassName?: string;
   onToggle?: () => void;
   showToggleButton?: boolean;
+  sidebarRef?: RefObject<HTMLElement>;
 }
 
 export function SlidingSidebarLayout({
@@ -20,6 +21,7 @@ export function SlidingSidebarLayout({
   contentClassName,
   onToggle,
   showToggleButton = true,
+  sidebarRef,
   children,
 }: SlidingSidebarLayoutProps) {
   return (
@@ -33,6 +35,7 @@ export function SlidingSidebarLayout({
 
       {/* 사이드바 */}
       <aside
+        ref={sidebarRef}
         className={cn(
           "fixed inset-y-0 right-0 z-40",
           "transform transition-transform duration-300 ease-in-out"

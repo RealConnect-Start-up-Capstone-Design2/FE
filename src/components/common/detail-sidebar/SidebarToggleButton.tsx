@@ -16,6 +16,7 @@ export function SidebarToggleButton({
       type="button"
       onClick={onClick}
       className="group fixed z-50 transition-all duration-300 ease-in-out"
+      data-sidebar-toggle="true"
       style={{
         width: "28px",
         height: "127px",

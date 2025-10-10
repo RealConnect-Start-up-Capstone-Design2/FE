@@ -74,7 +74,10 @@ export function PropertyManageTable({
   }
 
   return (
-    <div className="h-full rounded-lg border border-[#DDE2F2] bg-white shadow-sm overflow-auto">
+    <div
+      className="h-full rounded-lg border border-[#DDE2F2] bg-white shadow-sm overflow-auto"
+      onClick={(e) => e.stopPropagation()}
+    >
       <Table className="min-w-[1100px] whitespace-nowrap">
         <TableHeader className="sticky top-0 z-40 border border-[#DDE2F2] bg-[#E8EDFF]">
           <TableRow>
