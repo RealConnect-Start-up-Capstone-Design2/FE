@@ -15,6 +15,11 @@ export function PropertyManagePage() {
   >();
 
   const handlePropertyClick = (propertyId: string | number) => {
+    if (isDetailOpen && selectedPropertyId === propertyId) {
+      handleCloseDetail();
+      return;
+    }
+
     setSelectedPropertyId(propertyId);
     setIsDetailOpen(true);
   };
@@ -43,7 +48,7 @@ export function PropertyManagePage() {
         className="w-full"
         contentClassName=""
       >
-        <div className="mx-auto w-full max-w-[1400px] space-y-6">
+        <div className="w-full max-w-[1400px] space-y-6">
           <PropertyManagerHeader />
           <PropertyManageTable onPropertyClick={handlePropertyClick} />
         </div>
