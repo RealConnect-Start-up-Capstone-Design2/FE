@@ -10,7 +10,7 @@ interface SlidingSidebarLayoutProps extends PropsWithChildren {
   contentClassName?: string;
   onToggle?: () => void;
   showToggleButton?: boolean;
-  sidebarRef?: RefObject<HTMLElement>;
+  sidebarRef?: RefObject<HTMLElement | null>;
 }
 
 export function SlidingSidebarLayout({
