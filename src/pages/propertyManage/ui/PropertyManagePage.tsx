@@ -16,7 +16,7 @@ import { getApartments } from "@/features/propertyManage/stores/propertyStore";
  * 아파트 목록과 상세 정보(메모)를 관리
  */
 export function PropertyManagePage() {
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(true); // 기본값: 열림
   const [selectedPropertyId, setSelectedPropertyId] = useState<
     string | number | undefined
   >();
@@ -33,35 +33,28 @@ export function PropertyManagePage() {
   );
 
   const handlePropertyClick = (propertyId: string | number) => {
-    if (isDetailOpen && selectedPropertyId === propertyId) {
-      handleCloseDetail();
-      return;
-    }
-
+    // 사이드바 열림 여부와 관계없이 항상 매물 ID 변경
+    // (닫힌 상태에서 값 입력 후 나중에 카드 열기 시 해당 매물 메모 표시)
     setSelectedPropertyId(propertyId);
-    setIsDetailOpen(true);
   };
 
-  const handleCloseDetail = () => {
-    setIsDetailOpen(false);
-    setSelectedPropertyId(undefined);
+  const handleToggleSidebar = () => {
+    setIsDetailOpen((prev) => !prev);
   };
 
   return (
     <SlidingSidebarLayout
       isOpen={isDetailOpen}
+      onToggle={handleToggleSidebar}
       sidebar={
-        <DetailSidebar title="매물 상세 정보" onClose={handleCloseDetail}>
+        <DetailSidebar title="매물 상세 정보">
           <PropertyMemoBlock apartment={selectedApartment} />
         </DetailSidebar>
       }
     >
-      <div className="flex flex-col gap-6 h-full" onClick={handleCloseDetail}>
+      <div className="flex flex-col gap-6 h-full">
         <PropertyManagerHeader />
-        <div
-          className="flex-1 overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="flex-1 overflow-hidden">
           <PropertyManageTable
             onPropertyClick={handlePropertyClick}
             selectedApartmentId={selectedPropertyId}

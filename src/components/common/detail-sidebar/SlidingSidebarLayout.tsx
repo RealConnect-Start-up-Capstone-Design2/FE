@@ -1,5 +1,6 @@
 import { cn } from "@/shared/utils";
 import type { PropsWithChildren, ReactNode } from "react";
+import { SidebarToggleButton } from "./SidebarToggleButton";
 
 interface SlidingSidebarLayoutProps extends PropsWithChildren {
   isOpen: boolean;
@@ -7,6 +8,8 @@ interface SlidingSidebarLayoutProps extends PropsWithChildren {
   sidebarWidth?: number;
   className?: string;
   contentClassName?: string;
+  onToggle?: () => void;
+  showToggleButton?: boolean;
 }
 
 export function SlidingSidebarLayout({
@@ -15,12 +18,20 @@ export function SlidingSidebarLayout({
   sidebarWidth = 480,
   className,
   contentClassName,
+  onToggle,
+  showToggleButton = true,
   children,
 }: SlidingSidebarLayoutProps) {
   return (
     <div className={cn("relative w-full h-full", className)}>
       <div className={cn("w-full h-full", contentClassName)}>{children}</div>
 
+      {/* 토글 버튼 */}
+      {showToggleButton && onToggle && (
+        <SidebarToggleButton isOpen={isOpen} onClick={onToggle} />
+      )}
+
+      {/* 사이드바 */}
       <aside
         className={cn(
           "fixed inset-y-0 right-0 z-40",
