@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-// import { useAuthStore } from "../stores";
-// import { login } from "../services";
+import { useAuthStore } from "../stores";
+import { login } from "../services";
 import { AuthHeader } from "./AuthHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,14 +15,10 @@ export function LoginForm() {
   const [form, setForm] = useState({
     username: "",
     password: "",
-    keepLogin: false,
   });
-  // 이거 일시적으로 빼고 나중에 추가해야함
-  // const [error, setError] = useState("");
-  const [error] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  // const setAuth = useAuthStore((state) => state.setAuth);
-  // 이거 일시적으로 빼고 나중에 추가해야함
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -32,38 +28,35 @@ export function LoginForm() {
     }));
   };
 
-  // const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  //   if (!form.username || !form.password) {
-  //     setError("아이디와 비밀번호를 모두 입력해주세요.");
-  //     return;
-  //   }
-  //   setError("");
-  //   try {
-  //     const { accessToken, username } = await login(
-  //       form.username,
-  //       form.password
-  //     );
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!form.username || !form.password) {
+      setError("아이디와 비밀번호를 모두 입력해주세요.");
+      return;
+    }
+    setError("");
+    try {
+      const { accessToken, username } = await login(
+        form.username,
+        form.password
+      );
 
-  //     setAuth({ accessToken, username });
-  //     navigate("/home");
-  //   } catch (error: unknown) {
-  //     if (error instanceof Error && "response" in error) {
-  //       const axiosError = error as {
-  //         response?: { data?: { message?: string } };
-  //       };
-  //       if (axiosError.response?.data?.message) {
-  //         setError(axiosError.response.data.message);
-  //       } else {
-  //         setError("로그인에 실패했습니다.");
-  //       }
-  //     } else {
-  //       setError("로그인에 실패했습니다.");
-  //     }
-  //   }
-  // };
-  const handleLogin = () => {
-    navigate("/home");
+      setAuth({ accessToken, username });
+      navigate("/home");
+    } catch (error: unknown) {
+      if (error instanceof Error && "response" in error) {
+        const axiosError = error as {
+          response?: { data?: { message?: string } };
+        };
+        if (axiosError.response?.data?.message) {
+          setError(axiosError.response.data.message);
+        } else {
+          setError("로그인에 실패했습니다.");
+        }
+      } else {
+        setError("로그인에 실패했습니다.");
+      }
+    }
   };
 
   return (
@@ -142,7 +135,7 @@ export function LoginForm() {
               <input
                 type="checkbox"
                 name="keepLogin"
-                checked={form.keepLogin}
+                // checked={form.keepLogin}
                 onChange={handleChange}
                 className="h-4 w-4"
               />
