@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuthStore } from "../stores";
-import { login } from "../services";
+// import { useAuthStore } from "../stores";
+// import { login } from "../services";
 import { AuthHeader } from "./AuthHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,9 +17,12 @@ export function LoginForm() {
     password: "",
     keepLogin: false,
   });
-  const [error, setError] = useState("");
+  // 이거 일시적으로 빼고 나중에 추가해야함
+  // const [error, setError] = useState("");
+  const [error] = useState("");
   const navigate = useNavigate();
-  const setAuth = useAuthStore((state) => state.setAuth);
+  // const setAuth = useAuthStore((state) => state.setAuth);
+  // 이거 일시적으로 빼고 나중에 추가해야함
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
