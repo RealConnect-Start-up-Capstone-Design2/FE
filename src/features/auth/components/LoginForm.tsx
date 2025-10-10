@@ -29,35 +29,38 @@ export function LoginForm() {
     }));
   };
 
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!form.username || !form.password) {
-      setError("아이디와 비밀번호를 모두 입력해주세요.");
-      return;
-    }
-    setError("");
-    try {
-      const { accessToken, username } = await login(
-        form.username,
-        form.password
-      );
+  // const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   if (!form.username || !form.password) {
+  //     setError("아이디와 비밀번호를 모두 입력해주세요.");
+  //     return;
+  //   }
+  //   setError("");
+  //   try {
+  //     const { accessToken, username } = await login(
+  //       form.username,
+  //       form.password
+  //     );
 
-      setAuth({ accessToken, username });
-      navigate("/home");
-    } catch (error: unknown) {
-      if (error instanceof Error && "response" in error) {
-        const axiosError = error as {
-          response?: { data?: { message?: string } };
-        };
-        if (axiosError.response?.data?.message) {
-          setError(axiosError.response.data.message);
-        } else {
-          setError("로그인에 실패했습니다.");
-        }
-      } else {
-        setError("로그인에 실패했습니다.");
-      }
-    }
+  //     setAuth({ accessToken, username });
+  //     navigate("/home");
+  //   } catch (error: unknown) {
+  //     if (error instanceof Error && "response" in error) {
+  //       const axiosError = error as {
+  //         response?: { data?: { message?: string } };
+  //       };
+  //       if (axiosError.response?.data?.message) {
+  //         setError(axiosError.response.data.message);
+  //       } else {
+  //         setError("로그인에 실패했습니다.");
+  //       }
+  //     } else {
+  //       setError("로그인에 실패했습니다.");
+  //     }
+  //   }
+  // };
+  const handleLogin = () => {
+    navigate("/home");
   };
 
   return (
