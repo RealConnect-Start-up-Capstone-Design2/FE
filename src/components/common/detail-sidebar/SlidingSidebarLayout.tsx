@@ -18,8 +18,8 @@ export function SlidingSidebarLayout({
   children,
 }: SlidingSidebarLayoutProps) {
   return (
-    <div className={cn("relative w-full", className)}>
-      <div className={cn(contentClassName)}>{children}</div>
+    <div className={cn("relative w-full h-full", className)}>
+      <div className={cn("w-full h-full", contentClassName)}>{children}</div>
 
       <aside
         className={cn(

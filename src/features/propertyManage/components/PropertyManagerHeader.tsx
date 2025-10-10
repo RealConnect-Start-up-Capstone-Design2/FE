@@ -26,13 +26,21 @@ export function PropertyManagerHeader() {
               <img src={PlusIcon} alt="plus" />
             </Button>
             <DropdownMenu
-              className="w-56 font-semibold"
+              className="w-67 font-semibold"
               placeholder="단지 선택"
               options={options}
             />
+            <div className="w-98">
+              <InputGroup>
+                <InputGroupInput placeholder="통합 검색(이름, 동, 호수, 전화번호 등)" />
+                <InputGroupAddon>
+                  <Search />
+                </InputGroupAddon>
+              </InputGroup>
+            </div>
           </div>
         </div>
-        <div className="flex flex-row gap-3 justify-between">
+        <div className="flex flex-row gap-3">
           <div className="flex flex-row gap-3">
             <DropdownMenu
               className="font-semibold"
@@ -66,14 +74,6 @@ export function PropertyManagerHeader() {
               placeholder="매물 상태"
               options={options}
             />
-          </div>
-          <div className="w-96">
-            <InputGroup>
-              <InputGroupInput placeholder="통합 검색(이름, 동, 호수, 전화번호 등)" />
-              <InputGroupAddon>
-                <Search />
-              </InputGroupAddon>
-            </InputGroup>
           </div>
         </div>
       </div>

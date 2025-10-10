@@ -45,23 +45,76 @@ export function DropdownMenuCell({
       return;
     }
 
+    // 가장 가까운 스크롤 가능한 부모 요소를 찾는 함수
+    const findScrollableParent = (
+      element: HTMLElement | null
+    ): HTMLElement | null => {
+      if (!element || element === document.body) {
+        return null;
+      }
+
+      const { overflow, overflowY } = window.getComputedStyle(element);
+      const isScrollable = /(auto|scroll)/.test(overflow + overflowY);
+
+      if (isScrollable && element.scrollHeight > element.clientHeight) {
+        return element;
+      }
+
+      return findScrollableParent(element.parentElement);
+    };
+
     // Simple position calculation for fixed dropdown
     const updatePosition = () => {
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
-        const spaceBelow = window.innerHeight - rect.bottom;
-        const spaceAbove = rect.top;
 
-        // Simple heuristic: if less space below than above, show above
-        const shouldBeAbove = spaceBelow < spaceAbove && spaceAbove > 150;
+        // 스크롤 가능한 부모 찾기 (테이블 컨테이너 등)
+        const scrollableParent = findScrollableParent(
+          containerRef.current.parentElement
+        );
 
-        // Simple fixed position calculation
-        const top = shouldBeAbove ? rect.top - 200 : rect.bottom + 8;
+        let spaceBelow: number;
+        let spaceAbove: number;
+
+        if (scrollableParent) {
+          // 테이블/스크롤 컨테이너의 경계 사용
+          const parentRect = scrollableParent.getBoundingClientRect();
+          spaceBelow = parentRect.bottom - rect.bottom;
+          spaceAbove = rect.top - parentRect.top;
+        } else {
+          // 스크롤 컨테이너가 없으면 viewport 사용
+          spaceBelow = window.innerHeight - rect.bottom;
+          spaceAbove = rect.top;
+        }
+
+        // 실제 리스트 높이 계산
+        // 각 아이템: h-6(24px) + my-1(상하 8px) = 32px
+        // max-h-48 = 192px 제한
+        const itemHeight = 32;
+        const estimatedHeight = Math.min(options.length * itemHeight, 192);
+
+        // 아래 공간이 부족하면 위로 펼치기
+        const shouldBeAbove =
+          spaceBelow < estimatedHeight + 16 &&
+          spaceAbove > estimatedHeight + 16;
+
+        // 위로 펼칠 때는 실제 높이만큼 빼고, 아래로 펼칠 때는 여백 추가
+        const top = shouldBeAbove
+          ? rect.top - estimatedHeight - 8
+          : rect.bottom + 8;
         setListPosition({ top, left: rect.left });
       }
     };
 
     updatePosition();
+
+    // 스크롤 시 위치 재계산
+    const scrollableParent = findScrollableParent(
+      containerRef.current?.parentElement || null
+    );
+    if (scrollableParent) {
+      scrollableParent.addEventListener("scroll", updatePosition);
+    }
 
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -75,8 +128,11 @@ export function DropdownMenuCell({
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      if (scrollableParent) {
+        scrollableParent.removeEventListener("scroll", updatePosition);
+      }
     };
-  }, [isOpen]);
+  }, [isOpen, options.length]);
 
   const selectedOption = options.find((option) => option.value === value);
 
@@ -86,13 +142,14 @@ export function DropdownMenuCell({
         id={id}
         type="button"
         disabled={disabled}
-        onClick={() => {
+        onClick={(e) => {
+          e.stopPropagation(); // Row 클릭 이벤트 전파 방지
           if (!disabled) {
             setIsOpen((prev) => !prev);
           }
         }}
         className={cn(
-          "relative flex w-15 items-center gap-2 rounded-full border border-grayscale-400 whitespace-nowrap bg-[#EDEDED] px-2 py-1 text-left text-[13px] font-medium text-[#1B1B1B] focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 z-10",
+          "relative flex min-w-15 items-center gap-2 rounded-full border border-grayscale-400 whitespace-nowrap bg-[#EDEDED] px-2 py-1 text-left text-[13px] font-medium text-[#1B1B1B] focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 z-10",
           buttonClassName
         )}
       >
@@ -118,15 +175,16 @@ export function DropdownMenuCell({
           }}
         >
           {options.map((option) => (
-            <li key={option.value} className="flex w-15">
+            <li key={option.value} className="flex min-w-15">
               <button
                 type="button"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation(); // Row 클릭 이벤트 전파 방지
                   onChange?.(option.value);
                   setIsOpen(false);
                 }}
                 className={cn(
-                  "mx-1 my-1 flex h-6 w-15 gap-2 items-center rounded-full bg-[#FFFFFF] px-2 text-center font-medium text-[#1B1B1B]",
+                  "mx-1 my-1 flex h-6 min-w-15 w-full gap-2 items-center rounded-full bg-[#FFFFFF] px-2 text-center font-medium text-[#1B1B1B]",
                   optionClassName
                 )}
               >
