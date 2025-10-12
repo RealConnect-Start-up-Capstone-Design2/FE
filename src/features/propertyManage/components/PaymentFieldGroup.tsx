@@ -1,16 +1,19 @@
 import { ContractField } from "./ContractField";
-import type { PropertyInfo } from "../stores/propertyStore";
+import type { ContractInfo } from "../stores/contractStore";
 
 interface PaymentFieldGroupProps {
   amountLabel: string;
-  amountField: keyof PropertyInfo;
+  amountField: keyof Omit<ContractInfo, "apartmentId">;
   amountValue: string | number;
   dateLabel: string;
-  dateField: keyof PropertyInfo;
-  dateValue: string;
+  dateField: keyof Omit<ContractInfo, "apartmentId">;
+  dateValue: string | number;
   dateType?: "date" | "text";
   datePlaceholder?: string;
-  onChange: (field: keyof PropertyInfo, value: string | number) => void;
+  onChange: (
+    field: keyof Omit<ContractInfo, "apartmentId">,
+    value: string | number
+  ) => void;
   disabled?: boolean;
 }
 

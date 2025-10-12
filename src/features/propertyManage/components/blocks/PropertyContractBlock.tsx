@@ -5,12 +5,9 @@ import { Button } from "@/components/ui/button";
 import { ContractTypeToggle } from "../ContractTypeToggle";
 import { RentalContractForm } from "../RentalContractForm";
 import { SaleContractForm } from "../SaleContractForm";
-import type {
-  ApartmentWithProperty,
-  PropertyInfo,
-  ContractType,
-} from "../../stores/propertyStore";
-import { updateProperty } from "../../stores/propertyStore";
+import type { ApartmentWithProperty } from "../../stores/propertyStore";
+import type { ContractInfo, ContractType } from "../../stores/contractStore";
+import { getContract, saveContract } from "../../stores/contractStore";
 
 interface PropertyContractBlockProps {
   apartment?: ApartmentWithProperty;
@@ -24,23 +21,34 @@ export function PropertyContractBlock({
   apartment,
 }: PropertyContractBlockProps) {
   const queryClient = useQueryClient();
+
+  // 계약 정보 초기화
+  const initialContract = apartment?.apartmentId
+    ? getContract(apartment.apartmentId)
+    : null;
+
   const [contractType, setContractType] = useState<ContractType>(
-    apartment?.property?.contractType || "RENTAL"
+    initialContract?.contractType || "LEASE"
   );
-  const [formData, setFormData] = useState<Partial<PropertyInfo>>({});
+  const [formData, setFormData] = useState<Partial<ContractInfo>>({});
   const [isSaved, setIsSaved] = useState(false);
 
   // apartment가 변경되면 폼 데이터 초기화
   useEffect(() => {
-    if (apartment?.property) {
-      setContractType(apartment.property.contractType || "RENTAL");
-      setFormData(apartment.property);
+    if (apartment?.apartmentId) {
+      const contract = getContract(apartment.apartmentId);
+      if (contract) {
+        setContractType(contract.contractType);
+        setFormData(contract);
+      } else {
+        setContractType("LEASE");
+        setFormData({});
+      }
     } else {
-      setContractType("RENTAL");
+      setContractType("LEASE");
       setFormData({});
     }
     setIsSaved(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apartment?.apartmentId]);
 
   // 계약 정보 저장 mutation
@@ -50,22 +58,14 @@ export function PropertyContractBlock({
       updates,
     }: {
       apartmentId: number;
-      updates: Partial<PropertyInfo>;
+      updates: Partial<ContractInfo>;
     }) => {
-      // TODO: API 연동 시 아래로 교체
-      // return await updatePropertyAPI(apartmentId, updates);
-
-      // 각 필드를 순차적으로 업데이트
-      Object.entries(updates).forEach(([field, value]) => {
-        if (value !== null && value !== undefined) {
-          updateProperty(apartmentId, field, value);
-        }
-      });
-
+      // contractStore를 사용하여 저장
+      saveContract(apartmentId, updates);
       return { apartmentId, updates };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["apartments"] });
+      queryClient.invalidateQueries({ queryKey: ["contracts"] });
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 3000);
     },
@@ -76,7 +76,7 @@ export function PropertyContractBlock({
   });
 
   const handleFieldChange = (
-    field: keyof PropertyInfo,
+    field: keyof Omit<ContractInfo, "apartmentId">,
     value: string | number
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -100,10 +100,12 @@ export function PropertyContractBlock({
   };
 
   const hasChanges = () => {
-    if (!apartment?.property) return Object.keys(formData).length > 0;
+    if (!apartment?.apartmentId) return false;
+    const currentContract = getContract(apartment.apartmentId);
+    if (!currentContract) return Object.keys(formData).length > 0;
     return (
-      JSON.stringify({ ...apartment.property, ...formData }) !==
-      JSON.stringify(apartment.property)
+      JSON.stringify({ ...currentContract, ...formData }) !==
+      JSON.stringify(currentContract)
     );
   };
 
@@ -137,9 +139,11 @@ export function PropertyContractBlock({
       />
 
       {/* 계약 타입에 따라 다른 폼 표시 */}
-      {contractType === "RENTAL" && (
+      {contractType === "LEASE" && (
         <RentalContractForm
-          property={apartment.property}
+          contract={
+            apartment.apartmentId ? getContract(apartment.apartmentId) : null
+          }
           onChange={handleFieldChange}
           disabled={contractMutation.isPending}
         />
@@ -147,7 +151,9 @@ export function PropertyContractBlock({
 
       {contractType === "SALE" && (
         <SaleContractForm
-          property={apartment.property}
+          contract={
+            apartment.apartmentId ? getContract(apartment.apartmentId) : null
+          }
           onChange={handleFieldChange}
           disabled={contractMutation.isPending}
         />

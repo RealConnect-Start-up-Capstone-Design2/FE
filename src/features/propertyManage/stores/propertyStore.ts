@@ -42,6 +42,7 @@ export interface PropertyInfo {
   manageType: ManageType; // 관리 타입 (즐겨찾기)
   ownerName: string; // 소유자 이름
   ownerPhone: string; // 소유자 연락처
+  memo?: string; // 메모 (optional)
 }
 
 /**
@@ -109,13 +110,10 @@ const dummyApartments: ApartmentWithProperty[] = [
       monthPrice: 500000,
       propertyStatus: "BEFORE",
       requestType: "MONTHLY",
+      manageType: "NONE",
       ownerName: "홍길동",
       ownerPhone: "010-1234-5678",
       memo: "101호 매물 테스트 메모",
-      tenantName: "",
-      tenantPhone: "",
-      startDate: "2025-01-01",
-      endDate: "2026-01-01",
     },
   },
   {
@@ -162,13 +160,10 @@ const dummyApartments: ApartmentWithProperty[] = [
       monthPrice: 300000,
       propertyStatus: "ADVERTISING",
       requestType: "JEONSE",
+      manageType: "ATTENTION",
       ownerName: "김철수",
       ownerPhone: "010-9876-5432",
       memo: "",
-      tenantName: "이영희",
-      tenantPhone: "010-5555-6666",
-      startDate: "2025-02-01",
-      endDate: "2027-02-01",
     },
   },
   {
@@ -189,11 +184,10 @@ const dummyApartments: ApartmentWithProperty[] = [
       monthPrice: 0,
       propertyStatus: "COMPLETED",
       requestType: "SALE",
+      manageType: "CAUTION",
       ownerName: "박민수",
       ownerPhone: "010-1111-2222",
       memo: "매매 완료된 매물",
-      tenantName: "",
-      tenantPhone: "",
     },
   },
   {
@@ -319,6 +313,7 @@ export const updatePropertyMemo = (apartmentId: number, memo: string): void => {
             monthPrice: 0,
             propertyStatus: "NONE",
             requestType: "NONE",
+            manageType: "NONE",
             ownerName: "",
             ownerPhone: "",
             memo,
@@ -377,6 +372,7 @@ export const updateProperty = (
             monthPrice: 0,
             propertyStatus: "NONE",
             requestType: "NONE",
+            manageType: "NONE",
             ownerName: "",
             ownerPhone: "",
             memo: "",

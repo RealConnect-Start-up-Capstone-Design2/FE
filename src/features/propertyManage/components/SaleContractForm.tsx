@@ -1,11 +1,14 @@
 import { ContractField } from "./ContractField";
 import { ContractSection } from "./ContractSection";
 import { PaymentFieldGroup } from "./PaymentFieldGroup";
-import type { PropertyInfo } from "../stores/propertyStore";
+import type { ContractInfo } from "../stores/contractStore";
 
 interface SaleContractFormProps {
-  property: PropertyInfo | null;
-  onChange: (field: keyof PropertyInfo, value: string | number) => void;
+  contract: ContractInfo | null;
+  onChange: (
+    field: keyof Omit<ContractInfo, "apartmentId">,
+    value: string | number
+  ) => void;
   disabled?: boolean;
 }
 
@@ -14,43 +17,43 @@ interface SaleContractFormProps {
  * 소유자(매도인), 매수인, 계약일, 보증금, 계약금, 중도금, 월세, 잔금 등 입력
  */
 export function SaleContractForm({
-  property,
+  contract,
   onChange,
   disabled = false,
 }: SaleContractFormProps) {
   return (
     <div className="flex flex-col gap-2">
-      {/* 매도인 정보 */}
+      {/* 갑(매도인) 정보 */}
       <ContractSection className="items-center">
         <ContractField
           label="매도인"
-          value={property?.ownerName || ""}
-          onChange={(value) => onChange("ownerName", value)}
+          value={contract?.gapName || ""}
+          onChange={(value) => onChange("gapName", value)}
           disabled={disabled}
           className="flex-1"
         />
         <ContractField
           label="매도인 연락처"
-          value={property?.ownerPhone || ""}
-          onChange={(value) => onChange("ownerPhone", value)}
+          value={contract?.gapPhone || ""}
+          onChange={(value) => onChange("gapPhone", value)}
           disabled={disabled}
           className="flex-1"
         />
       </ContractSection>
 
-      {/* 매수인 정보 */}
+      {/* 을(매수인) 정보 */}
       <ContractSection className="items-center">
         <ContractField
           label="매수인"
-          value={property?.tenantName || ""}
-          onChange={(value) => onChange("tenantName", value)}
+          value={contract?.eulName || ""}
+          onChange={(value) => onChange("eulName", value)}
           disabled={disabled}
           className="flex-1"
         />
         <ContractField
           label="매수인 연락처"
-          value={property?.tenantPhone || ""}
-          onChange={(value) => onChange("tenantPhone", value)}
+          value={contract?.eulPhone || ""}
+          onChange={(value) => onChange("eulPhone", value)}
           disabled={disabled}
           className="flex-1"
         />
@@ -61,10 +64,10 @@ export function SaleContractForm({
         <ContractField
           label="계약일"
           type="date"
-          value={property?.startDate || ""}
-          onChange={(value) => onChange("startDate", value)}
+          value={contract?.contractDate || ""}
+          onChange={(value) => onChange("contractDate", value)}
           disabled={disabled}
-          className="w-[181px] justify-between"
+          className="w-[181px]"
         />
       </ContractSection>
 
@@ -75,7 +78,7 @@ export function SaleContractForm({
           <ContractField
             label="보증금"
             type="number"
-            value={property?.deposit || ""}
+            value={contract?.deposit || ""}
             onChange={(value) => onChange("deposit", Number(value))}
             disabled={disabled}
             placeholder="0"
@@ -86,10 +89,10 @@ export function SaleContractForm({
         <PaymentFieldGroup
           amountLabel="계약금"
           amountField="downPayment"
-          amountValue={property?.downPayment || ""}
+          amountValue={contract?.downPayment || ""}
           dateLabel="계약금 지급일"
-          dateField="downPaymentDate"
-          dateValue={property?.downPaymentDate || ""}
+          dateField="downPaymentDueDate"
+          dateValue={contract?.downPaymentDueDate || ""}
           onChange={onChange}
           disabled={disabled}
         />
@@ -98,10 +101,10 @@ export function SaleContractForm({
         <PaymentFieldGroup
           amountLabel="중도금"
           amountField="interimPayment"
-          amountValue={property?.interimPayment || ""}
+          amountValue={contract?.interimPayment || ""}
           dateLabel="중도금 지급일"
-          dateField="interimPaymentDate"
-          dateValue={property?.interimPaymentDate || ""}
+          dateField="interimPaymentDueDate"
+          dateValue={contract?.interimPaymentDueDate || ""}
           onChange={onChange}
           disabled={disabled}
         />
@@ -109,11 +112,11 @@ export function SaleContractForm({
         {/* 월세 + 월세 지급일 */}
         <PaymentFieldGroup
           amountLabel="월세"
-          amountField="monthPrice"
-          amountValue={property?.monthPrice || ""}
+          amountField="monthlyRent"
+          amountValue={contract?.monthlyRent || ""}
           dateLabel="월세 지급일"
-          dateField="monthlyPaymentDay"
-          dateValue={property?.monthlyPaymentDay || ""}
+          dateField="monthlyRentDueDate"
+          dateValue={contract?.monthlyRentDueDate || ""}
           dateType="text"
           datePlaceholder="매월 25일"
           onChange={onChange}
@@ -124,10 +127,10 @@ export function SaleContractForm({
         <PaymentFieldGroup
           amountLabel="잔금"
           amountField="balance"
-          amountValue={property?.balance || ""}
+          amountValue={contract?.balance || ""}
           dateLabel="잔금 지급일"
-          dateField="balanceDate"
-          dateValue={property?.balanceDate || ""}
+          dateField="balanceDueDate"
+          dateValue={contract?.balanceDueDate || ""}
           onChange={onChange}
           disabled={disabled}
         />

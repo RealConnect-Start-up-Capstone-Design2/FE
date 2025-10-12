@@ -1,5 +1,5 @@
 import { cn } from "@/shared/utils";
-import type { ContractType } from "../stores/propertyStore";
+import type { ContractType } from "../stores/contractStore";
 
 interface ContractTypeToggleProps {
   value: ContractType;
@@ -20,11 +20,11 @@ export function ContractTypeToggle({
     <div className="inline-flex items-center gap-1 rounded-full bg-[#E8EDFF] p-1">
       <button
         type="button"
-        onClick={() => onChange("RENTAL")}
+        onClick={() => onChange("LEASE")}
         disabled={disabled}
         className={cn(
           "rounded-full px-4 py-[6px] text-[12px] font-medium transition-colors",
-          value === "RENTAL"
+          value === "LEASE"
             ? "bg-white text-black"
             : "bg-transparent text-black hover:bg-white/50"
         )}
