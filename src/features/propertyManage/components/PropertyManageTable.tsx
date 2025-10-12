@@ -24,6 +24,7 @@ import {
 // 이미지 불러오기
 import UnfilledStar from "@/assets/UnfilledStar.svg";
 import FilledStar from "@/assets/FilledStar.svg";
+import Caution from "@/assets/Caution.svg";
 
 // 의뢰 유형 옵션 (API 스펙 기준)
 const requestTypeOptions: { label: string; value: RequestType }[] = [
@@ -78,7 +79,7 @@ export function PropertyManageTable({
   const isLoading = externalIsLoading ?? internalIsLoading;
 
   // 편집 관련 로직
-  const { handleToggleFavorite, handlePropertyUpdate } = usePropertyEdit();
+  const { handlePropertyUpdate } = usePropertyEdit();
 
   // 무한스크롤을 위한 스크롤 감지
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -115,7 +116,7 @@ export function PropertyManageTable({
       <Table className="min-w-[1100px] whitespace-nowrap">
         <TableHeader className="sticky top-0 z-40 border border-[#DDE2F2] bg-[#E8EDFF]">
           <TableRow>
-            <TableHead className="w-16 px-2">즐겨찾기</TableHead>
+            <TableHead className="w-24 px-2">관리</TableHead>
             <TableHead>동</TableHead>
             <TableHead>호수</TableHead>
             <TableHead>면적</TableHead>
@@ -141,34 +142,30 @@ export function PropertyManageTable({
                 }`}
                 onClick={() => onPropertyClick?.(apartment.apartmentId)}
               >
-                {/* 즐겨찾기 */}
-                <TableCell className="w-16 px-2 text-center">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // manageType: NONE -> ATTENTION, ATTENTION -> NONE
-                      const currentManageType = property?.manageType || "NONE";
-                      const newManageType =
-                        currentManageType === "ATTENTION"
-                          ? "NONE"
-                          : "ATTENTION";
-                      handleToggleFavorite(
-                        apartment.apartmentId,
-                        newManageType === "ATTENTION"
-                      );
-                    }}
-                    className={`inline-flex h-full w-full items-center justify-center transition-colors ${
-                      property?.manageType === "ATTENTION"
-                        ? "text-yellow-500"
-                        : "text-muted-foreground hover:text-yellow-500"
-                    }`}
-                  >
-                    {property?.manageType === "ATTENTION" ? (
-                      <img src={FilledStar} alt="filled-star" />
-                    ) : (
-                      <img src={UnfilledStar} alt="unfilled-star" />
-                    )}
-                  </button>
+                {/* 관리 타입 */}
+                <TableCell className="px-2">
+                  <div className="flex items-center justify-center">
+                    <DropdownMenuCell
+                      options={[
+                        { label: "기본", value: "NONE", icon: UnfilledStar },
+                        { label: "관심", value: "ATTENTION", icon: FilledStar },
+                        { label: "주의", value: "CAUTION", icon: Caution },
+                      ]}
+                      value={property?.manageType || "NONE"}
+                      onChange={(value) => {
+                        handlePropertyUpdate(
+                          apartment.apartmentId,
+                          "manageType",
+                          value
+                        );
+                      }}
+                      hideLabel={true}
+                      showCheckmark={false}
+                      iconPosition="right"
+                      buttonClassName="bg-[#F5F5F5] justify-center px-2"
+                      listClassName="flex flex-col"
+                    />
+                  </div>
                 </TableCell>
 
                 {/* 동 */}

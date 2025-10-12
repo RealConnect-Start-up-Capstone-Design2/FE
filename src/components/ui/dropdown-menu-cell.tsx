@@ -9,6 +9,7 @@ import { cn } from "@/shared/utils";
 export interface DropdownOption {
   label: string;
   value: string;
+  icon?: string; // 아이콘 이미지 경로 (optional)
 }
 
 export interface DropdownMenuCellProps {
@@ -22,6 +23,9 @@ export interface DropdownMenuCellProps {
   listClassName?: string;
   optionClassName?: string;
   disabled?: boolean;
+  hideLabel?: boolean; // 버튼에서 텍스트 숨기기
+  showCheckmark?: boolean; // 선택된 항목에 체크 표시 (기본: true)
+  iconPosition?: "left" | "right"; // 드롭다운 리스트에서 아이콘 위치 (기본: left)
 }
 
 export function DropdownMenuCell({
@@ -35,6 +39,9 @@ export function DropdownMenuCell({
   listClassName,
   optionClassName,
   disabled = false,
+  hideLabel = false,
+  showCheckmark = true,
+  iconPosition = "left",
 }: DropdownMenuCellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [listPosition, setListPosition] = useState({ top: 0, left: 0 });
@@ -153,9 +160,16 @@ export function DropdownMenuCell({
           buttonClassName
         )}
       >
-        <span className={selectedOption ? "text-[#1B1B1B]" : "text-[#1B1B1B]"}>
-          {selectedOption?.label ?? placeholder}
-        </span>
+        {selectedOption?.icon && (
+          <img src={selectedOption.icon} alt="" className="h-4 w-4" />
+        )}
+        {!hideLabel && (
+          <span
+            className={selectedOption ? "text-[#1B1B1B]" : "text-[#1B1B1B]"}
+          >
+            {selectedOption?.label ?? placeholder}
+          </span>
+        )}
         <ChevronDown
           className={cn(
             "h-4 w-4 text-grayscale-black transition-transform duration-150",
@@ -175,7 +189,7 @@ export function DropdownMenuCell({
           }}
         >
           {options.map((option) => (
-            <li key={option.value} className="flex min-w-15">
+            <li key={option.value} className="flex">
               <button
                 type="button"
                 onClick={(e) => {
@@ -184,12 +198,18 @@ export function DropdownMenuCell({
                   setIsOpen(false);
                 }}
                 className={cn(
-                  "mx-1 my-1 flex h-6 min-w-15 w-full gap-2 items-center rounded-full bg-[#FFFFFF] px-2 text-center font-medium text-[#1B1B1B]",
+                  "mx-1 flex h-6 min-w-15 w-full gap-2 items-center rounded-full bg-[#FFFFFF] px-2 text-center font-medium text-[#1B1B1B]",
                   optionClassName
                 )}
               >
-                <span className="flex-1">{option.label}</span>
-                {value === option.value && (
+                {iconPosition === "left" && option.icon && (
+                  <img src={option.icon} alt="" className="h-4 w-4" />
+                )}
+                <span className="text-left">{option.label}</span>
+                {iconPosition === "right" && option.icon && (
+                  <img src={option.icon} alt="" className="h-4 w-4" />
+                )}
+                {showCheckmark && value === option.value && (
                   <img src={DropdownCheck} alt="selected" className="h-3 w-3" />
                 )}
               </button>
