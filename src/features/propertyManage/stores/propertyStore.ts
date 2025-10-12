@@ -24,6 +24,11 @@ export type RequestType =
 export type Direction = "NORTH" | "SOUTH" | "EAST" | "WEST";
 
 /**
+ * 계약 타입
+ */
+export type ContractType = "RENTAL" | "SALE" | null;
+
+/**
  * 매물 정보 (아파트에 등록된 내 매물)
  * property가 null이면 해당 아파트에 매물이 없는 것
  */
@@ -41,6 +46,14 @@ export interface PropertyInfo {
   tenantPhone?: string; // 세입자 연락처 (추가 필드)
   startDate?: string; // 계약 시작일 (추가 필드)
   endDate?: string; // 계약 종료일 (추가 필드)
+  contractType?: ContractType; // 계약 타입 (임대차/매매)
+  downPayment?: number; // 계약금
+  downPaymentDate?: string; // 계약금 지급일
+  interimPayment?: number; // 중도금
+  interimPaymentDate?: string; // 중도금 지급일
+  balance?: number; // 잔금
+  balanceDate?: string; // 잔금 지급일
+  monthlyPaymentDay?: string; // 월세 지급일 (예: "매월 25일")
 }
 
 /**

@@ -9,6 +9,7 @@ import {
   SlidingSidebarLayout,
 } from "@/components/common/detail-sidebar";
 import { PropertyMemoBlock } from "@/features/propertyManage/components/blocks/PropertyMemoBlock";
+import { PropertyContractBlock } from "@/features/propertyManage/components/blocks/PropertyContractBlock";
 import { getApartments } from "@/features/propertyManage/stores/propertyStore";
 
 /**
@@ -114,6 +115,7 @@ export function PropertyManagePage() {
       sidebar={
         <DetailSidebar title="매물 상세 정보">
           <PropertyMemoBlock apartment={selectedApartment} />
+          <PropertyContractBlock apartment={selectedApartment} />
         </DetailSidebar>
       }
     >
