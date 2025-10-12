@@ -28,17 +28,22 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 // 요청 인터셉터: 모든 요청에 인증 토큰을 추가
 apiClient.interceptors.request.use(
   (config) => {
-    // authStore는 동적 import로 가져와서 순환 의존성 방지
-    const authStore = localStorage.getItem("auth-storage");
-    if (authStore) {
-      try {
-        const { state } = JSON.parse(authStore);
-        const accessToken = state?.accessToken;
-        if (accessToken) {
-          config.headers["Authorization"] = `Bearer ${accessToken}`;
+    const isAuthEndpoint =
+      config.url?.includes("/login") || config.url?.includes("/register");
+
+    if (!isAuthEndpoint) {
+      // authStore는 동적 import로 가져와서 순환 의존성 방지
+      const authStore = localStorage.getItem("auth-storage");
+      if (authStore) {
+        try {
+          const { state } = JSON.parse(authStore);
+          const accessToken = state?.accessToken;
+          if (accessToken) {
+            config.headers["Authorization"] = `Bearer ${accessToken}`;
+          }
+        } catch (error) {
+          console.error("Failed to parse auth storage:", error);
         }
-      } catch (error) {
-        console.error("Failed to parse auth storage:", error);
       }
     }
     return config;
@@ -56,11 +61,16 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    const isAuthEndpoint =
+      originalRequest.url?.includes("/login") ||
+      originalRequest.url?.includes("/register");
+
     // 401 에러이고, 재시도하지 않은 요청이며, refresh-token 요청이 아닌 경우
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes("/refresh-token")
+      !originalRequest.url?.includes("/refresh-token") &&
+      !isAuthEndpoint
     ) {
       // 이미 토큰 재발급 중이라면 대기열에 추가
       if (isRefreshing) {
