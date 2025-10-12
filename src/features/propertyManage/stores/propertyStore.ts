@@ -24,9 +24,9 @@ export type RequestType =
 export type Direction = "NORTH" | "SOUTH" | "EAST" | "WEST";
 
 /**
- * 계약 타입
+ * 관리 유형 (즐겨찾기)
  */
-export type ContractType = "RENTAL" | "SALE" | null;
+export type ManageType = "NONE" | "ATTENTION" | "CAUTION";
 
 /**
  * 매물 정보 (아파트에 등록된 내 매물)
@@ -39,21 +39,9 @@ export interface PropertyInfo {
   monthPrice: number; // 월세
   propertyStatus: PropertyStatus; // 매물 상태
   requestType: RequestType; // 의뢰 유형
+  manageType: ManageType; // 관리 타입 (즐겨찾기)
   ownerName: string; // 소유자 이름
   ownerPhone: string; // 소유자 연락처
-  memo?: string; // 메모 (추가 필드)
-  tenantName?: string; // 세입자 이름 (추가 필드)
-  tenantPhone?: string; // 세입자 연락처 (추가 필드)
-  startDate?: string; // 계약 시작일 (추가 필드)
-  endDate?: string; // 계약 종료일 (추가 필드)
-  contractType?: ContractType; // 계약 타입 (임대차/매매)
-  downPayment?: number; // 계약금
-  downPaymentDate?: string; // 계약금 지급일
-  interimPayment?: number; // 중도금
-  interimPaymentDate?: string; // 중도금 지급일
-  balance?: number; // 잔금
-  balanceDate?: string; // 잔금 지급일
-  monthlyPaymentDay?: string; // 월세 지급일 (예: "매월 25일")
 }
 
 /**
@@ -90,10 +78,12 @@ export interface PropertiesQueryParams {
   apartmentComplexId: number; // 단지 ID (필수)
   cursorId?: number; // 커서 ID (첫 페이지는 생략)
   size?: number; // 페이지 크기 (기본 30, 최대 100)
-  dong?: string; // 동 필터
+  dong?: string; // 동 필터 ('dong%' 검색)
+  ho?: string; // 호수 필터 ('ho%' 검색)
   area?: number; // 면적 필터
   propertyStatus?: PropertyStatus; // 매물 상태 필터
   requestType?: RequestType; // 의뢰 유형 필터
+  manageType?: ManageType; // 관리 타입 필터 (즐겨찾기)
 }
 
 // ============================================

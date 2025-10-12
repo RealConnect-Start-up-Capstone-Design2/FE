@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import {
   PropertyManagerHeader,
   PropertyManageTable,
@@ -10,7 +10,7 @@ import {
 } from "@/components/common/detail-sidebar";
 import { PropertyMemoBlock } from "@/features/propertyManage/components/blocks/PropertyMemoBlock";
 import { PropertyContractBlock } from "@/features/propertyManage/components/blocks/PropertyContractBlock";
-import { getApartments } from "@/features/propertyManage/stores/propertyStore";
+import { fetchProperties } from "@/features/propertyManage/services/propertyService";
 
 /**
  * 매물 관리 페이지
@@ -27,13 +27,25 @@ export function PropertyManagePage() {
   const tableContainerRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
 
-  // 아파트 목록 조회 (메모 섹션에 전달할 데이터)
-  const { data } = useQuery({
-    queryKey: ["apartments"],
-    queryFn: () => getApartments(),
-  });
+  // 아파트 목록 조회 (API 연동)
+  const apartmentComplexId = 1;
 
-  const apartments = data?.content || [];
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useInfiniteQuery({
+      queryKey: ["apartments", apartmentComplexId],
+      queryFn: ({ pageParam }) =>
+        fetchProperties({
+          apartmentComplexId,
+          cursorId: pageParam,
+          size: 30,
+        }),
+      initialPageParam: undefined as number | undefined,
+      getNextPageParam: (lastPage) => {
+        return lastPage.hasNext ? lastPage.nextCursor : undefined;
+      },
+    });
+
+  const apartments = data?.pages.flatMap((page) => page.content) || [];
   const selectedApartment = apartments.find(
     (apt) => apt.apartmentId === selectedPropertyId
   );
@@ -125,6 +137,11 @@ export function PropertyManagePage() {
           <PropertyManageTable
             onPropertyClick={handlePropertyClick}
             selectedApartmentId={selectedPropertyId}
+            apartments={apartments}
+            isLoading={isLoading}
+            isFetchingNextPage={isFetchingNextPage}
+            hasNextPage={hasNextPage}
+            onLoadMore={fetchNextPage}
           />
         </div>
       </div>
