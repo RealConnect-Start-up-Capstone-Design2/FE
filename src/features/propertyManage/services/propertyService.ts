@@ -28,9 +28,11 @@ export const fetchProperties = async (
       cursorId: params.cursorId,
       size: params.size || 30,
       dong: params.dong,
+      ho: params.ho,
       area: params.area,
       propertyStatus: params.propertyStatus,
       requestType: params.requestType,
+      manageType: params.manageType,
     },
   });
   return response.data;

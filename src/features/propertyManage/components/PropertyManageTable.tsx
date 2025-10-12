@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import {
   Table,
   TableBody,
@@ -12,6 +13,7 @@ import {
   getApartments,
   type RequestType,
   type PropertyStatus,
+  type ApartmentWithProperty,
 } from "../stores/propertyStore";
 import { usePropertyEdit } from "../hooks/usePropertyEdit";
 import {
@@ -44,26 +46,57 @@ const propertyStatusOptions: { label: string; value: PropertyStatus }[] = [
 interface PropertyManageTableProps {
   onPropertyClick?: (apartmentId: string | number) => void;
   selectedApartmentId?: string | number;
+  apartments?: ApartmentWithProperty[]; // 외부에서 데이터를 받아올 경우
+  isLoading?: boolean; // 로딩 상태
+  isFetchingNextPage?: boolean;
+  hasNextPage?: boolean;
+  onLoadMore?: () => void;
 }
 
 export function PropertyManageTable({
   onPropertyClick,
   selectedApartmentId,
+  apartments: externalApartments,
+  isLoading: externalIsLoading,
+  isFetchingNextPage,
+  hasNextPage,
+  onLoadMore,
 }: PropertyManageTableProps) {
-  // React Query로 아파트 목록 조회
-  const { data, isLoading } = useQuery({
+  // React Query로 아파트 목록 조회 (외부에서 데이터를 받지 않을 경우만)
+  const { data, isLoading: internalIsLoading } = useQuery({
     queryKey: ["apartments"],
     queryFn: async () => {
       // TODO: 추후 API 연동 시 fetchProperties({ apartmentComplexId: 1 })로 변경
       // return await fetchProperties({ apartmentComplexId: 1 });
       return getApartments();
     },
+    enabled: !externalApartments, // 외부 데이터가 없을 때만 실행
   });
 
-  const apartments = data?.content || [];
+  // 외부에서 받은 데이터 우선 사용
+  const apartments = externalApartments || data?.content || [];
+  const isLoading = externalIsLoading ?? internalIsLoading;
 
   // 편집 관련 로직
   const { handleToggleFavorite, handlePropertyUpdate } = usePropertyEdit();
+
+  // 무한스크롤을 위한 스크롤 감지
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = tableContainerRef.current;
+    if (!container || !hasNextPage || !onLoadMore) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      if (scrollTop + clientHeight >= scrollHeight - 100) {
+        onLoadMore();
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [hasNextPage, onLoadMore]);
 
   if (isLoading) {
     return (
@@ -75,6 +108,7 @@ export function PropertyManageTable({
 
   return (
     <div
+      ref={tableContainerRef}
       className="h-full rounded-lg border border-[#DDE2F2] bg-white shadow-sm overflow-auto"
       onClick={(e) => e.stopPropagation()}
     >
@@ -112,18 +146,24 @@ export function PropertyManageTable({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      // manageType: NONE -> ATTENTION, ATTENTION -> NONE
+                      const currentManageType = property?.manageType || "NONE";
+                      const newManageType =
+                        currentManageType === "ATTENTION"
+                          ? "NONE"
+                          : "ATTENTION";
                       handleToggleFavorite(
                         apartment.apartmentId,
-                        apartment.isFavorite || false
+                        newManageType === "ATTENTION"
                       );
                     }}
                     className={`inline-flex h-full w-full items-center justify-center transition-colors ${
-                      apartment.isFavorite
+                      property?.manageType === "ATTENTION"
                         ? "text-yellow-500"
                         : "text-muted-foreground hover:text-yellow-500"
                     }`}
                   >
-                    {apartment.isFavorite ? (
+                    {property?.manageType === "ATTENTION" ? (
                       <img src={FilledStar} alt="filled-star" />
                     ) : (
                       <img src={UnfilledStar} alt="unfilled-star" />
@@ -238,6 +278,21 @@ export function PropertyManageTable({
           })}
         </TableBody>
       </Table>
+
+      {/* 무한스크롤 로딩 인디케이터 */}
+      {isFetchingNextPage && (
+        <div className="flex justify-center items-center py-4">
+          <div className="text-sm text-gray-500">
+            더 많은 매물을 불러오는 중...
+          </div>
+        </div>
+      )}
+
+      {!hasNextPage && apartments.length > 0 && (
+        <div className="flex justify-center items-center py-4">
+          <div className="text-sm text-gray-400">모든 매물을 불러왔습니다.</div>
+        </div>
+      )}
     </div>
   );
 }
