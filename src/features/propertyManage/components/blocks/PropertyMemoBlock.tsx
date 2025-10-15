@@ -1,63 +1,132 @@
 import { useState, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import type { ApartmentWithProperty } from "../../stores/propertyStore";
-import { updatePropertyMemo } from "../../stores/propertyStore";
+import {
+  getMemoAPI,
+  createMemoAPI,
+  updateMemoAPI,
+} from "../../services/propertyService";
 
 interface PropertyMemoBlockProps {
   apartment?: ApartmentWithProperty;
+  onClose?: () => void;
 }
 
 /**
  * 매물 메모 블록
  * 부모로부터 apartment를 직접 받아 단순화
  */
-export function PropertyMemoBlock({ apartment }: PropertyMemoBlockProps) {
+export function PropertyMemoBlock({
+  apartment,
+  onClose,
+}: PropertyMemoBlockProps) {
   const queryClient = useQueryClient();
-  const savedMemo = apartment?.property?.memo || "";
-  const [memo, setMemo] = useState(savedMemo);
+  const [memo, setMemo] = useState("");
   const [isSaved, setIsSaved] = useState(false);
 
-  // apartment가 변경되면 메모 초기화
-  useEffect(() => {
-    setMemo(savedMemo);
-    setIsSaved(false);
-  }, [apartment?.apartmentId, savedMemo]);
+  // 메모 조회
+  const { data: memoData, isLoading: isMemoLoading } = useQuery({
+    queryKey: ["memo", apartment?.apartmentId],
+    queryFn: () => getMemoAPI(apartment!.apartmentId),
+    enabled: !!apartment?.apartmentId,
+    retry: (failureCount, error: unknown) => {
+      // 404 에러(메모 없음)는 재시도 안함
+      if (error && typeof error === "object" && "response" in error) {
+        const response = (error as { response: { status: number } }).response;
+        if (response?.status === 404) {
+          return false;
+        }
+      }
+      return failureCount < 3;
+    },
+  });
 
-  // 메모 저장 mutation
+  useEffect(() => {
+    if (memoData?.content) {
+      setMemo(memoData.content);
+    } else {
+      setMemo("");
+    }
+    setIsSaved(false);
+  }, [apartment?.apartmentId, memoData?.content]);
+
+  // 메모 저장 mutation (생성 또는 수정)
   const memoMutation = useMutation({
     mutationFn: async ({
       apartmentId,
-      memo,
+      content,
+      isUpdate,
     }: {
       apartmentId: number;
-      memo: string;
+      content: string;
+      isUpdate: boolean;
     }) => {
-      // TODO: API 연동 시 아래로 교체
-      // return await updatePropertyMemoAPI(apartmentId, memo);
-
-      updatePropertyMemo(apartmentId, memo);
-      return { apartmentId, memo };
+      if (isUpdate) {
+        return await updateMemoAPI(apartmentId, content);
+      } else {
+        return await createMemoAPI(apartmentId, content);
+      }
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["memo", apartment?.apartmentId],
+      });
       queryClient.invalidateQueries({ queryKey: ["apartments"] });
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 3000);
     },
-    onError: (error) => {
-      console.error("메모 저장 실패:", error);
-      alert("메모 저장에 실패했습니다.");
+    onError: (error: unknown) => {
+      let errorMessage = "메모 저장에 실패했습니다.";
+
+      if (error && typeof error === "object" && "response" in error) {
+        const response = (error as { response: { data: { message?: string } } })
+          .response;
+        if (response?.data?.message) {
+          errorMessage = response.data.message;
+        }
+      }
+
+      alert(errorMessage);
     },
   });
 
   const handleSave = () => {
-    if (apartment && memo !== savedMemo) {
-      memoMutation.mutate({ apartmentId: apartment.apartmentId, memo });
+    if (!apartment) return;
+
+    const savedMemo = memoData?.content || "";
+    const isUpdate = !!memoData; // 기존 메모가 있으면 수정, 없으면 생성
+
+    if (memo !== savedMemo) {
+      memoMutation.mutate({
+        apartmentId: apartment.apartmentId,
+        content: memo,
+        isUpdate,
+      });
     }
   };
 
+  // 사이드바가 닫힐 때 자동 저장
+  useEffect(() => {
+    if (onClose && apartment) {
+      const savedMemo = memoData?.content || "";
+
+      // 메모가 변경되었을 때만 저장
+      if (memo !== savedMemo && !memoMutation.isPending) {
+        const isUpdate = !!memoData; // 기존 메모가 있으면 수정, 없으면 생성
+
+        memoMutation.mutate({
+          apartmentId: apartment.apartmentId,
+          content: memo,
+          isUpdate,
+        });
+      }
+    }
+  }, [onClose, apartment, memo, memoData, memoMutation]);
+
+  const savedMemo = memoData?.content || "";
   const isChanged = memo !== savedMemo && !isSaved;
 
   // 아파트가 선택되지 않았을 때
@@ -78,18 +147,24 @@ export function PropertyMemoBlock({ apartment }: PropertyMemoBlockProps) {
     <section className="space-y-2">
       <Label className="block">메모장</Label>
       <div className="grid w-full gap-2">
-        <Textarea
-          placeholder="메모를 입력하세요"
-          value={memo}
-          onChange={(e) => {
-            setMemo(e.target.value);
-            setIsSaved(false);
-          }}
-          className="min-h-[200px]"
-        />
+        {isMemoLoading ? (
+          <div className="min-h-[200px] flex items-center justify-center bg-gray-50 rounded-md border border-gray-200">
+            <p className="text-gray-400">메모를 불러오는 중...</p>
+          </div>
+        ) : (
+          <Textarea
+            placeholder="메모를 입력하세요"
+            value={memo}
+            onChange={(e) => {
+              setMemo(e.target.value);
+              setIsSaved(false);
+            }}
+            className="min-h-[200px]"
+          />
+        )}
         <Button
           onClick={handleSave}
-          disabled={!isChanged || memoMutation.isPending}
+          disabled={!isChanged || memoMutation.isPending || isMemoLoading}
           style={{
             backgroundColor: isSaved
               ? "#B1B6C7"
@@ -99,7 +174,11 @@ export function PropertyMemoBlock({ apartment }: PropertyMemoBlockProps) {
           }}
           className="w-full text-white hover:opacity-90"
         >
-          {isSaved ? "저장됨" : "저장하기"}
+          {memoMutation.isPending
+            ? "저장 중..."
+            : isSaved
+            ? "저장됨"
+            : "저장하기"}
         </Button>
       </div>
     </section>

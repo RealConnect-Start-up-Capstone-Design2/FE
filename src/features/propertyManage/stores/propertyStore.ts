@@ -16,7 +16,8 @@ export type RequestType =
   | "SALE"
   | "JEONSE"
   | "MONTHLY"
-  | "JM";
+  | "NOT_RECEIVED"
+  | "THINKING";
 
 /**
  * 방향
@@ -389,6 +390,48 @@ export const updateProperty = (
           [field]: value,
         },
       };
+    }
+    return apartment;
+  });
+};
+
+/**
+ * 전역 아파트 상태에서 특정 매물 정보를 업데이트하는 함수
+ * API 호출 후 React Query 캐시와 동기화를 위해 사용
+ */
+export const updatePropertyInGlobalState = (
+  apartmentId: number,
+  updates: Partial<PropertyInfo>
+): void => {
+  globalApartments = globalApartments.map((apartment) => {
+    if (apartment.apartmentId === apartmentId) {
+      if (!apartment.property) {
+        // property가 없으면 새로 생성
+        return {
+          ...apartment,
+          property: {
+            salePrice: 0,
+            jeonsePrice: 0,
+            deposit: 0,
+            monthPrice: 0,
+            propertyStatus: "NONE",
+            requestType: "NONE",
+            manageType: "NONE",
+            ownerName: "",
+            ownerPhone: "",
+            ...updates,
+          },
+        };
+      } else {
+        // property가 있으면 업데이트
+        return {
+          ...apartment,
+          property: {
+            ...apartment.property,
+            ...updates,
+          },
+        };
+      }
     }
     return apartment;
   });
