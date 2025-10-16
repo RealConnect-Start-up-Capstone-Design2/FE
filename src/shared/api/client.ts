@@ -69,7 +69,7 @@ apiClient.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes("/refresh-token") &&
+      !originalRequest.url?.includes("/api/refresh-token") &&
       !isAuthEndpoint
     ) {
       // 이미 토큰 재발급 중이라면 대기열에 추가

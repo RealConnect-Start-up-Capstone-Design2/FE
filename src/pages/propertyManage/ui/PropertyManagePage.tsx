@@ -139,8 +139,12 @@ export function PropertyManagePage() {
           <PropertyMemoBlock
             apartment={selectedApartment}
             onClose={shouldAutoSave ? () => {} : undefined}
+            isOpen={isDetailOpen}
           />
-          <PropertyContractBlock apartment={selectedApartment} />
+          <PropertyContractBlock
+            apartment={selectedApartment}
+            isOpen={isDetailOpen}
+          />
         </DetailSidebar>
       }
     >

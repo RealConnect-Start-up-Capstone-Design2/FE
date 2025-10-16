@@ -1,16 +1,25 @@
-import { useState, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ContractTypeToggle } from "../ContractTypeToggle";
 import { RentalContractForm } from "../RentalContractForm";
 import { SaleContractForm } from "../SaleContractForm";
 import type { ApartmentWithProperty } from "../../stores/propertyStore";
-import type { ContractInfo, ContractType } from "../../stores/contractStore";
-import { getContract, saveContract } from "../../stores/contractStore";
+import type {
+  ContractInfo,
+  ContractInfoInput,
+  ContractType,
+} from "../../stores/contractStore";
+import {
+  createContractAPI,
+  getContractAPI,
+  saveContractAPI,
+} from "../../services/contractService";
 
 interface PropertyContractBlockProps {
   apartment?: ApartmentWithProperty;
+  isOpen: boolean;
 }
 
 /**
@@ -19,58 +28,125 @@ interface PropertyContractBlockProps {
  */
 export function PropertyContractBlock({
   apartment,
+  isOpen,
 }: PropertyContractBlockProps) {
   const queryClient = useQueryClient();
+  const apartmentId = apartment?.apartmentId;
 
-  // 계약 정보 초기화
-  const initialContract = apartment?.apartmentId
-    ? getContract(apartment.apartmentId)
-    : null;
-
-  const [contractType, setContractType] = useState<ContractType>(
-    initialContract?.contractType || "LEASE"
-  );
+  const [contractType, setContractType] = useState<ContractType>("LEASE");
   const [formData, setFormData] = useState<Partial<ContractInfo>>({});
   const [isSaved, setIsSaved] = useState(false);
 
-  // apartment가 변경되면 폼 데이터 초기화
+  const {
+    data: fetchedContract,
+    isLoading: isContractLoading,
+    isFetching: isContractFetching,
+    error: contractError,
+  } = useQuery({
+    queryKey: ["contract", apartmentId],
+    queryFn: () => getContractAPI(apartmentId!),
+    enabled: isOpen && !!apartmentId,
+    refetchOnWindowFocus: false,
+  });
+
+  const resolvedContract = fetchedContract ?? null;
+
+  // 아파트가 변경되면 기본 상태로 초기화
   useEffect(() => {
-    if (apartment?.apartmentId) {
-      const contract = getContract(apartment.apartmentId);
-      if (contract) {
-        setContractType(contract.contractType);
-        setFormData(contract);
-      } else {
-        setContractType("LEASE");
-        setFormData({});
-      }
-    } else {
-      setContractType("LEASE");
+    setFormData({});
+    setIsSaved(false);
+    setContractType("LEASE");
+  }, [apartmentId]);
+
+  // 계약 정보를 불러오면 폼 상태를 최신 값으로 동기화
+  useEffect(() => {
+    if (apartmentId && resolvedContract) {
+      setContractType(resolvedContract.contractType);
       setFormData({});
     }
-    setIsSaved(false);
-  }, [apartment?.apartmentId]);
+  }, [resolvedContract, apartmentId]);
+
+  const currentContract = useMemo<ContractInfo | null>(() => {
+    if (!apartmentId) {
+      return null;
+    }
+    const base = resolvedContract ? { ...resolvedContract } : {};
+    return {
+      apartmentId,
+      ...base,
+      ...formData,
+      contractType,
+    } as ContractInfo;
+  }, [apartmentId, resolvedContract, formData, contractType]);
+
+  const hasUnsavedChanges = useMemo(() => {
+    if (!apartmentId) {
+      return false;
+    }
+
+    if (resolvedContract) {
+      const merged = {
+        ...resolvedContract,
+        ...formData,
+        contractType,
+      };
+      return JSON.stringify(resolvedContract) !== JSON.stringify(merged);
+    }
+
+    if (contractType !== "LEASE") {
+      return true;
+    }
+
+    return Object.entries(formData).some(([, value]) => {
+      if (value === undefined || value === null) {
+        return false;
+      }
+      if (typeof value === "string") {
+        return value.trim() !== "";
+      }
+      return true;
+    });
+  }, [apartmentId, resolvedContract, formData, contractType]);
 
   // 계약 정보 저장 mutation
   const contractMutation = useMutation({
     mutationFn: async ({
       apartmentId,
-      updates,
+      payload,
+      isUpdate,
     }: {
       apartmentId: number;
-      updates: Partial<ContractInfo>;
+      payload: Partial<ContractInfoInput>;
+      isUpdate: boolean;
     }) => {
-      // contractStore를 사용하여 저장
-      saveContract(apartmentId, updates);
-      return { apartmentId, updates };
+      if (isUpdate) {
+        return await saveContractAPI(apartmentId, payload);
+      }
+      return await createContractAPI(apartmentId, payload);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contracts"] });
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["contract", variables.apartmentId],
+      });
+      setFormData({});
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 3000);
     },
     onError: (error) => {
-      alert("계약 정보 저장에 실패했습니다.");
+      let errorMessage = "계약 정보 저장에 실패했습니다.";
+      if (
+        error &&
+        typeof error === "object" &&
+        "response" in error &&
+        (error as {
+          response?: { data?: { message?: string } };
+        }).response?.data?.message
+      ) {
+        errorMessage = (
+          error as { response: { data: { message?: string } } }
+        ).response.data.message;
+      }
+      alert(errorMessage);
     },
   });
 
@@ -84,31 +160,37 @@ export function PropertyContractBlock({
 
   const handleContractTypeChange = (type: ContractType) => {
     setContractType(type);
-    setFormData((prev) => ({ ...prev, contractType: type }));
     setIsSaved(false);
   };
 
   const handleSave = () => {
-    if (apartment && contractType) {
-      const updates = {
-        ...formData,
-        contractType,
-      };
-      contractMutation.mutate({ apartmentId: apartment.apartmentId, updates });
+    if (!apartmentId || !currentContract || contractMutation.isPending) {
+      return;
     }
+
+    const {
+      apartmentId: _omitApartmentId,
+      ...contractWithoutId
+    } = currentContract;
+    void _omitApartmentId;
+
+    const sanitizedPayload = Object.fromEntries(
+      Object.entries(contractWithoutId).filter(
+        ([, value]) => value !== undefined
+      )
+    ) as Partial<ContractInfoInput>;
+
+    contractMutation.mutate({
+      apartmentId,
+      payload: sanitizedPayload,
+      isUpdate: !!resolvedContract,
+    });
   };
 
-  const hasChanges = () => {
-    if (!apartment?.apartmentId) return false;
-    const currentContract = getContract(apartment.apartmentId);
-    if (!currentContract) return Object.keys(formData).length > 0;
-    return (
-      JSON.stringify({ ...currentContract, ...formData }) !==
-      JSON.stringify(currentContract)
-    );
-  };
-
-  const isChanged = hasChanges() && !isSaved;
+  const isChanged = hasUnsavedChanges && !isSaved;
+  const isFormDisabled =
+    contractMutation.isPending || isContractLoading || isContractFetching;
+  const isLoadingWithoutData = isContractLoading && !resolvedContract;
 
   // 아파트가 선택되지 않았을 때
   if (!apartment) {
@@ -124,37 +206,49 @@ export function PropertyContractBlock({
     );
   }
 
+  const contractErrorMessage = contractError
+    ? "계약 정보를 불러오는데 실패했습니다."
+    : null;
+
   return (
     <section className="space-y-[18px]">
       <Label className="block text-[20px] font-semibold text-black">
         계약 정보
       </Label>
 
+      {isLoadingWithoutData && (
+        <div className="flex min-h-[80px] items-center justify-center rounded-md border border-gray-200 bg-gray-50 px-3 py-4 text-sm text-gray-500">
+          계약 정보를 불러오는 중입니다...
+        </div>
+      )}
+
+      {contractErrorMessage && (
+        <div className="rounded-md border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600">
+          {contractErrorMessage}
+        </div>
+      )}
+
       {/* 계약 타입 선택 */}
       <ContractTypeToggle
         value={contractType}
         onChange={handleContractTypeChange}
-        disabled={contractMutation.isPending}
+        disabled={isFormDisabled}
       />
 
       {/* 계약 타입에 따라 다른 폼 표시 */}
       {contractType === "LEASE" && (
         <RentalContractForm
-          contract={
-            apartment.apartmentId ? getContract(apartment.apartmentId) : null
-          }
+          contract={currentContract}
           onChange={handleFieldChange}
-          disabled={contractMutation.isPending}
+          disabled={isFormDisabled}
         />
       )}
 
       {contractType === "SALE" && (
         <SaleContractForm
-          contract={
-            apartment.apartmentId ? getContract(apartment.apartmentId) : null
-          }
+          contract={currentContract}
           onChange={handleFieldChange}
-          disabled={contractMutation.isPending}
+          disabled={isFormDisabled}
         />
       )}
 
@@ -162,7 +256,12 @@ export function PropertyContractBlock({
       {contractType && (
         <Button
           onClick={handleSave}
-          disabled={!isChanged || contractMutation.isPending}
+          disabled={
+            !isChanged ||
+            contractMutation.isPending ||
+            isContractLoading ||
+            isContractFetching
+          }
           style={{
             backgroundColor: isSaved
               ? "#B1B6C7"

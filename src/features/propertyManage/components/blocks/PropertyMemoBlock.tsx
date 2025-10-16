@@ -13,6 +13,7 @@ import {
 interface PropertyMemoBlockProps {
   apartment?: ApartmentWithProperty;
   onClose?: () => void;
+  isOpen: boolean;
 }
 
 /**
@@ -22,6 +23,7 @@ interface PropertyMemoBlockProps {
 export function PropertyMemoBlock({
   apartment,
   onClose,
+  isOpen,
 }: PropertyMemoBlockProps) {
   const queryClient = useQueryClient();
   const [memo, setMemo] = useState("");
@@ -31,7 +33,7 @@ export function PropertyMemoBlock({
   const { data: memoData, isLoading: isMemoLoading } = useQuery({
     queryKey: ["memo", apartment?.apartmentId],
     queryFn: () => getMemoAPI(apartment!.apartmentId),
-    enabled: !!apartment?.apartmentId,
+    enabled: isOpen && !!apartment?.apartmentId,
     retry: (failureCount, error: unknown) => {
       // 404 에러(메모 없음)는 재시도 안함
       if (error && typeof error === "object" && "response" in error) {
@@ -43,7 +45,6 @@ export function PropertyMemoBlock({
       return failureCount < 3;
     },
   });
-
   useEffect(() => {
     if (memoData?.content) {
       setMemo(memoData.content);
@@ -147,7 +148,7 @@ export function PropertyMemoBlock({
     <section className="space-y-2">
       <Label className="block">메모장</Label>
       <div className="grid w-full gap-2">
-        {isMemoLoading ? (
+        {isMemoLoading && isOpen ? (
           <div className="min-h-[200px] flex items-center justify-center bg-gray-50 rounded-md border border-gray-200">
             <p className="text-gray-400">메모를 불러오는 중...</p>
           </div>
