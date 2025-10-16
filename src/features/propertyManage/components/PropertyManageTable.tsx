@@ -330,7 +330,7 @@ export function PropertyManageTable({
       <Table className="min-w-[1100px] whitespace-nowrap">
         <TableHeader className="sticky top-0 z-40 border border-[#DDE2F2] bg-[#E8EDFF]">
           <TableRow>
-            <TableHead className="w-24 px-2">관리</TableHead>
+            <TableHead className="w-24 px-2 text-center">관리 타입</TableHead>
             <TableHead>동</TableHead>
             <TableHead>호수</TableHead>
             <TableHead>면적</TableHead>

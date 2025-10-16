@@ -19,6 +19,8 @@ export interface DropdownMenuProps {
   listClassName?: string;
   optionClassName?: string;
   disabled?: boolean;
+  selectedTextColor?: string; // 선택된 값의 텍스트 색상
+  placeholderTextColor?: string; // placeholder 텍스트 색상
 }
 
 export function DropdownMenu({
@@ -32,6 +34,8 @@ export function DropdownMenu({
   listClassName,
   optionClassName,
   disabled = false,
+  selectedTextColor = "text-primary-foreground",
+  placeholderTextColor = "text-primary-foreground",
 }: DropdownMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -72,7 +76,9 @@ export function DropdownMenu({
           buttonClassName
         )}
       >
-        <span className={selectedOption ? "" : "text-primary-foreground"}>
+        <span
+          className={selectedOption ? selectedTextColor : placeholderTextColor}
+        >
           {selectedOption?.label ?? placeholder}
         </span>
         <ChevronDown
