@@ -44,6 +44,7 @@ realconnect_v2/
 │  ├─ pages/                # 페이지 컴포넌트 (예: pages/home)
 │  ├─ shared/
 │  │  ├─ api/
+│  │  ├─ components/        # 여러 feature에서 공유하는 컴포넌트
 │  │  ├─ constants/
 │  │  │  └─ fonts.ts
 │  │  ├─ types/
@@ -55,6 +56,13 @@ realconnect_v2/
 ```
 
 현재 `pages/home`에 샘플 홈 화면이 구현되어 있으며, `components/ui`에는 shadcn 패턴을 따른 `Button` 컴포넌트와 유틸리티(`cn`)가 포함되어 있습니다.
+
+### 컴포넌트 가이드
+
+- `components/common/`: Layout, Sidebar 등 앱 구조를 위한 전역 공통 컴포넌트
+- `components/ui/`: shadcn/ui 기반 재사용 가능한 UI 컴포넌트
+- `shared/components/`: 여러 feature에서 사용하는 비즈니스 로직을 포함한 공유 컴포넌트 (예: MainComplexModal)
+- `features/[feature]/components/`: 특정 feature 내부에서만 사용하는 컴포넌트
 
 ## 스타일 & UI 가이드
 
