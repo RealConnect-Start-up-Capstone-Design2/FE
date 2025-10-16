@@ -70,7 +70,6 @@ export function PropertyContractBlock({
       setTimeout(() => setIsSaved(false), 3000);
     },
     onError: (error) => {
-      console.error("계약 정보 저장 실패:", error);
       alert("계약 정보 저장에 실패했습니다.");
     },
   });

@@ -24,6 +24,8 @@ export function PropertyManagePage() {
   // "카드 닫기" 버튼으로 명시적으로 닫았는지 추적
   const [isManuallyClosedByButton, setIsManuallyClosedByButton] =
     useState(false);
+  // 사이드바가 닫힐 때 메모 자동 저장을 위한 상태
+  const [shouldAutoSave, setShouldAutoSave] = useState(false);
   const tableContainerRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
 
@@ -51,8 +53,13 @@ export function PropertyManagePage() {
   );
 
   const closeSidebar = useCallback(() => {
+    // 사이드바가 닫힐 때 메모 자동 저장 트리거
+    setShouldAutoSave(true);
     setIsDetailOpen(false);
     setIsManuallyClosedByButton(false);
+
+    // 자동 저장 상태를 리셋
+    setTimeout(() => setShouldAutoSave(false), 100);
   }, []);
 
   const handlePropertyClick = (propertyId: string | number) => {
@@ -74,6 +81,9 @@ export function PropertyManagePage() {
       const newState = !prev;
       // "카드 닫기" 버튼으로 닫은 경우 상태 설정
       if (!newState) {
+        // 사이드바가 닫힐 때 메모 자동 저장 트리거
+        setShouldAutoSave(true);
+        setTimeout(() => setShouldAutoSave(false), 100);
         setIsManuallyClosedByButton(true);
       } else {
         // "카드 열기" 버튼으로 열면 상태 해제
@@ -126,7 +136,10 @@ export function PropertyManagePage() {
       sidebarRef={sidebarRef}
       sidebar={
         <DetailSidebar title="매물 상세 정보">
-          <PropertyMemoBlock apartment={selectedApartment} />
+          <PropertyMemoBlock
+            apartment={selectedApartment}
+            onClose={shouldAutoSave ? () => {} : undefined}
+          />
           <PropertyContractBlock apartment={selectedApartment} />
         </DetailSidebar>
       }

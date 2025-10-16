@@ -52,32 +52,266 @@ export const fetchApartmentById = async (
 };
 
 /**
- * 매물 메모 업데이트 API
- * PATCH /api/properties/:apartmentId/memo
+ * 메모 조회 API
+ * GET /memo?apartmentId={apartmentId}
  */
-export const updatePropertyMemoAPI = async (
+export const getMemoAPI = async (
+  apartmentId: number
+): Promise<{ apartmentId: number; content: string }> => {
+  const response = await apiClient.get<{
+    apartmentId: number;
+    content: string;
+  }>("/memo", {
+    params: { apartmentId },
+  });
+  return response.data;
+};
+
+/**
+ * 메모 등록 API
+ * POST /memo
+ */
+export const createMemoAPI = async (
   apartmentId: number,
-  memo: string
-): Promise<ApartmentWithProperty> => {
-  const response = await apiClient.patch<ApartmentWithProperty>(
-    `/api/properties/${apartmentId}/memo`,
-    { memo }
-  );
+  content: string
+): Promise<{ apartmentId: number; content: string }> => {
+  const response = await apiClient.post<{
+    apartmentId: number;
+    content: string;
+  }>("/memo", { apartmentId, content });
+  return response.data;
+};
+
+/**
+ * 메모 수정 API
+ * PUT /memo
+ */
+export const updateMemoAPI = async (
+  apartmentId: number,
+  content: string
+): Promise<{ apartmentId: number; content: string }> => {
+  const response = await apiClient.put<{
+    apartmentId: number;
+    content: string;
+  }>("/memo", { apartmentId, content });
   return response.data;
 };
 
 /**
  * 매물 정보 업데이트 API
- * PUT /api/properties/:apartmentId
+ * PUT /api/properties
  */
 export const updatePropertyAPI = async (
+  _apartmentId: number,
+  data: {
+    apartmentId: number;
+    ownerName: string;
+    ownerPhone: string;
+    salePrice: number;
+    jeonsePrice: number;
+    deposit: number;
+    monthPrice: number;
+    propertyStatus?: string;
+    requestType?: string;
+    manageType?: string;
+  }
+): Promise<{
+  propertyStatus: string;
+  requestType: string;
+  manageType: string;
+  ownerName: string;
+  ownerPhone: string;
+  salePrice: number;
+  jeonsePrice: number;
+  deposit: number;
+  monthPrice: number;
+  apartmentId: number;
+}> => {
+  const response = await apiClient.put("/api/properties", data);
+  return response.data;
+};
+
+/**
+ * 의뢰 유형 업데이트 API (기존 매물)
+ * PATCH /api/properties/requestType
+ */
+export const updateRequestTypeAPI = async (
   apartmentId: number,
-  data: Partial<ApartmentWithProperty>
-): Promise<ApartmentWithProperty> => {
-  const response = await apiClient.put<ApartmentWithProperty>(
-    `/api/properties/${apartmentId}`,
-    data
-  );
+  requestType: string
+): Promise<{
+  propertyStatus: string;
+  requestType: string;
+  manageType: string;
+  ownerName: string;
+  ownerPhone: string;
+  salePrice: number;
+  jeonsePrice: number;
+  deposit: number;
+  monthPrice: number;
+  apartmentId: number;
+}> => {
+  const response = await apiClient.patch("/api/properties/requestType", {
+    apartmentId,
+    requestType,
+  });
+  return response.data;
+};
+
+/**
+ * 의뢰 유형으로 매물 생성 API (새 매물)
+ * POST /api/properties/requestType
+ */
+export const createPropertyWithRequestTypeAPI = async (
+  apartmentId: number,
+  requestType: string
+): Promise<{
+  propertyStatus: string;
+  requestType: string;
+  manageType: string;
+  ownerName: string;
+  ownerPhone: string;
+  salePrice: number;
+  jeonsePrice: number;
+  deposit: number;
+  monthPrice: number;
+  apartmentId: number;
+}> => {
+  const response = await apiClient.post("/api/properties/requestType", {
+    apartmentId,
+    requestType,
+  });
+  return response.data;
+};
+
+/**
+ * 매물 상태 업데이트 API (기존 매물)
+ * PATCH /api/properties/status
+ */
+export const updatePropertyStatusAPI = async (
+  apartmentId: number,
+  propertyStatus: string
+): Promise<{
+  propertyStatus: string;
+  requestType: string;
+  manageType: string;
+  ownerName: string;
+  ownerPhone: string;
+  salePrice: number;
+  jeonsePrice: number;
+  deposit: number;
+  monthPrice: number;
+  apartmentId: number;
+}> => {
+  const response = await apiClient.patch("/api/properties/status", {
+    apartmentId,
+    propertyStatus,
+  });
+  return response.data;
+};
+
+/**
+ * 매물 상태로 매물 생성 API (새 매물)
+ * POST /api/properties/status
+ */
+export const createPropertyWithStatusAPI = async (
+  apartmentId: number,
+  propertyStatus: string
+): Promise<{
+  propertyStatus: string;
+  requestType: string;
+  manageType: string;
+  ownerName: string;
+  ownerPhone: string;
+  salePrice: number;
+  jeonsePrice: number;
+  deposit: number;
+  monthPrice: number;
+  apartmentId: number;
+}> => {
+  const response = await apiClient.post("/api/properties/status", {
+    apartmentId,
+    propertyStatus,
+  });
+  return response.data;
+};
+
+/**
+ * 매물 등록 API
+ * POST /api/properties
+ */
+export const createPropertyAPI = async (data: {
+  apartmentId: number;
+  ownerName: string;
+  ownerPhone: string;
+  salePrice: number;
+  jeonsePrice: number;
+  deposit: number;
+  monthPrice: number;
+}): Promise<{
+  propertyStatus: string;
+  requestType: string;
+  manageType: string;
+  ownerName: string;
+  ownerPhone: string;
+  salePrice: number;
+  jeonsePrice: number;
+  deposit: number;
+  monthPrice: number;
+  apartmentId: number;
+}> => {
+  const response = await apiClient.post("/api/properties", data);
+  return response.data;
+};
+
+/**
+ * 관리 타입 변경 API
+ * PATCH /api/properties/manageType
+ */
+export const updateManageTypeAPI = async (
+  apartmentId: number,
+  manageType: string
+): Promise<{
+  propertyStatus: string;
+  requestType: string;
+  manageType: string;
+  ownerName: string;
+  ownerPhone: string;
+  salePrice: number;
+  jeonsePrice: number;
+  deposit: number;
+  monthPrice: number;
+  apartmentId: number;
+}> => {
+  const response = await apiClient.patch("/api/properties/manageType", {
+    apartmentId,
+    manageType,
+  });
+  return response.data;
+};
+
+/**
+ * 관리 타입으로 매물 생성 API
+ * POST /api/properties/manageType
+ */
+export const createPropertyWithManageTypeAPI = async (
+  apartmentId: number,
+  manageType: string
+): Promise<{
+  propertyStatus: string;
+  requestType: string;
+  manageType: string;
+  ownerName: string;
+  ownerPhone: string;
+  salePrice: number;
+  jeonsePrice: number;
+  deposit: number;
+  monthPrice: number;
+  apartmentId: number;
+}> => {
+  const response = await apiClient.post("/api/properties/manageType", {
+    apartmentId,
+    manageType,
+  });
   return response.data;
 };
 

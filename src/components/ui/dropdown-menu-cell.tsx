@@ -18,6 +18,7 @@ export interface DropdownMenuCellProps {
   options: DropdownOption[];
   value?: string;
   onChange?: (value: string) => void;
+  onBlur?: () => void;
   className?: string;
   buttonClassName?: string;
   listClassName?: string;
@@ -26,6 +27,7 @@ export interface DropdownMenuCellProps {
   hideLabel?: boolean; // 버튼에서 텍스트 숨기기
   showCheckmark?: boolean; // 선택된 항목에 체크 표시 (기본: true)
   iconPosition?: "left" | "right"; // 드롭다운 리스트에서 아이콘 위치 (기본: left)
+  showValue?: boolean; // label과 함께 value도 표시 (기본: false)
 }
 
 export function DropdownMenuCell({
@@ -34,6 +36,7 @@ export function DropdownMenuCell({
   options,
   value,
   onChange,
+  onBlur,
   className,
   buttonClassName,
   listClassName,
@@ -42,6 +45,7 @@ export function DropdownMenuCell({
   hideLabel = false,
   showCheckmark = true,
   iconPosition = "left",
+  showValue = false,
 }: DropdownMenuCellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [listPosition, setListPosition] = useState({ top: 0, left: 0 });
@@ -129,6 +133,7 @@ export function DropdownMenuCell({
         !containerRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
+        onBlur?.(); // 드롭다운이 닫힐 때 onBlur 호출
       }
     }
 
@@ -167,7 +172,11 @@ export function DropdownMenuCell({
           <span
             className={selectedOption ? "text-[#1B1B1B]" : "text-[#1B1B1B]"}
           >
-            {selectedOption?.label ?? placeholder}
+            {selectedOption
+              ? showValue
+                ? `${selectedOption.label} (${selectedOption.value})`
+                : selectedOption.label
+              : placeholder}
           </span>
         )}
         <ChevronDown
@@ -196,6 +205,7 @@ export function DropdownMenuCell({
                   e.stopPropagation(); // Row 클릭 이벤트 전파 방지
                   onChange?.(option.value);
                   setIsOpen(false);
+                  onBlur?.(); // 옵션 선택 시에도 onBlur 호출
                 }}
                 className={cn(
                   "mx-1 flex h-6 min-w-15 w-full gap-2 items-center rounded-full bg-[#FFFFFF] px-2 text-center font-medium text-[#1B1B1B]",
