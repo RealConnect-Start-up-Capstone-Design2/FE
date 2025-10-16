@@ -1,47 +1,61 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
-import { cn } from "@/shared/utils";
 import type {
   ComplexData,
-  MainComplexItem,
   MainComplexModalProps,
   RegionOption,
 } from "@/shared/types/complex";
 import {
   fetchSidoList,
-  fetchSigunguList,
-  fetchEmdList,
-  fetchApartmentComplexList,
   addApartmentComplex,
   deleteApartmentComplex,
   fetchPreferredComplexList,
 } from "@/shared/api/region";
-import type {
-  Sido,
-  Sigungu,
-  Emd,
-  ApartmentComplex,
-  PreferredComplex,
-} from "@/shared/api/region";
+import type { Sido, PreferredComplex } from "@/shared/api/region";
+import { ComplexItem } from "./ComplexItem";
+import type { ExtendedMainComplexItem } from "./types";
 
-// MainComplexItem 확장 타입 (preferredComplexId와 apartmentComplexId 추가)
-interface ExtendedMainComplexItem extends MainComplexItem {
-  preferredComplexId?: number; // 서버에 저장된 주거래 단지 ID
-  apartmentComplexId?: number; // 선택한 아파트 단지 ID
-  apartmentName?: string; // 선택한 아파트 단지 이름
-  isExisting?: boolean; // 이미 저장된 주거래 단지 여부 (지역 정보 없이 단지명만 있음)
-}
+const MAX_COMPLEX_ITEMS = 5;
+
+const createEmptyItem = (id: number): ExtendedMainComplexItem => ({
+  id,
+  sido: "",
+  sigungu: "",
+  eupmyeondong: "",
+  complex: "",
+  isDirty: false,
+  preferredComplexId: undefined,
+  apartmentComplexId: undefined,
+  apartmentName: undefined,
+  isExisting: false,
+});
+
+const createItemFromPreferredComplex = (
+  index: number,
+  preferredComplex?: PreferredComplex
+): ExtendedMainComplexItem => {
+  const base = createEmptyItem(index + 1);
+
+  if (!preferredComplex) {
+    return base;
+  }
+
+  return {
+    ...base,
+    complex: preferredComplex.apartmentName,
+    preferredComplexId: preferredComplex.id,
+    apartmentComplexId: preferredComplex.apartmentComplexId,
+    apartmentName: preferredComplex.apartmentName,
+    isExisting: true,
+  };
+};
 
 export function MainComplexModal({
   isOpen,
   onClose,
   onSave,
-  initialData,
+  initialData: _initialData,
 }: MainComplexModalProps) {
   const [complexItems, setComplexItems] = useState<ExtendedMainComplexItem[]>(
-    []
-  );
-  const [originalData, setOriginalData] = useState<ExtendedMainComplexItem[]>(
     []
   );
   const [isSaving, setIsSaving] = useState(false);
@@ -81,6 +95,15 @@ export function MainComplexModal({
     }
   }, []);
 
+  const isItemComplete = (item: ExtendedMainComplexItem) =>
+    Boolean(
+      item.sido &&
+        item.sigungu &&
+        item.eupmyeondong &&
+        item.complex &&
+        item.apartmentComplexId
+    );
+
   // 초기 데이터 설정: 사용자의 주거래 단지 목록 조회
   useEffect(() => {
     if (!isOpen) return;
@@ -97,67 +120,19 @@ export function MainComplexModal({
 
         if (!isMounted) return;
 
-        // 최대 5개의 항목 생성
-        const items: ExtendedMainComplexItem[] = Array.from(
-          { length: 5 },
-          (_, i) => {
-            const preferredComplex = preferredComplexes[i];
-
-            // preferredComplex가 있으면 해당 데이터 사용 (이미 등록된 주거래 단지)
-            if (preferredComplex) {
-              return {
-                id: i + 1,
-                sido: "",
-                sigungu: "",
-                eupmyeondong: "",
-                complex: preferredComplex.apartmentName,
-                isDirty: false,
-                preferredComplexId: preferredComplex.id,
-                apartmentComplexId: preferredComplex.apartmentComplexId,
-                apartmentName: preferredComplex.apartmentName,
-                isExisting: true, // 이미 저장된 단지 (지역 정보 없음)
-              };
-            }
-
-            // preferredComplex가 없으면 빈 항목 (새로 추가 가능)
-            return {
-              id: i + 1,
-              sido: "",
-              sigungu: "",
-              eupmyeondong: "",
-              complex: "",
-              isDirty: false,
-              preferredComplexId: undefined,
-              apartmentComplexId: undefined,
-              apartmentName: undefined,
-              isExisting: false,
-            };
-          }
+        const items = Array.from({ length: MAX_COMPLEX_ITEMS }, (_, index) =>
+          createItemFromPreferredComplex(index, preferredComplexes[index])
         );
 
         setComplexItems(items);
-        setOriginalData(JSON.parse(JSON.stringify(items)));
       } catch (error) {
         console.error("주거래 단지 목록 조회 실패:", error);
 
         // 에러 발생 시 빈 항목으로 초기화
-        const items: ExtendedMainComplexItem[] = Array.from(
-          { length: 5 },
-          (_, i) => ({
-            id: i + 1,
-            sido: "",
-            sigungu: "",
-            eupmyeondong: "",
-            complex: "",
-            isDirty: false,
-            preferredComplexId: undefined,
-            apartmentComplexId: undefined,
-            apartmentName: undefined,
-            isExisting: false,
-          })
+        const items = Array.from({ length: MAX_COMPLEX_ITEMS }, (_, index) =>
+          createEmptyItem(index + 1)
         );
         setComplexItems(items);
-        setOriginalData(JSON.parse(JSON.stringify(items)));
       }
     };
 
@@ -166,7 +141,7 @@ export function MainComplexModal({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, initialData]);
+  }, [isOpen, _initialData]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -287,11 +262,6 @@ export function MainComplexModal({
         prev.map((c) => (c.id === id ? updatedItem : c))
       );
 
-      // originalData도 업데이트
-      setOriginalData((prev) =>
-        prev.map((c) => (c.id === id ? updatedItem : c))
-      );
-
       alert(`주거래 단지 ${id}이(가) 저장되었습니다.`);
     } catch (error) {
       console.error("Failed to save item:", error);
@@ -305,51 +275,26 @@ export function MainComplexModal({
     const item = complexItems.find((c) => c.id === id);
     if (!item) return;
 
-    // 이미 저장된 주거래 단지인 경우
-    if (item.preferredComplexId && item.apartmentComplexId) {
-      const confirmDelete = window.confirm(
-        `주거래 단지 ${id}을(를) 삭제하시겠습니까?`
-      );
-      if (!confirmDelete) return;
+    if (!item.preferredComplexId || !item.apartmentComplexId) {
+      return;
+    }
 
-      try {
-        await deleteApartmentComplex(item.apartmentComplexId);
+    const confirmDelete = window.confirm(
+      `주거래 단지 ${id}을(를) 삭제하시겠습니까?`
+    );
+    if (!confirmDelete) return;
 
-        // 삭제 성공 시 필드 초기화
-        const emptyItem: ExtendedMainComplexItem = {
-          id: item.id,
-          sido: "",
-          sigungu: "",
-          eupmyeondong: "",
-          complex: "",
-          isDirty: false,
-          preferredComplexId: undefined,
-          apartmentComplexId: undefined,
-          apartmentName: undefined,
-          isExisting: false,
-        };
+    try {
+      await deleteApartmentComplex(item.apartmentComplexId);
 
-        setComplexItems((prev) =>
-          prev.map((c) => (c.id === id ? emptyItem : c))
-        );
+      const emptyItem = createEmptyItem(item.id);
 
-        setOriginalData((prev) =>
-          prev.map((c) => (c.id === id ? emptyItem : c))
-        );
+      setComplexItems((prev) => prev.map((c) => (c.id === id ? emptyItem : c)));
 
-        alert(`주거래 단지 ${id}이(가) 삭제되었습니다.`);
-      } catch (error) {
-        console.error("Failed to delete item:", error);
-        alert("삭제에 실패했습니다.");
-      }
-    } else {
-      // 아직 저장되지 않은 경우 원래 데이터로 되돌리기
-      const original = originalData.find((item) => item.id === id);
-      if (original) {
-        setComplexItems((prev) =>
-          prev.map((item) => (item.id === id ? { ...original } : item))
-        );
-      }
+      alert(`주거래 단지 ${id}이(가) 삭제되었습니다.`);
+    } catch (error) {
+      console.error("Failed to delete item:", error);
+      alert("삭제에 실패했습니다.");
     }
   };
 
@@ -358,15 +303,71 @@ export function MainComplexModal({
       return;
     }
 
+    if (savingItemIdsRef.current.size > 0) {
+      alert("항목 저장이 진행중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
+    const incompleteItem = complexItems.find(
+      (item) => item.isDirty && !isItemComplete(item)
+    );
+
+    if (incompleteItem) {
+      alert("모든 항목을 선택해주세요.");
+      return;
+    }
+
     isFinalSavingRef.current = true;
     setIsSaving(true);
     try {
-      // 빈 항목이 아닌 것만 필터링
-      const validComplexes = complexItems
-        .filter(
-          (item) =>
-            item.sido && item.sigungu && item.eupmyeondong && item.complex
-        )
+      const itemsToPersist = complexItems.filter(
+        (item) => item.isDirty && isItemComplete(item)
+      );
+      const savedItemMap: Record<number, ExtendedMainComplexItem> = {};
+      let hasError = false;
+
+      for (const item of itemsToPersist) {
+        setItemSavingState(item.id, true);
+        try {
+          const preferredComplex: PreferredComplex = {
+            id: item.preferredComplexId || 0,
+            apartmentComplexId: item.apartmentComplexId!,
+            apartmentName: item.apartmentName || item.complex,
+          };
+
+          const savedComplex = await addApartmentComplex(preferredComplex);
+
+          savedItemMap[item.id] = {
+            ...item,
+            isDirty: false,
+            preferredComplexId: savedComplex.id,
+            isExisting: true,
+          };
+        } catch (error) {
+          console.error("Failed to save item:", error);
+          alert("저장에 실패했습니다.");
+          hasError = true;
+          break;
+        } finally {
+          setItemSavingState(item.id, false);
+        }
+      }
+
+      const nextComplexItems =
+        Object.keys(savedItemMap).length > 0
+          ? complexItems.map((item) => savedItemMap[item.id] ?? item)
+          : complexItems;
+
+      if (Object.keys(savedItemMap).length > 0) {
+        setComplexItems(nextComplexItems);
+      }
+
+      if (hasError) {
+        return;
+      }
+
+      const validComplexes = nextComplexItems
+        .filter(isItemComplete)
         .map(({ sido, sigungu, eupmyeondong, complex }) => ({
           sido,
           sigungu,
@@ -434,272 +435,6 @@ export function MainComplexModal({
             className="w-[97px] h-[41px] bg-[#1C2882] text-white rounded-lg text-lg font-semibold disabled:opacity-50"
           >
             {isSaving ? "저장중..." : "저장하기"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface ComplexItemProps {
-  item: ExtendedMainComplexItem;
-  onFieldChange: (
-    id: number,
-    field: keyof ComplexData,
-    value: string,
-    apartmentComplexId?: number,
-    apartmentName?: string
-  ) => void;
-  onSave: (id: number) => void;
-  onDelete: (id: number) => void;
-  sidoOptions: RegionOption[];
-  isSaving: boolean;
-}
-
-function ComplexItem({
-  item,
-  onFieldChange,
-  onSave,
-  onDelete,
-  sidoOptions,
-  isSaving,
-}: ComplexItemProps) {
-  const [sigunguOptions, setSigunguOptions] = useState<RegionOption[]>([]);
-  const [eupmyeondongOptions, setEupmyeondongOptions] = useState<
-    RegionOption[]
-  >([]);
-  const [complexOptions, setComplexOptions] = useState<RegionOption[]>([]);
-
-  // 시/군/구 옵션 로드
-  useEffect(() => {
-    if (!item.sido) {
-      setSigunguOptions([]);
-      return;
-    }
-
-    let isMounted = true;
-
-    const loadSigunguOptions = async () => {
-      try {
-        const data = await fetchSigunguList(item.sido);
-        if (!isMounted) return;
-
-        const options = data.map(
-          (sigungu: Sigungu): RegionOption => ({
-            label: sigungu.name_kr,
-            value: sigungu.sigunguCode,
-          })
-        );
-        setSigunguOptions(options);
-      } catch (error) {
-        console.error("시/군/구 목록을 조회하는데 실패했습니다:", error);
-      }
-    };
-
-    void loadSigunguOptions();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [item.sido]);
-
-  // 읍/면/동 옵션 로드
-  useEffect(() => {
-    if (!item.sigungu) {
-      setEupmyeondongOptions([]);
-      return;
-    }
-
-    let isMounted = true;
-
-    const loadEupmyeondongOptions = async () => {
-      try {
-        const data = await fetchEmdList(item.sigungu);
-        if (!isMounted) return;
-
-        const options = data.map(
-          (emd: Emd): RegionOption => ({
-            label: emd.name_kr,
-            value: emd.emdCode,
-          })
-        );
-        setEupmyeondongOptions(options);
-      } catch (error) {
-        console.error("읍/면/동 목록을 조회하는데 실패했습니다:", error);
-      }
-    };
-
-    void loadEupmyeondongOptions();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [item.sigungu]);
-
-  // 아파트 단지 옵션 로드
-  useEffect(() => {
-    if (!item.eupmyeondong) {
-      setComplexOptions([]);
-      return;
-    }
-
-    let isMounted = true;
-
-    const loadComplexOptions = async () => {
-      try {
-        const data = await fetchApartmentComplexList(item.eupmyeondong);
-        if (!isMounted) return;
-
-        const options = data.map(
-          (complex: ApartmentComplex): RegionOption => ({
-            label: complex.apartmentName,
-            value: String(complex.id),
-          })
-        );
-        setComplexOptions(options);
-      } catch (error) {
-        console.error("아파트 단지 목록을 조회하는데 실패했습니다:", error);
-      }
-    };
-
-    void loadComplexOptions();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [item.eupmyeondong]);
-
-  const isFilled =
-    item.sido && item.sigungu && item.eupmyeondong && item.complex;
-  const isSaveButtonEnabled =
-    isFilled && item.isDirty && !item.isExisting && !isSaving;
-
-  return (
-    <div className="w-full h-[122px]">
-      {/* Title */}
-      <div className="mb-3">
-        <h3
-          className={cn(
-            "text-xl font-medium",
-            isFilled ? "text-[#1C2882]" : "text-[#1C2882]"
-          )}
-        >
-          주거래 단지 {item.id}
-        </h3>
-      </div>
-
-      {/* Dropdowns and Buttons Container */}
-      <div className="flex gap-3">
-        {/* Left: Dropdowns Column */}
-        <div className="flex flex-col gap-[10px]">
-          {/* 이미 등록된 단지인 경우 단지명만 표시 */}
-          {item.isExisting ? (
-            <div className="flex items-center w-[519px] h-[86px]">
-              <div className="w-full h-[38px] rounded-md border border-[#B1B6C7] bg-[#F5F5F5] px-3 flex items-center">
-                <span className="text-[15px] font-medium text-[#1B1B1B]">
-                  {item.complex || item.apartmentName}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Dropdowns Row 1 */}
-              <div className="flex gap-3">
-                <DropdownMenu
-                  placeholder="시/도"
-                  options={sidoOptions}
-                  value={item.sido}
-                  onChange={(value) => onFieldChange(item.id, "sido", value)}
-                  buttonClassName="w-[165px] h-[38px] rounded-md border border-[#B1B6C7] bg-white px-3 text-[15px] font-medium"
-                  className="w-[165px]"
-                  selectedTextColor="text-[#1B1B1B]"
-                  placeholderTextColor="text-[#989898]"
-                />
-                <DropdownMenu
-                  placeholder="시/군/구"
-                  options={sigunguOptions}
-                  value={item.sigungu}
-                  onChange={(value) => onFieldChange(item.id, "sigungu", value)}
-                  disabled={!item.sido}
-                  buttonClassName="w-[165px] h-[38px] rounded-md border border-[#B1B6C7] bg-white px-3 text-[15px] font-medium"
-                  className="w-[165px]"
-                  selectedTextColor="text-[#1B1B1B]"
-                  placeholderTextColor="text-[#989898]"
-                />
-                <DropdownMenu
-                  placeholder="읍/면/동"
-                  options={eupmyeondongOptions}
-                  value={item.eupmyeondong}
-                  onChange={(value) =>
-                    onFieldChange(item.id, "eupmyeondong", value)
-                  }
-                  disabled={!item.sigungu}
-                  buttonClassName="w-[165px] h-[38px] rounded-md border border-[#B1B6C7] bg-white px-3 text-[15px] font-medium"
-                  className="w-[165px]"
-                  selectedTextColor="text-[#1B1B1B]"
-                  placeholderTextColor="text-[#989898]"
-                />
-              </div>
-
-              {/* Dropdowns Row 2 */}
-              <div>
-                <DropdownMenu
-                  placeholder="단지"
-                  options={complexOptions}
-                  value={
-                    item.apartmentComplexId
-                      ? String(item.apartmentComplexId)
-                      : undefined
-                  }
-                  onChange={(value) => {
-                    // value는 apartmentComplexId (string)
-                    const selectedComplex = complexOptions.find(
-                      (opt) => opt.value === value
-                    );
-                    onFieldChange(
-                      item.id,
-                      "complex",
-                      selectedComplex?.label || value,
-                      Number(value),
-                      selectedComplex?.label
-                    );
-                  }}
-                  disabled={!item.eupmyeondong}
-                  buttonClassName="w-[519px] h-[38px] rounded-md border border-[#B1B6C7] bg-white px-3 text-[15px] font-medium"
-                  className="w-[519px]"
-                  selectedTextColor="text-[#1B1B1B]"
-                  placeholderTextColor="text-[#989898]"
-                />
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Right: Buttons Column - 세로 배치 */}
-        <div className="flex flex-col gap-[10px] pl-[10px]">
-          {/* 이미 등록된 단지는 저장 버튼 비활성화 */}
-          <button
-            onClick={() => onSave(item.id)}
-            disabled={!isSaveButtonEnabled}
-            className={cn(
-              "w-[94px] h-[38px] rounded-md text-[15px] font-medium",
-              isSaveButtonEnabled
-                ? "bg-[#1B1B1B] text-white"
-                : "bg-[#EDEDED] text-[#8D8D8D]"
-            )}
-          >
-            {isSaving ? "저장중..." : "저장"}
-          </button>
-          <button
-            onClick={() => onDelete(item.id)}
-            className={cn(
-              "w-[94px] h-[38px] rounded-md text-[15px] font-medium",
-              item.isExisting
-                ? "bg-[#1B1B1B] text-white"
-                : "border border-[#D9D9D9] bg-white text-[#8D8D8D]"
-            )}
-          >
-            삭제
           </button>
         </div>
       </div>

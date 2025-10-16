@@ -134,17 +134,13 @@ export function PropertyContractBlock({
     },
     onError: (error) => {
       let errorMessage = "계약 정보 저장에 실패했습니다.";
-      if (
-        error &&
-        typeof error === "object" &&
-        "response" in error &&
-        (error as {
-          response?: { data?: { message?: string } };
-        }).response?.data?.message
-      ) {
-        errorMessage = (
-          error as { response: { data: { message?: string } } }
-        ).response.data.message;
+      if (error && typeof error === "object" && "response" in error) {
+        const serverMessage = (
+          error as { response?: { data?: { message?: string } } }
+        ).response?.data?.message;
+        if (typeof serverMessage === "string" && serverMessage.trim() !== "") {
+          errorMessage = serverMessage;
+        }
       }
       alert(errorMessage);
     },
