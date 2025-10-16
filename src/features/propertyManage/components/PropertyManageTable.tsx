@@ -302,6 +302,7 @@ export function PropertyManageTable({
     if (!container || !hasNextPage || !onLoadMore) return;
 
     const handleScroll = () => {
+      if (isFetchingNextPage) return;
       const { scrollTop, scrollHeight, clientHeight } = container;
       if (scrollTop + clientHeight >= scrollHeight - 100) {
         onLoadMore();
@@ -310,7 +311,7 @@ export function PropertyManageTable({
 
     container.addEventListener("scroll", handleScroll);
     return () => container.removeEventListener("scroll", handleScroll);
-  }, [hasNextPage, onLoadMore]);
+  }, [hasNextPage, onLoadMore, isFetchingNextPage]);
 
   if (isLoading) {
     return (
