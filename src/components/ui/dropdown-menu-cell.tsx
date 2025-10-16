@@ -50,6 +50,7 @@ export function DropdownMenuCell({
   const [isOpen, setIsOpen] = useState(false);
   const [listPosition, setListPosition] = useState({ top: 0, left: 0 });
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<HTMLUListElement | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -98,26 +99,30 @@ export function DropdownMenuCell({
           spaceAbove = rect.top;
         }
 
-        // 실제 리스트 높이 계산
-        // 각 아이템: h-6(24px) + my-1(상하 8px) = 32px
-        // max-h-48 = 192px 제한
-        const itemHeight = 32;
-        const estimatedHeight = Math.min(options.length * itemHeight, 192);
+        // 실제 리스트 높이 계산 (DOM 측정 우선, 없으면 추정치 사용)
+        const itemHeight = 32; // h-6 + my-1 기반 추정치
+        const maxDropdownHeight = 192;
+        const measuredHeight =
+          listRef.current?.getBoundingClientRect().height ?? 0;
+        const estimatedHeight = Math.min(options.length * itemHeight, maxDropdownHeight);
+        const dropdownHeight = measuredHeight || estimatedHeight;
 
         // 아래 공간이 부족하면 위로 펼치기
+        const requiredGap = 4;
         const shouldBeAbove =
-          spaceBelow < estimatedHeight + 16 &&
-          spaceAbove > estimatedHeight + 16;
+          spaceBelow < dropdownHeight + requiredGap &&
+          spaceAbove > dropdownHeight + requiredGap;
 
         // 위로 펼칠 때는 실제 높이만큼 빼고, 아래로 펼칠 때는 여백 추가
         const top = shouldBeAbove
-          ? rect.top - estimatedHeight - 8
-          : rect.bottom + 8;
+          ? rect.top - dropdownHeight - requiredGap
+          : rect.bottom + requiredGap;
         setListPosition({ top, left: rect.left });
       }
     };
 
     updatePosition();
+    const rafId = requestAnimationFrame(updatePosition);
 
     // 스크롤 시 위치 재계산
     const scrollableParent = findScrollableParent(
@@ -139,12 +144,13 @@ export function DropdownMenuCell({
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
+      cancelAnimationFrame(rafId);
       document.removeEventListener("mousedown", handleClickOutside);
       if (scrollableParent) {
         scrollableParent.removeEventListener("scroll", updatePosition);
       }
     };
-  }, [isOpen, options.length]);
+  }, [isOpen, onBlur, options.length]);
 
   const selectedOption = options.find((option) => option.value === value);
 
@@ -188,6 +194,7 @@ export function DropdownMenuCell({
       </button>
       {isOpen && !disabled && (
         <ul
+          ref={listRef}
           className={cn(
             "fixed z-[90] max-h-48 overflow-y-auto rounded-xl bg-[#FFFFFF] shadow-[0px_0px_25px_-10px_rgba(177,182,199,1)]",
             listClassName

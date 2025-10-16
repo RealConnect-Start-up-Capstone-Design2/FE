@@ -19,7 +19,7 @@ export function useAuthInitialize() {
           accessToken: newAccessToken,
           username: "", // 필요시 별도 API로 사용자 정보 가져오기
         });
-      } catch (error) {
+      } catch {
         // refresh token이 없거나 만료된 경우 - 정상적인 상황
         console.log("토큰 복구 실패 - 로그인 필요");
       } finally {
