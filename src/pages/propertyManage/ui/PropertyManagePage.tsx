@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
   PropertyManagerHeader,
   PropertyManageTable,
@@ -11,6 +11,7 @@ import {
 import { PropertyMemoBlock } from "@/features/propertyManage/components/blocks/PropertyMemoBlock";
 import { PropertyContractBlock } from "@/features/propertyManage/components/blocks/PropertyContractBlock";
 import { fetchProperties } from "@/features/propertyManage/services/propertyService";
+import { fetchPreferredComplexList } from "@/shared/api/region";
 
 /**
  * 매물 관리 페이지
@@ -21,6 +22,8 @@ export function PropertyManagePage() {
   const [selectedPropertyId, setSelectedPropertyId] = useState<
     string | number | undefined
   >();
+  const [selectedApartmentComplexId, setSelectedApartmentComplexId] =
+    useState<number | undefined>();
   // "카드 닫기" 버튼으로 명시적으로 닫았는지 추적
   const [isManuallyClosedByButton, setIsManuallyClosedByButton] =
     useState(false);
@@ -29,23 +32,77 @@ export function PropertyManagePage() {
   const tableContainerRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
 
-  // 아파트 목록 조회 (API 연동)
-  const apartmentComplexId = 1;
+  const {
+    data: preferredComplexes,
+    isLoading: isPreferredComplexLoading,
+    refetch: refetchPreferredComplexes,
+  } = useQuery({
+    queryKey: ["preferredComplexes"],
+    queryFn: fetchPreferredComplexList,
+  });
 
-  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useInfiniteQuery({
-      queryKey: ["apartments", apartmentComplexId],
-      queryFn: ({ pageParam }) =>
-        fetchProperties({
-          apartmentComplexId,
-          cursorId: pageParam,
-          size: 30,
-        }),
-      initialPageParam: undefined as number | undefined,
-      getNextPageParam: (lastPage) => {
-        return lastPage.hasNext ? lastPage.nextCursor : undefined;
-      },
-    });
+  const preferredComplexOptions = useMemo(
+    () =>
+      (preferredComplexes ?? []).map((complex) => ({
+        label: complex.apartmentName,
+        value: String(complex.apartmentComplexId),
+      })),
+    [preferredComplexes]
+  );
+
+  const resetPropertySelection = useCallback(() => {
+    setSelectedPropertyId(undefined);
+    setIsDetailOpen(false);
+    setIsManuallyClosedByButton(false);
+    setShouldAutoSave(false);
+  }, []);
+
+  useEffect(() => {
+    if (!preferredComplexes || preferredComplexes.length === 0) {
+      if (selectedApartmentComplexId !== undefined) {
+        setSelectedApartmentComplexId(undefined);
+        resetPropertySelection();
+      }
+      return;
+    }
+
+    const hasSelectedComplex = preferredComplexes.some(
+      (complex) =>
+        complex.apartmentComplexId === selectedApartmentComplexId
+    );
+
+    if (hasSelectedComplex) {
+      return;
+    }
+
+    const nextComplexId = preferredComplexes[0]?.apartmentComplexId;
+    if (nextComplexId !== undefined) {
+      setSelectedApartmentComplexId(nextComplexId);
+      resetPropertySelection();
+    }
+  }, [preferredComplexes, resetPropertySelection, selectedApartmentComplexId]);
+
+  // 아파트 목록 조회 (API 연동)
+  const {
+    data,
+    isLoading: isPropertiesLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["apartments", selectedApartmentComplexId],
+    enabled: Boolean(selectedApartmentComplexId),
+    queryFn: ({ pageParam }) =>
+      fetchProperties({
+        apartmentComplexId: selectedApartmentComplexId!,
+        cursorId: pageParam,
+        size: 30,
+      }),
+    initialPageParam: undefined as number | undefined,
+    getNextPageParam: (lastPage) => {
+      return lastPage.hasNext ? lastPage.nextCursor : undefined;
+    },
+  });
 
   const apartments = data?.pages.flatMap((page) => page.content) || [];
   const selectedApartment = apartments.find(
@@ -129,6 +186,34 @@ export function PropertyManagePage() {
     };
   }, [closeSidebar, isDetailOpen]);
 
+  useEffect(() => {
+    if (!selectedApartmentComplexId) {
+      return;
+    }
+
+    if (tableContainerRef.current) {
+      tableContainerRef.current.scrollTop = 0;
+    }
+  }, [selectedApartmentComplexId]);
+
+  const handleSelectApartmentComplex = useCallback(
+    (complexId: number) => {
+      if (complexId === selectedApartmentComplexId) {
+        return;
+      }
+
+      setSelectedApartmentComplexId(complexId);
+      resetPropertySelection();
+    },
+    [resetPropertySelection, selectedApartmentComplexId]
+  );
+
+  const handleRefreshPreferredComplexes = useCallback(() => {
+    void refetchPreferredComplexes();
+  }, [refetchPreferredComplexes]);
+
+  const isTableLoading = isPreferredComplexLoading || isPropertiesLoading;
+
   return (
     <SlidingSidebarLayout
       isOpen={isDetailOpen}
@@ -149,16 +234,24 @@ export function PropertyManagePage() {
       }
     >
       <div className="flex flex-col gap-6 h-full">
-        <PropertyManagerHeader />
+        <PropertyManagerHeader
+          complexOptions={preferredComplexOptions}
+          selectedComplexId={selectedApartmentComplexId}
+          onSelectComplex={handleSelectApartmentComplex}
+          onRefreshPreferredComplexes={handleRefreshPreferredComplexes}
+          isComplexLoading={isPreferredComplexLoading}
+        />
         <div ref={tableContainerRef} className="flex-1 overflow-hidden">
           <PropertyManageTable
             onPropertyClick={handlePropertyClick}
             selectedApartmentId={selectedPropertyId}
             apartments={apartments}
-            isLoading={isLoading}
+            isLoading={isTableLoading}
             isFetchingNextPage={isFetchingNextPage}
-            hasNextPage={hasNextPage}
-            onLoadMore={fetchNextPage}
+            hasNextPage={hasNextPage ?? false}
+            onLoadMore={
+              selectedApartmentComplexId ? fetchNextPage : undefined
+            }
           />
         </div>
       </div>

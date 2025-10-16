@@ -90,6 +90,22 @@ export const addApartmentComplex = async (
 };
 
 // 주거래 단지 삭제
-export const deleteApartmentComplex = async (id: number): Promise<void> => {
-  await apiClient.delete(`/api/user/preferred-complex/${id}`);
+export const deleteApartmentComplex = async (
+  apartmentComplexId: number
+): Promise<void> => {
+  await apiClient.delete("/api/user/preferred-complex", {
+    data: {
+      apartmentComplexId,
+    },
+  });
+};
+
+// 사용자 선호 단지 목록 조회
+export const fetchPreferredComplexList = async (): Promise<
+  PreferredComplex[]
+> => {
+  const response = await apiClient.get<PreferredComplex[]>(
+    "/api/user/preferred-complex"
+  );
+  return response.data;
 };
