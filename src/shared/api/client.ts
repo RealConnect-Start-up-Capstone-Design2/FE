@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 // 토큰 재발급 중임을 표시하는 플래그
