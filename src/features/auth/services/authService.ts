@@ -1,5 +1,11 @@
 import apiClient from "@/shared/api/client";
-import type { LoginRequest, RegisterRequest, AuthResponse } from "../types";
+import type {
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse,
+  SendVerifyCodeRequest,
+  VerifyCodeRequest,
+} from "../types";
 
 /**
  * 로그인을 요청하는 함수
@@ -34,7 +40,7 @@ export const login = async (
  * 회원가입을 요청하는 함수
  */
 export const register = async (data: RegisterRequest): Promise<void> => {
-  await apiClient.post("/register", data);
+  await apiClient.post("/api/register", data, { withCredentials: true });
 };
 
 /**
@@ -53,4 +59,28 @@ export const refreshAccessToken = async (): Promise<string> => {
   }
 
   return accessToken;
+};
+
+export const sendVerifyCode = async (phone: string): Promise<void> => {
+  await apiClient.post(
+    "/api/verify/sendCode",
+    {
+      phone,
+    } as SendVerifyCodeRequest,
+    { withCredentials: true }
+  );
+};
+
+export const verifyCode = async (
+  phone: string,
+  authCode: string
+): Promise<void> => {
+  await apiClient.post(
+    "/api/verify/verifyCode",
+    {
+      phone,
+      authCode,
+    } as VerifyCodeRequest,
+    { withCredentials: true }
+  );
 };

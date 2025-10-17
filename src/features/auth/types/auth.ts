@@ -7,8 +7,10 @@ export interface RegisterRequest {
   username: string;
   password: string;
   passwordVerify: string;
-  email: string;
   name: string;
+  phone: string;
+  email: string;
+  apartmentComplexId: number;
 }
 
 export interface AuthResponse {
@@ -28,4 +30,13 @@ export interface AuthState {
   }) => void;
   logout: () => void;
   setLoading: (isLoading: boolean) => void;
+}
+
+export interface SendVerifyCodeRequest {
+  phone: string;
+}
+
+export interface VerifyCodeRequest {
+  phone: string;
+  authCode: string;
 }

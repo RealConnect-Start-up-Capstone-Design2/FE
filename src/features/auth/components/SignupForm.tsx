@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../services";
+import { usePhoneVerification, useSignupComplexSelection } from "../hooks";
 import { AuthHeader } from "./AuthHeader";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import userIcon from "@/assets/icons/user.svg";
@@ -10,23 +12,125 @@ import lockIcon from "@/assets/icons/lock.svg";
 import mailIcon from "@/assets/icons/mail.svg";
 import phoneIcon from "@/assets/icons/phone.svg";
 
+interface SignupFormState {
+  username: string;
+  password: string;
+  passwordVerify: string;
+  name: string;
+  phone: string;
+  email: string;
+  apartmentComplexId?: number;
+}
+
 export function SignupForm() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<SignupFormState>({
     username: "",
     password: "",
     passwordVerify: "",
     name: "",
+    phone: "",
     email: "",
+    apartmentComplexId: undefined,
   });
+  const {
+    selection: complexSelection,
+    selectedComplexLabel,
+    hasSelectedComplex,
+    sidoOptions,
+    sigunguOptions,
+    eupmyeondongOptions,
+    complexOptions,
+    selectSido,
+    selectSigungu,
+    selectEupmyeondong,
+    selectComplex,
+  } = useSignupComplexSelection({
+    onSelect: ({ apartmentComplexId }) => {
+      setForm((prev) => ({
+        ...prev,
+        apartmentComplexId,
+      }));
+    },
+  });
+  const {
+    verificationCode,
+    setVerificationCode,
+    isCodeSent,
+    isCodeVerified,
+    sendCooldown,
+    isSendingCode,
+    isVerifyingCode,
+    canSendCode,
+    sendCode,
+    verifyCode: verifyCodeAction,
+  } = usePhoneVerification({
+    phone: form.phone,
+  });
+
+  const getErrorMessage = (error: unknown, fallbackMessage: string) => {
+    if (error instanceof Error) {
+      if ("response" in error) {
+        const axiosError = error as {
+          response?: { data?: { message?: string } };
+        };
+
+        if (axiosError.response?.data?.message) {
+          return axiosError.response.data.message;
+        }
+      }
+
+      if (error.message) {
+        return error.message;
+      }
+    }
+
+    return fallbackMessage;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleSendCode = async () => {
+    if (isSendingCode || sendCooldown > 0) {
+      return;
+    }
+
+    try {
+      await sendCode();
+      alert("인증번호를 발송했습니다.");
+    } catch (error: unknown) {
+      const message = getErrorMessage(
+        error,
+        "인증번호 발송 중 오류가 발생했습니다."
+      );
+      alert(message);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    try {
+      await verifyCodeAction();
+      alert("휴대폰 번호 인증이 완료되었습니다.");
+    } catch (error: unknown) {
+      const message = getErrorMessage(
+        error,
+        "인증번호 확인 중 오류가 발생했습니다."
+      );
+      alert(message);
+    }
+  };
+
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!form.name.trim()) {
+      alert("이름을 입력해주세요.");
+      return;
+    }
+
     if (form.password !== form.passwordVerify) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
@@ -35,31 +139,56 @@ export function SignupForm() {
       alert("이메일 형식이 올바르지 않습니다.");
       return;
     }
+
+    if (!isCodeVerified) {
+      alert("휴대폰 번호 인증을 완료해주세요.");
+      return;
+    }
+
+    if (form.apartmentComplexId === undefined) {
+      alert("주거래 단지를 선택해주세요.");
+      return;
+    }
+
+    const sanitizedPhone = form.phone.replace(/\D/g, "");
+
     try {
       await register({
         username: form.username,
         password: form.password,
         passwordVerify: form.passwordVerify,
+        phone: sanitizedPhone,
         email: form.email,
         name: form.name,
+        apartmentComplexId: form.apartmentComplexId,
       });
       alert("회원가입이 완료되었습니다.");
       navigate("/login");
     } catch (error: unknown) {
-      if (error instanceof Error && "response" in error) {
-        const axiosError = error as {
-          response?: { data?: { message?: string } };
-        };
-        if (axiosError.response?.data?.message) {
-          alert(axiosError.response.data.message);
-        } else {
-          alert("회원가입 요청 중 오류가 발생했습니다.");
-        }
-      } else {
-        alert("회원가입 요청 중 오류가 발생했습니다.");
-      }
+      const message = getErrorMessage(
+        error,
+        "회원가입 요청 중 오류가 발생했습니다."
+      );
+      alert(message);
     }
   };
+
+  const sendButtonLabel = isCodeVerified
+    ? "인증완료"
+    : isSendingCode
+    ? "발송중..."
+    : sendCooldown > 0
+    ? `${sendCooldown}초`
+    : "인증번호 발송";
+  const isSendButtonDisabled =
+    isCodeVerified || isSendingCode || sendCooldown > 0 || !canSendCode;
+  const verifyButtonLabel = isCodeVerified
+    ? "완료"
+    : isVerifyingCode
+    ? "확인중..."
+    : "인증확인";
+  const isVerifyButtonDisabled =
+    isCodeVerified || isVerifyingCode || verificationCode.trim().length === 0;
 
   return (
     <div className="flex w-full flex-col items-center justify-center">
@@ -183,12 +312,12 @@ export function SignupForm() {
               htmlFor="name"
               className="mb-2 text-base font-semibold text-[#222A3A]"
             >
-              휴대폰 번호
+              이름
             </Label>
             <div className="flex items-center gap-2 rounded-xl border border-[#B1B6C7] bg-white px-4 py-3 transition-all focus-within:border-blue-600 focus-within:shadow-[0_0_0_1.5px_#2563EB]">
               <img
-                src={phoneIcon}
-                alt="휴대폰 번호"
+                src={userIcon}
+                alt="이름"
                 className="h-5 w-5 flex-shrink-0 stroke-[#8D8D8D]"
               />
               <Input
@@ -197,11 +326,159 @@ export function SignupForm() {
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                placeholder="휴대폰 번호 입력"
-                autoComplete="tel"
+                placeholder="이름 입력"
+                autoComplete="name"
                 className="h-auto border-0 bg-transparent p-0 text-base shadow-none focus-visible:ring-0"
               />
             </div>
+          </div>
+
+          <div className="mb-5 flex flex-col">
+            <Label
+              htmlFor="phone"
+              className="mb-2 text-base font-semibold text-[#222A3A]"
+            >
+              휴대폰 번호
+            </Label>
+            <div className="flex flex-row gap-2">
+              <div className="flex w-full items-center gap-2 rounded-xl border border-[#B1B6C7] bg-white px-4 py-3 transition-all focus-within:border-blue-600 focus-within:shadow-[0_0_0_1.5px_#2563EB]">
+                <img
+                  src={phoneIcon}
+                  alt="휴대폰 번호"
+                  className="h-5 w-5 flex-shrink-0 stroke-[#8D8D8D]"
+                />
+                <Input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  placeholder="휴대폰 번호 입력"
+                  autoComplete="tel"
+                  className="h-auto border-0 bg-transparent p-0 text-base shadow-none focus-visible:ring-0"
+                  disabled={isCodeVerified}
+                />
+              </div>
+              <Button
+                type="button"
+                onClick={handleSendCode}
+                disabled={isSendButtonDisabled}
+                className="h-auto rounded-md bg-[#1C2882] px-5 py-4 text-white disabled:opacity-60"
+              >
+                {sendButtonLabel}
+              </Button>
+            </div>
+            {isCodeSent && (
+              <div className="mt-4 flex flex-col">
+                <Label
+                  htmlFor="verificationCode"
+                  className="mb-2 text-base font-semibold text-[#222A3A]"
+                >
+                  인증번호
+                </Label>
+                <div className="flex flex-row gap-2">
+                  <div className="flex w-full items-center gap-2 rounded-xl border border-[#B1B6C7] bg-white px-4 py-3 transition-all focus-within:border-blue-600 focus-within:shadow-[0_0_0_1.5px_#2563EB]">
+                    <Input
+                      type="text"
+                      id="verificationCode"
+                      name="verificationCode"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                      placeholder="수신한 인증번호 입력"
+                      className="h-auto border-0 bg-transparent p-0 text-base shadow-none focus-visible:ring-0"
+                      disabled={isCodeVerified}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleVerifyCode}
+                    disabled={isVerifyButtonDisabled}
+                    className="h-auto rounded-md bg-[#1C2882] px-5 py-4 text-white disabled:opacity-60"
+                  >
+                    {verifyButtonLabel}
+                  </Button>
+                </div>
+                {isCodeVerified && (
+                  <p className="mt-2 text-sm font-medium text-[#1C2882]">
+                    휴대폰 번호 인증이 완료되었습니다.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="mb-5 flex flex-col">
+            <Label className="mb-2 text-base font-semibold text-[#222A3A]">
+              주거래 단지
+            </Label>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-wrap gap-3">
+                <DropdownMenu
+                  placeholder="시/도"
+                  options={sidoOptions}
+                  value={
+                    complexSelection.sidoCode
+                      ? complexSelection.sidoCode
+                      : undefined
+                  }
+                  onChange={selectSido}
+                  buttonClassName="w-[165px] h-[38px] rounded-md border border-[#B1B6C7] bg-white px-3 text-[15px] font-medium"
+                  className="w-[165px]"
+                  selectedTextColor="text-[#1B1B1B]"
+                  placeholderTextColor="text-[#989898]"
+                />
+                <DropdownMenu
+                  placeholder="시/군/구"
+                  options={sigunguOptions}
+                  value={
+                    complexSelection.sigunguCode
+                      ? complexSelection.sigunguCode
+                      : undefined
+                  }
+                  onChange={selectSigungu}
+                  disabled={!complexSelection.sidoCode}
+                  buttonClassName="w-[165px] h-[38px] rounded-md border border-[#B1B6C7] bg-white px-3 text-[15px] font-medium"
+                  className="w-[165px]"
+                  selectedTextColor="text-[#1B1B1B]"
+                  placeholderTextColor="text-[#989898]"
+                />
+                <DropdownMenu
+                  placeholder="읍/면/동"
+                  options={eupmyeondongOptions}
+                  value={
+                    complexSelection.emdCode
+                      ? complexSelection.emdCode
+                      : undefined
+                  }
+                  onChange={selectEupmyeondong}
+                  disabled={!complexSelection.sigunguCode}
+                  buttonClassName="w-[165px] h-[38px] rounded-md border border-[#B1B6C7] bg-white px-3 text-[15px] font-medium"
+                  className="w-[165px]"
+                  selectedTextColor="text-[#1B1B1B]"
+                  placeholderTextColor="text-[#989898]"
+                />
+              </div>
+              <DropdownMenu
+                placeholder="단지"
+                options={complexOptions}
+                value={
+                  complexSelection.apartmentComplexId !== undefined
+                    ? String(complexSelection.apartmentComplexId)
+                    : undefined
+                }
+                onChange={selectComplex}
+                disabled={!complexSelection.emdCode}
+                buttonClassName="w-full h-[38px] rounded-md border border-[#B1B6C7] bg-white px-3 text-[15px] font-medium"
+                className="w-full"
+                selectedTextColor="text-[#1B1B1B]"
+                placeholderTextColor="text-[#989898]"
+              />
+            </div>
+            {hasSelectedComplex && (
+              <p className="mt-3 text-sm font-medium text-[#1C2882]">
+                {selectedComplexLabel}
+              </p>
+            )}
           </div>
 
           <Button
