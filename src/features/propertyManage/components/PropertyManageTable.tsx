@@ -93,10 +93,24 @@ export function PropertyManageTable({
   const isLoading = externalIsLoading ?? internalIsLoading;
 
   // 편집 관련 로직
-  const { handlePropertyUpdate } = usePropertyEdit();
+  const { handlePropertyBatchUpdate } = usePropertyEdit();
+
+  const handlePropertyUpdate = useCallback(
+    (apartmentId: number, field: string, value: string | number) => {
+      if (value === undefined || value === "") return;
+
+      setLocalPropertyStates((prev) => ({
+        ...prev,
+        [apartmentId]: {
+          ...prev[apartmentId],
+          [field]: value,
+        },
+      }));
+    },
+    []
+  );
   const queryClient = useQueryClient();
 
-  // 드롭다운 로컬 상태 관리 (즉시 UI 반영용)
   const [localDropdownStates, setLocalDropdownStates] = useState<{
     [apartmentId: number]: {
       manageType?: ManageType;
@@ -105,159 +119,180 @@ export function PropertyManageTable({
     };
   }>({});
 
-  const handleDropdownChange = (
-    apartmentId: number,
-    field: "manageType" | "requestType" | "propertyStatus",
-    value: string
-  ) => {
-    setLocalDropdownStates((prev) => {
-      const newState = {
-        ...prev,
-        [apartmentId]: {
-          ...prev[apartmentId],
-          [field]: value as ManageType | RequestType | PropertyStatus,
-        },
-      };
-      return newState;
-    });
-  };
+  const [localPropertyStates, setLocalPropertyStates] = useState<{
+    [apartmentId: number]: {
+      ownerName?: string;
+      ownerPhone?: string;
+      salePrice?: number;
+      jeonsePrice?: number;
+      deposit?: number;
+      monthPrice?: number;
+    };
+  }>({});
 
-  // 의뢰 유형 전용 핸들러
+  // 의뢰 유형 전용 핸들러 - onChange 시점에 즉시 처리
   const handleRequestTypeUpdate = useCallback(
     async (apartmentId: number, requestType: string) => {
       try {
-        // 현재 아파트 데이터 확인
+        // 현재 아파트 데이터 확인 (최신 상태)
         const currentApartment = apartments.find(
           (apt) => apt.apartmentId === apartmentId
         );
 
+        // property가 존재하면 PATCH, 없으면 POST
         if (currentApartment?.property) {
           await updateRequestTypeAPI(apartmentId, requestType);
         } else {
           await createPropertyWithRequestTypeAPI(apartmentId, requestType);
         }
 
+        // 로컬 상태에서 해당 변경사항 제거 (이미 서버에 반영됨)
+        setLocalDropdownStates((prev) => {
+          const newState = { ...prev };
+          if (newState[apartmentId]) {
+            delete newState[apartmentId].requestType;
+            // 다른 변경사항이 없으면 해당 아파트 상태 객체 삭제
+            if (Object.keys(newState[apartmentId]).length === 0) {
+              delete newState[apartmentId];
+            }
+          }
+          return newState;
+        });
+
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
-      } catch {
+      } catch (error) {
+        console.error("의뢰 유형 업데이트 실패:", error);
         alert("의뢰 유형 업데이트에 실패했습니다.");
       }
     },
     [apartments, queryClient]
   );
 
-  // 매물 상태 전용 핸들러
+  // 매물 상태 전용 핸들러 - onChange 시점에 즉시 처리
   const handlePropertyStatusUpdate = useCallback(
     async (apartmentId: number, propertyStatus: string) => {
       try {
-        // 현재 아파트 데이터 확인
+        // 현재 아파트 데이터 확인 (최신 상태)
         const currentApartment = apartments.find(
           (apt) => apt.apartmentId === apartmentId
         );
 
+        // property가 존재하면 PATCH, 없으면 POST
         if (currentApartment?.property) {
           await updatePropertyStatusAPI(apartmentId, propertyStatus);
         } else {
           await createPropertyWithStatusAPI(apartmentId, propertyStatus);
         }
 
+        // 로컬 상태에서 해당 변경사항 제거 (이미 서버에 반영됨)
+        setLocalDropdownStates((prev) => {
+          const newState = { ...prev };
+          if (newState[apartmentId]) {
+            delete newState[apartmentId].propertyStatus;
+            // 다른 변경사항이 없으면 해당 아파트 상태 객체 삭제
+            if (Object.keys(newState[apartmentId]).length === 0) {
+              delete newState[apartmentId];
+            }
+          }
+          return newState;
+        });
+
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
-      } catch {
+      } catch (error) {
+        console.error("매물 상태 업데이트 실패:", error);
         alert("매물 상태 업데이트에 실패했습니다.");
       }
     },
     [apartments, queryClient]
   );
 
-  // 관리 타입 전용 핸들러
+  // 관리 타입 전용 핸들러 - onChange 시점에 즉시 처리
   const handleManageTypeUpdate = useCallback(
     async (apartmentId: number, manageType: string) => {
       try {
-        // 현재 아파트 데이터 확인
+        // 현재 아파트 데이터 확인 (최신 상태)
         const currentApartment = apartments.find(
           (apt) => apt.apartmentId === apartmentId
         );
 
+        // property가 존재하면 PATCH, 없으면 POST
         if (currentApartment?.property) {
-          // 기존 매물이 있으면 PATCH (업데이트)
           await updateManageTypeAPI(apartmentId, manageType);
         } else {
-          // 매물이 없으면 POST (생성)
           await createPropertyWithManageTypeAPI(apartmentId, manageType);
         }
 
+        // 로컬 상태에서 해당 변경사항 제거 (이미 서버에 반영됨)
+        setLocalDropdownStates((prev) => {
+          const newState = { ...prev };
+          if (newState[apartmentId]) {
+            delete newState[apartmentId].manageType;
+            // 다른 변경사항이 없으면 해당 아파트 상태 객체 삭제
+            if (Object.keys(newState[apartmentId]).length === 0) {
+              delete newState[apartmentId];
+            }
+          }
+          return newState;
+        });
+
+        // 글로벌 상태 업데이트
         updatePropertyInGlobalState(apartmentId, {
           manageType: manageType as ManageType,
         });
 
-        await queryClient.invalidateQueries({
-          queryKey: ["apartments"],
-          exact: true,
-        });
-        await queryClient.refetchQueries({
-          queryKey: ["apartments"],
-          exact: true,
-        });
-      } catch {
+        queryClient.invalidateQueries({ queryKey: ["apartments"] });
+      } catch (error) {
+        console.error("관리 타입 업데이트 실패:", error);
         alert("관리 타입 업데이트에 실패했습니다.");
       }
     },
     [apartments, queryClient]
   );
 
-  // 매물 변경사항을 서버로 전송하는 함수 (다른 매물 클릭 시에만 호출)
-  const sendApartmentChanges = useCallback(
-    (apartmentId: number) => {
-      const allChanges = localDropdownStates[apartmentId];
-      if (!allChanges) {
-        return;
-      }
+  const sendPropertyChanges = useCallback(
+    async (apartmentId: number) => {
+      const changes = localPropertyStates[apartmentId];
+      if (!changes) return;
 
-      // 각 필드별로 변경사항이 있으면 서버로 순차 전송 (동시 전송 시 서로 덮어쓰는 문제 방지)
-      const executeSequentially = async () => {
-        try {
-          // 의뢰 유형 변경사항이 있으면 먼저 처리
-          if (allChanges.requestType) {
-            await handleRequestTypeUpdate(
-              apartmentId,
-              allChanges.requestType as string
-            );
-          }
+      try {
+        // 현재 아파트 데이터 확인
+        const currentApartment = apartments.find(
+          (apt) => apt.apartmentId === apartmentId
+        );
 
-          // 매물 상태 변경사항이 있으면 다음에 처리
-          if (allChanges.propertyStatus) {
-            await handlePropertyStatusUpdate(
-              apartmentId,
-              allChanges.propertyStatus as string
-            );
-          }
+        const currentProperty = currentApartment?.property;
 
-          // 관리 타입 변경사항이 있으면 마지막에 처리
-          if (allChanges.manageType) {
-            await handleManageTypeUpdate(
-              apartmentId,
-              allChanges.manageType as string
-            );
-          }
-        } catch {
-          // 에러 처리 (필요시 사용자에게 알림)
-        } finally {
-          // 모든 요청이 완료되면 로컬 상태 정리
-          setLocalDropdownStates((prev) => {
-            const newState = { ...prev };
-            delete newState[apartmentId];
-            return newState;
-          });
+        // 전체 매물 정보 구성
+        const requestData = {
+          apartmentId,
+          ownerName: changes.ownerName || currentProperty?.ownerName || "",
+          ownerPhone: changes.ownerPhone || currentProperty?.ownerPhone || "",
+          salePrice: changes.salePrice || currentProperty?.salePrice || 0,
+          jeonsePrice: changes.jeonsePrice || currentProperty?.jeonsePrice || 0,
+          deposit: changes.deposit || currentProperty?.deposit || 0,
+          monthPrice: changes.monthPrice || currentProperty?.monthPrice || 0,
+        };
+
+        // property가 없으면 POST로 생성, 있으면 PUT으로 업데이트
+        if (!currentProperty) {
+          await handlePropertyBatchUpdate(apartmentId, requestData, true);
+        } else {
+          await handlePropertyBatchUpdate(apartmentId, requestData, false);
         }
-      };
 
-      executeSequentially();
+        // 로컬 상태에서 해당 변경사항 제거
+        setLocalPropertyStates((prev) => {
+          const newState = { ...prev };
+          delete newState[apartmentId];
+          return newState;
+        });
+
+        queryClient.invalidateQueries({ queryKey: ["apartments"] });
+      } catch (error) {
+        alert("매물 정보 업데이트에 실패했습니다.");
+      }
     },
-    [
-      handleRequestTypeUpdate,
-      handlePropertyStatusUpdate,
-      handleManageTypeUpdate,
-      localDropdownStates,
-    ]
+    [apartments, localPropertyStates, handlePropertyBatchUpdate, queryClient]
   );
 
   // 현재 표시할 값 계산 (로컬 상태 우선, 없으면 서버 데이터)
@@ -270,12 +305,11 @@ export function PropertyManageTable({
     return apartment.property?.[field] || "NONE";
   };
 
-  // 이전 선택된 매물 ID를 추적
   const prevSelectedApartmentIdRef = useRef<number | string | undefined>(
     selectedApartmentId
   );
 
-  // 다른 매물 클릭 시 이전 매물의 드롭다운 변경사항 서버로 전송
+  // 다른 매물 클릭 시 이전 매물의 변경사항 일괄 전송
   useEffect(() => {
     const prevId = prevSelectedApartmentIdRef.current;
     const currentId = selectedApartmentId;
@@ -284,15 +318,15 @@ export function PropertyManageTable({
     if (
       prevId &&
       prevId !== currentId &&
-      localDropdownStates[prevId as number]
+      localPropertyStates[prevId as number]
     ) {
-      // 이전 매물의 모든 변경사항을 서버로 전송
-      sendApartmentChanges(prevId as number);
+      // 이전 매물의 변경사항을 일괄 전송
+      sendPropertyChanges(prevId as number);
     }
 
     // 현재 선택된 매물 ID 업데이트
     prevSelectedApartmentIdRef.current = currentId;
-  }, [selectedApartmentId, sendApartmentChanges, localDropdownStates]);
+  }, [selectedApartmentId, sendPropertyChanges, localPropertyStates]);
 
   // 무한스크롤을 위한 스크롤 감지
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -367,11 +401,8 @@ export function PropertyManageTable({
                       ]}
                       value={getDisplayValue(apartment, "manageType")}
                       onChange={(value) => {
-                        handleDropdownChange(
-                          apartment.apartmentId,
-                          "manageType",
-                          value
-                        );
+                        // 즉시 API 호출
+                        handleManageTypeUpdate(apartment.apartmentId, value);
                       }}
                       hideLabel={true}
                       showCheckmark={false}
@@ -398,11 +429,8 @@ export function PropertyManageTable({
                       options={requestTypeOptions}
                       value={getDisplayValue(apartment, "requestType")}
                       onChange={(value) => {
-                        handleDropdownChange(
-                          apartment.apartmentId,
-                          "requestType",
-                          value
-                        );
+                        // 즉시 API 호출
+                        handleRequestTypeUpdate(apartment.apartmentId, value);
                       }}
                     />
                   ) : (
@@ -417,9 +445,9 @@ export function PropertyManageTable({
                       options={propertyStatusOptions}
                       value={getDisplayValue(apartment, "propertyStatus")}
                       onChange={(value) => {
-                        handleDropdownChange(
+                        // 즉시 API 호출
+                        handlePropertyStatusUpdate(
                           apartment.apartmentId,
-                          "propertyStatus",
                           value
                         );
                       }}
