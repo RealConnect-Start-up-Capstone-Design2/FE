@@ -90,7 +90,6 @@ export function usePropertyEdit() {
     });
   };
 
-  // 매물 정보 업데이트 (Input blur 시 호출)
   const handlePropertyUpdate = (
     apartmentId: number,
     field: string,
@@ -98,7 +97,6 @@ export function usePropertyEdit() {
   ) => {
     if (value === undefined || value === "") return;
 
-    // 현재 캐시에서 아파트 데이터 가져오기 (무한 스크롤 구조)
     const infiniteData = queryClient.getQueryData<{
       pages: Array<{
         content: ApartmentWithProperty[];
@@ -138,9 +136,50 @@ export function usePropertyEdit() {
     updatePropertyMutation.mutate({ apartmentId, updates, isNewProperty });
   };
 
+  // 매물 정보 일괄 업데이트 (새로운 방식)
+  const handlePropertyBatchUpdate = async (
+    apartmentId: number,
+    requestData: {
+      apartmentId: number;
+      ownerName: string;
+      ownerPhone: string;
+      salePrice: number;
+      jeonsePrice: number;
+      deposit: number;
+      monthPrice: number;
+    },
+    isNewProperty: boolean
+  ) => {
+    return new Promise((resolve, reject) => {
+      updatePropertyMutation.mutate(
+        {
+          apartmentId,
+          updates: {
+            ownerName: requestData.ownerName,
+            ownerPhone: requestData.ownerPhone,
+            salePrice: requestData.salePrice,
+            jeonsePrice: requestData.jeonsePrice,
+            deposit: requestData.deposit,
+            monthPrice: requestData.monthPrice,
+          },
+          isNewProperty,
+        },
+        {
+          onSuccess: (data) => {
+            resolve(data);
+          },
+          onError: (error) => {
+            reject(error);
+          },
+        }
+      );
+    });
+  };
+
   return {
     handleToggleFavorite,
     handlePropertyUpdate,
+    handlePropertyBatchUpdate,
     isUpdating: updatePropertyMutation.isPending,
   };
 }
