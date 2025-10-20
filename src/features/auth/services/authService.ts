@@ -47,7 +47,7 @@ export const register = async (data: RegisterRequest): Promise<void> => {
  * 액세스 토큰을 재발급받는 함수
  */
 export const refreshAccessToken = async (): Promise<string> => {
-  const response = await apiClient.get("/api/refresh-token", {
+  const response = await apiClient.post("/api/refresh-token", undefined, {
     withCredentials: true, // 쿠키(리프레시 토큰) 전송을 위함
   });
 
