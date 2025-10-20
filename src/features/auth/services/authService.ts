@@ -84,3 +84,12 @@ export const verifyCode = async (
     { withCredentials: true }
   );
 };
+
+export const logout = async (accessToken: string): Promise<void> => {
+  await apiClient.post("/api/logout", undefined, {
+    withCredentials: true,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};
