@@ -358,11 +358,11 @@ export function PropertyManageTable({
   return (
     <div
       ref={tableContainerRef}
-      className="h-full rounded-lg border border-[#DDE2F2] bg-white shadow-sm overflow-auto"
+      className="h-full rounded-lg bg-white overflow-auto"
       onClick={(e) => e.stopPropagation()}
     >
       <Table className="min-w-[1100px] whitespace-nowrap">
-        <TableHeader className="sticky top-0 z-40 border border-[#DDE2F2] bg-[#E8EDFF]">
+        <TableHeader className="sticky top-0 z-40 shadow-sm bg-[#E8EDFF]">
           <TableRow>
             <TableHead className="w-24 px-2 text-center">관리 타입</TableHead>
             <TableHead>동</TableHead>
@@ -386,7 +386,9 @@ export function PropertyManageTable({
               <TableRow
                 key={apartment.apartmentId}
                 className={`cursor-pointer transition-colors hover:bg-gray-50 ${
-                  isSelected ? "bg-blue-50" : ""
+                  isSelected
+                    ? "bg-[#EEF6FF] border border-2 border-[#1499FF]"
+                    : ""
                 }`}
                 onClick={() => onPropertyClick?.(apartment.apartmentId)}
               >
