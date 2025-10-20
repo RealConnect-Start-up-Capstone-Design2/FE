@@ -1,5 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/shared/utils";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/features/auth/stores";
+import { logout } from "@/features/auth/services/authService";
+
+// 이미지 불러오기
 import Logo from "@/assets/Logo.svg";
 import ClipboardIcon from "@/assets/Clipboard.svg";
 import EditIcon from "@/assets/Edit.svg";
@@ -53,6 +58,19 @@ interface SidebarProps {
 
 export function Sidebar({ className }: SidebarProps) {
   const location = useLocation();
+  const { accessToken, logout: clearAuth } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout(accessToken ?? "");
+    } catch (error) {
+      console.error("Failed to call logout API:", error);
+    } finally {
+      clearAuth();
+      navigate("/login");
+    }
+  };
 
   return (
     <div
@@ -126,7 +144,10 @@ export function Sidebar({ className }: SidebarProps) {
             설정
           </span>
         </Link>
-        <button className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-[#989898] hover:bg-gray-50 transition-colors">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-[#989898] hover:bg-gray-50 transition-colors"
+        >
           <img
             src={LogoutIcon}
             alt="Logout"
