@@ -6,6 +6,7 @@ import type {
   SendVerifyCodeRequest,
   VerifyCodeRequest,
 } from "../types";
+import { useAuthStore } from "../stores";
 
 /**
  * 로그인을 요청하는 함수
@@ -58,6 +59,7 @@ export const refreshAccessToken = async (): Promise<string> => {
     throw new Error("새로운 액세스 토큰이 없습니다.");
   }
 
+  useAuthStore.setState({ accessToken });
   return accessToken;
 };
 
