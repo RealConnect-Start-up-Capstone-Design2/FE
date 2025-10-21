@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,8 +12,8 @@ import {
 
 interface PropertyMemoBlockProps {
   apartment?: ApartmentWithProperty;
-  onClose?: () => void;
   isOpen: boolean;
+  autoSaveToken?: number;
 }
 
 /**
@@ -22,12 +22,13 @@ interface PropertyMemoBlockProps {
  */
 export function PropertyMemoBlock({
   apartment,
-  onClose,
   isOpen,
+  autoSaveToken = 0,
 }: PropertyMemoBlockProps) {
   const queryClient = useQueryClient();
   const [memo, setMemo] = useState("");
   const [isSaved, setIsSaved] = useState(false);
+  const lastAutoSaveTokenRef = useRef<number>(0);
 
   // 메모 조회
   const { data: memoData, isLoading: isMemoLoading } = useQuery({
@@ -93,6 +94,7 @@ export function PropertyMemoBlock({
       alert(errorMessage);
     },
   });
+  const { mutate: mutateMemo, isPending: isMemoSaving } = memoMutation;
 
   const handleSave = () => {
     if (!apartment) return;
@@ -101,7 +103,7 @@ export function PropertyMemoBlock({
     const isUpdate = !!memoData; // 기존 메모가 있으면 수정, 없으면 생성
 
     if (memo !== savedMemo) {
-      memoMutation.mutate({
+      mutateMemo({
         apartmentId: apartment.apartmentId,
         content: memo,
         isUpdate,
@@ -111,21 +113,42 @@ export function PropertyMemoBlock({
 
   // 사이드바가 닫힐 때 자동 저장
   useEffect(() => {
-    if (onClose && apartment) {
-      const savedMemo = memoData?.content || "";
-
-      // 메모가 변경되었을 때만 저장
-      if (memo !== savedMemo && !memoMutation.isPending) {
-        const isUpdate = !!memoData; // 기존 메모가 있으면 수정, 없으면 생성
-
-        memoMutation.mutate({
-          apartmentId: apartment.apartmentId,
-          content: memo,
-          isUpdate,
-        });
-      }
+    if (!apartment) {
+      return;
     }
-  }, [onClose, apartment, memo, memoData, memoMutation]);
+
+    if (autoSaveToken === 0) {
+      lastAutoSaveTokenRef.current = 0;
+      return;
+    }
+
+    if (lastAutoSaveTokenRef.current === autoSaveToken || isMemoSaving) {
+      return;
+    }
+
+    const savedMemo = memoData?.content || "";
+
+    lastAutoSaveTokenRef.current = autoSaveToken;
+
+    if (memo === savedMemo) {
+      return;
+    }
+
+    const isUpdate = !!memoData; // 기존 메모가 있으면 수정, 없으면 생성
+
+    mutateMemo({
+      apartmentId: apartment.apartmentId,
+      content: memo,
+      isUpdate,
+    });
+  }, [
+    apartment,
+    memo,
+    memoData,
+    mutateMemo,
+    autoSaveToken,
+    isMemoSaving,
+  ]);
 
   const savedMemo = memoData?.content || "";
   const isChanged = memo !== savedMemo && !isSaved;
@@ -165,7 +188,7 @@ export function PropertyMemoBlock({
         )}
         <Button
           onClick={handleSave}
-          disabled={!isChanged || memoMutation.isPending || isMemoLoading}
+          disabled={!isChanged || isMemoSaving || isMemoLoading}
           style={{
             backgroundColor: isSaved
               ? "#B1B6C7"
@@ -175,7 +198,7 @@ export function PropertyMemoBlock({
           }}
           className="w-full text-white hover:opacity-90"
         >
-          {memoMutation.isPending
+          {isMemoSaving
             ? "저장 중..."
             : isSaved
             ? "저장됨"

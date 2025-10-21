@@ -28,7 +28,7 @@ export function PropertyManagePage() {
   const [isManuallyClosedByButton, setIsManuallyClosedByButton] =
     useState(false);
   // 사이드바가 닫힐 때 메모 자동 저장을 위한 상태
-  const [shouldAutoSave, setShouldAutoSave] = useState(false);
+  const [autoSaveToken, setAutoSaveToken] = useState(0);
   const tableContainerRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
 
@@ -54,7 +54,7 @@ export function PropertyManagePage() {
     setSelectedPropertyId(undefined);
     setIsDetailOpen(false);
     setIsManuallyClosedByButton(false);
-    setShouldAutoSave(false);
+    setAutoSaveToken(0);
   }, []);
 
   useEffect(() => {
@@ -109,15 +109,16 @@ export function PropertyManagePage() {
     (apt) => apt.apartmentId === selectedPropertyId
   );
 
+  const triggerAutoSave = useCallback(() => {
+    setAutoSaveToken((prev) => prev + 1);
+  }, []);
+
   const closeSidebar = useCallback(() => {
     // 사이드바가 닫힐 때 메모 자동 저장 트리거
-    setShouldAutoSave(true);
+    triggerAutoSave();
     setIsDetailOpen(false);
     setIsManuallyClosedByButton(false);
-
-    // 자동 저장 상태를 리셋
-    setTimeout(() => setShouldAutoSave(false), 100);
-  }, []);
+  }, [triggerAutoSave]);
 
   const handlePropertyClick = (propertyId: string | number) => {
     if (selectedPropertyId === propertyId && isDetailOpen) {
@@ -139,8 +140,7 @@ export function PropertyManagePage() {
       // "카드 닫기" 버튼으로 닫은 경우 상태 설정
       if (!newState) {
         // 사이드바가 닫힐 때 메모 자동 저장 트리거
-        setShouldAutoSave(true);
-        setTimeout(() => setShouldAutoSave(false), 100);
+        triggerAutoSave();
         setIsManuallyClosedByButton(true);
       } else {
         // "카드 열기" 버튼으로 열면 상태 해제
@@ -223,8 +223,8 @@ export function PropertyManagePage() {
         <DetailSidebar title="매물 상세 정보">
           <PropertyMemoBlock
             apartment={selectedApartment}
-            onClose={shouldAutoSave ? () => {} : undefined}
             isOpen={isDetailOpen}
+            autoSaveToken={autoSaveToken}
           />
           <PropertyContractBlock
             apartment={selectedApartment}
