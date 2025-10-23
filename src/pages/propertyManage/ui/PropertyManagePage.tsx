@@ -156,9 +156,6 @@ export function PropertyManagePage() {
           : rawArea.toFixed(2).replace(/\.?0+$/, "");
         return formatted;
       }
-      if (typeof rawArea === "string") {
-        return rawArea.trim();
-      }
       return "";
     })();
     if (areaLabel) {
