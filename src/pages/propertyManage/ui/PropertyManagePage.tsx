@@ -108,6 +108,66 @@ export function PropertyManagePage() {
   const selectedApartment = apartments.find(
     (apt) => apt.apartmentId === selectedPropertyId
   );
+  const detailSidebarTitle = useMemo(() => {
+    if (!selectedApartment) {
+      return "매물 상세 정보";
+    }
+
+    const segments: string[] = [];
+
+    const cleanString = (value: unknown) => {
+      if (typeof value === "number") {
+        return Number.isFinite(value) ? `${value}` : "";
+      }
+      if (typeof value === "string") {
+        return value.trim();
+      }
+      return "";
+    };
+
+    const apartmentName = cleanString(selectedApartment.apartmentName);
+    if (apartmentName) {
+      segments.push(apartmentName);
+    }
+
+    const dongHo = [cleanString(selectedApartment.dong), cleanString(selectedApartment.ho)]
+      .filter(Boolean)
+      .join("-");
+    if (dongHo) {
+      segments.push(dongHo);
+    }
+
+    const areaLabel = (() => {
+      const rawArea = selectedApartment.area;
+      if (rawArea === undefined || rawArea === null) {
+        return "";
+      }
+      if (typeof rawArea === "number") {
+        if (!Number.isFinite(rawArea)) {
+          return "";
+        }
+        const formatted = Number.isInteger(rawArea)
+          ? rawArea.toString()
+          : rawArea.toFixed(2).replace(/\.?0+$/, "");
+        return formatted;
+      }
+      if (typeof rawArea === "string") {
+        return rawArea.trim();
+      }
+      return "";
+    })();
+    if (areaLabel) {
+      segments.push(areaLabel);
+    }
+
+    const typeLabel = cleanString(selectedApartment.type);
+    if (typeLabel) {
+      segments.push(typeLabel);
+    }
+
+    const title = segments.join(" ").trim();
+    return title || "매물 상세 정보";
+  }, [selectedApartment]);
 
   const triggerAutoSave = useCallback(() => {
     setAutoSaveToken((prev) => prev + 1);
@@ -220,7 +280,7 @@ export function PropertyManagePage() {
       onToggle={handleToggleSidebar}
       sidebarRef={sidebarRef}
       sidebar={
-        <DetailSidebar title="매물 상세 정보">
+        <DetailSidebar title={detailSidebarTitle} onClose={closeSidebar}>
           <PropertyMemoBlock
             apartment={selectedApartment}
             isOpen={isDetailOpen}
