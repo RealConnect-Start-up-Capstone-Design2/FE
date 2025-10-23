@@ -155,13 +155,13 @@ export function PropertyContractBlock({
       // 매물 정보도 함께 동기화 (계약 정보에서 수정한 값을 매물에 반영)
       const { payload } = variables;
       if (
-        apartment?.property ||
+        payload.gapName ||
         payload.gapPhone ||
         payload.deposit !== undefined ||
         payload.monthlyRent !== undefined
       ) {
         try {
-          const { updatePropertyAPI } = await import(
+          const { updatePropertyAPI, createPropertyAPI } = await import(
             "../../services/propertyService"
           );
 
@@ -171,7 +171,10 @@ export function PropertyContractBlock({
           // 매물 정보 업데이트 (동기화할 필드만 업데이트)
           const propertyUpdateData = {
             apartmentId: variables.apartmentId,
-            ownerName: currentProperty?.ownerName || "",
+            ownerName:
+              payload.gapName !== undefined
+                ? String(payload.gapName)
+                : currentProperty?.ownerName || "",
             ownerPhone:
               payload.gapPhone !== undefined
                 ? String(payload.gapPhone)
@@ -188,7 +191,12 @@ export function PropertyContractBlock({
                 : currentProperty?.monthPrice || 0,
           };
 
-          await updatePropertyAPI(variables.apartmentId, propertyUpdateData);
+          // 매물이 없으면 POST로 생성, 있으면 PUT으로 업데이트
+          if (!currentProperty) {
+            await createPropertyAPI(propertyUpdateData);
+          } else {
+            await updatePropertyAPI(variables.apartmentId, propertyUpdateData);
+          }
         } catch (error) {
           console.error("매물 정보 동기화 실패:", error);
           // 매물 동기화 실패해도 계약 저장은 성공했으므로 에러 무시
