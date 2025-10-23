@@ -280,6 +280,55 @@ export function PropertyManageTable({
           await handlePropertyBatchUpdate(apartmentId, requestData, false);
         }
 
+        // 계약 정보가 있으면 함께 동기화 (매물 정보에서 수정한 값을 계약에 반영)
+        if (
+          changes.ownerPhone ||
+          changes.deposit !== undefined ||
+          changes.monthPrice !== undefined
+        ) {
+          try {
+            const { getContractAPI, saveContractAPI } = await import(
+              "../services/contractService"
+            );
+
+            // 기존 계약 정보 조회
+            const existingContract = await getContractAPI(apartmentId);
+
+            // 계약 정보가 있을 때만 업데이트
+            if (existingContract) {
+              const contractUpdateData = {
+                ...existingContract,
+                gapPhone:
+                  changes.ownerPhone !== undefined
+                    ? String(changes.ownerPhone)
+                    : existingContract.gapPhone,
+                deposit:
+                  changes.deposit !== undefined
+                    ? Number(changes.deposit)
+                    : existingContract.deposit,
+                monthlyRent:
+                  changes.monthPrice !== undefined
+                    ? Number(changes.monthPrice)
+                    : existingContract.monthlyRent,
+              };
+
+              // apartmentId는 제외하고 전송
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const { apartmentId: _apartmentId, ...contractPayload } =
+                contractUpdateData;
+              await saveContractAPI(apartmentId, contractPayload);
+
+              // 계약 정보 쿼리도 무효화
+              queryClient.invalidateQueries({
+                queryKey: ["contract", apartmentId],
+              });
+            }
+          } catch (error) {
+            console.error("계약 정보 동기화 실패:", error);
+            // 계약 동기화 실패해도 매물 저장은 성공했으므로 에러 무시
+          }
+        }
+
         // 로컬 상태에서 해당 변경사항 제거
         setLocalPropertyStates((prev) => {
           const newState = { ...prev };
@@ -289,6 +338,7 @@ export function PropertyManageTable({
 
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
       } catch (error) {
+        console.error("매물 정보 업데이트 실패:", error);
         alert("매물 정보 업데이트에 실패했습니다.");
       }
     },

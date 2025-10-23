@@ -127,7 +127,7 @@ export function EditableDepositMonthCell({
 
   const displayValue =
     depositValue || monthValue
-      ? `${((depositValue || 0) / 10000).toLocaleString()}/${(
+      ? `${(depositValue || 0).toLocaleString()}/${(
           monthValue || 0
         ).toLocaleString()}`
       : "-";

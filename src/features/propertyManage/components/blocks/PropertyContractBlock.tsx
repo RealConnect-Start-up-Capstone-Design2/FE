@@ -70,14 +70,36 @@ export function PropertyContractBlock({
     if (!apartmentId) {
       return null;
     }
-    const base = resolvedContract ? { ...resolvedContract } : {};
+
+    // 계약 정보가 없으면 매물 정보의 값을 디폴트로 사용
+    const base = resolvedContract
+      ? { ...resolvedContract }
+      : {
+          // 매물 테이블의 값을 초기값으로
+          gapPhone: apartment?.property?.ownerPhone || "",
+          deposit: apartment?.property?.deposit || 0,
+          monthlyRent: apartment?.property?.monthPrice || 0,
+          gapName: apartment?.property?.ownerName || "",
+          contractDate: apartment?.contractDate || "",
+          // 나머지는 빈 값
+          eulPhone: "",
+          eulName: "",
+          downPayment: 0,
+          downPaymentDueDate: "",
+          interimPayment: 0,
+          interimPaymentDueDate: "",
+          balance: 0,
+          balanceDueDate: "",
+          monthlyRentDueDate: "",
+        };
+
     return {
       apartmentId,
       ...base,
       ...formData,
       contractType,
     } as ContractInfo;
-  }, [apartmentId, resolvedContract, formData, contractType]);
+  }, [apartmentId, resolvedContract, formData, contractType, apartment]);
 
   const hasUnsavedChanges = useMemo(() => {
     if (!apartmentId) {
@@ -124,10 +146,58 @@ export function PropertyContractBlock({
       }
       return await createContractAPI(apartmentId, payload);
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: async (_data, variables) => {
+      // 계약 정보 쿼리 무효화
       queryClient.invalidateQueries({
         queryKey: ["contract", variables.apartmentId],
       });
+
+      // 매물 정보도 함께 동기화 (계약 정보에서 수정한 값을 매물에 반영)
+      const { payload } = variables;
+      if (
+        apartment?.property ||
+        payload.gapPhone ||
+        payload.deposit !== undefined ||
+        payload.monthlyRent !== undefined
+      ) {
+        try {
+          const { updatePropertyAPI } = await import(
+            "../../services/propertyService"
+          );
+
+          // 현재 매물 정보 가져오기
+          const currentProperty = apartment?.property;
+
+          // 매물 정보 업데이트 (동기화할 필드만 업데이트)
+          const propertyUpdateData = {
+            apartmentId: variables.apartmentId,
+            ownerName: currentProperty?.ownerName || "",
+            ownerPhone:
+              payload.gapPhone !== undefined
+                ? String(payload.gapPhone)
+                : currentProperty?.ownerPhone || "",
+            salePrice: currentProperty?.salePrice || 0,
+            jeonsePrice: currentProperty?.jeonsePrice || 0,
+            deposit:
+              payload.deposit !== undefined
+                ? Number(payload.deposit)
+                : currentProperty?.deposit || 0,
+            monthPrice:
+              payload.monthlyRent !== undefined
+                ? Number(payload.monthlyRent)
+                : currentProperty?.monthPrice || 0,
+          };
+
+          await updatePropertyAPI(variables.apartmentId, propertyUpdateData);
+        } catch (error) {
+          console.error("매물 정보 동기화 실패:", error);
+          // 매물 동기화 실패해도 계약 저장은 성공했으므로 에러 무시
+        }
+      }
+
+      // 매물 목록도 무효화하여 최신 데이터 반영
+      queryClient.invalidateQueries({ queryKey: ["apartments"] });
+
       setFormData({});
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 3000);
@@ -164,10 +234,8 @@ export function PropertyContractBlock({
       return;
     }
 
-    const {
-      apartmentId: _omitApartmentId,
-      ...contractWithoutId
-    } = currentContract;
+    const { apartmentId: _omitApartmentId, ...contractWithoutId } =
+      currentContract;
     void _omitApartmentId;
 
     const sanitizedPayload = Object.fromEntries(
