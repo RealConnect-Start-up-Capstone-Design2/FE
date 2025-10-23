@@ -22,8 +22,9 @@ export function PropertyManagePage() {
   const [selectedPropertyId, setSelectedPropertyId] = useState<
     string | number | undefined
   >();
-  const [selectedApartmentComplexId, setSelectedApartmentComplexId] =
-    useState<number | undefined>();
+  const [selectedApartmentComplexId, setSelectedApartmentComplexId] = useState<
+    number | undefined
+  >();
   // "카드 닫기" 버튼으로 명시적으로 닫았는지 추적
   const [isManuallyClosedByButton, setIsManuallyClosedByButton] =
     useState(false);
@@ -67,8 +68,7 @@ export function PropertyManagePage() {
     }
 
     const hasSelectedComplex = preferredComplexes.some(
-      (complex) =>
-        complex.apartmentComplexId === selectedApartmentComplexId
+      (complex) => complex.apartmentComplexId === selectedApartmentComplexId
     );
 
     if (hasSelectedComplex) {
@@ -108,6 +108,8 @@ export function PropertyManagePage() {
   const selectedApartment = apartments.find(
     (apt) => apt.apartmentId === selectedPropertyId
   );
+
+  // 매물 상세 사이드바 title 구성하는 부분
   const detailSidebarTitle = useMemo(() => {
     if (!selectedApartment) {
       return "매물 상세 정보";
@@ -130,7 +132,10 @@ export function PropertyManagePage() {
       segments.push(apartmentName);
     }
 
-    const dongHo = [cleanString(selectedApartment.dong), cleanString(selectedApartment.ho)]
+    const dongHo = [
+      cleanString(selectedApartment.dong),
+      cleanString(selectedApartment.ho),
+    ]
       .filter(Boolean)
       .join("-");
     if (dongHo) {
@@ -309,9 +314,7 @@ export function PropertyManagePage() {
             isLoading={isTableLoading}
             isFetchingNextPage={isFetchingNextPage}
             hasNextPage={hasNextPage ?? false}
-            onLoadMore={
-              selectedApartmentComplexId ? fetchNextPage : undefined
-            }
+            onLoadMore={selectedApartmentComplexId ? fetchNextPage : undefined}
           />
         </div>
       </div>
