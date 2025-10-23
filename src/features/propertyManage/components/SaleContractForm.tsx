@@ -109,6 +109,18 @@ export function SaleContractForm({
           disabled={disabled}
         />
 
+        {/* 잔금 + 잔금 지급일 */}
+        <PaymentFieldGroup
+          amountLabel="잔금"
+          amountField="balance"
+          amountValue={contract?.balance || ""}
+          dateLabel="잔금 지급일"
+          dateField="balanceDueDate"
+          dateValue={contract?.balanceDueDate || ""}
+          onChange={onChange}
+          disabled={disabled}
+        />
+
         {/* 월세 + 월세 지급일 */}
         <PaymentFieldGroup
           amountLabel="월세"
@@ -119,18 +131,6 @@ export function SaleContractForm({
           dateValue={contract?.monthlyRentDueDate || ""}
           dateType="text"
           datePlaceholder="매월 25일"
-          onChange={onChange}
-          disabled={disabled}
-        />
-
-        {/* 잔금 + 잔금 지급일 */}
-        <PaymentFieldGroup
-          amountLabel="잔금"
-          amountField="balance"
-          amountValue={contract?.balance || ""}
-          dateLabel="잔금 지급일"
-          dateField="balanceDueDate"
-          dateValue={contract?.balanceDueDate || ""}
           onChange={onChange}
           disabled={disabled}
         />

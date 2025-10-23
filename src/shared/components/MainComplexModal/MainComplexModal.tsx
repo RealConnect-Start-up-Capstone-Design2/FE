@@ -53,18 +53,19 @@ export function MainComplexModal(props: MainComplexModalProps) {
 
         {/* Footer Buttons */}
         <div className="px-[50px] py-8 flex justify-end gap-3">
-          <button
+          {/* 취소 버튼 없앰 */}
+          {/* <button
             onClick={handleCancel}
             className="w-[97px] h-[41px] bg-black text-white rounded-lg text-lg font-semibold"
           >
             취소
-          </button>
+          </button> */}
           <button
             onClick={handleFinalSave}
             disabled={isSaving}
             className="w-[97px] h-[41px] bg-[#1C2882] text-white rounded-lg text-lg font-semibold disabled:opacity-50"
           >
-            {isSaving ? "저장중..." : "저장하기"}
+            {isSaving ? "저장중..." : "완료"}
           </button>
         </div>
       </div>

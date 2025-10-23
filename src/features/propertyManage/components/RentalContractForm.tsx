@@ -69,6 +69,7 @@ export function RentalContractForm({
           disabled={disabled}
           className="w-[181px]"
         />
+        {/* TODO : 만기일 어디감? 서버에 있는 지 확인 후 추가 예정 */}
       </ContractSection>
 
       {/* 보증금, 계약금, 중도금, 월세, 잔금 */}
@@ -109,6 +110,18 @@ export function RentalContractForm({
           disabled={disabled}
         />
 
+        {/* 잔금 + 잔금 지급일 */}
+        <PaymentFieldGroup
+          amountLabel="잔금"
+          amountField="balance"
+          amountValue={contract?.balance || ""}
+          dateLabel="잔금 지급일"
+          dateField="balanceDueDate"
+          dateValue={contract?.balanceDueDate || ""}
+          onChange={onChange}
+          disabled={disabled}
+        />
+
         {/* 월세 + 월세 지급일 */}
         <PaymentFieldGroup
           amountLabel="월세"
@@ -119,18 +132,6 @@ export function RentalContractForm({
           dateValue={contract?.monthlyRentDueDate || ""}
           dateType="text"
           datePlaceholder="매월 25일"
-          onChange={onChange}
-          disabled={disabled}
-        />
-
-        {/* 잔금 + 잔금 지급일 */}
-        <PaymentFieldGroup
-          amountLabel="잔금"
-          amountField="balance"
-          amountValue={contract?.balance || ""}
-          dateLabel="잔금 지급일"
-          dateField="balanceDueDate"
-          dateValue={contract?.balanceDueDate || ""}
           onChange={onChange}
           disabled={disabled}
         />
