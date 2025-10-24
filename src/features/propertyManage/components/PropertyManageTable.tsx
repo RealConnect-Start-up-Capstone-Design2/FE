@@ -26,6 +26,7 @@ import {
   updateManageTypeAPI,
   createPropertyWithManageTypeAPI,
 } from "../services/propertyService";
+import { formatPrice } from "@/shared/utils";
 import {
   EditablePropertyCell,
   EditableDepositMonthCell,
@@ -94,6 +95,11 @@ export function PropertyManageTable({
 
   // 편집 관련 로직
   const { handlePropertyBatchUpdate } = usePropertyEdit();
+
+  const formatPriceWithDecimal = useCallback(
+    (price?: number | null) => formatPrice(price),
+    []
+  );
 
   const handlePropertyUpdate = useCallback(
     (apartmentId: number, field: string, value: string | number) => {
@@ -431,6 +437,16 @@ export function PropertyManageTable({
           {apartments.map((apartment) => {
             const isSelected = selectedApartmentId === apartment.apartmentId;
             const property = apartment.property;
+            const pendingProperty = localPropertyStates[apartment.apartmentId];
+            const salePriceValue =
+              pendingProperty?.salePrice ?? property?.salePrice;
+            const jeonsePriceValue =
+              pendingProperty?.jeonsePrice ?? property?.jeonsePrice;
+            const depositValue = pendingProperty?.deposit ?? property?.deposit;
+            const monthPriceValue =
+              pendingProperty?.monthPrice ?? property?.monthPrice;
+            const ownerPhoneValue =
+              pendingProperty?.ownerPhone ?? property?.ownerPhone;
 
             return (
               <TableRow
@@ -513,15 +529,11 @@ export function PropertyManageTable({
                 <EditablePropertyCell
                   apartmentId={apartment.apartmentId}
                   field="salePrice"
-                  value={property?.salePrice}
+                  value={salePriceValue}
                   isSelected={isSelected}
                   type="number"
-                  placeholder="매매가 (원)"
-                  displayValue={
-                    property?.salePrice
-                      ? `${(property.salePrice / 10000).toLocaleString()}만`
-                      : undefined
-                  }
+                  placeholder="예: 17.5 -> 17.5억"
+                  displayValue={formatPriceWithDecimal(salePriceValue)}
                   onUpdate={handlePropertyUpdate}
                 />
 
@@ -529,23 +541,19 @@ export function PropertyManageTable({
                 <EditablePropertyCell
                   apartmentId={apartment.apartmentId}
                   field="jeonsePrice"
-                  value={property?.jeonsePrice}
+                  value={jeonsePriceValue}
                   isSelected={isSelected}
                   type="number"
-                  placeholder="전세가 (원)"
-                  displayValue={
-                    property?.jeonsePrice
-                      ? `${(property.jeonsePrice / 10000).toLocaleString()}만`
-                      : undefined
-                  }
+                  placeholder="예: 10.3 -> 10.3억"
+                  displayValue={formatPriceWithDecimal(jeonsePriceValue)}
                   onUpdate={handlePropertyUpdate}
                 />
 
                 {/* 보증금/월세 */}
                 <EditableDepositMonthCell
                   apartmentId={apartment.apartmentId}
-                  depositValue={property?.deposit}
-                  monthValue={property?.monthPrice}
+                  depositValue={depositValue}
+                  monthValue={monthPriceValue}
                   isSelected={isSelected}
                   onUpdate={handlePropertyUpdate}
                 />
@@ -554,11 +562,11 @@ export function PropertyManageTable({
                 <EditablePropertyCell
                   apartmentId={apartment.apartmentId}
                   field="ownerPhone"
-                  value={property?.ownerPhone}
+                  value={ownerPhoneValue}
                   isSelected={isSelected}
                   type="tel"
                   placeholder="연락처"
-                  displayValue={property?.ownerPhone}
+                  displayValue={ownerPhoneValue}
                   onUpdate={handlePropertyUpdate}
                 />
 

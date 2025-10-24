@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { TableCell } from "@/components/ui";
 import { Input } from "@/components/ui/input";
+import {
+  parsePrice,
+  formatPriceInput,
+  parseMonthPrice,
+  formatMonthPrice,
+  formatMonthPriceInput,
+  formatPrice,
+} from "@/shared/utils";
 
 interface EditablePropertyCellProps {
   apartmentId: number;
@@ -31,23 +39,46 @@ export function EditablePropertyCell({
   displayValue,
   onUpdate,
 }: EditablePropertyCellProps) {
-  // value가 0이거나 undefined일 때는 빈 문자열로 초기화
-  const initialValue =
-    value === 0 || value === undefined || value === "" ? "" : value;
-  const [localValue, setLocalValue] = useState<string | number>(initialValue);
+  const [localValue, setLocalValue] = useState<string>(() =>
+    type === "number" ? formatPriceInput(value as number) : String(value || "")
+  );
 
   // value가 변경되면 로컬 상태 동기화
   useEffect(() => {
-    const newValue =
-      value === 0 || value === undefined || value === "" ? "" : value;
-    setLocalValue(newValue);
-  }, [value]);
+    if (type === "number") {
+      setLocalValue(formatPriceInput(value as number));
+    } else {
+      setLocalValue(String(value || ""));
+    }
+  }, [value, type]);
 
   const handleBlur = () => {
-    // 값이 변경되었고 비어있지 않을 때만 업데이트
-    if (localValue !== "" && localValue !== value) {
-      const finalValue = type === "number" ? Number(localValue) : localValue;
-      onUpdate(apartmentId, field, finalValue);
+    if (localValue === "") {
+      return;
+    }
+
+    if (type === "number") {
+      const parsedValue = parsePrice(localValue);
+      if (parsedValue === undefined) {
+        // 잘못된 입력이면 이전 값으로 되돌림
+        setLocalValue(formatPriceInput(value as number));
+        return;
+      }
+
+      // 값이 변경되지 않았으면 무시
+      if (parsedValue === value) {
+        setLocalValue(formatPriceInput(parsedValue));
+        return;
+      }
+
+      onUpdate(apartmentId, field, parsedValue);
+      setLocalValue(formatPriceInput(parsedValue));
+      return;
+    }
+
+    // 텍스트나 전화번호는 그대로 전달
+    if (localValue !== value) {
+      onUpdate(apartmentId, field, localValue);
     }
   };
 
@@ -59,6 +90,8 @@ export function EditablePropertyCell({
           value={localValue}
           onChange={(e) => setLocalValue(e.target.value)}
           onBlur={handleBlur}
+          step={type === "number" ? 0.01 : undefined}
+          inputMode={type === "number" ? "decimal" : undefined}
           className="h-8 text-sm"
           placeholder={placeholder}
         />
@@ -81,7 +114,8 @@ interface EditableDepositMonthCellProps {
 
 /**
  * 보증금/월세 편집 Cell (두 개의 Input)
- * 각 필드가 독립적으로 로컬 상태 관리
+ * 보증금: 억 단위 입력/표시
+ * 월세: 만원 단위 입력/표시
  */
 export function EditableDepositMonthCell({
   apartmentId,
@@ -90,46 +124,73 @@ export function EditableDepositMonthCell({
   isSelected,
   onUpdate,
 }: EditableDepositMonthCellProps) {
-  // 0이거나 undefined일 때는 빈 문자열로 표시
-  const initialDeposit =
-    depositValue === 0 || depositValue === undefined ? "" : depositValue;
-  const initialMonth =
-    monthValue === 0 || monthValue === undefined ? "" : monthValue;
-
-  const [localDeposit, setLocalDeposit] = useState<string | number>(
-    initialDeposit
+  // 입력 필드용 로컬 상태 (억/만원 단위)
+  const [localDeposit, setLocalDeposit] = useState<string>(() =>
+    formatPriceInput(depositValue)
   );
-  const [localMonth, setLocalMonth] = useState<string | number>(initialMonth);
+  const [localMonth, setLocalMonth] = useState<string>(() =>
+    formatMonthPriceInput(monthValue)
+  );
 
+  // 서버에서 값이 변경되면 로컬 상태 동기화
   useEffect(() => {
-    const newDeposit =
-      depositValue === 0 || depositValue === undefined ? "" : depositValue;
-    setLocalDeposit(newDeposit);
+    setLocalDeposit(formatPriceInput(depositValue));
   }, [depositValue]);
 
   useEffect(() => {
-    const newMonth =
-      monthValue === 0 || monthValue === undefined ? "" : monthValue;
-    setLocalMonth(newMonth);
+    setLocalMonth(formatMonthPriceInput(monthValue));
   }, [monthValue]);
 
   const handleDepositBlur = () => {
-    if (localDeposit !== "" && localDeposit !== depositValue) {
-      onUpdate(apartmentId, "deposit", Number(localDeposit));
+    if (localDeposit === "") {
+      return;
     }
+
+    const parsedValue = parsePrice(localDeposit);
+    if (parsedValue === undefined) {
+      // 잘못된 입력이면 이전 값으로 되돌림
+      setLocalDeposit(formatPriceInput(depositValue));
+      return;
+    }
+
+    // 값이 변경되지 않았으면 무시
+    if (parsedValue === depositValue) {
+      setLocalDeposit(formatPriceInput(parsedValue));
+      return;
+    }
+
+    onUpdate(apartmentId, "deposit", parsedValue);
+    setLocalDeposit(formatPriceInput(parsedValue));
   };
 
   const handleMonthBlur = () => {
-    if (localMonth !== "" && localMonth !== monthValue) {
-      onUpdate(apartmentId, "monthPrice", Number(localMonth));
+    if (localMonth === "") {
+      return;
     }
+
+    const parsedValue = parseMonthPrice(localMonth);
+    if (parsedValue === undefined) {
+      // 잘못된 입력이면 이전 값으로 되돌림
+      setLocalMonth(formatMonthPriceInput(monthValue));
+      return;
+    }
+
+    // 값이 변경되지 않았으면 무시
+    if (parsedValue === monthValue) {
+      setLocalMonth(formatMonthPriceInput(parsedValue));
+      return;
+    }
+
+    onUpdate(apartmentId, "monthPrice", parsedValue);
+    setLocalMonth(formatMonthPriceInput(parsedValue));
   };
 
+  // 표시용 값 (보증금: "17.94억", 월세: "500만")
   const displayValue =
     depositValue || monthValue
-      ? `${(depositValue || 0).toLocaleString()}/${(
-          monthValue || 0
-        ).toLocaleString()}`
+      ? `${formatPrice(depositValue) || "0.00억"}/${
+          formatMonthPrice(monthValue) || "0만"
+        }`
       : "-";
 
   return (
@@ -141,8 +202,10 @@ export function EditableDepositMonthCell({
             value={localDeposit}
             onChange={(e) => setLocalDeposit(e.target.value)}
             onBlur={handleDepositBlur}
+            step={0.01}
+            inputMode="decimal"
             className="h-8 text-sm w-20"
-            placeholder="보증금"
+            placeholder="예: 1.5 -> 1.5억"
           />
           <span className="text-gray-400">/</span>
           <Input
@@ -151,7 +214,7 @@ export function EditableDepositMonthCell({
             onChange={(e) => setLocalMonth(e.target.value)}
             onBlur={handleMonthBlur}
             className="h-8 text-sm w-20"
-            placeholder="월세"
+            placeholder="예: 80 -> 80만"
           />
         </div>
       ) : (

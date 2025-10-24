@@ -64,7 +64,7 @@ export function DetailSidebar({
       )}
       <div
         className={cn(
-          "flex-1 overflow-y-auto px-6 py-6",
+          "flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-6",
           contentClassName
         )}
       >
