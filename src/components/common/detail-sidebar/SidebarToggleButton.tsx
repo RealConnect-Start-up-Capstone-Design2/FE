@@ -20,9 +20,9 @@ export function SidebarToggleButton({
       style={{
         width: "28px",
         height: "127px",
-        top: "160px", // Layout padding(52px) + PageHeader(72px) + gap(12px) + 1.5rem(24px)
+        top: "50px", // Layout padding(52px) + PageHeader(72px) + gap(12px) + 1.5rem(24px)
         right: isOpen ? "480px" : "0", // 사이드바 너비만큼
-        transform: isOpen ? "translateX(28px)" : "translateX(0)", // 책갈피처럼 왼쪽으로 튀어나옴
+        transform: isOpen ? "translateX(0)" : "translateX(0)",
       }}
       aria-label={isOpen ? "카드 닫기" : "카드 열기"}
     >
@@ -30,7 +30,7 @@ export function SidebarToggleButton({
         className="relative h-full w-full"
         style={{
           backgroundColor: "#1C2882",
-          borderRadius: "0px 6px 100px 0px",
+          borderRadius: "6px 0px 0px 100px",
         }}
       >
         {/* 화살표 아이콘 */}
