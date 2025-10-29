@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
@@ -19,6 +19,21 @@ interface PropertyManagerHeaderProps {
   onSelectComplex: (apartmentComplexId: number) => void;
   onRefreshPreferredComplexes: () => void;
   isComplexLoading?: boolean;
+  selectedRequestType?: string;
+  onSelectRequestType?: (requestType: string | undefined) => void;
+  selectedPropertyStatus?: string;
+  onSelectPropertyStatus?: (propertyStatus: string | undefined) => void;
+  selectedManageType?: string;
+  onSelectManageType?: (manageType: string | undefined) => void;
+  areaOptions?: DropdownOption[];
+  selectedArea?: string;
+  onSelectArea?: (area: string | undefined) => void;
+  phoneNumber?: string;
+  onPhoneNumberChange?: (phoneNumber: string) => void;
+  dong?: string;
+  onDongChange?: (dong: string) => void;
+  ho?: string;
+  onHoChange?: (ho: string) => void;
 }
 
 export function PropertyManagerHeader({
@@ -27,14 +42,136 @@ export function PropertyManagerHeader({
   onSelectComplex,
   onRefreshPreferredComplexes,
   isComplexLoading = false,
+  selectedRequestType,
+  onSelectRequestType,
+  selectedPropertyStatus,
+  onSelectPropertyStatus,
+  selectedManageType,
+  onSelectManageType,
+  areaOptions = [],
+  selectedArea,
+  onSelectArea,
+  phoneNumber,
+  onPhoneNumberChange,
+  dong,
+  onDongChange,
+  ho,
+  onHoChange,
 }: PropertyManagerHeaderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [localPhoneNumber, setLocalPhoneNumber] = useState(phoneNumber || "");
+  const [localDong, setLocalDong] = useState(dong || "");
+  const [localHo, setLocalHo] = useState(ho || "");
 
-  const dummyOptions = [
-    { label: "단지 추가", value: "add-property" },
-    { label: "단지 수정", value: "edit-property" },
-    { label: "단지 삭제", value: "delete-property" },
+  // phoneNumber prop이 변경되면 localPhoneNumber 동기화
+  useEffect(() => {
+    setLocalPhoneNumber(phoneNumber || "");
+  }, [phoneNumber]);
+
+  // dong prop이 변경되면 localDong 동기화
+  useEffect(() => {
+    setLocalDong(dong || "");
+  }, [dong]);
+
+  // ho prop이 변경되면 localHo 동기화
+  useEffect(() => {
+    setLocalHo(ho || "");
+  }, [ho]);
+
+  const manageTypeOptions: DropdownOption[] = [
+    { label: "기본", value: "NONE" },
+    { label: "관심", value: "ATTENTION" },
+    { label: "주의", value: "CAUTION" },
   ];
+
+  const requestTypeOptions: DropdownOption[] = [
+    { label: "없음", value: "NONE" },
+    { label: "입주", value: "SELF" },
+    { label: "매도", value: "SALE" },
+    { label: "전세", value: "JEONSE" },
+    { label: "월세", value: "MONTHLY" },
+    { label: "미수신", value: "NOT_RECEIVED" },
+    { label: "고민중", value: "THINKING" },
+  ];
+
+  const propertyStatusOptions: DropdownOption[] = [
+    { label: "없음", value: "NONE" },
+    { label: "거래 전", value: "BEFORE" },
+    { label: "광고 중", value: "ADVERTISING" },
+    { label: "거래 완료", value: "COMPLETED" },
+  ];
+
+  const handleSelectRequestType = useCallback(
+    (value: string) => {
+      if (onSelectRequestType) {
+        onSelectRequestType(value);
+      }
+    },
+    [onSelectRequestType]
+  );
+
+  const handleSelectPropertyStatus = useCallback(
+    (value: string) => {
+      if (onSelectPropertyStatus) {
+        onSelectPropertyStatus(value);
+      }
+    },
+    [onSelectPropertyStatus]
+  );
+
+  const handleSelectManageType = useCallback(
+    (value: string) => {
+      if (onSelectManageType) {
+        // "기본" 선택 시에도 "NONE"으로 필터링 적용
+        onSelectManageType(value);
+      }
+    },
+    [onSelectManageType]
+  );
+
+  const handlePhoneNumberChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      // 숫자만 입력 가능하도록 필터링
+      const numericValue = value.replace(/[^0-9]/g, "");
+      setLocalPhoneNumber(numericValue);
+      if (onPhoneNumberChange) {
+        onPhoneNumberChange(numericValue);
+      }
+    },
+    [onPhoneNumberChange]
+  );
+
+  const handleSelectArea = useCallback(
+    (value: string) => {
+      if (onSelectArea) {
+        onSelectArea(value);
+      }
+    },
+    [onSelectArea]
+  );
+
+  const handleDongChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setLocalDong(value);
+      if (onDongChange) {
+        onDongChange(value);
+      }
+    },
+    [onDongChange]
+  );
+
+  const handleHoChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setLocalHo(value);
+      if (onHoChange) {
+        onHoChange(value);
+      }
+    },
+    [onHoChange]
+  );
 
   const handleSelectComplex = useCallback(
     (value: string) => {
@@ -86,13 +223,18 @@ export function PropertyManagerHeader({
                     : undefined
                 }
                 onChange={handleSelectComplex}
-                disabled={
-                  isComplexLoading || complexOptions.length === 0
-                }
+                disabled={isComplexLoading || complexOptions.length === 0}
               />
               <div className="w-98">
                 <InputGroup>
-                  <InputGroupInput placeholder="전화번호 검색" />
+                  <InputGroupInput
+                    placeholder="전화번호 검색"
+                    value={localPhoneNumber}
+                    onChange={handlePhoneNumberChange}
+                    type="text"
+                    inputMode="numeric"
+                    className="text-black dark:text-white"
+                  />
                   <InputGroupAddon>
                     <Search />
                   </InputGroupAddon>
@@ -105,34 +247,53 @@ export function PropertyManagerHeader({
               <DropdownMenu
                 className="font-semibold"
                 placeholder="즐겨찾기"
-                options={dummyOptions}
+                options={manageTypeOptions}
+                value={selectedManageType}
+                onChange={handleSelectManageType}
               />
               <InputGroup className="w-32 h-12">
                 <InputGroupAddon align="block-start">
-                  <InputGroupInput placeholder="동 검색" />
+                  <InputGroupInput
+                    placeholder="동 검색"
+                    value={localDong}
+                    onChange={handleDongChange}
+                    className="text-black dark:text-white"
+                  />
                   <Search />
                 </InputGroupAddon>
               </InputGroup>
               <InputGroup className="w-32">
                 <InputGroupAddon align="block-start">
-                  <InputGroupInput placeholder="호 검색" />
+                  <InputGroupInput
+                    placeholder="호 검색"
+                    value={localHo}
+                    onChange={handleHoChange}
+                    className="text-black dark:text-white"
+                  />
                   <Search />
                 </InputGroupAddon>
               </InputGroup>
               <DropdownMenu
                 className="font-semibold"
                 placeholder="면적 선택"
-                options={dummyOptions}
+                options={areaOptions}
+                disabled={areaOptions.length === 0}
+                value={selectedArea}
+                onChange={handleSelectArea}
               />
               <DropdownMenu
                 className="font-semibold"
                 placeholder="의뢰 유형"
-                options={dummyOptions}
+                options={requestTypeOptions}
+                value={selectedRequestType}
+                onChange={handleSelectRequestType}
               />
               <DropdownMenu
                 className="font-semibold"
                 placeholder="매물 상태"
-                options={dummyOptions}
+                options={propertyStatusOptions}
+                value={selectedPropertyStatus}
+                onChange={handleSelectPropertyStatus}
               />
             </div>
           </div>

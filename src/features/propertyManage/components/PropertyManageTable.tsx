@@ -145,11 +145,35 @@ export function PropertyManageTable({
           (apt) => apt.apartmentId === apartmentId
         );
 
+        // 매물 상태 확인 (로컬 상태 우선, 없으면 서버 데이터)
+        const currentPropertyStatus =
+          localDropdownStates[apartmentId]?.propertyStatus ??
+          currentApartment?.property?.propertyStatus ??
+          "NONE";
+
         // property가 존재하면 PATCH, 없으면 POST
         if (currentApartment?.property) {
           await updateRequestTypeAPI(apartmentId, requestType);
         } else {
           await createPropertyWithRequestTypeAPI(apartmentId, requestType);
+        }
+
+        // 의뢰 유형이 "NONE"이 아니고, 매물 상태가 "NONE"이면 자동으로 "BEFORE"로 변경
+        if (requestType !== "NONE" && currentPropertyStatus === "NONE") {
+          try {
+            const apartment = apartments.find(
+              (apt) => apt.apartmentId === apartmentId
+            );
+            // property가 존재하면 PATCH, 없으면 POST로 매물 상태도 함께 생성
+            if (apartment?.property) {
+              await updatePropertyStatusAPI(apartmentId, "BEFORE");
+            } else {
+              await createPropertyWithStatusAPI(apartmentId, "BEFORE");
+            }
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          } catch (_statusError) {
+            // 매물 상태 업데이트 실패해도 의뢰 유형 업데이트는 성공했으므로 에러 무시
+          }
         }
 
         // 로컬 상태에서 해당 변경사항 제거 (이미 서버에 반영됨)
@@ -166,12 +190,12 @@ export function PropertyManageTable({
         });
 
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
-      } catch (error) {
-        console.error("의뢰 유형 업데이트 실패:", error);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_error) {
         alert("의뢰 유형 업데이트에 실패했습니다.");
       }
     },
-    [apartments, queryClient]
+    [apartments, queryClient, localDropdownStates]
   );
 
   // 매물 상태 전용 핸들러 - onChange 시점에 즉시 처리
@@ -204,8 +228,8 @@ export function PropertyManageTable({
         });
 
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
-      } catch (error) {
-        console.error("매물 상태 업데이트 실패:", error);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_error) {
         alert("매물 상태 업데이트에 실패했습니다.");
       }
     },
@@ -247,8 +271,8 @@ export function PropertyManageTable({
         });
 
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
-      } catch (error) {
-        console.error("관리 타입 업데이트 실패:", error);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_error) {
         alert("관리 타입 업데이트에 실패했습니다.");
       }
     },
@@ -329,8 +353,8 @@ export function PropertyManageTable({
                 queryKey: ["contract", apartmentId],
               });
             }
-          } catch (error) {
-            console.error("계약 정보 동기화 실패:", error);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          } catch (_error) {
             // 계약 동기화 실패해도 매물 저장은 성공했으므로 에러 무시
           }
         }
@@ -343,8 +367,8 @@ export function PropertyManageTable({
         });
 
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
-      } catch (error) {
-        console.error("매물 정보 업데이트 실패:", error);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_error) {
         alert("매물 정보 업데이트에 실패했습니다.");
       }
     },
@@ -429,6 +453,7 @@ export function PropertyManageTable({
             <TableHead>매매</TableHead>
             <TableHead>전세</TableHead>
             <TableHead>보증금/월세</TableHead>
+            <TableHead>소유자</TableHead>
             <TableHead>연락처</TableHead>
             <TableHead>계약일</TableHead>
           </TableRow>
@@ -447,6 +472,16 @@ export function PropertyManageTable({
               pendingProperty?.monthPrice ?? property?.monthPrice;
             const ownerPhoneValue =
               pendingProperty?.ownerPhone ?? property?.ownerPhone;
+            const ownerNameValue =
+              pendingProperty?.ownerName ?? property?.ownerName;
+
+            // 매물 상태에 따른 드롭다운 배경색 결정
+            const propertyStatus = getDisplayValue(apartment, "propertyStatus");
+            const isActiveStatus =
+              propertyStatus === "BEFORE" || propertyStatus === "ADVERTISING";
+            const dropdownBgColor = isActiveStatus
+              ? "bg-[#E8EDFF]"
+              : "bg-[#EDEDED]";
 
             return (
               <TableRow
@@ -492,37 +527,28 @@ export function PropertyManageTable({
 
                 {/* 의뢰 유형 */}
                 <TableCell>
-                  {property || isSelected ? (
-                    <DropdownMenuCell
-                      options={requestTypeOptions}
-                      value={getDisplayValue(apartment, "requestType")}
-                      onChange={(value) => {
-                        // 즉시 API 호출
-                        handleRequestTypeUpdate(apartment.apartmentId, value);
-                      }}
-                    />
-                  ) : (
-                    <span className="text-gray-400">-</span>
-                  )}
+                  <DropdownMenuCell
+                    options={requestTypeOptions}
+                    value={getDisplayValue(apartment, "requestType")}
+                    onChange={(value) => {
+                      // 즉시 API 호출
+                      handleRequestTypeUpdate(apartment.apartmentId, value);
+                    }}
+                    buttonClassName={`w-[70px] min-w-[70px] ${dropdownBgColor}`}
+                  />
                 </TableCell>
 
                 {/* 매물 상태 */}
                 <TableCell>
-                  {property || isSelected ? (
-                    <DropdownMenuCell
-                      options={propertyStatusOptions}
-                      value={getDisplayValue(apartment, "propertyStatus")}
-                      onChange={(value) => {
-                        // 즉시 API 호출
-                        handlePropertyStatusUpdate(
-                          apartment.apartmentId,
-                          value
-                        );
-                      }}
-                    />
-                  ) : (
-                    <span className="text-gray-400">-</span>
-                  )}
+                  <DropdownMenuCell
+                    options={propertyStatusOptions}
+                    value={getDisplayValue(apartment, "propertyStatus")}
+                    onChange={(value) => {
+                      // 즉시 API 호출
+                      handlePropertyStatusUpdate(apartment.apartmentId, value);
+                    }}
+                    buttonClassName={`w-[90px] min-w-[90px] ${dropdownBgColor}`}
+                  />
                 </TableCell>
 
                 {/* 매매가 */}
@@ -532,7 +558,7 @@ export function PropertyManageTable({
                   value={salePriceValue}
                   isSelected={isSelected}
                   type="number"
-                  placeholder="예: 17.5 -> 17.5억"
+                  placeholder="17.5 -> 17.5억"
                   displayValue={formatPriceWithDecimal(salePriceValue)}
                   onUpdate={handlePropertyUpdate}
                 />
@@ -544,7 +570,7 @@ export function PropertyManageTable({
                   value={jeonsePriceValue}
                   isSelected={isSelected}
                   type="number"
-                  placeholder="예: 10.3 -> 10.3억"
+                  placeholder="10.3 -> 10.3억"
                   displayValue={formatPriceWithDecimal(jeonsePriceValue)}
                   onUpdate={handlePropertyUpdate}
                 />
@@ -555,6 +581,18 @@ export function PropertyManageTable({
                   depositValue={depositValue}
                   monthValue={monthPriceValue}
                   isSelected={isSelected}
+                  onUpdate={handlePropertyUpdate}
+                />
+
+                {/* 소유자 */}
+                <EditablePropertyCell
+                  apartmentId={apartment.apartmentId}
+                  field="ownerName"
+                  value={ownerNameValue}
+                  isSelected={isSelected}
+                  type="text"
+                  placeholder="소유자"
+                  displayValue={ownerNameValue}
                   onUpdate={handlePropertyUpdate}
                 />
 
