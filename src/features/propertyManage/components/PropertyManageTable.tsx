@@ -145,11 +145,35 @@ export function PropertyManageTable({
           (apt) => apt.apartmentId === apartmentId
         );
 
+        // 매물 상태 확인 (로컬 상태 우선, 없으면 서버 데이터)
+        const currentPropertyStatus =
+          localDropdownStates[apartmentId]?.propertyStatus ??
+          currentApartment?.property?.propertyStatus ??
+          "NONE";
+
         // property가 존재하면 PATCH, 없으면 POST
         if (currentApartment?.property) {
           await updateRequestTypeAPI(apartmentId, requestType);
         } else {
           await createPropertyWithRequestTypeAPI(apartmentId, requestType);
+        }
+
+        // 의뢰 유형이 "NONE"이 아니고, 매물 상태가 "NONE"이면 자동으로 "BEFORE"로 변경
+        if (requestType !== "NONE" && currentPropertyStatus === "NONE") {
+          try {
+            const apartment = apartments.find(
+              (apt) => apt.apartmentId === apartmentId
+            );
+            // property가 존재하면 PATCH, 없으면 POST로 매물 상태도 함께 생성
+            if (apartment?.property) {
+              await updatePropertyStatusAPI(apartmentId, "BEFORE");
+            } else {
+              await createPropertyWithStatusAPI(apartmentId, "BEFORE");
+            }
+          } catch (statusError) {
+            console.error("매물 상태 자동 업데이트 실패:", statusError);
+            // 매물 상태 업데이트 실패해도 의뢰 유형 업데이트는 성공했으므로 에러 무시
+          }
         }
 
         // 로컬 상태에서 해당 변경사항 제거 (이미 서버에 반영됨)
@@ -171,7 +195,7 @@ export function PropertyManageTable({
         alert("의뢰 유형 업데이트에 실패했습니다.");
       }
     },
-    [apartments, queryClient]
+    [apartments, queryClient, localDropdownStates]
   );
 
   // 매물 상태 전용 핸들러 - onChange 시점에 즉시 처리
