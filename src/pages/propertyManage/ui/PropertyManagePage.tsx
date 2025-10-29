@@ -11,7 +11,9 @@ import {
 import { PropertyMemoBlock } from "@/features/propertyManage/components/blocks/PropertyMemoBlock";
 import { PropertyContractBlock } from "@/features/propertyManage/components/blocks/PropertyContractBlock";
 import { fetchProperties } from "@/features/propertyManage/services/propertyService";
-import { fetchPreferredComplexList } from "@/shared/api/region";
+import { fetchPreferredComplexList, fetchAreaList } from "@/shared/api/region";
+import type { ApartmentWithProperty } from "@/features/propertyManage/stores/propertyStore";
+import type { DropdownOption } from "@/components/ui/dropdown-menu";
 
 /**
  * 매물 관리 페이지
@@ -25,6 +27,17 @@ export function PropertyManagePage() {
   const [selectedApartmentComplexId, setSelectedApartmentComplexId] = useState<
     number | undefined
   >();
+  const [selectedRequestType, setSelectedRequestType] = useState<
+    string | undefined
+  >();
+  const [selectedPropertyStatus, setSelectedPropertyStatus] = useState<
+    string | undefined
+  >();
+  const [selectedManageType, setSelectedManageType] = useState<
+    string | undefined
+  >();
+  const [selectedArea, setSelectedArea] = useState<string | undefined>();
+  const [areaList, setAreaList] = useState<number[]>([]);
   // "카드 닫기" 버튼으로 명시적으로 닫았는지 추적
   const [isManuallyClosedByButton, setIsManuallyClosedByButton] =
     useState(false);
@@ -104,8 +117,95 @@ export function PropertyManagePage() {
     },
   });
 
-  const apartments = data?.pages.flatMap((page) => page.content) || [];
-  const selectedApartment = apartments.find(
+  const apartments = useMemo(() => {
+    const allApartments =
+      (data?.pages.flatMap(
+        (page) => page.content
+      ) as ApartmentWithProperty[]) || [];
+    // 중복 제거: 같은 apartmentId를 가진 항목 중 첫 번째만 유지
+    const uniqueApartments = Array.from(
+      new Map(
+        allApartments.map((apt: ApartmentWithProperty) => [
+          apt.apartmentId,
+          apt,
+        ])
+      ).values()
+    ) as ApartmentWithProperty[];
+    return uniqueApartments;
+  }, [data?.pages]);
+
+  // 의뢰 유형 필터링 및 정렬
+  const filteredAndSortedApartments = useMemo(() => {
+    let filtered = apartments;
+
+    // 관리 타입 필터 적용
+    if (selectedManageType !== undefined) {
+      filtered = filtered.filter((apartment) => {
+        const manageType = apartment.property?.manageType || "NONE";
+        return manageType === selectedManageType;
+      });
+    }
+
+    // 의뢰 유형 필터 적용
+    if (selectedRequestType !== undefined) {
+      filtered = filtered.filter((apartment) => {
+        const requestType = apartment.property?.requestType || "NONE";
+        return requestType === selectedRequestType;
+      });
+    }
+
+    // 매물 상태 필터 적용
+    if (selectedPropertyStatus !== undefined) {
+      filtered = filtered.filter((apartment) => {
+        const propertyStatus = apartment.property?.propertyStatus || "NONE";
+        return propertyStatus === selectedPropertyStatus;
+      });
+    }
+
+    // 면적 필터 적용
+    if (selectedArea !== undefined) {
+      filtered = filtered.filter((apartment) => {
+        const apartmentArea = apartment.area;
+        if (apartmentArea === undefined || apartmentArea === null) {
+          return false;
+        }
+        return String(apartmentArea) === selectedArea;
+      });
+    }
+
+    // 선택된 의뢰 유형이 있으면 위에서부터 정렬 (선택된 것이 먼저 나오도록)
+    if (selectedRequestType && selectedRequestType !== "NONE") {
+      filtered = [...filtered].sort((a, b) => {
+        const aRequestType = a.property?.requestType || "NONE";
+        const bRequestType = b.property?.requestType || "NONE";
+
+        // 선택된 의뢰 유형이 먼저 오도록
+        if (
+          aRequestType === selectedRequestType &&
+          bRequestType !== selectedRequestType
+        ) {
+          return -1;
+        }
+        if (
+          aRequestType !== selectedRequestType &&
+          bRequestType === selectedRequestType
+        ) {
+          return 1;
+        }
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [
+    apartments,
+    selectedRequestType,
+    selectedPropertyStatus,
+    selectedManageType,
+    selectedArea,
+  ]);
+
+  const selectedApartment = filteredAndSortedApartments.find(
     (apt) => apt.apartmentId === selectedPropertyId
   );
 
@@ -250,12 +350,22 @@ export function PropertyManagePage() {
 
   useEffect(() => {
     if (!selectedApartmentComplexId) {
+      setAreaList([]);
       return;
     }
 
     if (tableContainerRef.current) {
       tableContainerRef.current.scrollTop = 0;
     }
+
+    // 면적 목록 조회
+    void fetchAreaList(selectedApartmentComplexId)
+      .then((areas) => {
+        setAreaList(areas);
+      })
+      .catch(() => {
+        setAreaList([]);
+      });
   }, [selectedApartmentComplexId]);
 
   const handleSelectApartmentComplex = useCallback(
@@ -273,6 +383,14 @@ export function PropertyManagePage() {
   const handleRefreshPreferredComplexes = useCallback(() => {
     void refetchPreferredComplexes();
   }, [refetchPreferredComplexes]);
+
+  // 면적 옵션 생성 (㎡ 형식)
+  const areaOptions = useMemo<DropdownOption[]>(() => {
+    return areaList.map((area) => ({
+      label: `${area}㎡`,
+      value: String(area),
+    }));
+  }, [areaList]);
 
   const isTableLoading = isPreferredComplexLoading || isPropertiesLoading;
 
@@ -302,12 +420,21 @@ export function PropertyManagePage() {
           onSelectComplex={handleSelectApartmentComplex}
           onRefreshPreferredComplexes={handleRefreshPreferredComplexes}
           isComplexLoading={isPreferredComplexLoading}
+          selectedRequestType={selectedRequestType}
+          onSelectRequestType={setSelectedRequestType}
+          selectedPropertyStatus={selectedPropertyStatus}
+          onSelectPropertyStatus={setSelectedPropertyStatus}
+          selectedManageType={selectedManageType}
+          onSelectManageType={setSelectedManageType}
+          areaOptions={areaOptions}
+          selectedArea={selectedArea}
+          onSelectArea={setSelectedArea}
         />
         <div ref={tableContainerRef} className="flex-1 overflow-hidden">
           <PropertyManageTable
             onPropertyClick={handlePropertyClick}
             selectedApartmentId={selectedPropertyId}
-            apartments={apartments}
+            apartments={filteredAndSortedApartments}
             isLoading={isTableLoading}
             isFetchingNextPage={isFetchingNextPage}
             hasNextPage={hasNextPage ?? false}

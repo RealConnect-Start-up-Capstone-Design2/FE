@@ -109,3 +109,18 @@ export const fetchPreferredComplexList = async (): Promise<
   );
   return response.data;
 };
+
+// 아파트 단지 면적 목록 조회
+export const fetchAreaList = async (
+  apartmentComplexId: number
+): Promise<number[]> => {
+  const response = await apiClient.get<number[]>(
+    "/api/apartment-complex/areaList",
+    {
+      params: {
+        apartmentComplexId,
+      },
+    }
+  );
+  return response.data;
+};

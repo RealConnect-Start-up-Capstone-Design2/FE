@@ -19,6 +19,15 @@ interface PropertyManagerHeaderProps {
   onSelectComplex: (apartmentComplexId: number) => void;
   onRefreshPreferredComplexes: () => void;
   isComplexLoading?: boolean;
+  selectedRequestType?: string;
+  onSelectRequestType?: (requestType: string | undefined) => void;
+  selectedPropertyStatus?: string;
+  onSelectPropertyStatus?: (propertyStatus: string | undefined) => void;
+  selectedManageType?: string;
+  onSelectManageType?: (manageType: string | undefined) => void;
+  areaOptions?: DropdownOption[];
+  selectedArea?: string;
+  onSelectArea?: (area: string | undefined) => void;
 }
 
 export function PropertyManagerHeader({
@@ -27,14 +36,83 @@ export function PropertyManagerHeader({
   onSelectComplex,
   onRefreshPreferredComplexes,
   isComplexLoading = false,
+  selectedRequestType,
+  onSelectRequestType,
+  selectedPropertyStatus,
+  onSelectPropertyStatus,
+  selectedManageType,
+  onSelectManageType,
+  areaOptions = [],
+  selectedArea,
+  onSelectArea,
 }: PropertyManagerHeaderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const dummyOptions = [
+  const dummyOptions: DropdownOption[] = [
     { label: "단지 추가", value: "add-property" },
     { label: "단지 수정", value: "edit-property" },
     { label: "단지 삭제", value: "delete-property" },
   ];
+
+  const manageTypeOptions: DropdownOption[] = [
+    { label: "기본", value: "NONE" },
+    { label: "관심", value: "ATTENTION" },
+    { label: "주의", value: "CAUTION" },
+  ];
+
+  const requestTypeOptions: DropdownOption[] = [
+    { label: "없음", value: "NONE" },
+    { label: "입주", value: "SELF" },
+    { label: "매도", value: "SALE" },
+    { label: "전세", value: "JEONSE" },
+    { label: "월세", value: "MONTHLY" },
+    { label: "미수신", value: "NOT_RECEIVED" },
+    { label: "고민중", value: "THINKING" },
+  ];
+
+  const propertyStatusOptions: DropdownOption[] = [
+    { label: "없음", value: "NONE" },
+    { label: "거래 전", value: "BEFORE" },
+    { label: "광고 중", value: "ADVERTISING" },
+    { label: "거래 완료", value: "COMPLETED" },
+  ];
+
+  const handleSelectRequestType = useCallback(
+    (value: string) => {
+      if (onSelectRequestType) {
+        onSelectRequestType(value);
+      }
+    },
+    [onSelectRequestType]
+  );
+
+  const handleSelectPropertyStatus = useCallback(
+    (value: string) => {
+      if (onSelectPropertyStatus) {
+        onSelectPropertyStatus(value);
+      }
+    },
+    [onSelectPropertyStatus]
+  );
+
+  const handleSelectManageType = useCallback(
+    (value: string) => {
+      if (onSelectManageType) {
+        // "기본" 선택 시에도 "NONE"으로 필터링 적용
+        onSelectManageType(value);
+      }
+    },
+    [onSelectManageType]
+  );
+
+  const handleSelectArea = useCallback(
+    (value: string) => {
+      if (onSelectArea) {
+        onSelectArea(value);
+      }
+    },
+    [onSelectArea]
+  );
 
   const handleSelectComplex = useCallback(
     (value: string) => {
@@ -86,9 +164,7 @@ export function PropertyManagerHeader({
                     : undefined
                 }
                 onChange={handleSelectComplex}
-                disabled={
-                  isComplexLoading || complexOptions.length === 0
-                }
+                disabled={isComplexLoading || complexOptions.length === 0}
               />
               <div className="w-98">
                 <InputGroup>
@@ -105,7 +181,9 @@ export function PropertyManagerHeader({
               <DropdownMenu
                 className="font-semibold"
                 placeholder="즐겨찾기"
-                options={dummyOptions}
+                options={manageTypeOptions}
+                value={selectedManageType}
+                onChange={handleSelectManageType}
               />
               <InputGroup className="w-32 h-12">
                 <InputGroupAddon align="block-start">
@@ -122,17 +200,24 @@ export function PropertyManagerHeader({
               <DropdownMenu
                 className="font-semibold"
                 placeholder="면적 선택"
-                options={dummyOptions}
+                options={areaOptions}
+                disabled={areaOptions.length === 0}
+                value={selectedArea}
+                onChange={handleSelectArea}
               />
               <DropdownMenu
                 className="font-semibold"
                 placeholder="의뢰 유형"
-                options={dummyOptions}
+                options={requestTypeOptions}
+                value={selectedRequestType}
+                onChange={handleSelectRequestType}
               />
               <DropdownMenu
                 className="font-semibold"
                 placeholder="매물 상태"
-                options={dummyOptions}
+                options={propertyStatusOptions}
+                value={selectedPropertyStatus}
+                onChange={handleSelectPropertyStatus}
               />
             </div>
           </div>
