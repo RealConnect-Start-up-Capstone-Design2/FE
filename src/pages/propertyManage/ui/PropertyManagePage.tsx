@@ -14,6 +14,7 @@ import { fetchProperties } from "@/features/propertyManage/services/propertyServ
 import { fetchPreferredComplexList, fetchAreaList } from "@/shared/api/region";
 import type { ApartmentWithProperty } from "@/features/propertyManage/stores/propertyStore";
 import type { DropdownOption } from "@/components/ui/dropdown-menu";
+import { usePropertyFilter } from "@/features/propertyManage/hooks/usePropertyFilter";
 
 /**
  * 매물 관리 페이지
@@ -38,6 +39,9 @@ export function PropertyManagePage() {
   >();
   const [selectedArea, setSelectedArea] = useState<string | undefined>();
   const [areaList, setAreaList] = useState<number[]>([]);
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [dong, setDong] = useState<string>("");
+  const [ho, setHo] = useState<string>("");
   // "카드 닫기" 버튼으로 명시적으로 닫았는지 추적
   const [isManuallyClosedByButton, setIsManuallyClosedByButton] =
     useState(false);
@@ -134,76 +138,17 @@ export function PropertyManagePage() {
     return uniqueApartments;
   }, [data?.pages]);
 
-  // 의뢰 유형 필터링 및 정렬
-  const filteredAndSortedApartments = useMemo(() => {
-    let filtered = apartments;
-
-    // 관리 타입 필터 적용
-    if (selectedManageType !== undefined) {
-      filtered = filtered.filter((apartment) => {
-        const manageType = apartment.property?.manageType || "NONE";
-        return manageType === selectedManageType;
-      });
-    }
-
-    // 의뢰 유형 필터 적용
-    if (selectedRequestType !== undefined) {
-      filtered = filtered.filter((apartment) => {
-        const requestType = apartment.property?.requestType || "NONE";
-        return requestType === selectedRequestType;
-      });
-    }
-
-    // 매물 상태 필터 적용
-    if (selectedPropertyStatus !== undefined) {
-      filtered = filtered.filter((apartment) => {
-        const propertyStatus = apartment.property?.propertyStatus || "NONE";
-        return propertyStatus === selectedPropertyStatus;
-      });
-    }
-
-    // 면적 필터 적용
-    if (selectedArea !== undefined) {
-      filtered = filtered.filter((apartment) => {
-        const apartmentArea = apartment.area;
-        if (apartmentArea === undefined || apartmentArea === null) {
-          return false;
-        }
-        return String(apartmentArea) === selectedArea;
-      });
-    }
-
-    // 선택된 의뢰 유형이 있으면 위에서부터 정렬 (선택된 것이 먼저 나오도록)
-    if (selectedRequestType && selectedRequestType !== "NONE") {
-      filtered = [...filtered].sort((a, b) => {
-        const aRequestType = a.property?.requestType || "NONE";
-        const bRequestType = b.property?.requestType || "NONE";
-
-        // 선택된 의뢰 유형이 먼저 오도록
-        if (
-          aRequestType === selectedRequestType &&
-          bRequestType !== selectedRequestType
-        ) {
-          return -1;
-        }
-        if (
-          aRequestType !== selectedRequestType &&
-          bRequestType === selectedRequestType
-        ) {
-          return 1;
-        }
-        return 0;
-      });
-    }
-
-    return filtered;
-  }, [
+  // 필터링 및 정렬
+  const { filteredAndSortedApartments } = usePropertyFilter({
     apartments,
+    selectedManageType,
     selectedRequestType,
     selectedPropertyStatus,
-    selectedManageType,
     selectedArea,
-  ]);
+    phoneNumber,
+    dong,
+    ho,
+  });
 
   const selectedApartment = filteredAndSortedApartments.find(
     (apt) => apt.apartmentId === selectedPropertyId
@@ -429,6 +374,12 @@ export function PropertyManagePage() {
           areaOptions={areaOptions}
           selectedArea={selectedArea}
           onSelectArea={setSelectedArea}
+          phoneNumber={phoneNumber}
+          onPhoneNumberChange={setPhoneNumber}
+          dong={dong}
+          onDongChange={setDong}
+          ho={ho}
+          onHoChange={setHo}
         />
         <div ref={tableContainerRef} className="flex-1 overflow-hidden">
           <PropertyManageTable

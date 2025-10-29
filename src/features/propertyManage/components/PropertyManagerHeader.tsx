@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
@@ -28,6 +28,12 @@ interface PropertyManagerHeaderProps {
   areaOptions?: DropdownOption[];
   selectedArea?: string;
   onSelectArea?: (area: string | undefined) => void;
+  phoneNumber?: string;
+  onPhoneNumberChange?: (phoneNumber: string) => void;
+  dong?: string;
+  onDongChange?: (dong: string) => void;
+  ho?: string;
+  onHoChange?: (ho: string) => void;
 }
 
 export function PropertyManagerHeader({
@@ -45,8 +51,32 @@ export function PropertyManagerHeader({
   areaOptions = [],
   selectedArea,
   onSelectArea,
+  phoneNumber,
+  onPhoneNumberChange,
+  dong,
+  onDongChange,
+  ho,
+  onHoChange,
 }: PropertyManagerHeaderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [localPhoneNumber, setLocalPhoneNumber] = useState(phoneNumber || "");
+  const [localDong, setLocalDong] = useState(dong || "");
+  const [localHo, setLocalHo] = useState(ho || "");
+
+  // phoneNumber prop이 변경되면 localPhoneNumber 동기화
+  useEffect(() => {
+    setLocalPhoneNumber(phoneNumber || "");
+  }, [phoneNumber]);
+
+  // dong prop이 변경되면 localDong 동기화
+  useEffect(() => {
+    setLocalDong(dong || "");
+  }, [dong]);
+
+  // ho prop이 변경되면 localHo 동기화
+  useEffect(() => {
+    setLocalHo(ho || "");
+  }, [ho]);
 
   const dummyOptions: DropdownOption[] = [
     { label: "단지 추가", value: "add-property" },
@@ -105,6 +135,19 @@ export function PropertyManagerHeader({
     [onSelectManageType]
   );
 
+  const handlePhoneNumberChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      // 숫자만 입력 가능하도록 필터링
+      const numericValue = value.replace(/[^0-9]/g, "");
+      setLocalPhoneNumber(numericValue);
+      if (onPhoneNumberChange) {
+        onPhoneNumberChange(numericValue);
+      }
+    },
+    [onPhoneNumberChange]
+  );
+
   const handleSelectArea = useCallback(
     (value: string) => {
       if (onSelectArea) {
@@ -112,6 +155,28 @@ export function PropertyManagerHeader({
       }
     },
     [onSelectArea]
+  );
+
+  const handleDongChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setLocalDong(value);
+      if (onDongChange) {
+        onDongChange(value);
+      }
+    },
+    [onDongChange]
+  );
+
+  const handleHoChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setLocalHo(value);
+      if (onHoChange) {
+        onHoChange(value);
+      }
+    },
+    [onHoChange]
   );
 
   const handleSelectComplex = useCallback(
@@ -168,7 +233,14 @@ export function PropertyManagerHeader({
               />
               <div className="w-98">
                 <InputGroup>
-                  <InputGroupInput placeholder="전화번호 검색" />
+                  <InputGroupInput
+                    placeholder="전화번호 검색"
+                    value={localPhoneNumber}
+                    onChange={handlePhoneNumberChange}
+                    type="text"
+                    inputMode="numeric"
+                    className="text-black dark:text-white"
+                  />
                   <InputGroupAddon>
                     <Search />
                   </InputGroupAddon>
@@ -187,13 +259,23 @@ export function PropertyManagerHeader({
               />
               <InputGroup className="w-32 h-12">
                 <InputGroupAddon align="block-start">
-                  <InputGroupInput placeholder="동 검색" />
+                  <InputGroupInput
+                    placeholder="동 검색"
+                    value={localDong}
+                    onChange={handleDongChange}
+                    className="text-black dark:text-white"
+                  />
                   <Search />
                 </InputGroupAddon>
               </InputGroup>
               <InputGroup className="w-32">
                 <InputGroupAddon align="block-start">
-                  <InputGroupInput placeholder="호 검색" />
+                  <InputGroupInput
+                    placeholder="호 검색"
+                    value={localHo}
+                    onChange={handleHoChange}
+                    className="text-black dark:text-white"
+                  />
                   <Search />
                 </InputGroupAddon>
               </InputGroup>

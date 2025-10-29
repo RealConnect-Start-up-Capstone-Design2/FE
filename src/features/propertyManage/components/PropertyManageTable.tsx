@@ -170,8 +170,8 @@ export function PropertyManageTable({
             } else {
               await createPropertyWithStatusAPI(apartmentId, "BEFORE");
             }
-          } catch (statusError) {
-            console.error("매물 상태 자동 업데이트 실패:", statusError);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          } catch (_statusError) {
             // 매물 상태 업데이트 실패해도 의뢰 유형 업데이트는 성공했으므로 에러 무시
           }
         }
@@ -190,8 +190,8 @@ export function PropertyManageTable({
         });
 
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
-      } catch (error) {
-        console.error("의뢰 유형 업데이트 실패:", error);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_error) {
         alert("의뢰 유형 업데이트에 실패했습니다.");
       }
     },
@@ -228,8 +228,8 @@ export function PropertyManageTable({
         });
 
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
-      } catch (error) {
-        console.error("매물 상태 업데이트 실패:", error);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_error) {
         alert("매물 상태 업데이트에 실패했습니다.");
       }
     },
@@ -271,8 +271,8 @@ export function PropertyManageTable({
         });
 
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
-      } catch (error) {
-        console.error("관리 타입 업데이트 실패:", error);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_error) {
         alert("관리 타입 업데이트에 실패했습니다.");
       }
     },
@@ -353,8 +353,8 @@ export function PropertyManageTable({
                 queryKey: ["contract", apartmentId],
               });
             }
-          } catch (error) {
-            console.error("계약 정보 동기화 실패:", error);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          } catch (_error) {
             // 계약 동기화 실패해도 매물 저장은 성공했으므로 에러 무시
           }
         }
@@ -367,8 +367,8 @@ export function PropertyManageTable({
         });
 
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
-      } catch (error) {
-        console.error("매물 정보 업데이트 실패:", error);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_error) {
         alert("매물 정보 업데이트에 실패했습니다.");
       }
     },
