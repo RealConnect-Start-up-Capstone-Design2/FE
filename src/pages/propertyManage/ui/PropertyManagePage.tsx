@@ -96,7 +96,7 @@ export function PropertyManagePage() {
       fetchProperties({
         apartmentComplexId: selectedApartmentComplexId!,
         cursorId: pageParam,
-        size: 30,
+        size: 100,
       }),
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) => {
