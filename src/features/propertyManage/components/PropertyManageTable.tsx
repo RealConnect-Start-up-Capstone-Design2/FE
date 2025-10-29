@@ -429,6 +429,7 @@ export function PropertyManageTable({
             <TableHead>매매</TableHead>
             <TableHead>전세</TableHead>
             <TableHead>보증금/월세</TableHead>
+            <TableHead>소유자</TableHead>
             <TableHead>연락처</TableHead>
             <TableHead>계약일</TableHead>
           </TableRow>
@@ -447,6 +448,8 @@ export function PropertyManageTable({
               pendingProperty?.monthPrice ?? property?.monthPrice;
             const ownerPhoneValue =
               pendingProperty?.ownerPhone ?? property?.ownerPhone;
+            const ownerNameValue =
+              pendingProperty?.ownerName ?? property?.ownerName;
 
             return (
               <TableRow
@@ -525,7 +528,6 @@ export function PropertyManageTable({
                   type="number"
                   placeholder="17.5 -> 17.5억"
                   displayValue={formatPriceWithDecimal(salePriceValue)}
-                  inputClassName="w-[75px] min-w-[75px]"
                   onUpdate={handlePropertyUpdate}
                 />
 
@@ -538,7 +540,6 @@ export function PropertyManageTable({
                   type="number"
                   placeholder="10.3 -> 10.3억"
                   displayValue={formatPriceWithDecimal(jeonsePriceValue)}
-                  inputClassName="w-[75px] min-w-[75px]"
                   onUpdate={handlePropertyUpdate}
                 />
 
@@ -548,6 +549,18 @@ export function PropertyManageTable({
                   depositValue={depositValue}
                   monthValue={monthPriceValue}
                   isSelected={isSelected}
+                  onUpdate={handlePropertyUpdate}
+                />
+
+                {/* 소유자 */}
+                <EditablePropertyCell
+                  apartmentId={apartment.apartmentId}
+                  field="ownerName"
+                  value={ownerNameValue}
+                  isSelected={isSelected}
+                  type="text"
+                  placeholder="소유자"
+                  displayValue={ownerNameValue}
                   onUpdate={handlePropertyUpdate}
                 />
 
