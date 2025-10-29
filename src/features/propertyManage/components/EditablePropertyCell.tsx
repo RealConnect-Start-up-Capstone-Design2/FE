@@ -8,6 +8,7 @@ import {
   formatMonthPrice,
   formatMonthPriceInput,
   formatPrice,
+  cn,
 } from "@/shared/utils";
 
 interface EditablePropertyCellProps {
@@ -18,6 +19,7 @@ interface EditablePropertyCellProps {
   type?: "text" | "number" | "tel";
   placeholder?: string;
   displayValue?: string;
+  inputClassName?: string;
   onUpdate: (
     apartmentId: number,
     field: string,
@@ -37,6 +39,7 @@ export function EditablePropertyCell({
   type = "text",
   placeholder = "",
   displayValue,
+  inputClassName,
   onUpdate,
 }: EditablePropertyCellProps) {
   const [localValue, setLocalValue] = useState<string>(() =>
@@ -92,7 +95,7 @@ export function EditablePropertyCell({
           onBlur={handleBlur}
           step={type === "number" ? 0.01 : undefined}
           inputMode={type === "number" ? "decimal" : undefined}
-          className="h-8 text-sm"
+          className={cn("h-8 text-sm", inputClassName)}
           placeholder={placeholder}
         />
       ) : displayValue ? (
