@@ -475,6 +475,14 @@ export function PropertyManageTable({
             const ownerNameValue =
               pendingProperty?.ownerName ?? property?.ownerName;
 
+            // 매물 상태에 따른 드롭다운 배경색 결정
+            const propertyStatus = getDisplayValue(apartment, "propertyStatus");
+            const isActiveStatus =
+              propertyStatus === "BEFORE" || propertyStatus === "ADVERTISING";
+            const dropdownBgColor = isActiveStatus
+              ? "bg-[#E8EDFF]"
+              : "bg-[#EDEDED]";
+
             return (
               <TableRow
                 key={apartment.apartmentId}
@@ -526,7 +534,7 @@ export function PropertyManageTable({
                       // 즉시 API 호출
                       handleRequestTypeUpdate(apartment.apartmentId, value);
                     }}
-                    buttonClassName="w-[70px] min-w-[70px]"
+                    buttonClassName={`w-[70px] min-w-[70px] ${dropdownBgColor}`}
                   />
                 </TableCell>
 
@@ -539,7 +547,7 @@ export function PropertyManageTable({
                       // 즉시 API 호출
                       handlePropertyStatusUpdate(apartment.apartmentId, value);
                     }}
-                    buttonClassName="w-[90px] min-w-[90px]"
+                    buttonClassName={`w-[90px] min-w-[90px] ${dropdownBgColor}`}
                   />
                 </TableCell>
 
