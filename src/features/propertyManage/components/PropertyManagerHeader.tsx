@@ -78,12 +78,6 @@ export function PropertyManagerHeader({
     setLocalHo(ho || "");
   }, [ho]);
 
-  const dummyOptions: DropdownOption[] = [
-    { label: "단지 추가", value: "add-property" },
-    { label: "단지 수정", value: "edit-property" },
-    { label: "단지 삭제", value: "delete-property" },
-  ];
-
   const manageTypeOptions: DropdownOption[] = [
     { label: "기본", value: "NONE" },
     { label: "관심", value: "ATTENTION" },
