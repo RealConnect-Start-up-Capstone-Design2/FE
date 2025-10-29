@@ -534,8 +534,9 @@ export function PropertyManageTable({
                   value={salePriceValue}
                   isSelected={isSelected}
                   type="number"
-                  placeholder="예: 17.5 -> 17.5억"
+                  placeholder="17.5 -> 17.5억"
                   displayValue={formatPriceWithDecimal(salePriceValue)}
+                  inputClassName="w-[75px] min-w-[75px]"
                   onUpdate={handlePropertyUpdate}
                 />
 
@@ -546,8 +547,9 @@ export function PropertyManageTable({
                   value={jeonsePriceValue}
                   isSelected={isSelected}
                   type="number"
-                  placeholder="예: 10.3 -> 10.3억"
+                  placeholder="10.3 -> 10.3억"
                   displayValue={formatPriceWithDecimal(jeonsePriceValue)}
+                  inputClassName="w-[75px] min-w-[75px]"
                   onUpdate={handlePropertyUpdate}
                 />
 
