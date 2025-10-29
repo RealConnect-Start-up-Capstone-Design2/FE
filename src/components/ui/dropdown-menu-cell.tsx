@@ -104,7 +104,10 @@ export function DropdownMenuCell({
         const maxDropdownHeight = 192;
         const measuredHeight =
           listRef.current?.getBoundingClientRect().height ?? 0;
-        const estimatedHeight = Math.min(options.length * itemHeight, maxDropdownHeight);
+        const estimatedHeight = Math.min(
+          options.length * itemHeight,
+          maxDropdownHeight
+        );
         const dropdownHeight = measuredHeight || estimatedHeight;
 
         // 아래 공간이 부족하면 위로 펼치기
@@ -167,27 +170,29 @@ export function DropdownMenuCell({
           }
         }}
         className={cn(
-          "relative flex min-w-15 items-center gap-2 rounded-full border border-grayscale-400 whitespace-nowrap bg-[#EDEDED] px-2 py-1 text-left text-[13px] font-medium text-[#1B1B1B] focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 z-10",
+          "relative flex min-w-15 items-center justify-between gap-2 rounded-full border border-grayscale-400 whitespace-nowrap bg-[#EDEDED] px-2 py-1 text-left text-[13px] font-medium text-[#1B1B1B] focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 z-10",
           buttonClassName
         )}
       >
-        {selectedOption?.icon && (
-          <img src={selectedOption.icon} alt="" className="h-4 w-4" />
-        )}
-        {!hideLabel && (
-          <span
-            className={selectedOption ? "text-[#1B1B1B]" : "text-[#1B1B1B]"}
-          >
-            {selectedOption
-              ? showValue
-                ? `${selectedOption.label} (${selectedOption.value})`
-                : selectedOption.label
-              : placeholder}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {selectedOption?.icon && (
+            <img src={selectedOption.icon} alt="" className="h-4 w-4" />
+          )}
+          {!hideLabel && (
+            <span
+              className={selectedOption ? "text-[#1B1B1B]" : "text-[#1B1B1B]"}
+            >
+              {selectedOption
+                ? showValue
+                  ? `${selectedOption.label} (${selectedOption.value})`
+                  : selectedOption.label
+                : placeholder}
+            </span>
+          )}
+        </div>
         <ChevronDown
           className={cn(
-            "h-4 w-4 text-grayscale-black transition-transform duration-150",
+            "h-4 w-4 text-grayscale-black transition-transform duration-150 flex-shrink-0",
             isOpen && "rotate-180"
           )}
         />

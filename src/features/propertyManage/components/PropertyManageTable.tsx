@@ -500,6 +500,7 @@ export function PropertyManageTable({
                         // 즉시 API 호출
                         handleRequestTypeUpdate(apartment.apartmentId, value);
                       }}
+                      buttonClassName="w-[70px] min-w-[70px]"
                     />
                   ) : (
                     <span className="text-gray-400">-</span>
@@ -519,6 +520,7 @@ export function PropertyManageTable({
                           value
                         );
                       }}
+                      buttonClassName="w-[90px] min-w-[90px]"
                     />
                   ) : (
                     <span className="text-gray-400">-</span>
