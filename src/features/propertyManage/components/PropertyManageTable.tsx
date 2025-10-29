@@ -492,39 +492,28 @@ export function PropertyManageTable({
 
                 {/* 의뢰 유형 */}
                 <TableCell>
-                  {property || isSelected ? (
-                    <DropdownMenuCell
-                      options={requestTypeOptions}
-                      value={getDisplayValue(apartment, "requestType")}
-                      onChange={(value) => {
-                        // 즉시 API 호출
-                        handleRequestTypeUpdate(apartment.apartmentId, value);
-                      }}
-                      buttonClassName="w-[70px] min-w-[70px]"
-                    />
-                  ) : (
-                    <span className="text-gray-400">-</span>
-                  )}
+                  <DropdownMenuCell
+                    options={requestTypeOptions}
+                    value={getDisplayValue(apartment, "requestType")}
+                    onChange={(value) => {
+                      // 즉시 API 호출
+                      handleRequestTypeUpdate(apartment.apartmentId, value);
+                    }}
+                    buttonClassName="w-[70px] min-w-[70px]"
+                  />
                 </TableCell>
 
                 {/* 매물 상태 */}
                 <TableCell>
-                  {property || isSelected ? (
-                    <DropdownMenuCell
-                      options={propertyStatusOptions}
-                      value={getDisplayValue(apartment, "propertyStatus")}
-                      onChange={(value) => {
-                        // 즉시 API 호출
-                        handlePropertyStatusUpdate(
-                          apartment.apartmentId,
-                          value
-                        );
-                      }}
-                      buttonClassName="w-[90px] min-w-[90px]"
-                    />
-                  ) : (
-                    <span className="text-gray-400">-</span>
-                  )}
+                  <DropdownMenuCell
+                    options={propertyStatusOptions}
+                    value={getDisplayValue(apartment, "propertyStatus")}
+                    onChange={(value) => {
+                      // 즉시 API 호출
+                      handlePropertyStatusUpdate(apartment.apartmentId, value);
+                    }}
+                    buttonClassName="w-[90px] min-w-[90px]"
+                  />
                 </TableCell>
 
                 {/* 매매가 */}
