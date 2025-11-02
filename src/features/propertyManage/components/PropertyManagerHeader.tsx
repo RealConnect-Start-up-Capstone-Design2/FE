@@ -79,12 +79,14 @@ export function PropertyManagerHeader({
   }, [ho]);
 
   const manageTypeOptions: DropdownOption[] = [
+    { label: "전체", value: "ALL" },
     { label: "기본", value: "NONE" },
     { label: "관심", value: "ATTENTION" },
     { label: "주의", value: "CAUTION" },
   ];
 
   const requestTypeOptions: DropdownOption[] = [
+    { label: "전체", value: "ALL" },
     { label: "없음", value: "NONE" },
     { label: "입주", value: "SELF" },
     { label: "매도", value: "SALE" },
@@ -95,6 +97,7 @@ export function PropertyManagerHeader({
   ];
 
   const propertyStatusOptions: DropdownOption[] = [
+    { label: "전체", value: "ALL" },
     { label: "없음", value: "NONE" },
     { label: "거래 전", value: "BEFORE" },
     { label: "광고 중", value: "ADVERTISING" },
@@ -104,7 +107,8 @@ export function PropertyManagerHeader({
   const handleSelectRequestType = useCallback(
     (value: string) => {
       if (onSelectRequestType) {
-        onSelectRequestType(value);
+        // "전체" 선택 시 undefined로 전달하여 필터 해제
+        onSelectRequestType(value === "ALL" ? undefined : value);
       }
     },
     [onSelectRequestType]
@@ -113,7 +117,8 @@ export function PropertyManagerHeader({
   const handleSelectPropertyStatus = useCallback(
     (value: string) => {
       if (onSelectPropertyStatus) {
-        onSelectPropertyStatus(value);
+        // "전체" 선택 시 undefined로 전달하여 필터 해제
+        onSelectPropertyStatus(value === "ALL" ? undefined : value);
       }
     },
     [onSelectPropertyStatus]
@@ -122,8 +127,8 @@ export function PropertyManagerHeader({
   const handleSelectManageType = useCallback(
     (value: string) => {
       if (onSelectManageType) {
-        // "기본" 선택 시에도 "NONE"으로 필터링 적용
-        onSelectManageType(value);
+        // "전체" 선택 시 undefined로 전달하여 필터 해제
+        onSelectManageType(value === "ALL" ? undefined : value);
       }
     },
     [onSelectManageType]
@@ -145,7 +150,8 @@ export function PropertyManagerHeader({
   const handleSelectArea = useCallback(
     (value: string) => {
       if (onSelectArea) {
-        onSelectArea(value);
+        // "전체" 선택 시 undefined로 전달하여 필터 해제
+        onSelectArea(value === "ALL" ? undefined : value);
       }
     },
     [onSelectArea]
@@ -245,7 +251,7 @@ export function PropertyManagerHeader({
           <div className="flex flex-row gap-3">
             <div className="flex flex-row gap-3">
               <DropdownMenu
-                className="font-semibold"
+                className="font-semibold min-w-[100px]"
                 placeholder="즐겨찾기"
                 options={manageTypeOptions}
                 value={selectedManageType}
@@ -274,7 +280,7 @@ export function PropertyManagerHeader({
                 </InputGroupAddon>
               </InputGroup>
               <DropdownMenu
-                className="font-semibold"
+                className="font-semibold min-w-[100px]"
                 placeholder="면적 선택"
                 options={areaOptions}
                 disabled={areaOptions.length === 0}
@@ -282,14 +288,14 @@ export function PropertyManagerHeader({
                 onChange={handleSelectArea}
               />
               <DropdownMenu
-                className="font-semibold"
+                className="font-semibold min-w-[100px]"
                 placeholder="의뢰 유형"
                 options={requestTypeOptions}
                 value={selectedRequestType}
                 onChange={handleSelectRequestType}
               />
               <DropdownMenu
-                className="font-semibold"
+                className="font-semibold min-w-[100px]"
                 placeholder="매물 상태"
                 options={propertyStatusOptions}
                 value={selectedPropertyStatus}
