@@ -90,7 +90,7 @@ export function PropertyContractBlock({
           deposit: apartment?.property?.deposit || 0,
           monthlyRent: apartment?.property?.monthPrice || 0,
           gapName: apartment?.property?.ownerName || "",
-          contractDate: apartment?.contractDate || "",
+          contractDate: "", // 매물장 컬럼과 연동 끊기 - 항상 빈 값으로 시작
           // 나머지는 빈 값
           eulPhone: "",
           eulName: "",
