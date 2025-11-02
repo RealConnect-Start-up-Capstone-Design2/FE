@@ -331,10 +331,13 @@ export function PropertyManagePage() {
 
   // 면적 옵션 생성 (㎡ 형식)
   const areaOptions = useMemo<DropdownOption[]>(() => {
-    return areaList.map((area) => ({
-      label: `${area}㎡`,
-      value: String(area),
-    }));
+    return [
+      { label: "전체", value: "ALL" },
+      ...areaList.map((area) => ({
+        label: `${area}㎡`,
+        value: String(area),
+      })),
+    ];
   }, [areaList]);
 
   const isTableLoading = isPreferredComplexLoading || isPropertiesLoading;
