@@ -5,7 +5,7 @@
 /**
  * 계약 타입
  */
-export type ContractType = "LEASE" | "SALE";
+export type ContractType = "LEASE" | "SALE" | "MONTHLY";
 
 /**
  * 계약 정보
