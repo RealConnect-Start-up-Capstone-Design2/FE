@@ -29,6 +29,11 @@ export function PropertyMemoBlock({
   const [memo, setMemo] = useState("");
   const [isSaved, setIsSaved] = useState(false);
   const lastAutoSaveTokenRef = useRef<number>(0);
+  const prevApartmentIdRef = useRef<number | undefined>(undefined);
+  const prevMemoRef = useRef<string>("");
+  const prevMemoDataRef = useRef<{ content: string } | null | undefined>(
+    undefined
+  );
 
   // 메모 조회
   const { data: memoData, isLoading: isMemoLoading } = useQuery({
@@ -53,7 +58,11 @@ export function PropertyMemoBlock({
       setMemo("");
     }
     setIsSaved(false);
-  }, [apartment?.apartmentId, memoData?.content]);
+
+    // 현재 값을 ref에 저장
+    prevMemoRef.current = memoData?.content || "";
+    prevMemoDataRef.current = memoData;
+  }, [apartment?.apartmentId, memoData]);
 
   // 메모 저장 mutation (생성 또는 수정)
   const memoMutation = useMutation({
@@ -111,6 +120,40 @@ export function PropertyMemoBlock({
     }
   };
 
+  // 매물이 변경될 때 이전 매물의 메모 자동 저장
+  useEffect(() => {
+    const currentApartmentId = apartment?.apartmentId;
+    const prevApartmentId = prevApartmentIdRef.current;
+
+    // 매물이 변경되었는지 확인
+    if (
+      prevApartmentId !== undefined &&
+      currentApartmentId !== prevApartmentId
+    ) {
+      // 이전 매물의 메모와 저장된 메모 비교
+      const prevSavedMemo = prevMemoDataRef.current?.content || "";
+      const prevMemo = prevMemoRef.current;
+
+      // 변경사항이 있으면 저장
+      if (prevMemo !== prevSavedMemo && !isMemoSaving) {
+        const isUpdate = !!prevMemoDataRef.current;
+        mutateMemo({
+          apartmentId: prevApartmentId,
+          content: prevMemo,
+          isUpdate,
+        });
+      }
+    }
+
+    // 현재 apartmentId를 ref에 저장
+    prevApartmentIdRef.current = currentApartmentId;
+  }, [apartment?.apartmentId, isMemoSaving, mutateMemo]);
+
+  // memo 상태가 변경될 때마다 ref 업데이트
+  useEffect(() => {
+    prevMemoRef.current = memo;
+  }, [memo]);
+
   // 사이드바가 닫힐 때 자동 저장
   useEffect(() => {
     if (!apartment) {
@@ -141,14 +184,7 @@ export function PropertyMemoBlock({
       content: memo,
       isUpdate,
     });
-  }, [
-    apartment,
-    memo,
-    memoData,
-    mutateMemo,
-    autoSaveToken,
-    isMemoSaving,
-  ]);
+  }, [apartment, memo, memoData, mutateMemo, autoSaveToken, isMemoSaving]);
 
   const savedMemo = memoData?.content || "";
   const isChanged = memo !== savedMemo && !isSaved;
@@ -198,11 +234,7 @@ export function PropertyMemoBlock({
           }}
           className="w-full text-white hover:opacity-90"
         >
-          {isMemoSaving
-            ? "저장 중..."
-            : isSaved
-            ? "저장됨"
-            : "저장하기"}
+          {isMemoSaving ? "저장 중..." : isSaved ? "저장됨" : "저장하기"}
         </Button>
       </div>
     </section>

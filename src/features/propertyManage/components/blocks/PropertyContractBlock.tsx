@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
 interface PropertyContractBlockProps {
   apartment?: ApartmentWithProperty;
   isOpen: boolean;
+  autoSaveToken?: number;
 }
 
 /**
@@ -29,6 +30,7 @@ interface PropertyContractBlockProps {
 export function PropertyContractBlock({
   apartment,
   isOpen,
+  autoSaveToken = 0,
 }: PropertyContractBlockProps) {
   const queryClient = useQueryClient();
   const apartmentId = apartment?.apartmentId;
@@ -36,6 +38,11 @@ export function PropertyContractBlock({
   const [contractType, setContractType] = useState<ContractType>("LEASE");
   const [formData, setFormData] = useState<Partial<ContractInfo>>({});
   const [isSaved, setIsSaved] = useState(false);
+  const lastAutoSaveTokenRef = useRef<number>(0);
+  const prevApartmentIdRef = useRef<number | undefined>(undefined);
+  const prevFormDataRef = useRef<Partial<ContractInfo>>({});
+  const prevContractTypeRef = useRef<ContractType>("LEASE");
+  const prevResolvedContractRef = useRef<ContractInfo | null>(null);
 
   const {
     data: fetchedContract,
@@ -64,6 +71,9 @@ export function PropertyContractBlock({
       setContractType(resolvedContract.contractType);
       setFormData({});
     }
+
+    // 현재 값을 ref에 저장
+    prevResolvedContractRef.current = resolvedContract;
   }, [resolvedContract, apartmentId]);
 
   const currentContract = useMemo<ContractInfo | null>(() => {
@@ -80,7 +90,7 @@ export function PropertyContractBlock({
           deposit: apartment?.property?.deposit || 0,
           monthlyRent: apartment?.property?.monthPrice || 0,
           gapName: apartment?.property?.ownerName || "",
-          contractDate: apartment?.contractDate || "",
+          contractDate: "", // 매물장 컬럼과 연동 끊기 - 항상 빈 값으로 시작
           // 나머지는 빈 값
           eulPhone: "",
           eulName: "",
@@ -258,6 +268,160 @@ export function PropertyContractBlock({
       isUpdate: !!resolvedContract,
     });
   };
+
+  // 매물이 변경될 때 이전 매물의 계약 정보 자동 저장
+  useEffect(() => {
+    const currentApartmentId = apartmentId;
+    const prevApartmentId = prevApartmentIdRef.current;
+
+    // 매물이 변경되었는지 확인
+    if (
+      prevApartmentId !== undefined &&
+      currentApartmentId !== prevApartmentId
+    ) {
+      // 이전 매물의 계약 정보 변경사항 확인
+      const prevResolvedContract = prevResolvedContractRef.current;
+      const prevFormData = prevFormDataRef.current;
+      const prevContractType = prevContractTypeRef.current;
+
+      // 변경사항이 있는지 확인
+      let hasPrevChanges = false;
+
+      if (prevResolvedContract) {
+        const merged = {
+          ...prevResolvedContract,
+          ...prevFormData,
+          contractType: prevContractType,
+        };
+        hasPrevChanges =
+          JSON.stringify(prevResolvedContract) !== JSON.stringify(merged);
+      } else {
+        if (prevContractType !== "LEASE") {
+          hasPrevChanges = true;
+        } else {
+          hasPrevChanges = Object.entries(prevFormData).some(([, value]) => {
+            if (value === undefined || value === null) {
+              return false;
+            }
+            if (typeof value === "string") {
+              return value.trim() !== "";
+            }
+            return true;
+          });
+        }
+      }
+
+      // 변경사항이 있으면 저장
+      if (hasPrevChanges && !contractMutation.isPending) {
+        const prevContract = prevResolvedContract
+          ? { ...prevResolvedContract }
+          : {
+              gapPhone: "",
+              deposit: 0,
+              monthlyRent: 0,
+              gapName: "",
+              contractDate: "",
+              eulPhone: "",
+              eulName: "",
+              downPayment: 0,
+              downPaymentDueDate: "",
+              interimPayment: 0,
+              interimPaymentDueDate: "",
+              balance: 0,
+              balanceDueDate: "",
+              monthlyRentDueDate: "",
+            };
+
+        const prevCurrentContract = {
+          apartmentId: prevApartmentId,
+          ...prevContract,
+          ...prevFormData,
+          contractType: prevContractType,
+        } as ContractInfo;
+
+        const { apartmentId: _omitApartmentId, ...contractWithoutId } =
+          prevCurrentContract;
+        void _omitApartmentId;
+
+        const sanitizedPayload = Object.fromEntries(
+          Object.entries(contractWithoutId).filter(
+            ([, value]) => value !== undefined
+          )
+        ) as Partial<ContractInfoInput>;
+
+        contractMutation.mutate({
+          apartmentId: prevApartmentId,
+          payload: sanitizedPayload,
+          isUpdate: !!prevResolvedContract,
+        });
+      }
+    }
+
+    // 현재 값을 ref에 저장
+    prevApartmentIdRef.current = currentApartmentId;
+  }, [apartmentId, contractMutation]);
+
+  // formData와 contractType이 변경될 때마다 ref 업데이트
+  useEffect(() => {
+    prevFormDataRef.current = formData;
+  }, [formData]);
+
+  useEffect(() => {
+    prevContractTypeRef.current = contractType;
+  }, [contractType]);
+
+  // 사이드바가 닫히거나 다른 매물로 전환될 때 자동 저장
+  useEffect(() => {
+    if (!apartment || !apartmentId) {
+      return;
+    }
+
+    if (autoSaveToken === 0) {
+      lastAutoSaveTokenRef.current = 0;
+      return;
+    }
+
+    if (
+      lastAutoSaveTokenRef.current === autoSaveToken ||
+      contractMutation.isPending
+    ) {
+      return;
+    }
+
+    lastAutoSaveTokenRef.current = autoSaveToken;
+
+    if (!hasUnsavedChanges) {
+      return;
+    }
+
+    if (!currentContract) {
+      return;
+    }
+
+    const { apartmentId: _omitApartmentId, ...contractWithoutId } =
+      currentContract;
+    void _omitApartmentId;
+
+    const sanitizedPayload = Object.fromEntries(
+      Object.entries(contractWithoutId).filter(
+        ([, value]) => value !== undefined
+      )
+    ) as Partial<ContractInfoInput>;
+
+    contractMutation.mutate({
+      apartmentId,
+      payload: sanitizedPayload,
+      isUpdate: !!resolvedContract,
+    });
+  }, [
+    apartment,
+    apartmentId,
+    autoSaveToken,
+    hasUnsavedChanges,
+    currentContract,
+    contractMutation,
+    resolvedContract,
+  ]);
 
   const isChanged = hasUnsavedChanges && !isSaved;
   const isFormDisabled =

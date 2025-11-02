@@ -44,6 +44,19 @@ export function ContractTypeToggle({
       >
         매매 계약
       </button>
+      <button
+        type="button"
+        onClick={() => onChange("MONTHLY")}
+        disabled={disabled}
+        className={cn(
+          "rounded-full px-4 py-[6px] text-[12px] font-medium transition-colors",
+          value === "MONTHLY"
+            ? "bg-white text-black"
+            : "bg-transparent text-black hover:bg-white/50"
+        )}
+      >
+        월세 계약
+      </button>
     </div>
   );
 }
