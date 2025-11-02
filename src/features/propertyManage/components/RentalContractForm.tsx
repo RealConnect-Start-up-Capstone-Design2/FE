@@ -86,6 +86,20 @@ export function RentalContractForm({
           />
         </div>
 
+        {/* 월세 + 월세 지급일 */}
+        <PaymentFieldGroup
+          amountLabel="월세"
+          amountField="monthlyRent"
+          amountValue={contract?.monthlyRent || ""}
+          dateLabel="월세 지급일"
+          dateField="monthlyRentDueDate"
+          dateValue={contract?.monthlyRentDueDate || ""}
+          dateType="text"
+          datePlaceholder="매월 25일"
+          onChange={onChange}
+          disabled={disabled}
+        />
+
         {/* 계약금 + 계약금 지급일 */}
         <PaymentFieldGroup
           amountLabel="계약금"
@@ -118,20 +132,6 @@ export function RentalContractForm({
           dateLabel="잔금 지급일"
           dateField="balanceDueDate"
           dateValue={contract?.balanceDueDate || ""}
-          onChange={onChange}
-          disabled={disabled}
-        />
-
-        {/* 월세 + 월세 지급일 */}
-        <PaymentFieldGroup
-          amountLabel="월세"
-          amountField="monthlyRent"
-          amountValue={contract?.monthlyRent || ""}
-          dateLabel="월세 지급일"
-          dateField="monthlyRentDueDate"
-          dateValue={contract?.monthlyRentDueDate || ""}
-          dateType="text"
-          datePlaceholder="매월 25일"
           onChange={onChange}
           disabled={disabled}
         />
