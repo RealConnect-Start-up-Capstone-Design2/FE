@@ -158,8 +158,48 @@ export function PropertyManageTable({
           await createPropertyWithRequestTypeAPI(apartmentId, requestType);
         }
 
-        // 의뢰 유형이 "NONE"이 아니고, 매물 상태가 "NONE"이면 자동으로 "BEFORE"로 변경
-        if (requestType !== "NONE" && currentPropertyStatus === "NONE") {
+        // 의뢰 유형이 "미수신" 또는 "고민중"이면 매물 상태 변경하지 않음
+        if (requestType === "NOT_RECEIVED" || requestType === "THINKING") {
+          // 매물 상태 변경 없이 의뢰 유형만 업데이트
+        } else if (requestType === "NONE") {
+          try {
+            const apartment = apartments.find(
+              (apt) => apt.apartmentId === apartmentId
+            );
+            // property가 존재하면 PATCH, 없으면 POST로 매물 상태도 함께 생성
+            if (apartment?.property) {
+              await updatePropertyStatusAPI(apartmentId, "NONE");
+            } else {
+              await createPropertyWithStatusAPI(apartmentId, "NONE");
+            }
+          } catch {
+            // 매물 상태 업데이트 실패해도 의뢰 유형 업데이트는 성공했으므로 에러 무시
+          }
+        }
+        // 의뢰 유형이 "입주"로 변경되면 매물 상태를 자동으로 "없음"으로 변경
+        else if (requestType === "SELF") {
+          try {
+            const apartment = apartments.find(
+              (apt) => apt.apartmentId === apartmentId
+            );
+            // property가 존재하면 PATCH, 없으면 POST로 매물 상태도 함께 생성
+            if (apartment?.property) {
+              await updatePropertyStatusAPI(apartmentId, "NONE");
+            } else {
+              await createPropertyWithStatusAPI(apartmentId, "NONE");
+            }
+          } catch {
+            // 매물 상태 업데이트 실패해도 의뢰 유형 업데이트는 성공했으므로 에러 무시
+          }
+        }
+        // 의뢰 유형이 "NONE", "SELF", "NOT_RECEIVED", "THINKING"이 아니고, 매물 상태가 "NONE"이면 자동으로 "BEFORE"로 변경
+        else if (
+          requestType !== "NONE" &&
+          requestType !== "SELF" &&
+          requestType !== "NOT_RECEIVED" &&
+          requestType !== "THINKING" &&
+          currentPropertyStatus === "NONE"
+        ) {
           try {
             const apartment = apartments.find(
               (apt) => apt.apartmentId === apartmentId
@@ -170,8 +210,7 @@ export function PropertyManageTable({
             } else {
               await createPropertyWithStatusAPI(apartmentId, "BEFORE");
             }
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          } catch (_statusError) {
+          } catch {
             // 매물 상태 업데이트 실패해도 의뢰 유형 업데이트는 성공했으므로 에러 무시
           }
         }
