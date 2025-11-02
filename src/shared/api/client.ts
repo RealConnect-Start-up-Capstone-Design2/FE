@@ -65,11 +65,12 @@ apiClient.interceptors.response.use(
       originalRequest.url?.includes("/login") ||
       originalRequest.url?.includes("/register");
 
-    // 401 에러이고, 재시도하지 않은 요청이며, refresh-token 요청이 아닌 경우
+    // 401 에러이고, 재시도하지 않은 요청이며, refresh-token이나 logout 요청이 아닌 경우
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
       !originalRequest.url?.includes("/api/refresh-token") &&
+      !originalRequest.url?.includes("/api/logout") &&
       !isAuthEndpoint
     ) {
       // 이미 토큰 재발급 중이라면 대기열에 추가
@@ -106,7 +107,10 @@ apiClient.interceptors.response.use(
         processQueue(refreshError as Error, null);
 
         // 로그인 페이지로 리다이렉트
-        window.location.href = "/login";
+        const currentPath = window.location.pathname;
+        if (currentPath !== "/login" && currentPath !== "/signup") {
+          window.location.href = "/login";
+        }
 
         return Promise.reject(refreshError);
       } finally {

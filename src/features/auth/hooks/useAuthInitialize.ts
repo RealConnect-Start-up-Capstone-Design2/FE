@@ -6,7 +6,12 @@ import { refreshAccessToken, logout } from "../services";
  * 앱 시작 시 인증 토큰 복구를 시도하는 훅
  */
 export function useAuthInitialize() {
-  const { setAuth, setLoading, logout: logoutStore, isLoading } = useAuthStore();
+  const {
+    setAuth,
+    setLoading,
+    logout: logoutStore,
+    isLoading,
+  } = useAuthStore();
   const hasInitialized = useRef(false);
 
   useEffect(() => {
@@ -45,7 +50,10 @@ export function useAuthInitialize() {
         logoutStore();
 
         // 로그인 화면으로 리다이렉트
-        window.location.href = "/login";
+        const currentPath = window.location.pathname;
+        if (currentPath !== "/login" && currentPath !== "/signup") {
+          window.location.href = "/login";
+        }
       } finally {
         // 로딩 완료
         setLoading(false);

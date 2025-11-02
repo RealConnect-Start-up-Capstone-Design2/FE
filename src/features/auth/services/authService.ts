@@ -13,16 +13,16 @@ import { useAuthStore } from "../stores";
  */
 export const login = async (
   username: string,
-  password: string
+  password: string,
+  stayIn: boolean
 ): Promise<AuthResponse> => {
-  const response = await apiClient.post<{ username: string }>(
-    "/login",
-    {
-      username,
-      password,
-    } as LoginRequest,
-    { withCredentials: true } // 쿠키(리프레시 토큰) 전송을 위함
-  );
+  const response = await apiClient.post<{ username:string }>("/login", {
+    username,
+    password,
+    stayIn,
+  } as LoginRequest,
+  { withCredentials: true }
+);
 
   // 액세스 토큰은 Authorization 헤더에서 추출
   const accessToken = response.headers["authorization"]?.replace("Bearer ", "");

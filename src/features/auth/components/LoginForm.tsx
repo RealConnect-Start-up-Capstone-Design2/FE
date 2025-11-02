@@ -15,6 +15,7 @@ export function LoginForm() {
   const [form, setForm] = useState({
     username: "",
     password: "",
+    stayIn: false,
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -38,7 +39,8 @@ export function LoginForm() {
     try {
       const { accessToken, username } = await login(
         form.username,
-        form.password
+        form.password,
+        form.stayIn
       );
 
       setAuth({ accessToken, username });
@@ -134,8 +136,8 @@ export function LoginForm() {
             <label className="flex items-center gap-1 text-lg text-black">
               <input
                 type="checkbox"
-                name="keepLogin"
-                // checked={form.keepLogin}
+                name="stayIn"
+                checked={form.stayIn}
                 onChange={handleChange}
                 className="h-4 w-4"
               />
