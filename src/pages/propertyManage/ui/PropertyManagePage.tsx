@@ -354,6 +354,7 @@ export function PropertyManagePage() {
           <PropertyContractBlock
             apartment={selectedApartment}
             isOpen={isDetailOpen}
+            autoSaveToken={autoSaveToken}
           />
         </DetailSidebar>
       }
