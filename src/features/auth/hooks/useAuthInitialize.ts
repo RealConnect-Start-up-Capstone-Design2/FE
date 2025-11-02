@@ -1,15 +1,26 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuthStore } from "../stores";
-import { refreshAccessToken } from "../services";
+import { refreshAccessToken, logout } from "../services";
 
 /**
  * 앱 시작 시 인증 토큰 복구를 시도하는 훅
  */
 export function useAuthInitialize() {
-  const { setAuth, setLoading, isLoading } = useAuthStore();
+  const { setAuth, setLoading, logout: logoutStore, isLoading } = useAuthStore();
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
+    // 초기화가 이미 실행되었으면 다시 실행하지 않음
+    if (hasInitialized.current) {
+      return;
+    }
+
     const initializeAuth = async () => {
+      hasInitialized.current = true;
+
+      // 초기화 시점의 accessToken 저장 (토큰 갱신 실패 시 로그아웃 API에 사용)
+      const currentAccessToken = useAuthStore.getState().accessToken;
+
       try {
         // 쿠키에 저장된 refresh token으로 access token 복구 시도
         const newAccessToken = await refreshAccessToken();
@@ -19,9 +30,22 @@ export function useAuthInitialize() {
           accessToken: newAccessToken,
           username: "", // 필요시 별도 API로 사용자 정보 가져오기
         });
-      } catch {
-        // refresh token이 없거나 만료된 경우 - 정상적인 상황
-        console.log("토큰 복구 실패 - 로그인 필요");
+      } catch (error) {
+        // 토큰 갱신 실패 시 액세스 토큰 블랙리스트 처리를 위해 로그아웃 API 호출
+        if (currentAccessToken) {
+          try {
+            await logout(currentAccessToken);
+          } catch (logoutError) {
+            // 로그아웃 API 실패해도 무시하고 계속 진행 (이미 토큰이 만료된 경우일 수 있음)
+            console.error("로그아웃 API 호출 실패:", logoutError);
+          }
+        }
+
+        // 로컬 상태 클리어
+        logoutStore();
+
+        // 로그인 화면으로 리다이렉트
+        window.location.href = "/login";
       } finally {
         // 로딩 완료
         setLoading(false);
@@ -29,7 +53,7 @@ export function useAuthInitialize() {
     };
 
     initializeAuth();
-  }, [setAuth, setLoading]);
+  }, [setAuth, setLoading, logoutStore]);
 
   return { isLoading };
 }
