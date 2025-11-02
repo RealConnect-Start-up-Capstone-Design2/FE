@@ -1,5 +1,7 @@
 # Realconnect v2
 
+### 최근 수정일 : 25.11.02
+
 Realconnect v2는 React와 TypeScript, Vite(SWC)를 기반으로 구축한 프론트엔드 프로젝트입니다. Tailwind CSS와 shadcn/ui 컴포넌트를 활용하며 Pretendard 폰트를 기본값으로 사용합니다. 기능 모듈과 공통 리소스를 분리한 구조를 적용해 확장성과 유지보수성을 높였습니다.
 
 ## 기술 스택
