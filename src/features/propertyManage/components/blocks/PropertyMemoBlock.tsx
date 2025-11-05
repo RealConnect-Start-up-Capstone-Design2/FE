@@ -193,7 +193,9 @@ export function PropertyMemoBlock({
   if (!apartment) {
     return (
       <section className="space-y-2">
-        <Label className="block">메모장</Label>
+        <Label className="block text-[20px] font-semibold text-black">
+          메모장
+        </Label>
         <div className="grid w-full gap-2">
           <div className="min-h-[200px] flex items-center justify-center bg-gray-50 rounded-md border border-gray-200">
             <p className="text-gray-400">아파트를 선택해주세요.</p>
@@ -205,7 +207,9 @@ export function PropertyMemoBlock({
 
   return (
     <section className="space-y-2">
-      <Label className="block">메모장</Label>
+      <Label className="block text-[20px] font-semibold text-black">
+        메모장
+      </Label>
       <div className="grid w-full gap-2">
         {isMemoLoading && isOpen ? (
           <div className="min-h-[200px] flex items-center justify-center bg-gray-50 rounded-md border border-gray-200">
