@@ -20,7 +20,7 @@ export const parsePrice = (
 
 /**
  * 원 단위 정수를 표시용 문자열로 변환
- * 1억 이상: "17.94억" (소수점 2자리)
+ * 1억 이상: "17억 5400" (억/만원 조합)
  * 1억 미만: "8,000만" (만원 단위, 쉼표)
  */
 export const formatPrice = (
@@ -32,11 +32,16 @@ export const formatPrice = (
 
   // 1억 이상이면 억 단위로 표시
   if (value >= 100000000) {
-    const eokValue = Math.floor((value / 100000000) * 100) / 100;
-    return `${eokValue.toLocaleString("ko-KR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}억`;
+    const eokValue = Math.floor(value / 100000000);
+    const remainder = value - eokValue * 100000000;
+    const manValue = Math.floor(remainder / 10000);
+
+    const eokText = `${eokValue.toLocaleString("ko-KR")}억`;
+
+    if (manValue > 0) {
+      return `${eokText} ${manValue.toString()}`;
+    }
+    return eokText;
   }
 
   // 1억 미만이면 만원 단위로 표시
@@ -144,4 +149,32 @@ export const parseNumberWithComma = (value: string): number | undefined => {
     return undefined;
   }
   return num;
+};
+
+/**
+ * 전화번호 문자열을 하이픈 포함 포맷으로 변환
+ * 기본: 11자리 → "010-1234-5678"
+ * 10자리 → "010-123-4567"
+ */
+export const formatPhoneNumber = (
+  value: string | number | null | undefined
+): string | undefined => {
+  if (value === null || value === undefined || value === "") {
+    return undefined;
+  }
+
+  const digits = String(value).replace(/\D/g, "");
+  if (digits.length === 0) {
+    return undefined;
+  }
+
+  if (digits.length === 11) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+  }
+  if (digits.length === 10) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+
+  // 그 외 자리수는 원본 숫자만 반환
+  return digits;
 };

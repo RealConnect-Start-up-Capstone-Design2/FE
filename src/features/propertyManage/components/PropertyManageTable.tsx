@@ -26,7 +26,7 @@ import {
   updateManageTypeAPI,
   createPropertyWithManageTypeAPI,
 } from "../services/propertyService";
-import { formatPrice } from "@/shared/utils";
+import { formatPrice, formatPhoneNumber } from "@/shared/utils";
 import {
   EditablePropertyCell,
   EditableDepositMonthCell,
@@ -513,6 +513,9 @@ export function PropertyManageTable({
               pendingProperty?.ownerPhone ?? property?.ownerPhone;
             const ownerNameValue =
               pendingProperty?.ownerName ?? property?.ownerName;
+            const formattedOwnerPhone =
+              formatPhoneNumber(ownerPhoneValue) ??
+              (ownerPhoneValue ? String(ownerPhoneValue) : undefined);
 
             // 매물 상태에 따른 드롭다운 배경색 결정
             const propertyStatus = getDisplayValue(apartment, "propertyStatus");
@@ -597,7 +600,7 @@ export function PropertyManageTable({
                   value={salePriceValue}
                   isSelected={isSelected}
                   type="number"
-                  placeholder="17.5 -> 17.5억"
+                  placeholder="17.5 -> 17억 5000"
                   displayValue={formatPriceWithDecimal(salePriceValue)}
                   onUpdate={handlePropertyUpdate}
                 />
@@ -609,7 +612,7 @@ export function PropertyManageTable({
                   value={jeonsePriceValue}
                   isSelected={isSelected}
                   type="number"
-                  placeholder="10.3 -> 10.3억"
+                  placeholder="10.3 -> 10억 3000"
                   displayValue={formatPriceWithDecimal(jeonsePriceValue)}
                   onUpdate={handlePropertyUpdate}
                 />
@@ -643,7 +646,7 @@ export function PropertyManageTable({
                   isSelected={isSelected}
                   type="tel"
                   placeholder="연락처"
-                  displayValue={ownerPhoneValue}
+                  displayValue={formattedOwnerPhone}
                   onUpdate={handlePropertyUpdate}
                 />
 

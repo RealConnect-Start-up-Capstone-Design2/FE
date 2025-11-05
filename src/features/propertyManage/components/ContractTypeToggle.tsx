@@ -29,7 +29,7 @@ export function ContractTypeToggle({
             : "bg-transparent text-black hover:bg-white/50"
         )}
       >
-        임대차 계약
+        매매 계약
       </button>
       <button
         type="button"
@@ -42,7 +42,7 @@ export function ContractTypeToggle({
             : "bg-transparent text-black hover:bg-white/50"
         )}
       >
-        매매 계약
+        전세 계약
       </button>
       <button
         type="button"

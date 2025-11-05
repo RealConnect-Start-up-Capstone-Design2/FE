@@ -8,4 +8,5 @@ export {
   formatMonthPriceInput,
   formatNumberWithComma,
   parseNumberWithComma,
+  formatPhoneNumber,
 } from "./numberFormat";

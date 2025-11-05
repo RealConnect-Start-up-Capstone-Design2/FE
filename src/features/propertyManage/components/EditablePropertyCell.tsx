@@ -188,10 +188,10 @@ export function EditableDepositMonthCell({
     setLocalMonth(formatMonthPriceInput(parsedValue));
   };
 
-  // 표시용 값 (보증금: "17.94억", 월세: "500만")
+  // 표시용 값 (보증금: "17억 5400", 월세: "500만")
   const displayValue =
     depositValue || monthValue
-      ? `${formatPrice(depositValue) || "0.00억"}/${
+      ? `${formatPrice(depositValue) || "0억"}/${
           formatMonthPrice(monthValue) || "0만"
         }`
       : "-";
@@ -208,7 +208,7 @@ export function EditableDepositMonthCell({
             step={0.01}
             inputMode="decimal"
             className="h-8 text-sm w-20"
-            placeholder="예: 1.5 -> 1.5억"
+            placeholder="예: 1.5 -> 1억 5000"
           />
           <span className="text-gray-400">/</span>
           <Input
