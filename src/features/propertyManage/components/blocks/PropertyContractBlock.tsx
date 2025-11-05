@@ -71,9 +71,6 @@ export function PropertyContractBlock({
       setContractType(resolvedContract.contractType);
       setFormData({});
     }
-
-    // 현재 값을 ref에 저장
-    prevResolvedContractRef.current = resolvedContract;
   }, [resolvedContract, apartmentId]);
 
   const currentContract = useMemo<ContractInfo | null>(() => {
@@ -360,6 +357,10 @@ export function PropertyContractBlock({
     // 현재 값을 ref에 저장
     prevApartmentIdRef.current = currentApartmentId;
   }, [apartmentId, contractMutation]);
+
+  useEffect(() => {
+    prevResolvedContractRef.current = resolvedContract;
+  }, [resolvedContract]);
 
   // formData와 contractType이 변경될 때마다 ref 업데이트
   useEffect(() => {
