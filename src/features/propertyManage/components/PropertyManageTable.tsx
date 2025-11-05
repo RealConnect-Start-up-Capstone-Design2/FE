@@ -400,24 +400,25 @@ export function PropertyManageTable({
         );
 
         if (hasPropertyFieldChanges) {
-          const requestData = propertyFieldKeys.reduce(
-            (acc, key) => {
-              const changeValue = changes[key];
-              const currentValue = currentProperty?.[key];
-              const fallbackValue = propertyFieldDefaults[key];
-              const resolvedValue =
-                changeValue !== undefined
-                  ? changeValue
-                  : currentValue ?? fallbackValue;
+          const requestData: typeof propertyFieldDefaults = {
+            ...propertyFieldDefaults,
+          };
 
-              acc[key] = isTextField(key)
-                ? String(resolvedValue)
-                : Number(resolvedValue);
+          for (const key of propertyFieldKeys) {
+            const changeValue = changes[key];
+            const currentValue = currentProperty?.[key];
+            const fallbackValue = propertyFieldDefaults[key];
+            const resolvedValue =
+              changeValue !== undefined
+                ? changeValue
+                : currentValue ?? fallbackValue;
 
-              return acc;
-            },
-            { ...propertyFieldDefaults }
-          );
+            if (isTextField(key)) {
+              requestData[key] = String(resolvedValue);
+            } else {
+              requestData[key] = Number(resolvedValue);
+            }
+          }
 
           // property가 없으면 POST로 생성, 있으면 PUT으로 업데이트
           const requestPayload = { apartmentId, ...requestData };
