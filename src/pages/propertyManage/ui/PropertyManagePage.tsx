@@ -301,7 +301,9 @@ export function PropertyManagePage() {
       }
 
       if (isDetailOpen || selectedPropertyId !== undefined) {
-        clearSelection();
+        setTimeout(() => {
+          clearSelection();
+        }, 0);
       }
     };
 

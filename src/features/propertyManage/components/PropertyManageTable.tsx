@@ -38,6 +38,31 @@ import UnfilledStar from "@/assets/UnfilledStar.svg";
 import FilledStar from "@/assets/FilledStar.svg";
 import Caution from "@/assets/Caution.svg";
 
+const propertyFieldDefaults: {
+  ownerName: string;
+  ownerPhone: string;
+  salePrice: number;
+  jeonsePrice: number;
+  deposit: number;
+  monthPrice: number;
+} = {
+  ownerName: "",
+  ownerPhone: "",
+  salePrice: 0,
+  jeonsePrice: 0,
+  deposit: 0,
+  monthPrice: 0,
+};
+
+type PropertyFieldKey = keyof typeof propertyFieldDefaults;
+
+const propertyFieldKeys = Object.keys(
+  propertyFieldDefaults
+) as PropertyFieldKey[];
+
+const isTextField = (key: PropertyFieldKey): key is "ownerName" | "ownerPhone" =>
+  key === "ownerName" || key === "ownerPhone";
+
 // 의뢰 유형 옵션 (API 스펙 기준)
 const requestTypeOptions: { label: string; value: RequestType }[] = [
   { label: "없음", value: "NONE" },
@@ -370,44 +395,36 @@ export function PropertyManageTable({
 
         const currentProperty = currentApartment?.property;
 
-        const propertyFields: Array<
-          | "ownerName"
-          | "ownerPhone"
-          | "salePrice"
-          | "jeonsePrice"
-          | "deposit"
-          | "monthPrice"
-        > = [
-          "ownerName",
-          "ownerPhone",
-          "salePrice",
-          "jeonsePrice",
-          "deposit",
-          "monthPrice",
-        ];
-
-        const hasPropertyFieldChanges = propertyFields.some(
+        const hasPropertyFieldChanges = propertyFieldKeys.some(
           (key) => changes[key] !== undefined
         );
 
         if (hasPropertyFieldChanges) {
-          // 전체 매물 정보 구성
-          const requestData = {
-            apartmentId,
-            ownerName: changes.ownerName || currentProperty?.ownerName || "",
-            ownerPhone: changes.ownerPhone || currentProperty?.ownerPhone || "",
-            salePrice: changes.salePrice || currentProperty?.salePrice || 0,
-            jeonsePrice:
-              changes.jeonsePrice || currentProperty?.jeonsePrice || 0,
-            deposit: changes.deposit || currentProperty?.deposit || 0,
-            monthPrice: changes.monthPrice || currentProperty?.monthPrice || 0,
-          };
+          const requestData = propertyFieldKeys.reduce(
+            (acc, key) => {
+              const changeValue = changes[key];
+              const currentValue = currentProperty?.[key];
+              const fallbackValue = propertyFieldDefaults[key];
+              const resolvedValue =
+                changeValue !== undefined
+                  ? changeValue
+                  : currentValue ?? fallbackValue;
+
+              acc[key] = isTextField(key)
+                ? String(resolvedValue)
+                : Number(resolvedValue);
+
+              return acc;
+            },
+            { ...propertyFieldDefaults }
+          );
 
           // property가 없으면 POST로 생성, 있으면 PUT으로 업데이트
+          const requestPayload = { apartmentId, ...requestData };
           if (!currentProperty) {
-            await handlePropertyBatchUpdate(apartmentId, requestData, true);
+            await handlePropertyBatchUpdate(apartmentId, requestPayload, true);
           } else {
-            await handlePropertyBatchUpdate(apartmentId, requestData, false);
+            await handlePropertyBatchUpdate(apartmentId, requestPayload, false);
           }
         }
 
@@ -467,8 +484,7 @@ export function PropertyManageTable({
               queryKey: ["contract", apartmentId],
             });
           } catch (_error) {
-            alert("계약일 업데이트에 실패했습니다.");
-            return;
+            throw new Error("CONTRACT_DATE_UPDATE_FAILED");
           }
         }
 
@@ -481,8 +497,15 @@ export function PropertyManageTable({
 
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (_error) {
-        alert("매물 정보 업데이트에 실패했습니다.");
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message === "CONTRACT_DATE_UPDATE_FAILED"
+        ) {
+          alert("계약일 업데이트에 실패했습니다.");
+        } else {
+          alert("매물 정보 업데이트에 실패했습니다.");
+        }
       }
     },
     [apartments, localPropertyStates, handlePropertyBatchUpdate, queryClient]

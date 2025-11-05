@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { TableCell } from "@/components/ui";
 import { Input } from "@/components/ui/input";
 import {
@@ -49,6 +49,7 @@ export function EditablePropertyCell({
   const [localValue, setLocalValue] = useState<string>(() =>
     type === "number" ? formatPriceInput(value as number) : String(value || "")
   );
+  const prevSelectedRef = useRef(isSelected);
 
   // value가 변경되면 로컬 상태 동기화
   useEffect(() => {
@@ -59,7 +60,7 @@ export function EditablePropertyCell({
     }
   }, [value, type]);
 
-  const handleBlur = () => {
+  const handleBlur = useCallback(() => {
     if (localValue === "") {
       return;
     }
@@ -94,7 +95,23 @@ export function EditablePropertyCell({
     if (localValue !== value) {
       onUpdate(apartmentId, field, localValue);
     }
-  };
+  }, [
+    apartmentId,
+    field,
+    localValue,
+    onUpdate,
+    type,
+    validate,
+    invalidMessage,
+    value,
+  ]);
+
+  useEffect(() => {
+    if (prevSelectedRef.current && !isSelected) {
+      handleBlur();
+    }
+    prevSelectedRef.current = isSelected;
+  }, [isSelected, handleBlur]);
 
   return (
     <TableCell onClick={(e) => isSelected && e.stopPropagation()}>
@@ -145,6 +162,7 @@ export function EditableDepositMonthCell({
   const [localMonth, setLocalMonth] = useState<string>(() =>
     formatMonthPriceInput(monthValue)
   );
+  const prevSelectedRef = useRef(isSelected);
 
   // 서버에서 값이 변경되면 로컬 상태 동기화
   useEffect(() => {
@@ -155,7 +173,7 @@ export function EditableDepositMonthCell({
     setLocalMonth(formatMonthPriceInput(monthValue));
   }, [monthValue]);
 
-  const handleDepositBlur = () => {
+  const handleDepositBlur = useCallback(() => {
     if (localDeposit === "") {
       return;
     }
@@ -175,9 +193,9 @@ export function EditableDepositMonthCell({
 
     onUpdate(apartmentId, "deposit", parsedValue);
     setLocalDeposit(formatPriceInput(parsedValue));
-  };
+  }, [apartmentId, depositValue, localDeposit, onUpdate]);
 
-  const handleMonthBlur = () => {
+  const handleMonthBlur = useCallback(() => {
     if (localMonth === "") {
       return;
     }
@@ -197,7 +215,15 @@ export function EditableDepositMonthCell({
 
     onUpdate(apartmentId, "monthPrice", parsedValue);
     setLocalMonth(formatMonthPriceInput(parsedValue));
-  };
+  }, [apartmentId, localMonth, monthValue, onUpdate]);
+
+  useEffect(() => {
+    if (prevSelectedRef.current && !isSelected) {
+      handleDepositBlur();
+      handleMonthBlur();
+    }
+    prevSelectedRef.current = isSelected;
+  }, [handleDepositBlur, handleMonthBlur, isSelected]);
 
   // 표시용 값 (보증금: "17억 5400", 월세: "500만")
   const displayValue =
