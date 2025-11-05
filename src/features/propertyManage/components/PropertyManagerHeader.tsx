@@ -258,7 +258,7 @@ export function PropertyManagerHeader({
                 onChange={handleSelectManageType}
               />
               <InputGroup className="w-32 h-12">
-                <InputGroupAddon align="block-start">
+                <InputGroupAddon>
                   <InputGroupInput
                     placeholder="동 검색"
                     value={localDong}
@@ -269,7 +269,7 @@ export function PropertyManagerHeader({
                 </InputGroupAddon>
               </InputGroup>
               <InputGroup className="w-32">
-                <InputGroupAddon align="block-start">
+                <InputGroupAddon>
                   <InputGroupInput
                     placeholder="호 검색"
                     value={localHo}
