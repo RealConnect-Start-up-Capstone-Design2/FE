@@ -227,19 +227,40 @@ export function PropertyManagePage() {
     setIsManuallyClosedByButton(false);
   }, [triggerAutoSave]);
 
-  const handlePropertyClick = (propertyId: string | number) => {
-    if (selectedPropertyId === propertyId && isDetailOpen) {
-      // 같은 매물을 다시 클릭하면 사이드바만 닫음 (매물 선택은 유지, 버튼으로 닫은 상태 아님)
-      closeSidebar();
-    } else if (!isManuallyClosedByButton) {
-      // "카드 닫기" 버튼으로 닫은 상태가 아닐 때만 다른 매물 클릭 시 사이드바 열림
-      setSelectedPropertyId(propertyId);
-      setIsDetailOpen(true);
-    } else {
-      // "카드 닫기" 버튼으로 닫은 상태일 때는 매물 ID만 변경하고 사이드바는 열지 않음
-      setSelectedPropertyId(propertyId);
+  const clearSelection = useCallback(() => {
+    if (selectedPropertyId === undefined) {
+      return;
     }
-  };
+
+    if (isDetailOpen) {
+      closeSidebar();
+    } else {
+      setIsManuallyClosedByButton(false);
+    }
+
+    setSelectedPropertyId(undefined);
+  }, [closeSidebar, isDetailOpen, selectedPropertyId]);
+
+  const handlePropertyClick = useCallback(
+    (propertyId: string | number) => {
+      if (selectedPropertyId === propertyId) {
+        clearSelection();
+        return;
+      }
+
+      if (!isManuallyClosedByButton) {
+        setSelectedPropertyId(propertyId);
+        setIsDetailOpen(true);
+      } else {
+        setSelectedPropertyId(propertyId);
+      }
+    },
+    [
+      clearSelection,
+      isManuallyClosedByButton,
+      selectedPropertyId,
+    ]
+  );
 
   const handleToggleSidebar = () => {
     setIsDetailOpen((prev) => {
@@ -258,10 +279,6 @@ export function PropertyManagePage() {
   };
 
   useEffect(() => {
-    if (!isDetailOpen) {
-      return;
-    }
-
     const handleDocumentMouseDown = (event: MouseEvent) => {
       const target = event.target as Node | null;
       if (!target) {
@@ -283,15 +300,16 @@ export function PropertyManagePage() {
         return;
       }
 
-      // 외부 클릭으로 닫은 경우에는 버튼으로 닫은 상태가 아님
-      closeSidebar();
+      if (isDetailOpen || selectedPropertyId !== undefined) {
+        clearSelection();
+      }
     };
 
     document.addEventListener("mousedown", handleDocumentMouseDown);
     return () => {
       document.removeEventListener("mousedown", handleDocumentMouseDown);
     };
-  }, [closeSidebar, isDetailOpen]);
+  }, [clearSelection, isDetailOpen, selectedPropertyId]);
 
   useEffect(() => {
     if (!selectedApartmentComplexId) {

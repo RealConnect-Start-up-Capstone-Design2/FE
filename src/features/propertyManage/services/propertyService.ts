@@ -4,6 +4,7 @@ import type {
   PropertiesQueryParams,
   ApartmentWithProperty,
 } from "../stores/propertyStore";
+import type { ContractInfo } from "../stores/contractStore";
 
 /**
  * 아파트 목록 조회 API (커서 기반 페이지네이션)
@@ -128,6 +129,24 @@ export const updatePropertyAPI = async (
   apartmentId: number;
 }> => {
   const response = await apiClient.put("/api/properties", data);
+  return response.data;
+};
+
+/**
+ * 계약일 생성/수정 API
+ * PUT /api/properties/contractInfo/contractDate
+ */
+export const updateContractDateAPI = async (
+  apartmentId: number,
+  contractDate: string
+): Promise<ContractInfo> => {
+  const response = await apiClient.put<ContractInfo>(
+    "/api/properties/contractInfo/contractDate",
+    {
+      apartmentId,
+      contractDate,
+    }
+  );
   return response.data;
 };
 

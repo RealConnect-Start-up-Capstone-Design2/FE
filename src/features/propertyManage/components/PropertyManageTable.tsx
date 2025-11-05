@@ -25,6 +25,7 @@ import {
   createPropertyWithStatusAPI,
   updateManageTypeAPI,
   createPropertyWithManageTypeAPI,
+  updateContractDateAPI,
 } from "../services/propertyService";
 import { formatPrice, formatPhoneNumber } from "@/shared/utils";
 import {
@@ -101,6 +102,43 @@ export function PropertyManageTable({
     []
   );
 
+  const isValidContractDate = useCallback((value: string) => {
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(value)) {
+      return false;
+    }
+    const [yearStr, monthStr, dayStr] = value.split("-");
+    const year = Number(yearStr);
+    const month = Number(monthStr);
+    const day = Number(dayStr);
+
+    if (
+      !Number.isInteger(year) ||
+      !Number.isInteger(month) ||
+      !Number.isInteger(day)
+    ) {
+      return false;
+    }
+    if (month < 1 || month > 12) {
+      return false;
+    }
+    if (day < 1 || day > 31) {
+      return false;
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return false;
+    }
+    if (
+      date.getUTCFullYear() !== year ||
+      date.getUTCMonth() + 1 !== month ||
+      date.getUTCDate() !== day
+    ) {
+      return false;
+    }
+    return true;
+  }, []);
+
   const handlePropertyUpdate = useCallback(
     (apartmentId: number, field: string, value: string | number) => {
       if (value === undefined || value === "") return;
@@ -133,6 +171,7 @@ export function PropertyManageTable({
       jeonsePrice?: number;
       deposit?: number;
       monthPrice?: number;
+      contractDate?: string;
     };
   }>({});
 
@@ -331,22 +370,45 @@ export function PropertyManageTable({
 
         const currentProperty = currentApartment?.property;
 
-        // 전체 매물 정보 구성
-        const requestData = {
-          apartmentId,
-          ownerName: changes.ownerName || currentProperty?.ownerName || "",
-          ownerPhone: changes.ownerPhone || currentProperty?.ownerPhone || "",
-          salePrice: changes.salePrice || currentProperty?.salePrice || 0,
-          jeonsePrice: changes.jeonsePrice || currentProperty?.jeonsePrice || 0,
-          deposit: changes.deposit || currentProperty?.deposit || 0,
-          monthPrice: changes.monthPrice || currentProperty?.monthPrice || 0,
-        };
+        const propertyFields: Array<
+          | "ownerName"
+          | "ownerPhone"
+          | "salePrice"
+          | "jeonsePrice"
+          | "deposit"
+          | "monthPrice"
+        > = [
+          "ownerName",
+          "ownerPhone",
+          "salePrice",
+          "jeonsePrice",
+          "deposit",
+          "monthPrice",
+        ];
 
-        // property가 없으면 POST로 생성, 있으면 PUT으로 업데이트
-        if (!currentProperty) {
-          await handlePropertyBatchUpdate(apartmentId, requestData, true);
-        } else {
-          await handlePropertyBatchUpdate(apartmentId, requestData, false);
+        const hasPropertyFieldChanges = propertyFields.some(
+          (key) => changes[key] !== undefined
+        );
+
+        if (hasPropertyFieldChanges) {
+          // 전체 매물 정보 구성
+          const requestData = {
+            apartmentId,
+            ownerName: changes.ownerName || currentProperty?.ownerName || "",
+            ownerPhone: changes.ownerPhone || currentProperty?.ownerPhone || "",
+            salePrice: changes.salePrice || currentProperty?.salePrice || 0,
+            jeonsePrice:
+              changes.jeonsePrice || currentProperty?.jeonsePrice || 0,
+            deposit: changes.deposit || currentProperty?.deposit || 0,
+            monthPrice: changes.monthPrice || currentProperty?.monthPrice || 0,
+          };
+
+          // property가 없으면 POST로 생성, 있으면 PUT으로 업데이트
+          if (!currentProperty) {
+            await handlePropertyBatchUpdate(apartmentId, requestData, true);
+          } else {
+            await handlePropertyBatchUpdate(apartmentId, requestData, false);
+          }
         }
 
         // 계약 정보가 있으면 함께 동기화 (매물 정보에서 수정한 값을 계약에 반영)
@@ -395,6 +457,18 @@ export function PropertyManageTable({
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (_error) {
             // 계약 동기화 실패해도 매물 저장은 성공했으므로 에러 무시
+          }
+        }
+
+        if (changes.contractDate !== undefined) {
+          try {
+            await updateContractDateAPI(apartmentId, changes.contractDate);
+            queryClient.invalidateQueries({
+              queryKey: ["contract", apartmentId],
+            });
+          } catch (_error) {
+            alert("계약일 업데이트에 실패했습니다.");
+            return;
           }
         }
 
@@ -516,6 +590,8 @@ export function PropertyManageTable({
             const formattedOwnerPhone =
               formatPhoneNumber(ownerPhoneValue) ??
               (ownerPhoneValue ? String(ownerPhoneValue) : undefined);
+            const contractDateValue =
+              pendingProperty?.contractDate ?? apartment.contractDate;
 
             // 매물 상태에 따른 드롭다운 배경색 결정
             const propertyStatus = getDisplayValue(apartment, "propertyStatus");
@@ -651,7 +727,19 @@ export function PropertyManageTable({
                 />
 
                 {/* 계약일 */}
-                <TableCell>{apartment.contractDate || "-"}</TableCell>
+                <EditablePropertyCell
+                  apartmentId={apartment.apartmentId}
+                  field="contractDate"
+                  value={contractDateValue}
+                  isSelected={isSelected}
+                  type="text"
+                  placeholder="yyyy-mm-dd"
+                  displayValue={contractDateValue || undefined}
+                  inputClassName="w-28"
+                  validate={isValidContractDate}
+                  invalidMessage="계약일은 yyyy-mm-dd 형식으로 입력해주세요."
+                  onUpdate={handlePropertyUpdate}
+                />
               </TableRow>
             );
           })}

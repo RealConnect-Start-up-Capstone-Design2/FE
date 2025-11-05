@@ -20,6 +20,8 @@ interface EditablePropertyCellProps {
   placeholder?: string;
   displayValue?: string;
   inputClassName?: string;
+  validate?: (value: string) => boolean;
+  invalidMessage?: string;
   onUpdate: (
     apartmentId: number,
     field: string,
@@ -40,6 +42,8 @@ export function EditablePropertyCell({
   placeholder = "",
   displayValue,
   inputClassName,
+  validate,
+  invalidMessage,
   onUpdate,
 }: EditablePropertyCellProps) {
   const [localValue, setLocalValue] = useState<string>(() =>
@@ -80,6 +84,13 @@ export function EditablePropertyCell({
     }
 
     // 텍스트나 전화번호는 그대로 전달
+    if (validate && !validate(localValue)) {
+      if (invalidMessage) {
+        alert(invalidMessage);
+      }
+      setLocalValue(String(value || ""));
+      return;
+    }
     if (localValue !== value) {
       onUpdate(apartmentId, field, localValue);
     }
