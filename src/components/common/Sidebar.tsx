@@ -132,7 +132,7 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Bottom Actions */}
       <div className="absolute bottom-8 left-3 right-3 space-y-3">
         <Link
-          to="/settings"
+          to="/my-page"
           className="flex items-center gap-4 px-4 py-3 rounded-lg text-[#989898] hover:bg-gray-50 transition-colors"
         >
           <img
@@ -141,7 +141,7 @@ export function Sidebar({ className }: SidebarProps) {
             className="w-5 h-5 brightness-0 saturate-100"
           />
           <span className="text-lg font-medium leading-[1.193] tracking-[-0.025em] font-pretendard">
-            설정
+            마이페이지
           </span>
         </Link>
         <button
