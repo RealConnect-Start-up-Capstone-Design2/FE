@@ -17,6 +17,7 @@ interface ContentCardProps {
   dividerContent?: ReactNode;
   footerDividerContent?: ReactNode;
   showBottomDivider?: boolean;
+  bottomContent?: ReactNode;
   children?: ReactNode;
   className?: string;
   contentClassName?: string;
@@ -32,6 +33,7 @@ export function ContentCard({
   dividerContent,
   footerDividerContent,
   showBottomDivider = false,
+  bottomContent,
   children,
   className,
   contentClassName,
@@ -118,7 +120,11 @@ export function ContentCard({
       ) : null}
 
       {showBottomDivider ? (
-        <div className="mx-[30px] mb-[30px] h-px bg-[#D4D8E5]" />
+        <div className="mx-[30px] h-px bg-[#D4D8E5]" />
+      ) : null}
+
+      {bottomContent ? (
+        <div className="px-6 pb-6 pt-[30px]">{bottomContent}</div>
       ) : null}
     </div>
   );

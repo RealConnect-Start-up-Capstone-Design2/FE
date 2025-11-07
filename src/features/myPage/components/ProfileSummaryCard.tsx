@@ -73,6 +73,16 @@ const businessInfoSection = (
   </div>
 );
 
+const footerLinks = (
+  <div className="flex flex-col items-center gap-3">
+    <div className="flex items-center gap-4 text-[15px] font-medium text-[#8D8D8D]">
+      <span>개인정보 처리 방침</span>
+      <span className="h-[12px] w-px bg-[#8D8D8D]" />
+      <span>서비스 이용약관</span>
+    </div>
+  </div>
+);
+
 export function ProfileSummaryCard() {
   return (
     <ContentCard
@@ -90,6 +100,7 @@ export function ProfileSummaryCard() {
       dividerContent={officeInfoSection}
       footerDividerContent={businessInfoSection}
       showBottomDivider
+      bottomContent={footerLinks}
     />
   );
 }
