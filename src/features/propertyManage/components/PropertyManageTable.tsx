@@ -60,7 +60,9 @@ const propertyFieldKeys = Object.keys(
   propertyFieldDefaults
 ) as PropertyFieldKey[];
 
-const isTextField = (key: PropertyFieldKey): key is "ownerName" | "ownerPhone" =>
+const isTextField = (
+  key: PropertyFieldKey
+): key is "ownerName" | "ownerPhone" =>
   key === "ownerName" || key === "ownerPhone";
 
 // 의뢰 유형 옵션 (API 스펙 기준)
@@ -581,7 +583,7 @@ export function PropertyManageTable({
       <Table className="min-w-[1100px] whitespace-nowrap">
         <TableHeader className="sticky top-0 z-40 shadow-sm bg-[#E8EDFF]">
           <TableRow>
-            <TableHead className="w-24 px-2 text-center">관리 타입</TableHead>
+            <TableHead className="w-24 text-center">관리 타입</TableHead>
             <TableHead>동</TableHead>
             <TableHead>호수</TableHead>
             <TableHead>면적</TableHead>
@@ -630,7 +632,7 @@ export function PropertyManageTable({
                 key={apartment.apartmentId}
                 className={`cursor-pointer transition-colors hover:bg-gray-50 ${
                   isSelected
-                    ? "bg-[#EEF6FF] border border-2 border-[#1499FF]"
+                    ? "bg-[#EEF6FF] ring-2 ring-inset ring-[#1499FF]"
                     : ""
                 }`}
                 onClick={() => onPropertyClick?.(apartment.apartmentId)}
@@ -669,28 +671,35 @@ export function PropertyManageTable({
 
                 {/* 의뢰 유형 */}
                 <TableCell>
-                  <DropdownMenuCell
-                    options={requestTypeOptions}
-                    value={getDisplayValue(apartment, "requestType")}
-                    onChange={(value) => {
-                      // 즉시 API 호출
-                      handleRequestTypeUpdate(apartment.apartmentId, value);
-                    }}
-                    buttonClassName={`w-[70px] min-w-[70px] ${dropdownBgColor}`}
-                  />
+                  <div className="flex items-center justify-center">
+                    <DropdownMenuCell
+                      options={requestTypeOptions}
+                      value={getDisplayValue(apartment, "requestType")}
+                      onChange={(value) => {
+                        // 즉시 API 호출
+                        handleRequestTypeUpdate(apartment.apartmentId, value);
+                      }}
+                      buttonClassName={`w-[70px] min-w-[70px] ${dropdownBgColor}`}
+                    />
+                  </div>
                 </TableCell>
 
                 {/* 매물 상태 */}
                 <TableCell>
-                  <DropdownMenuCell
-                    options={propertyStatusOptions}
-                    value={getDisplayValue(apartment, "propertyStatus")}
-                    onChange={(value) => {
-                      // 즉시 API 호출
-                      handlePropertyStatusUpdate(apartment.apartmentId, value);
-                    }}
-                    buttonClassName={`w-[90px] min-w-[90px] ${dropdownBgColor}`}
-                  />
+                  <div className="flex items-center justify-center">
+                    <DropdownMenuCell
+                      options={propertyStatusOptions}
+                      value={getDisplayValue(apartment, "propertyStatus")}
+                      onChange={(value) => {
+                        // 즉시 API 호출
+                        handlePropertyStatusUpdate(
+                          apartment.apartmentId,
+                          value
+                        );
+                      }}
+                      buttonClassName={`w-[90px] min-w-[90px] ${dropdownBgColor}`}
+                    />
+                  </div>
                 </TableCell>
 
                 {/* 매매가 */}
@@ -700,7 +709,8 @@ export function PropertyManageTable({
                   value={salePriceValue}
                   isSelected={isSelected}
                   type="number"
-                  placeholder="17.5 -> 17억 5000"
+                  placeholder="17.5"
+                  suffix="억"
                   displayValue={formatPriceWithDecimal(salePriceValue)}
                   onUpdate={handlePropertyUpdate}
                 />
@@ -712,7 +722,8 @@ export function PropertyManageTable({
                   value={jeonsePriceValue}
                   isSelected={isSelected}
                   type="number"
-                  placeholder="10.3 -> 10억 3000"
+                  placeholder="17.5"
+                  suffix="억"
                   displayValue={formatPriceWithDecimal(jeonsePriceValue)}
                   onUpdate={handlePropertyUpdate}
                 />

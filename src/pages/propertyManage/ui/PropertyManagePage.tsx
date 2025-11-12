@@ -255,11 +255,7 @@ export function PropertyManagePage() {
         setSelectedPropertyId(propertyId);
       }
     },
-    [
-      clearSelection,
-      isManuallyClosedByButton,
-      selectedPropertyId,
-    ]
+    [clearSelection, isManuallyClosedByButton, selectedPropertyId]
   );
 
   const handleToggleSidebar = () => {
