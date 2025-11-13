@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useRef, ReactNode } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import type { ReactNode } from "react";
 import { TableCell } from "@/components/ui";
 import { Input } from "@/components/ui/input";
 import {
