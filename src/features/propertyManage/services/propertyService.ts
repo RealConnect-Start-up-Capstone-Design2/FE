@@ -3,8 +3,24 @@ import type {
   PropertiesResponse,
   PropertiesQueryParams,
   ApartmentWithProperty,
+  PropertyStatus,
+  RequestType,
+  ManageType,
 } from "../stores/propertyStore";
-import type { ContractInfo } from "../stores/contractStore";
+
+export interface PropertyMutationPayload {
+  apartmentId: number;
+  ownerName: string;
+  ownerPhone: string;
+  salePrice: number;
+  jeonsePrice: number;
+  deposit: number;
+  monthPrice: number;
+  propertyStatus: PropertyStatus;
+  requestType: RequestType;
+  manageType: ManageType;
+  contractDate: string | null;
+}
 
 /**
  * 아파트 목록 조회 API (커서 기반 페이지네이션)
@@ -103,19 +119,7 @@ export const updateMemoAPI = async (
  * PUT /api/properties
  */
 export const updatePropertyAPI = async (
-  _apartmentId: number,
-  data: {
-    apartmentId: number;
-    ownerName: string;
-    ownerPhone: string;
-    salePrice: number;
-    jeonsePrice: number;
-    deposit: number;
-    monthPrice: number;
-    propertyStatus?: string;
-    requestType?: string;
-    manageType?: string;
-  }
+  data: PropertyMutationPayload
 ): Promise<{
   propertyStatus: string;
   requestType: string;
@@ -129,24 +133,6 @@ export const updatePropertyAPI = async (
   apartmentId: number;
 }> => {
   const response = await apiClient.put("/api/properties", data);
-  return response.data;
-};
-
-/**
- * 계약일 생성/수정 API
- * PUT /api/properties/contractInfo/contractDate
- */
-export const updateContractDateAPI = async (
-  apartmentId: number,
-  contractDate: string
-): Promise<ContractInfo> => {
-  const response = await apiClient.put<ContractInfo>(
-    "/api/properties/contractInfo/contractDate",
-    {
-      apartmentId,
-      contractDate,
-    }
-  );
   return response.data;
 };
 
@@ -258,15 +244,9 @@ export const createPropertyWithStatusAPI = async (
  * 매물 등록 API
  * POST /api/properties
  */
-export const createPropertyAPI = async (data: {
-  apartmentId: number;
-  ownerName: string;
-  ownerPhone: string;
-  salePrice: number;
-  jeonsePrice: number;
-  deposit: number;
-  monthPrice: number;
-}): Promise<{
+export const createPropertyAPI = async (
+  data: PropertyMutationPayload
+): Promise<{
   propertyStatus: string;
   requestType: string;
   manageType: string;

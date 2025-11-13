@@ -3,11 +3,12 @@ import { ContractSection } from "./ContractSection";
 import { PaymentFieldGroup } from "./PaymentFieldGroup";
 import type { ContractInfo } from "../stores/contractStore";
 
-interface RentalContractFormProps {
+interface MonthlyRentalContractFormProps {
   contract: ContractInfo | null;
   defaultOwnerName?: string;
   defaultOwnerPhone?: string;
-  defaultJeonsePayment?: number;
+  defaultDeposit?: number;
+  defaultMonthlyRent?: number;
   onChange: (
     field: keyof Omit<ContractInfo, "apartmentId">,
     value: string | number
@@ -16,21 +17,24 @@ interface RentalContractFormProps {
 }
 
 /**
- * 전세 계약 입력 폼
+ * 월세 계약 입력 폼
  */
-export function RentalContractForm({
+export function MonthlyRentalContractForm({
   contract,
   defaultOwnerName,
   defaultOwnerPhone,
-  defaultJeonsePayment,
+  defaultDeposit,
+  defaultMonthlyRent,
   onChange,
   disabled = false,
-}: RentalContractFormProps) {
+}: MonthlyRentalContractFormProps) {
   const ownerNameValue = contract?.gapName || defaultOwnerName || "";
   const ownerPhoneValue = contract?.gapPhone || defaultOwnerPhone || "";
-  const jeonsePaymentValue =
-    contract?.jeonsePayment ??
-    (defaultJeonsePayment !== undefined ? defaultJeonsePayment : "");
+  const depositValue =
+    contract?.deposit ?? (defaultDeposit !== undefined ? defaultDeposit : "");
+  const monthlyRentValue =
+    contract?.monthlyRent ??
+    (defaultMonthlyRent !== undefined ? defaultMonthlyRent : "");
 
   return (
     <div className="flex flex-col gap-2">
@@ -89,23 +93,25 @@ export function RentalContractForm({
 
       <ContractSection className="flex-col gap-4 p-4">
         <PaymentFieldGroup
-          amountLabel="전세금"
-          amountField="jeonsePayment"
-          amountValue={jeonsePaymentValue}
-          dateLabel="전세금 지급일"
-          dateField="jeonsePaymentDueDate"
-          dateValue={contract?.jeonsePaymentDueDate || ""}
+          amountLabel="보증금"
+          amountField="deposit"
+          amountValue={depositValue}
+          dateLabel="보증금 지급일"
+          dateField="depositDueDate"
+          dateValue={contract?.depositDueDate || ""}
           onChange={onChange}
           disabled={disabled}
         />
 
         <PaymentFieldGroup
-          amountLabel="계약금"
-          amountField="downPayment"
-          amountValue={contract?.downPayment || ""}
-          dateLabel="계약금 지급일"
-          dateField="downPaymentDueDate"
-          dateValue={contract?.downPaymentDueDate || ""}
+          amountLabel="월세"
+          amountField="monthlyRent"
+          amountValue={monthlyRentValue}
+          dateLabel="월세 지급일"
+          dateField="monthlyRentDueDate"
+          dateValue={contract?.monthlyRentDueDate || ""}
+          dateType="text"
+          datePlaceholder="매월 25일"
           onChange={onChange}
           disabled={disabled}
         />

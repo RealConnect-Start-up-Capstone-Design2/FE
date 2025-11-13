@@ -25,8 +25,8 @@ import {
   createPropertyWithStatusAPI,
   updateManageTypeAPI,
   createPropertyWithManageTypeAPI,
-  updateContractDateAPI,
 } from "../services/propertyService";
+import type { PropertyMutationPayload } from "../services/propertyService";
 import { formatPrice, formatPhoneNumber } from "@/shared/utils";
 import {
   EditablePropertyCell,
@@ -168,7 +168,8 @@ export function PropertyManageTable({
 
   const handlePropertyUpdate = useCallback(
     (apartmentId: number, field: string, value: string | number) => {
-      if (value === undefined || value === "") return;
+      if (value === undefined) return;
+      if (value === "" && field !== "contractDate") return;
 
       setLocalPropertyStates((prev) => ({
         ...prev,
@@ -295,8 +296,7 @@ export function PropertyManageTable({
         });
 
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (_error) {
+      } catch {
         alert("의뢰 유형 업데이트에 실패했습니다.");
       }
     },
@@ -333,8 +333,7 @@ export function PropertyManageTable({
         });
 
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (_error) {
+      } catch {
         alert("매물 상태 업데이트에 실패했습니다.");
       }
     },
@@ -376,13 +375,20 @@ export function PropertyManageTable({
         });
 
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (_error) {
+      } catch {
         alert("관리 타입 업데이트에 실패했습니다.");
       }
     },
     [apartments, queryClient]
   );
+
+  const normalizeContractDateValue = useCallback((value?: string | null) => {
+    if (value === undefined || value === null) {
+      return null;
+    }
+    const trimmed = value.trim();
+    return trimmed === "" ? null : trimmed;
+  }, []);
 
   const sendPropertyChanges = useCallback(
     async (apartmentId: number) => {
@@ -395,100 +401,81 @@ export function PropertyManageTable({
           (apt) => apt.apartmentId === apartmentId
         );
 
-        const currentProperty = currentApartment?.property;
+        if (!currentApartment) {
+          throw new Error("APARTMENT_NOT_FOUND");
+        }
+        const currentProperty = currentApartment.property;
 
         const hasPropertyFieldChanges = propertyFieldKeys.some(
           (key) => changes[key] !== undefined
         );
+        const hasContractDateChange =
+          Object.prototype.hasOwnProperty.call(changes, "contractDate");
 
-        if (hasPropertyFieldChanges) {
-          const requestData: typeof propertyFieldDefaults = {
-            ...propertyFieldDefaults,
-          };
+        if (!hasPropertyFieldChanges && !hasContractDateChange) {
+          setLocalPropertyStates((prev) => {
+            const newState = { ...prev };
+            delete newState[apartmentId];
+            return newState;
+          });
+          return;
+        }
 
-          for (const key of propertyFieldKeys) {
-            const changeValue = changes[key];
-            const currentValue = currentProperty?.[key];
-            const fallbackValue = propertyFieldDefaults[key];
-            const resolvedValue =
-              changeValue !== undefined
-                ? changeValue
-                : currentValue ?? fallbackValue;
+        const requestData: typeof propertyFieldDefaults = {
+          ...propertyFieldDefaults,
+        };
 
-            if (isTextField(key)) {
-              requestData[key] = String(resolvedValue);
-            } else {
-              requestData[key] = Number(resolvedValue);
-            }
-          }
+        for (const key of propertyFieldKeys) {
+          const changeValue = changes[key];
+          const currentValue = currentProperty?.[key];
+          const fallbackValue = propertyFieldDefaults[key];
+          const resolvedValue =
+            changeValue !== undefined
+              ? changeValue
+              : currentValue ?? fallbackValue;
 
-          // property가 없으면 POST로 생성, 있으면 PUT으로 업데이트
-          const requestPayload = { apartmentId, ...requestData };
-          if (!currentProperty) {
-            await handlePropertyBatchUpdate(apartmentId, requestPayload, true);
+          if (isTextField(key)) {
+            requestData[key] = String(resolvedValue);
           } else {
-            await handlePropertyBatchUpdate(apartmentId, requestPayload, false);
+            requestData[key] = Number(resolvedValue);
           }
         }
 
-        // 계약 정보가 있으면 함께 동기화 (매물 정보에서 수정한 값을 계약에 반영)
-        if (
-          changes.ownerPhone ||
-          changes.deposit !== undefined ||
-          changes.monthPrice !== undefined
-        ) {
-          try {
-            const { getContractAPI, saveContractAPI } = await import(
-              "../services/contractService"
-            );
+        const pendingDropdown = localDropdownStates[apartmentId];
 
-            // 기존 계약 정보 조회
-            const existingContract = await getContractAPI(apartmentId);
+        const resolvedManageType: ManageType =
+          pendingDropdown?.manageType ??
+          currentProperty?.manageType ??
+          "NONE";
+        const resolvedRequestType: RequestType =
+          pendingDropdown?.requestType ??
+          currentProperty?.requestType ??
+          "NONE";
+        const resolvedPropertyStatus: PropertyStatus =
+          pendingDropdown?.propertyStatus ??
+          currentProperty?.propertyStatus ??
+          "NONE";
 
-            // 계약 정보가 있을 때만 업데이트
-            if (existingContract) {
-              const contractUpdateData = {
-                ...existingContract,
-                gapPhone:
-                  changes.ownerPhone !== undefined
-                    ? String(changes.ownerPhone)
-                    : existingContract.gapPhone,
-                deposit:
-                  changes.deposit !== undefined
-                    ? Number(changes.deposit)
-                    : existingContract.deposit,
-                monthlyRent:
-                  changes.monthPrice !== undefined
-                    ? Number(changes.monthPrice)
-                    : existingContract.monthlyRent,
-              };
+        const existingContractDate = normalizeContractDateValue(
+          currentApartment?.contractDate || null
+        );
+        const resolvedContractDate = hasContractDateChange
+          ? normalizeContractDateValue(changes.contractDate)
+          : existingContractDate;
 
-              // apartmentId는 제외하고 전송
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const { apartmentId: _apartmentId, ...contractPayload } =
-                contractUpdateData;
-              await saveContractAPI(apartmentId, contractPayload);
+        const requestPayload: PropertyMutationPayload = {
+          apartmentId,
+          ...requestData,
+          manageType: resolvedManageType,
+          requestType: resolvedRequestType,
+          propertyStatus: resolvedPropertyStatus,
+          contractDate: resolvedContractDate,
+        };
 
-              // 계약 정보 쿼리도 무효화
-              queryClient.invalidateQueries({
-                queryKey: ["contract", apartmentId],
-              });
-            }
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          } catch (_error) {
-            // 계약 동기화 실패해도 매물 저장은 성공했으므로 에러 무시
-          }
-        }
-
-        if (changes.contractDate !== undefined) {
-          try {
-            await updateContractDateAPI(apartmentId, changes.contractDate);
-            queryClient.invalidateQueries({
-              queryKey: ["contract", apartmentId],
-            });
-          } catch (_error) {
-            throw new Error("CONTRACT_DATE_UPDATE_FAILED");
-          }
+        if (!currentProperty) {
+          await handlePropertyBatchUpdate(requestPayload, true);
+        } else {
+          await handlePropertyBatchUpdate(requestPayload, false);
         }
 
         // 로컬 상태에서 해당 변경사항 제거
@@ -499,19 +486,19 @@ export function PropertyManageTable({
         });
 
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
-        if (
-          error instanceof Error &&
-          error.message === "CONTRACT_DATE_UPDATE_FAILED"
-        ) {
-          alert("계약일 업데이트에 실패했습니다.");
-        } else {
-          alert("매물 정보 업데이트에 실패했습니다.");
-        }
+        console.error(error);
+        alert("매물 정보 업데이트에 실패했습니다.");
       }
     },
-    [apartments, localPropertyStates, handlePropertyBatchUpdate, queryClient]
+    [
+      apartments,
+      localPropertyStates,
+      handlePropertyBatchUpdate,
+      queryClient,
+      localDropdownStates,
+      normalizeContractDateValue,
+    ]
   );
 
   // 현재 표시할 값 계산 (로컬 상태 우선, 없으면 서버 데이터)
@@ -774,6 +761,7 @@ export function PropertyManageTable({
                   validate={isValidContractDate}
                   invalidMessage="계약일은 yyyy-mm-dd 형식으로 입력해주세요."
                   onUpdate={handlePropertyUpdate}
+                  allowEmpty
                 />
               </TableRow>
             );

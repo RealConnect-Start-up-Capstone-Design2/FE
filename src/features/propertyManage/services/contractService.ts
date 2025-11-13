@@ -1,19 +1,24 @@
 import type { AxiosError } from "axios";
 import apiClient from "@/shared/api/client";
-import type { ContractInfo, ContractInfoInput } from "../stores/contractStore";
+import type {
+  ContractInfo,
+  ContractInfoInput,
+  ContractType,
+} from "../stores/contractStore";
 
 /**
  * 계약 정보 조회
  * GET /api/properties/contractInfo
  */
 export const getContractAPI = async (
-  apartmentId: number
+  apartmentId: number,
+  contractType: ContractType
 ): Promise<ContractInfo | null> => {
   try {
     const response = await apiClient.get<ContractInfo>(
       "/api/properties/contractInfo",
       {
-        params: { apartmentId },
+        params: { apartmentId, contractType },
       }
     );
     return response.data;

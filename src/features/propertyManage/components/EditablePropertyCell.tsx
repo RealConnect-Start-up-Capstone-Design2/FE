@@ -23,6 +23,7 @@ interface EditablePropertyCellProps {
   validate?: (value: string) => boolean;
   invalidMessage?: string;
   suffix?: ReactNode;
+  allowEmpty?: boolean;
   onUpdate: (
     apartmentId: number,
     field: string,
@@ -46,6 +47,7 @@ export function EditablePropertyCell({
   validate,
   invalidMessage,
   suffix,
+  allowEmpty = false,
   onUpdate,
 }: EditablePropertyCellProps) {
   const [localValue, setLocalValue] = useState<string>(() =>
@@ -64,6 +66,9 @@ export function EditablePropertyCell({
 
   const handleBlur = useCallback(() => {
     if (localValue === "") {
+      if (allowEmpty && value) {
+        onUpdate(apartmentId, field, "");
+      }
       return;
     }
 
@@ -106,6 +111,7 @@ export function EditablePropertyCell({
     validate,
     invalidMessage,
     value,
+    allowEmpty,
   ]);
 
   useEffect(() => {
