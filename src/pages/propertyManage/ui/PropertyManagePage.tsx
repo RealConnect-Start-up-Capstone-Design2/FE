@@ -14,17 +14,16 @@ import { fetchProperties } from "@/features/propertyManage/services/propertyServ
 import { fetchPreferredComplexList, fetchAreaList } from "@/shared/api/region";
 import type { ApartmentWithProperty } from "@/features/propertyManage/stores/propertyStore";
 import type { DropdownOption } from "@/components/ui/dropdown-menu";
-import { usePropertyFilter } from "@/features/propertyManage/hooks/usePropertyFilter";
+import {
+  usePropertyFilter,
+  usePropertySidebar,
+} from "@/features/propertyManage/hooks";
 
 /**
  * 매물 관리 페이지
  * 아파트 목록과 상세 정보(메모)를 관리
  */
 export function PropertyManagePage() {
-  const [isDetailOpen, setIsDetailOpen] = useState(false); // 기본값: 닫힘
-  const [selectedPropertyId, setSelectedPropertyId] = useState<
-    string | number | undefined
-  >();
   const [selectedApartmentComplexId, setSelectedApartmentComplexId] = useState<
     number | undefined
   >();
@@ -42,11 +41,6 @@ export function PropertyManagePage() {
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [dong, setDong] = useState<string>("");
   const [ho, setHo] = useState<string>("");
-  // "카드 닫기" 버튼으로 명시적으로 닫았는지 추적
-  const [isManuallyClosedByButton, setIsManuallyClosedByButton] =
-    useState(false);
-  // 사이드바가 닫힐 때 메모 자동 저장을 위한 상태
-  const [autoSaveToken, setAutoSaveToken] = useState(0);
   const tableContainerRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
 
@@ -67,37 +61,6 @@ export function PropertyManagePage() {
       })),
     [preferredComplexes]
   );
-
-  const resetPropertySelection = useCallback(() => {
-    setSelectedPropertyId(undefined);
-    setIsDetailOpen(false);
-    setIsManuallyClosedByButton(false);
-    setAutoSaveToken(0);
-  }, []);
-
-  useEffect(() => {
-    if (!preferredComplexes || preferredComplexes.length === 0) {
-      if (selectedApartmentComplexId !== undefined) {
-        setSelectedApartmentComplexId(undefined);
-        resetPropertySelection();
-      }
-      return;
-    }
-
-    const hasSelectedComplex = preferredComplexes.some(
-      (complex) => complex.apartmentComplexId === selectedApartmentComplexId
-    );
-
-    if (hasSelectedComplex) {
-      return;
-    }
-
-    const nextComplexId = preferredComplexes[0]?.apartmentComplexId;
-    if (nextComplexId !== undefined) {
-      setSelectedApartmentComplexId(nextComplexId);
-      resetPropertySelection();
-    }
-  }, [preferredComplexes, resetPropertySelection, selectedApartmentComplexId]);
 
   // 아파트 목록 조회 (API 연동)
   const {
@@ -150,8 +113,48 @@ export function PropertyManagePage() {
     ho,
   });
 
+  const {
+    selectedPropertyId,
+    displayedPropertyId,
+    isSidebarOpen,
+    autoSaveToken,
+    handlePropertyClick,
+    handleToggleSidebar,
+    handleExternalClick,
+    resetSelection,
+    closeSidebar,
+  } = usePropertySidebar({ apartments: filteredAndSortedApartments });
+
+  const resetPropertySelection = useCallback(() => {
+    resetSelection();
+  }, [resetSelection]);
+
+  useEffect(() => {
+    if (!preferredComplexes || preferredComplexes.length === 0) {
+      if (selectedApartmentComplexId !== undefined) {
+        setSelectedApartmentComplexId(undefined);
+        resetPropertySelection();
+      }
+      return;
+    }
+
+    const hasSelectedComplex = preferredComplexes.some(
+      (complex) => complex.apartmentComplexId === selectedApartmentComplexId
+    );
+
+    if (hasSelectedComplex) {
+      return;
+    }
+
+    const nextComplexId = preferredComplexes[0]?.apartmentComplexId;
+    if (nextComplexId !== undefined) {
+      setSelectedApartmentComplexId(nextComplexId);
+      resetPropertySelection();
+    }
+  }, [preferredComplexes, resetPropertySelection, selectedApartmentComplexId]);
+
   const selectedApartment = filteredAndSortedApartments.find(
-    (apt) => apt.apartmentId === selectedPropertyId
+    (apt) => apt.apartmentId === displayedPropertyId
   );
 
   // 매물 상세 사이드바 title 구성하는 부분
@@ -216,64 +219,6 @@ export function PropertyManagePage() {
     return title || "매물 상세 정보";
   }, [selectedApartment]);
 
-  const triggerAutoSave = useCallback(() => {
-    setAutoSaveToken((prev) => prev + 1);
-  }, []);
-
-  const closeSidebar = useCallback(() => {
-    // 사이드바가 닫힐 때 메모 자동 저장 트리거
-    triggerAutoSave();
-    setIsDetailOpen(false);
-    setIsManuallyClosedByButton(false);
-  }, [triggerAutoSave]);
-
-  const clearSelection = useCallback(() => {
-    if (selectedPropertyId === undefined) {
-      return;
-    }
-
-    if (isDetailOpen) {
-      closeSidebar();
-    } else {
-      setIsManuallyClosedByButton(false);
-    }
-
-    setSelectedPropertyId(undefined);
-  }, [closeSidebar, isDetailOpen, selectedPropertyId]);
-
-  const handlePropertyClick = useCallback(
-    (propertyId: string | number) => {
-      if (selectedPropertyId === propertyId) {
-        clearSelection();
-        return;
-      }
-
-      if (!isManuallyClosedByButton) {
-        setSelectedPropertyId(propertyId);
-        setIsDetailOpen(true);
-      } else {
-        setSelectedPropertyId(propertyId);
-      }
-    },
-    [clearSelection, isManuallyClosedByButton, selectedPropertyId]
-  );
-
-  const handleToggleSidebar = () => {
-    setIsDetailOpen((prev) => {
-      const newState = !prev;
-      // "카드 닫기" 버튼으로 닫은 경우 상태 설정
-      if (!newState) {
-        // 사이드바가 닫힐 때 메모 자동 저장 트리거
-        triggerAutoSave();
-        setIsManuallyClosedByButton(true);
-      } else {
-        // "카드 열기" 버튼으로 열면 상태 해제
-        setIsManuallyClosedByButton(false);
-      }
-      return newState;
-    });
-  };
-
   useEffect(() => {
     const handleDocumentMouseDown = (event: MouseEvent) => {
       const target = event.target as Node | null;
@@ -296,18 +241,20 @@ export function PropertyManagePage() {
         return;
       }
 
-      if (isDetailOpen || selectedPropertyId !== undefined) {
-        setTimeout(() => {
-          clearSelection();
-        }, 0);
+      if (!isSidebarOpen && selectedPropertyId === undefined) {
+        return;
       }
+
+      setTimeout(() => {
+        handleExternalClick();
+      }, 0);
     };
 
     document.addEventListener("mousedown", handleDocumentMouseDown);
     return () => {
       document.removeEventListener("mousedown", handleDocumentMouseDown);
     };
-  }, [clearSelection, isDetailOpen, selectedPropertyId]);
+  }, [handleExternalClick, isSidebarOpen, selectedPropertyId]);
 
   useEffect(() => {
     if (!selectedApartmentComplexId) {
@@ -360,19 +307,22 @@ export function PropertyManagePage() {
 
   return (
     <SlidingSidebarLayout
-      isOpen={isDetailOpen}
+      isOpen={isSidebarOpen}
       onToggle={handleToggleSidebar}
       sidebarRef={sidebarRef}
       sidebar={
-        <DetailSidebar title={detailSidebarTitle} onClose={closeSidebar}>
+        <DetailSidebar
+          title={detailSidebarTitle}
+          onClose={() => closeSidebar(true)}
+        >
           <PropertyMemoBlock
             apartment={selectedApartment}
-            isOpen={isDetailOpen}
+            isOpen={isSidebarOpen}
             autoSaveToken={autoSaveToken}
           />
           <PropertyContractBlock
             apartment={selectedApartment}
-            isOpen={isDetailOpen}
+            isOpen={isSidebarOpen}
             autoSaveToken={autoSaveToken}
           />
         </DetailSidebar>
