@@ -1,4 +1,8 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
   Table,
@@ -16,6 +20,8 @@ import {
   type PropertyStatus,
   type ManageType,
   type ApartmentWithProperty,
+  type PropertiesResponse,
+  type PropertyInfo,
 } from "../stores/propertyStore";
 import { usePropertyEdit } from "../hooks/usePropertyEdit";
 import type { PropertyMutationPayload } from "../services/propertyService";
@@ -44,6 +50,19 @@ const propertyFieldDefaults: {
   jeonsePrice: 0,
   deposit: 0,
   monthPrice: 0,
+};
+
+// property가 아직 생성되지 않은 경우에도 안전하게 병합하기 위한 기본값
+const propertyInfoDefaults: PropertyInfo = {
+  salePrice: 0,
+  jeonsePrice: 0,
+  deposit: 0,
+  monthPrice: 0,
+  propertyStatus: "NONE",
+  requestType: "NONE",
+  manageType: "NONE",
+  ownerName: "",
+  ownerPhone: "",
 };
 
 type PropertyFieldKey = keyof typeof propertyFieldDefaults;
@@ -89,6 +108,79 @@ const propertyStatusOptions: { label: string; value: PropertyStatus }[] = [
   { label: "광고 중", value: "ADVERTISING" },
   { label: "거래 완료", value: "COMPLETED" },
 ];
+
+// 낙관적 업데이트에서 단일 아파트 데이터를 새 payload로 대체
+const buildUpdatedApartment = (
+  apartment: ApartmentWithProperty,
+  payload: PropertyMutationPayload
+): ApartmentWithProperty => {
+  const baseProperty: PropertyInfo = {
+    ...propertyInfoDefaults,
+    ...(apartment.property ?? {}),
+  };
+
+  const nextProperty: PropertyInfo = {
+    ...baseProperty,
+    salePrice: payload.salePrice,
+    jeonsePrice: payload.jeonsePrice,
+    deposit: payload.deposit,
+    monthPrice: payload.monthPrice,
+    ownerName: payload.ownerName,
+    ownerPhone: payload.ownerPhone,
+    propertyStatus: payload.propertyStatus,
+    requestType: payload.requestType,
+    manageType: payload.manageType,
+  };
+
+  return {
+    ...apartment,
+    contractDate: payload.contractDate ?? "",
+    property: nextProperty,
+  };
+};
+
+// 페이지/목록 단위에서 특정 apartmentId를 찾아 갱신
+const updateApartmentList = (
+  apartments: ApartmentWithProperty[],
+  payload: PropertyMutationPayload
+): { changed: boolean; content: ApartmentWithProperty[] } => {
+  let changed = false;
+  const content = apartments.map((apt) => {
+    if (apt.apartmentId !== payload.apartmentId) {
+      return apt;
+    }
+    changed = true;
+    return buildUpdatedApartment(apt, payload);
+  });
+
+  return { changed, content };
+};
+
+// useInfiniteQuery 형태인지 판별 (pages/pageParams 존재 여부로 확인)
+const isInfinitePropertiesData = (
+  data: unknown
+): data is InfiniteData<PropertiesResponse> => {
+  if (typeof data !== "object" || data === null) {
+    return false;
+  }
+
+  const maybeInfinite = data as InfiniteData<PropertiesResponse>;
+  return Array.isArray(maybeInfinite.pages) && Array.isArray(maybeInfinite.pageParams);
+};
+
+// 단일 페이지 응답인지 판별
+const isPropertiesResponse = (data: unknown): data is PropertiesResponse => {
+  if (typeof data !== "object" || data === null) {
+    return false;
+  }
+
+  const maybeResponse = data as PropertiesResponse;
+  return (
+    Array.isArray(maybeResponse.content) &&
+    typeof maybeResponse.hasNext === "boolean" &&
+    Object.prototype.hasOwnProperty.call(maybeResponse, "nextCursor")
+  );
+};
 
 interface PropertyManageTableProps {
   onPropertyClick?: (apartmentId: string | number) => void;
@@ -188,6 +280,53 @@ export function PropertyManageTable({
     []
   );
   const queryClient = useQueryClient();
+
+  // PUT 응답과 무관하게 UI를 즉시 업데이트하기 위해 캐시를 직접 수정
+  const updateApartmentCache = useCallback(
+    (payload: PropertyMutationPayload) => {
+      queryClient.setQueriesData<
+        PropertiesResponse | InfiniteData<PropertiesResponse>
+      >(
+        { queryKey: ["apartments"] },
+        (oldData) => {
+          if (!oldData) {
+            return oldData;
+          }
+
+          if (isInfinitePropertiesData(oldData)) {
+            let hasChanges = false;
+            const nextPages = oldData.pages.map((page) => {
+              const { changed, content } = updateApartmentList(
+                page.content,
+                payload
+              );
+              if (!changed) {
+                return page;
+              }
+              hasChanges = true;
+              return {
+                ...page,
+                content,
+              };
+            });
+
+            return hasChanges ? { ...oldData, pages: nextPages } : oldData;
+          }
+
+          if (isPropertiesResponse(oldData)) {
+            const { changed, content } = updateApartmentList(
+              oldData.content,
+              payload
+            );
+            return changed ? { ...oldData, content } : oldData;
+          }
+
+          return oldData;
+        }
+      );
+    },
+    [queryClient]
+  );
 
   const [localDropdownStates, setLocalDropdownStates] = useState<
     Record<number, DropdownState>
@@ -325,7 +464,8 @@ export function PropertyManageTable({
           });
         }
 
-        queryClient.invalidateQueries({ queryKey: ["apartments"] });
+        // refetch를 기다리지 않고 방금 바꾼 행만 즉시 반영
+        updateApartmentCache(requestPayload);
       } catch (error) {
         console.error(error);
         alert("매물 정보 업데이트에 실패했습니다.");
@@ -336,8 +476,8 @@ export function PropertyManageTable({
       apartments,
       localPropertyStates,
       handlePropertyBatchUpdate,
-      queryClient,
       localDropdownStates,
+      updateApartmentCache,
     ]
   );
 

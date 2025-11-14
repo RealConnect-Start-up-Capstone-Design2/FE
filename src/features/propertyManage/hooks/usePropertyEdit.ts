@@ -24,7 +24,10 @@ export function usePropertyEdit() {
       return await toggleFavoriteAPI(apartmentId, isFavorite);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["apartments"] });
+      queryClient.invalidateQueries({
+        queryKey: ["apartments"],
+        refetchType: "inactive",
+      });
     },
   });
 
@@ -45,7 +48,10 @@ export function usePropertyEdit() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["apartments"] });
+      queryClient.invalidateQueries({
+        queryKey: ["apartments"],
+        refetchType: "inactive",
+      });
     },
     onError: (error: unknown) => {
       const errorMessage =
