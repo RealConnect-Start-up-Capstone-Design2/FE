@@ -18,14 +18,6 @@ import {
   type ApartmentWithProperty,
 } from "../stores/propertyStore";
 import { usePropertyEdit } from "../hooks/usePropertyEdit";
-import {
-  updateRequestTypeAPI,
-  createPropertyWithRequestTypeAPI,
-  updatePropertyStatusAPI,
-  createPropertyWithStatusAPI,
-  updateManageTypeAPI,
-  createPropertyWithManageTypeAPI,
-} from "../services/propertyService";
 import type { PropertyMutationPayload } from "../services/propertyService";
 import { formatPrice, formatPhoneNumber } from "@/shared/utils";
 import {
@@ -56,6 +48,12 @@ const propertyFieldDefaults: {
 
 type PropertyFieldKey = keyof typeof propertyFieldDefaults;
 
+type DropdownState = {
+  manageType?: ManageType;
+  requestType?: RequestType;
+  propertyStatus?: PropertyStatus;
+};
+
 const propertyFieldKeys = Object.keys(
   propertyFieldDefaults
 ) as PropertyFieldKey[];
@@ -64,6 +62,14 @@ const isTextField = (
   key: PropertyFieldKey
 ): key is "ownerName" | "ownerPhone" =>
   key === "ownerName" || key === "ownerPhone";
+
+const normalizeContractDateValue = (value?: string | null) => {
+  if (value === undefined || value === null) {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
+};
 
 // 의뢰 유형 옵션 (API 스펙 기준)
 const requestTypeOptions: { label: string; value: RequestType }[] = [
@@ -183,13 +189,9 @@ export function PropertyManageTable({
   );
   const queryClient = useQueryClient();
 
-  const [localDropdownStates, setLocalDropdownStates] = useState<{
-    [apartmentId: number]: {
-      manageType?: ManageType;
-      requestType?: RequestType;
-      propertyStatus?: PropertyStatus;
-    };
-  }>({});
+  const [localDropdownStates, setLocalDropdownStates] = useState<
+    Record<number, DropdownState>
+  >({});
 
   const [localPropertyStates, setLocalPropertyStates] = useState<{
     [apartmentId: number]: {
@@ -203,200 +205,17 @@ export function PropertyManageTable({
     };
   }>({});
 
-  // 의뢰 유형 전용 핸들러 - onChange 시점에 즉시 처리
-  const handleRequestTypeUpdate = useCallback(
-    async (apartmentId: number, requestType: string) => {
-      try {
-        // 현재 아파트 데이터 확인 (최신 상태)
-        const currentApartment = apartments.find(
-          (apt) => apt.apartmentId === apartmentId
-        );
-
-        // 매물 상태 확인 (로컬 상태 우선, 없으면 서버 데이터)
-        const currentPropertyStatus =
-          localDropdownStates[apartmentId]?.propertyStatus ??
-          currentApartment?.property?.propertyStatus ??
-          "NONE";
-
-        // property가 존재하면 PATCH, 없으면 POST
-        if (currentApartment?.property) {
-          await updateRequestTypeAPI(apartmentId, requestType);
-        } else {
-          await createPropertyWithRequestTypeAPI(apartmentId, requestType);
-        }
-
-        // 의뢰 유형이 "미수신" 또는 "고민중"이면 매물 상태 변경하지 않음
-        if (requestType === "NOT_RECEIVED" || requestType === "THINKING") {
-          // 매물 상태 변경 없이 의뢰 유형만 업데이트
-        } else if (requestType === "NONE") {
-          try {
-            const apartment = apartments.find(
-              (apt) => apt.apartmentId === apartmentId
-            );
-            // property가 존재하면 PATCH, 없으면 POST로 매물 상태도 함께 생성
-            if (apartment?.property) {
-              await updatePropertyStatusAPI(apartmentId, "NONE");
-            } else {
-              await createPropertyWithStatusAPI(apartmentId, "NONE");
-            }
-          } catch {
-            // 매물 상태 업데이트 실패해도 의뢰 유형 업데이트는 성공했으므로 에러 무시
-          }
-        }
-        // 의뢰 유형이 "입주"로 변경되면 매물 상태를 자동으로 "없음"으로 변경
-        else if (requestType === "SELF") {
-          try {
-            const apartment = apartments.find(
-              (apt) => apt.apartmentId === apartmentId
-            );
-            // property가 존재하면 PATCH, 없으면 POST로 매물 상태도 함께 생성
-            if (apartment?.property) {
-              await updatePropertyStatusAPI(apartmentId, "NONE");
-            } else {
-              await createPropertyWithStatusAPI(apartmentId, "NONE");
-            }
-          } catch {
-            // 매물 상태 업데이트 실패해도 의뢰 유형 업데이트는 성공했으므로 에러 무시
-          }
-        }
-        // 의뢰 유형이 "NONE", "SELF", "NOT_RECEIVED", "THINKING"이 아니고, 매물 상태가 "NONE"이면 자동으로 "BEFORE"로 변경
-        else if (
-          requestType !== "NONE" &&
-          requestType !== "SELF" &&
-          requestType !== "NOT_RECEIVED" &&
-          requestType !== "THINKING" &&
-          currentPropertyStatus === "NONE"
-        ) {
-          try {
-            const apartment = apartments.find(
-              (apt) => apt.apartmentId === apartmentId
-            );
-            // property가 존재하면 PATCH, 없으면 POST로 매물 상태도 함께 생성
-            if (apartment?.property) {
-              await updatePropertyStatusAPI(apartmentId, "BEFORE");
-            } else {
-              await createPropertyWithStatusAPI(apartmentId, "BEFORE");
-            }
-          } catch {
-            // 매물 상태 업데이트 실패해도 의뢰 유형 업데이트는 성공했으므로 에러 무시
-          }
-        }
-
-        // 로컬 상태에서 해당 변경사항 제거 (이미 서버에 반영됨)
-        setLocalDropdownStates((prev) => {
-          const newState = { ...prev };
-          if (newState[apartmentId]) {
-            delete newState[apartmentId].requestType;
-            // 다른 변경사항이 없으면 해당 아파트 상태 객체 삭제
-            if (Object.keys(newState[apartmentId]).length === 0) {
-              delete newState[apartmentId];
-            }
-          }
-          return newState;
-        });
-
-        queryClient.invalidateQueries({ queryKey: ["apartments"] });
-      } catch {
-        alert("의뢰 유형 업데이트에 실패했습니다.");
-      }
-    },
-    [apartments, queryClient, localDropdownStates]
-  );
-
-  // 매물 상태 전용 핸들러 - onChange 시점에 즉시 처리
-  const handlePropertyStatusUpdate = useCallback(
-    async (apartmentId: number, propertyStatus: string) => {
-      try {
-        // 현재 아파트 데이터 확인 (최신 상태)
-        const currentApartment = apartments.find(
-          (apt) => apt.apartmentId === apartmentId
-        );
-
-        // property가 존재하면 PATCH, 없으면 POST
-        if (currentApartment?.property) {
-          await updatePropertyStatusAPI(apartmentId, propertyStatus);
-        } else {
-          await createPropertyWithStatusAPI(apartmentId, propertyStatus);
-        }
-
-        // 로컬 상태에서 해당 변경사항 제거 (이미 서버에 반영됨)
-        setLocalDropdownStates((prev) => {
-          const newState = { ...prev };
-          if (newState[apartmentId]) {
-            delete newState[apartmentId].propertyStatus;
-            // 다른 변경사항이 없으면 해당 아파트 상태 객체 삭제
-            if (Object.keys(newState[apartmentId]).length === 0) {
-              delete newState[apartmentId];
-            }
-          }
-          return newState;
-        });
-
-        queryClient.invalidateQueries({ queryKey: ["apartments"] });
-      } catch {
-        alert("매물 상태 업데이트에 실패했습니다.");
-      }
-    },
-    [apartments, queryClient]
-  );
-
-  // 관리 타입 전용 핸들러 - onChange 시점에 즉시 처리
-  const handleManageTypeUpdate = useCallback(
-    async (apartmentId: number, manageType: string) => {
-      try {
-        // 현재 아파트 데이터 확인 (최신 상태)
-        const currentApartment = apartments.find(
-          (apt) => apt.apartmentId === apartmentId
-        );
-
-        // property가 존재하면 PATCH, 없으면 POST
-        if (currentApartment?.property) {
-          await updateManageTypeAPI(apartmentId, manageType);
-        } else {
-          await createPropertyWithManageTypeAPI(apartmentId, manageType);
-        }
-
-        // 로컬 상태에서 해당 변경사항 제거 (이미 서버에 반영됨)
-        setLocalDropdownStates((prev) => {
-          const newState = { ...prev };
-          if (newState[apartmentId]) {
-            delete newState[apartmentId].manageType;
-            // 다른 변경사항이 없으면 해당 아파트 상태 객체 삭제
-            if (Object.keys(newState[apartmentId]).length === 0) {
-              delete newState[apartmentId];
-            }
-          }
-          return newState;
-        });
-
-        // 글로벌 상태 업데이트
-        updatePropertyInGlobalState(apartmentId, {
-          manageType: manageType as ManageType,
-        });
-
-        queryClient.invalidateQueries({ queryKey: ["apartments"] });
-      } catch {
-        alert("관리 타입 업데이트에 실패했습니다.");
-      }
-    },
-    [apartments, queryClient]
-  );
-
-  const normalizeContractDateValue = useCallback((value?: string | null) => {
-    if (value === undefined || value === null) {
-      return null;
-    }
-    const trimmed = value.trim();
-    return trimmed === "" ? null : trimmed;
-  }, []);
-
   const sendPropertyChanges = useCallback(
-    async (apartmentId: number) => {
-      const changes = localPropertyStates[apartmentId];
-      if (!changes) return;
+    async (
+      apartmentId: number,
+      options?: {
+        dropdownOverrides?: DropdownState;
+        contractDateOverride?: string | null;
+      }
+    ) => {
+      const propertyChanges = localPropertyStates[apartmentId] ?? {};
 
       try {
-        // 현재 아파트 데이터 확인
         const currentApartment = apartments.find(
           (apt) => apt.apartmentId === apartmentId
         );
@@ -407,17 +226,34 @@ export function PropertyManageTable({
         const currentProperty = currentApartment.property;
 
         const hasPropertyFieldChanges = propertyFieldKeys.some(
-          (key) => changes[key] !== undefined
+          (key) => propertyChanges[key] !== undefined
         );
-        const hasContractDateChange =
-          Object.prototype.hasOwnProperty.call(changes, "contractDate");
+        const hasContractDateChange = Object.prototype.hasOwnProperty.call(
+          propertyChanges,
+          "contractDate"
+        );
+        const pendingDropdown = localDropdownStates[apartmentId];
+        const mergedDropdownState =
+          pendingDropdown || options?.dropdownOverrides
+            ? {
+                ...(pendingDropdown ?? {}),
+                ...(options?.dropdownOverrides ?? {}),
+              }
+            : undefined;
+        const hasDropdownChanges =
+          !!mergedDropdownState &&
+          Object.keys(mergedDropdownState).length > 0;
+        const contractDateOverride =
+          options?.contractDateOverride === undefined
+            ? undefined
+            : normalizeContractDateValue(options.contractDateOverride);
 
-        if (!hasPropertyFieldChanges && !hasContractDateChange) {
-          setLocalPropertyStates((prev) => {
-            const newState = { ...prev };
-            delete newState[apartmentId];
-            return newState;
-          });
+        if (
+          !hasPropertyFieldChanges &&
+          !hasContractDateChange &&
+          !hasDropdownChanges &&
+          contractDateOverride === undefined
+        ) {
           return;
         }
 
@@ -426,7 +262,7 @@ export function PropertyManageTable({
         };
 
         for (const key of propertyFieldKeys) {
-          const changeValue = changes[key];
+          const changeValue = propertyChanges[key];
           const currentValue = currentProperty?.[key];
           const fallbackValue = propertyFieldDefaults[key];
           const resolvedValue =
@@ -441,27 +277,30 @@ export function PropertyManageTable({
           }
         }
 
-        const pendingDropdown = localDropdownStates[apartmentId];
-
         const resolvedManageType: ManageType =
-          pendingDropdown?.manageType ??
+          mergedDropdownState?.manageType ??
           currentProperty?.manageType ??
           "NONE";
         const resolvedRequestType: RequestType =
-          pendingDropdown?.requestType ??
+          mergedDropdownState?.requestType ??
           currentProperty?.requestType ??
           "NONE";
         const resolvedPropertyStatus: PropertyStatus =
-          pendingDropdown?.propertyStatus ??
+          mergedDropdownState?.propertyStatus ??
           currentProperty?.propertyStatus ??
           "NONE";
 
         const existingContractDate = normalizeContractDateValue(
-          currentApartment?.contractDate || null
+          currentApartment.contractDate || null
         );
-        const resolvedContractDate = hasContractDateChange
-          ? normalizeContractDateValue(changes.contractDate)
-          : existingContractDate;
+        const resolvedContractDate =
+          contractDateOverride !== undefined
+            ? contractDateOverride
+            : hasContractDateChange
+            ? normalizeContractDateValue(
+                propertyChanges.contractDate as string
+              )
+            : existingContractDate;
 
         const requestPayload: PropertyMutationPayload = {
           apartmentId,
@@ -478,17 +317,19 @@ export function PropertyManageTable({
           await handlePropertyBatchUpdate(requestPayload, false);
         }
 
-        // 로컬 상태에서 해당 변경사항 제거
-        setLocalPropertyStates((prev) => {
-          const newState = { ...prev };
-          delete newState[apartmentId];
-          return newState;
-        });
+        if (localPropertyStates[apartmentId]) {
+          setLocalPropertyStates((prev) => {
+            const newState = { ...prev };
+            delete newState[apartmentId];
+            return newState;
+          });
+        }
 
         queryClient.invalidateQueries({ queryKey: ["apartments"] });
       } catch (error) {
         console.error(error);
         alert("매물 정보 업데이트에 실패했습니다.");
+        throw error;
       }
     },
     [
@@ -497,9 +338,122 @@ export function PropertyManageTable({
       handlePropertyBatchUpdate,
       queryClient,
       localDropdownStates,
-      normalizeContractDateValue,
     ]
   );
+
+  const getCurrentPropertyStatus = useCallback(
+    (apartmentId: number): PropertyStatus => {
+      const overriddenStatus =
+        localDropdownStates[apartmentId]?.propertyStatus;
+      if (overriddenStatus) {
+        return overriddenStatus;
+      }
+      const propertyStatus = apartments.find(
+        (apt) => apt.apartmentId === apartmentId
+      )?.property?.propertyStatus;
+      return propertyStatus ?? "NONE";
+    },
+    [apartments, localDropdownStates]
+  );
+
+  const applyDropdownUpdates = useCallback(
+    async (apartmentId: number, updates: DropdownState) => {
+      if (!updates || Object.keys(updates).length === 0) {
+        return;
+      }
+
+      const nextState = {
+        ...(localDropdownStates[apartmentId] ?? {}),
+        ...updates,
+      };
+
+      setLocalDropdownStates((prev) => ({
+        ...prev,
+        [apartmentId]: nextState,
+      }));
+
+      try {
+        await sendPropertyChanges(apartmentId, {
+          dropdownOverrides: nextState,
+        });
+        setLocalDropdownStates((prev) => {
+          if (prev[apartmentId] !== nextState) {
+            return prev;
+          }
+          const newState = { ...prev };
+          delete newState[apartmentId];
+          return newState;
+        });
+
+        const propertyUpdates: Partial<{
+          propertyStatus: PropertyStatus;
+          requestType: RequestType;
+          manageType: ManageType;
+        }> = {};
+
+        if (nextState.requestType) {
+          propertyUpdates.requestType = nextState.requestType;
+        }
+        if (nextState.propertyStatus) {
+          propertyUpdates.propertyStatus = nextState.propertyStatus;
+        }
+        if (nextState.manageType) {
+          propertyUpdates.manageType = nextState.manageType;
+        }
+
+        if (Object.keys(propertyUpdates).length > 0) {
+          updatePropertyInGlobalState(apartmentId, propertyUpdates);
+        }
+      } catch {
+        // 실패 시 로컬 상태를 유지하여 재시도 가능하도록 함
+      }
+    },
+    [localDropdownStates, sendPropertyChanges]
+  );
+
+  // 의뢰 유형 전용 핸들러 - onChange 시점에 즉시 처리
+  const handleRequestTypeUpdate = useCallback(
+    (apartmentId: number, requestType: string) => {
+      const currentPropertyStatus = getCurrentPropertyStatus(apartmentId);
+      const updates: DropdownState = {
+        requestType: requestType as RequestType,
+      };
+
+      if (requestType === "NONE" || requestType === "SELF") {
+        updates.propertyStatus = "NONE";
+      } else if (
+        requestType !== "NOT_RECEIVED" &&
+        requestType !== "THINKING" &&
+        currentPropertyStatus === "NONE"
+      ) {
+        updates.propertyStatus = "BEFORE";
+      }
+
+      void applyDropdownUpdates(apartmentId, updates);
+    },
+    [applyDropdownUpdates, getCurrentPropertyStatus]
+  );
+
+  // 매물 상태 전용 핸들러 - onChange 시점에 즉시 처리
+  const handlePropertyStatusUpdate = useCallback(
+    (apartmentId: number, propertyStatus: string) => {
+      void applyDropdownUpdates(apartmentId, {
+        propertyStatus: propertyStatus as PropertyStatus,
+      });
+    },
+    [applyDropdownUpdates]
+  );
+
+  // 관리 타입 전용 핸들러 - onChange 시점에 즉시 처리
+  const handleManageTypeUpdate = useCallback(
+    (apartmentId: number, manageType: string) => {
+      void applyDropdownUpdates(apartmentId, {
+        manageType: manageType as ManageType,
+      });
+    },
+    [applyDropdownUpdates]
+  );
+
 
   // 현재 표시할 값 계산 (로컬 상태 우선, 없으면 서버 데이터)
   const getDisplayValue = (
@@ -524,15 +478,34 @@ export function PropertyManageTable({
     if (
       prevId &&
       prevId !== currentId &&
-      localPropertyStates[prevId as number]
+      (localPropertyStates[prevId as number] ||
+        (localDropdownStates[prevId as number] &&
+          Object.keys(localDropdownStates[prevId as number]).length > 0))
     ) {
+      const prevKey = prevId as number;
       // 이전 매물의 변경사항을 일괄 전송
-      sendPropertyChanges(prevId as number);
+      sendPropertyChanges(prevKey)
+        .then(() => {
+          setLocalDropdownStates((prev) => {
+            if (!prev[prevKey]) {
+              return prev;
+            }
+            const newState = { ...prev };
+            delete newState[prevKey];
+            return newState;
+          });
+        })
+        .catch(() => {});
     }
 
     // 현재 선택된 매물 ID 업데이트
     prevSelectedApartmentIdRef.current = currentId;
-  }, [selectedApartmentId, sendPropertyChanges, localPropertyStates]);
+  }, [
+    selectedApartmentId,
+    sendPropertyChanges,
+    localPropertyStates,
+    localDropdownStates,
+  ]);
 
   // 무한스크롤을 위한 스크롤 감지
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -696,7 +669,7 @@ export function PropertyManageTable({
                   value={salePriceValue}
                   isSelected={isSelected}
                   type="number"
-                  placeholder="17.5"
+                  placeholder=""
                   suffix="억"
                   displayValue={formatPriceWithDecimal(salePriceValue)}
                   onUpdate={handlePropertyUpdate}
@@ -709,7 +682,7 @@ export function PropertyManageTable({
                   value={jeonsePriceValue}
                   isSelected={isSelected}
                   type="number"
-                  placeholder="17.5"
+                  placeholder=""
                   suffix="억"
                   displayValue={formatPriceWithDecimal(jeonsePriceValue)}
                   onUpdate={handlePropertyUpdate}
