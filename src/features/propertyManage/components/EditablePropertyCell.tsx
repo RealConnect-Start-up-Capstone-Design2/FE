@@ -277,7 +277,7 @@ export function EditableDepositMonthCell({
                 step={0.01}
                 inputMode="decimal"
                 className="h-8 text-sm pr-8"
-                placeholder="17.5"
+                placeholder=""
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                 억
@@ -291,7 +291,7 @@ export function EditableDepositMonthCell({
                 onChange={(e) => setLocalMonth(e.target.value)}
                 onBlur={handleMonthBlur}
                 className="h-8 text-sm pr-8"
-                placeholder="80"
+                placeholder=""
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                 만
