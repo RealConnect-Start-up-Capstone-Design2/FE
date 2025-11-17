@@ -1,11 +1,22 @@
 import { ContentCard } from "@/components/common/ContentCard";
 import EditNonBox from "@/components/common/EditNonBox.svg";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/shared/utils";
 
 const profileDetailSections = [
   {
-    label: "대표",
-    texts: ["최정현"],
+    texts: [
+      <div
+        className="flex items-center gap-2 text-[24px] font-semibold text-[#1B1B1B]"
+        key="ceo-info"
+      >
+        <span>최정현 (대표)</span>
+        <Label className="flex h-5 w-[46px] items-center justify-center rounded-full bg-[#EDEDED] text-[12px] font-medium text-[#989898]">
+          Basic
+        </Label>
+      </div>,
+    ],
   },
   {
     label: "연락처",
@@ -73,25 +84,26 @@ const businessInfoSection = (
   </div>
 );
 
-const footerLinks = (
-  <div className="flex flex-col items-center gap-3">
-    <div className="flex items-center gap-4 text-[15px] font-medium text-[#8D8D8D]">
-      <span>개인정보 처리 방침</span>
-      <span className="h-[12px] w-px bg-[#8D8D8D]" />
-      <span>서비스 이용약관</span>
-    </div>
-  </div>
-);
+interface ProfileSummaryCardProps {
+  className?: string;
+}
 
-export function ProfileSummaryCard() {
+export function ProfileSummaryCard({ className }: ProfileSummaryCardProps) {
+  const handleComingSoon = () => {
+    alert("추후 추가 예정입니다.");
+  };
+
   return (
     <ContentCard
       title="프로필 요약"
       detailLabel="개인 및 사무실 정보"
       detailSections={profileDetailSections}
-      className="w-[435px]"
+      className={cn("w-[435px]", className)}
       action={
-        <Button className="gap-2 px-5 py-3 text-[18px] font-semibold bg-[#1C2882] text-[#FFFFFF] hover:bg-[#1C2882]/90">
+        <Button
+          onClick={handleComingSoon}
+          className="gap-2 px-5 py-3 text-[18px] font-semibold bg-[#1C2882] text-[#FFFFFF] hover:bg-[#1C2882]"
+        >
           <img src={EditNonBox} alt="편집" className="h-5 w-5" />
           프로필 수정
         </Button>
@@ -100,7 +112,27 @@ export function ProfileSummaryCard() {
       dividerContent={officeInfoSection}
       footerDividerContent={businessInfoSection}
       showBottomDivider
-      bottomContent={footerLinks}
+      bottomContent={
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex items-center gap-4 text-[15px] font-medium text-[#8D8D8D]">
+            <button
+              type="button"
+              onClick={handleComingSoon}
+              className="cursor-pointer transition-colors hover:text-[#1C2882] hover:underline"
+            >
+              개인정보 처리 방침
+            </button>
+            <span className="h-[12px] w-px bg-[#8D8D8D]" />
+            <button
+              type="button"
+              onClick={handleComingSoon}
+              className="cursor-pointer transition-colors hover:text-[#1C2882] hover:underline"
+            >
+              서비스 이용약관
+            </button>
+          </div>
+        </div>
+      }
     />
   );
 }

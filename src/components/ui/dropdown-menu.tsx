@@ -6,6 +6,7 @@ import { cn } from "@/shared/utils";
 export interface DropdownOption {
   label: string;
   value: string;
+  icon?: string;
 }
 
 export interface DropdownMenuProps {
@@ -21,6 +22,7 @@ export interface DropdownMenuProps {
   disabled?: boolean;
   selectedTextColor?: string; // 선택된 값의 텍스트 색상
   placeholderTextColor?: string; // placeholder 텍스트 색상
+  iconPosition?: "left" | "right";
 }
 
 export function DropdownMenu({
@@ -36,6 +38,7 @@ export function DropdownMenu({
   disabled = false,
   selectedTextColor = "text-primary-foreground",
   placeholderTextColor = "text-primary-foreground",
+  iconPosition = "left",
 }: DropdownMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -77,9 +80,18 @@ export function DropdownMenu({
         )}
       >
         <span
-          className={selectedOption ? selectedTextColor : placeholderTextColor}
+          className={cn(
+            "flex items-center gap-2",
+            selectedOption ? selectedTextColor : placeholderTextColor
+          )}
         >
-          {selectedOption?.label ?? placeholder}
+          {iconPosition === "left" && selectedOption?.icon && (
+            <img src={selectedOption.icon} alt="" className="h-4 w-4" />
+          )}
+          <span>{selectedOption?.label ?? placeholder}</span>
+          {iconPosition === "right" && selectedOption?.icon && (
+            <img src={selectedOption.icon} alt="" className="h-4 w-4" />
+          )}
         </span>
         <ChevronDown
           className={cn(
@@ -104,14 +116,20 @@ export function DropdownMenu({
                   setIsOpen(false);
                 }}
                 className={cn(
-                  "flex w-full items-center justify-between px-4 py-2 text-left",
+                  "flex w-full items-center justify-between gap-2 px-4 py-2 text-left",
                   value === option.value
                     ? "bg-primary text-primary-foreground"
                     : "text-primary-foreground",
                   optionClassName
                 )}
               >
-                <span>{option.label}</span>
+                {iconPosition === "left" && option.icon && (
+                  <img src={option.icon} alt="" className="h-4 w-4" />
+                )}
+                <span className="flex-1">{option.label}</span>
+                {iconPosition === "right" && option.icon && (
+                  <img src={option.icon} alt="" className="h-4 w-4" />
+                )}
               </button>
             </li>
           ))}

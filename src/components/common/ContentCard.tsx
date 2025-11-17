@@ -4,7 +4,7 @@ import { cn } from "@/shared/utils";
 
 interface ContentCardDetailSection {
   label?: string;
-  texts?: string[];
+  texts?: Array<string | ReactNode>;
 }
 
 interface ContentCardProps {
@@ -21,6 +21,7 @@ interface ContentCardProps {
   children?: ReactNode;
   className?: string;
   contentClassName?: string;
+  titleExtra?: ReactNode;
 }
 
 export function ContentCard({
@@ -37,7 +38,13 @@ export function ContentCard({
   children,
   className,
   contentClassName,
+  titleExtra,
 }: ContentCardProps) {
+  const titleContainerClassName = cn(
+    "flex items-center",
+    titleExtra ? "gap-2" : undefined
+  );
+
   return (
     <div
       className={cn(
@@ -47,7 +54,10 @@ export function ContentCard({
     >
       <div className={cn("flex flex-col gap-4 p-6", contentClassName)}>
         <div className="flex flex-col gap-2">
-          <p className="text-[24px] font-semibold text-[#1B1B1B]">{title}</p>
+          <div className={titleContainerClassName}>
+            <p className="text-[24px] font-semibold text-[#1B1B1B]">{title}</p>
+            {titleExtra}
+          </div>
           {detailLabel ? (
             <p className="text-[15px] font-medium text-[#8D8D8D]">
               {detailLabel}
@@ -79,14 +89,22 @@ export function ContentCard({
                 ) : null}
                 {texts && texts.length > 0 ? (
                   <div className="flex flex-col gap-1">
-                    {texts.map((text, textIndex) => (
-                      <p
-                        key={`detail-section-${sectionIndex}-text-${textIndex}`}
-                        className="text-[15px] font-medium text-[#1B1B1B]"
-                      >
-                        {text}
-                      </p>
-                    ))}
+                    {texts.map((text, textIndex) =>
+                      typeof text === "string" ? (
+                        <p
+                          key={`detail-section-${sectionIndex}-text-${textIndex}`}
+                          className="text-[15px] font-medium text-[#1B1B1B]"
+                        >
+                          {text}
+                        </p>
+                      ) : (
+                        <Fragment
+                          key={`detail-section-${sectionIndex}-text-${textIndex}`}
+                        >
+                          {text}
+                        </Fragment>
+                      )
+                    )}
                   </div>
                 ) : null}
               </div>
