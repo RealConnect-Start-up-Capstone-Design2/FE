@@ -55,6 +55,30 @@ export const fetchProperties = async (
   return response.data;
 };
 
+interface PropertiesPhoneQueryParams {
+  apartmentComplexId: number;
+  cursorId?: number;
+  size?: number;
+  phone?: string;
+}
+
+export const fetchPropertiesByPhone = async (
+  params: PropertiesPhoneQueryParams
+): Promise<PropertiesResponse> => {
+  const response = await apiClient.get<PropertiesResponse>(
+    "/api/properties/phone",
+    {
+      params: {
+        apartmentComplexId: params.apartmentComplexId,
+        cursorId: params.cursorId,
+        size: params.size || 30,
+        phone: params.phone,
+      },
+    }
+  );
+  return response.data;
+};
+
 /**
  * 특정 아파트 조회 API
  * GET /api/properties/:apartmentId

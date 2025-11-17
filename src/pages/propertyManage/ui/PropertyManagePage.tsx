@@ -10,14 +10,21 @@ import {
 } from "@/components/common/detail-sidebar";
 import { PropertyMemoBlock } from "@/features/propertyManage/components/blocks/PropertyMemoBlock";
 import { PropertyContractBlock } from "@/features/propertyManage/components/blocks/PropertyContractBlock";
-import { fetchProperties } from "@/features/propertyManage/services/propertyService";
+import {
+  fetchProperties,
+  fetchPropertiesByPhone,
+} from "@/features/propertyManage/services/propertyService";
 import { fetchPreferredComplexList, fetchAreaList } from "@/shared/api/region";
-import type { ApartmentWithProperty } from "@/features/propertyManage/stores/propertyStore";
+import type {
+  ApartmentWithProperty,
+  PropertiesResponse,
+} from "@/features/propertyManage/stores/propertyStore";
 import type { DropdownOption } from "@/components/ui/dropdown-menu";
 import {
   usePropertyFilter,
   usePropertySidebar,
 } from "@/features/propertyManage/hooks";
+import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue";
 
 /**
  * 매물 관리 페이지
@@ -63,6 +70,12 @@ export function PropertyManagePage() {
   );
 
   // 아파트 목록 조회 (API 연동)
+  const debouncedDong = useDebouncedValue(dong, 300);
+  const debouncedHo = useDebouncedValue(ho, 300);
+  const debouncedPhone = useDebouncedValue(phoneNumber, 300);
+  const normalizedPhone = debouncedPhone?.trim() ?? "";
+  const isPhoneSearch = normalizedPhone.length > 0;
+
   const serverFilterParams = useMemo(() => {
     const parsedArea =
       selectedArea !== undefined ? Number(selectedArea) : undefined;
@@ -74,17 +87,29 @@ export function PropertyManagePage() {
         parsedArea !== undefined && !Number.isNaN(parsedArea)
           ? parsedArea
           : undefined,
-      dong: dong?.trim() ? dong.trim() : undefined,
-      ho: ho?.trim() ? ho.trim() : undefined,
+      dong: debouncedDong?.trim() ? debouncedDong.trim() : undefined,
+      ho: debouncedHo?.trim() ? debouncedHo.trim() : undefined,
     };
   }, [
     selectedManageType,
     selectedRequestType,
     selectedPropertyStatus,
     selectedArea,
-    dong,
-    ho,
+    debouncedDong,
+    debouncedHo,
   ]);
+
+  const serverFilterKeyParts = useMemo(
+    () => [
+      serverFilterParams.manageType ?? null,
+      serverFilterParams.requestType ?? null,
+      serverFilterParams.propertyStatus ?? null,
+      serverFilterParams.area ?? null,
+      serverFilterParams.dong ?? null,
+      serverFilterParams.ho ?? null,
+    ],
+    [serverFilterParams]
+  );
 
   const {
     data,
@@ -93,24 +118,35 @@ export function PropertyManagePage() {
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: [
-      "apartments",
-      selectedApartmentComplexId,
-      serverFilterParams.manageType ?? null,
-      serverFilterParams.requestType ?? null,
-      serverFilterParams.propertyStatus ?? null,
-      serverFilterParams.area ?? null,
-      serverFilterParams.dong ?? null,
-      serverFilterParams.ho ?? null,
-    ],
+    queryKey: isPhoneSearch
+      ? ["apartments-phone", selectedApartmentComplexId, normalizedPhone]
+      : ["apartments", selectedApartmentComplexId, ...serverFilterKeyParts],
     enabled: Boolean(selectedApartmentComplexId),
-    queryFn: ({ pageParam }) =>
-      fetchProperties({
-        apartmentComplexId: selectedApartmentComplexId!,
+    queryFn: ({ pageParam }) => {
+      if (!selectedApartmentComplexId) {
+        return Promise.resolve<PropertiesResponse>({
+          content: [],
+          nextCursor: null,
+          hasNext: false,
+        });
+      }
+
+      if (isPhoneSearch) {
+        return fetchPropertiesByPhone({
+          apartmentComplexId: selectedApartmentComplexId,
+          cursorId: pageParam,
+          size: 100,
+          phone: normalizedPhone,
+        });
+      }
+
+      return fetchProperties({
+        apartmentComplexId: selectedApartmentComplexId,
         cursorId: pageParam,
         size: 100,
         ...serverFilterParams,
-      }),
+      });
+    },
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) => {
       return lastPage.hasNext ? lastPage.nextCursor : undefined;
@@ -161,7 +197,7 @@ export function PropertyManagePage() {
     selectedRequestType,
     selectedPropertyStatus,
     selectedArea,
-    phoneNumber,
+    phoneNumber: debouncedPhone,
     dong,
     ho,
   });
