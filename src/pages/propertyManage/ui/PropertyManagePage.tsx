@@ -18,6 +18,9 @@ import { fetchPreferredComplexList, fetchAreaList } from "@/shared/api/region";
 import type {
   ApartmentWithProperty,
   PropertiesResponse,
+  ManageType,
+  RequestType,
+  PropertyStatus,
 } from "@/features/propertyManage/stores/propertyStore";
 import type { DropdownOption } from "@/components/ui/dropdown-menu";
 import {
@@ -25,6 +28,35 @@ import {
   usePropertySidebar,
 } from "@/features/propertyManage/hooks";
 import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue";
+
+const manageTypeValues: readonly ManageType[] = [
+  "NONE",
+  "ATTENTION",
+  "CAUTION",
+];
+const requestTypeValues: readonly RequestType[] = [
+  "NONE",
+  "SELF",
+  "SALE",
+  "JEONSE",
+  "MONTHLY",
+  "NOT_RECEIVED",
+  "THINKING",
+];
+const propertyStatusValues: readonly PropertyStatus[] = [
+  "NONE",
+  "BEFORE",
+  "ADVERTISING",
+  "COMPLETED",
+];
+
+const parseEnumValue = <T extends string>(
+  value: string | undefined,
+  validValues: readonly T[]
+): T | undefined => {
+  if (!value) return undefined;
+  return validValues.includes(value as T) ? (value as T) : undefined;
+};
 
 /**
  * 매물 관리 페이지
@@ -76,13 +108,23 @@ export function PropertyManagePage() {
   const normalizedPhone = debouncedPhone?.trim() ?? "";
   const isPhoneSearch = normalizedPhone.length > 0;
 
-  const serverFilterParams = useMemo(() => {
+  const serverFilterParams = useMemo<{
+    manageType?: ManageType;
+    requestType?: RequestType;
+    propertyStatus?: PropertyStatus;
+    area?: number;
+    dong?: string;
+    ho?: string;
+  }>(() => {
     const parsedArea =
       selectedArea !== undefined ? Number(selectedArea) : undefined;
     return {
-      manageType: selectedManageType,
-      requestType: selectedRequestType,
-      propertyStatus: selectedPropertyStatus,
+      manageType: parseEnumValue(selectedManageType, manageTypeValues),
+      requestType: parseEnumValue(selectedRequestType, requestTypeValues),
+      propertyStatus: parseEnumValue(
+        selectedPropertyStatus,
+        propertyStatusValues
+      ),
       area:
         parsedArea !== undefined && !Number.isNaN(parsedArea)
           ? parsedArea
