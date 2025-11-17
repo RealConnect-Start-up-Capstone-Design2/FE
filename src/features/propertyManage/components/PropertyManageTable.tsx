@@ -3,6 +3,7 @@ import {
   useQueryClient,
   type InfiniteData,
 } from "@tanstack/react-query";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
   Table,
@@ -109,6 +110,11 @@ const propertyStatusOptions: { label: string; value: PropertyStatus }[] = [
   { label: "거래 완료", value: "COMPLETED" },
 ];
 
+// TODO: API에서 제공되면 전체 아파트 수를 동적으로 계산
+const TOTAL_APARTMENT_COUNT = 6864;
+// 한 행의 높이 (72px 정도로 일단 구현해둠. 해상도에 따라 달라서 대충 이정도로만 유지해도 될 듯?)
+const ESTIMATED_ROW_HEIGHT = 72;
+
 // 낙관적 업데이트에서 단일 아파트 데이터를 새 payload로 대체
 const buildUpdatedApartment = (
   apartment: ApartmentWithProperty,
@@ -165,7 +171,10 @@ const isInfinitePropertiesData = (
   }
 
   const maybeInfinite = data as InfiniteData<PropertiesResponse>;
-  return Array.isArray(maybeInfinite.pages) && Array.isArray(maybeInfinite.pageParams);
+  return (
+    Array.isArray(maybeInfinite.pages) &&
+    Array.isArray(maybeInfinite.pageParams)
+  );
 };
 
 // 단일 페이지 응답인지 판별
@@ -190,6 +199,7 @@ interface PropertyManageTableProps {
   isFetchingNextPage?: boolean;
   hasNextPage?: boolean;
   onLoadMore?: () => void;
+  hasActiveFilters?: boolean;
 }
 
 export function PropertyManageTable({
@@ -200,6 +210,7 @@ export function PropertyManageTable({
   isFetchingNextPage,
   hasNextPage,
   onLoadMore,
+  hasActiveFilters = false,
 }: PropertyManageTableProps) {
   // React Query로 아파트 목록 조회 (외부에서 데이터를 받지 않을 경우만)
   const { data, isLoading: internalIsLoading } = useQuery({
@@ -221,6 +232,7 @@ export function PropertyManageTable({
 
   // 편집 관련 로직
   const { handlePropertyBatchUpdate } = usePropertyEdit();
+  const tableContainerRef = useRef<HTMLDivElement>(null);
 
   const formatPriceWithDecimal = useCallback(
     (price?: number | null) => formatPrice(price),
@@ -286,47 +298,80 @@ export function PropertyManageTable({
     (payload: PropertyMutationPayload) => {
       queryClient.setQueriesData<
         PropertiesResponse | InfiniteData<PropertiesResponse>
-      >(
-        { queryKey: ["apartments"] },
-        (oldData) => {
-          if (!oldData) {
-            return oldData;
-          }
-
-          if (isInfinitePropertiesData(oldData)) {
-            let hasChanges = false;
-            const nextPages = oldData.pages.map((page) => {
-              const { changed, content } = updateApartmentList(
-                page.content,
-                payload
-              );
-              if (!changed) {
-                return page;
-              }
-              hasChanges = true;
-              return {
-                ...page,
-                content,
-              };
-            });
-
-            return hasChanges ? { ...oldData, pages: nextPages } : oldData;
-          }
-
-          if (isPropertiesResponse(oldData)) {
-            const { changed, content } = updateApartmentList(
-              oldData.content,
-              payload
-            );
-            return changed ? { ...oldData, content } : oldData;
-          }
-
+      >({ queryKey: ["apartments"] }, (oldData) => {
+        if (!oldData) {
           return oldData;
         }
-      );
+
+        if (isInfinitePropertiesData(oldData)) {
+          let hasChanges = false;
+          const nextPages = oldData.pages.map((page) => {
+            const { changed, content } = updateApartmentList(
+              page.content,
+              payload
+            );
+            if (!changed) {
+              return page;
+            }
+            hasChanges = true;
+            return {
+              ...page,
+              content,
+            };
+          });
+
+          return hasChanges ? { ...oldData, pages: nextPages } : oldData;
+        }
+
+        if (isPropertiesResponse(oldData)) {
+          const { changed, content } = updateApartmentList(
+            oldData.content,
+            payload
+          );
+          return changed ? { ...oldData, content } : oldData;
+        }
+
+        return oldData;
+      });
     },
     [queryClient]
   );
+
+  const hasApartments = apartments.length > 0;
+  const shouldUseTotalRowCount = hasApartments && !hasActiveFilters;
+  const nonPlaceholderRowCount = shouldUseTotalRowCount
+    ? Math.max(apartments.length, TOTAL_APARTMENT_COUNT)
+    : apartments.length;
+  const totalRowCount =
+    nonPlaceholderRowCount +
+    (hasActiveFilters && hasNextPage ? 1 : 0);
+  const rowVirtualizer = useVirtualizer({
+    count: totalRowCount,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => ESTIMATED_ROW_HEIGHT,
+    overscan: 12,
+  });
+  const virtualItems = rowVirtualizer.getVirtualItems();
+
+  useEffect(() => {
+    if (!hasNextPage || !onLoadMore || isFetchingNextPage) {
+      return;
+    }
+    if (virtualItems.length === 0) {
+      return;
+    }
+
+    const lastItem = virtualItems[virtualItems.length - 1];
+    if (lastItem.index >= apartments.length - 5) {
+      onLoadMore();
+    }
+  }, [
+    virtualItems,
+    hasNextPage,
+    onLoadMore,
+    apartments.length,
+    isFetchingNextPage,
+  ]);
 
   const [localDropdownStates, setLocalDropdownStates] = useState<
     Record<number, DropdownState>
@@ -380,8 +425,7 @@ export function PropertyManageTable({
               }
             : undefined;
         const hasDropdownChanges =
-          !!mergedDropdownState &&
-          Object.keys(mergedDropdownState).length > 0;
+          !!mergedDropdownState && Object.keys(mergedDropdownState).length > 0;
         const contractDateOverride =
           options?.contractDateOverride === undefined
             ? undefined
@@ -436,9 +480,7 @@ export function PropertyManageTable({
           contractDateOverride !== undefined
             ? contractDateOverride
             : hasContractDateChange
-            ? normalizeContractDateValue(
-                propertyChanges.contractDate as string
-              )
+            ? normalizeContractDateValue(propertyChanges.contractDate as string)
             : existingContractDate;
 
         const requestPayload: PropertyMutationPayload = {
@@ -483,8 +525,7 @@ export function PropertyManageTable({
 
   const getCurrentPropertyStatus = useCallback(
     (apartmentId: number): PropertyStatus => {
-      const overriddenStatus =
-        localDropdownStates[apartmentId]?.propertyStatus;
+      const overriddenStatus = localDropdownStates[apartmentId]?.propertyStatus;
       if (overriddenStatus) {
         return overriddenStatus;
       }
@@ -594,7 +635,6 @@ export function PropertyManageTable({
     [applyDropdownUpdates]
   );
 
-
   // 현재 표시할 값 계산 (로컬 상태 우선, 없으면 서버 데이터)
   const getDisplayValue = (
     apartment: ApartmentWithProperty,
@@ -647,25 +687,6 @@ export function PropertyManageTable({
     localDropdownStates,
   ]);
 
-  // 무한스크롤을 위한 스크롤 감지
-  const tableContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const container = tableContainerRef.current;
-    if (!container || !hasNextPage || !onLoadMore) return;
-
-    const handleScroll = () => {
-      if (isFetchingNextPage) return;
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      if (scrollTop + clientHeight >= scrollHeight - 100) {
-        onLoadMore();
-      }
-    };
-
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [hasNextPage, onLoadMore, isFetchingNextPage]);
-
   if (isLoading) {
     return (
       <section className="w-full rounded-lg border border-[#DDE2F2] bg-white shadow-sm p-8 text-center">
@@ -698,187 +719,287 @@ export function PropertyManageTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {apartments.map((apartment) => {
-            const isSelected = selectedApartmentId === apartment.apartmentId;
-            const property = apartment.property;
-            const pendingProperty = localPropertyStates[apartment.apartmentId];
-            const salePriceValue =
-              pendingProperty?.salePrice ?? property?.salePrice;
-            const jeonsePriceValue =
-              pendingProperty?.jeonsePrice ?? property?.jeonsePrice;
-            const depositValue = pendingProperty?.deposit ?? property?.deposit;
-            const monthPriceValue =
-              pendingProperty?.monthPrice ?? property?.monthPrice;
-            const ownerPhoneValue =
-              pendingProperty?.ownerPhone ?? property?.ownerPhone;
-            const ownerNameValue =
-              pendingProperty?.ownerName ?? property?.ownerName;
-            const formattedOwnerPhone =
-              formatPhoneNumber(ownerPhoneValue) ??
-              (ownerPhoneValue ? String(ownerPhoneValue) : undefined);
-            const contractDateValue =
-              pendingProperty?.contractDate ?? apartment.contractDate;
-
-            // 매물 상태에 따른 드롭다운 배경색 결정
-            const propertyStatus = getDisplayValue(apartment, "propertyStatus");
-            const isActiveStatus =
-              propertyStatus === "BEFORE" || propertyStatus === "ADVERTISING";
-            const dropdownBgColor = isActiveStatus
-              ? "bg-[#E8EDFF]"
-              : "bg-[#EDEDED]";
-
-            return (
-              <TableRow
-                key={apartment.apartmentId}
-                className={`cursor-pointer transition-colors hover:bg-gray-50 ${
-                  isSelected
-                    ? "bg-[#EEF6FF] ring-2 ring-inset ring-[#1499FF]"
-                    : ""
-                }`}
-                onClick={() => onPropertyClick?.(apartment.apartmentId)}
+          {!hasApartments ? (
+            <TableRow>
+              <TableCell
+                colSpan={12}
+                className="py-10 text-center text-sm text-gray-400"
               >
-                {/* 관리 타입 */}
-                <TableCell className="px-2">
-                  <div className="flex items-center justify-center">
-                    <DropdownMenuCell
-                      options={[
-                        { label: "기본", value: "NONE", icon: UnfilledStar },
-                        { label: "관심", value: "ATTENTION", icon: FilledStar },
-                        { label: "주의", value: "CAUTION", icon: Caution },
-                      ]}
-                      value={getDisplayValue(apartment, "manageType")}
-                      onChange={(value) => {
-                        // 즉시 API 호출
-                        handleManageTypeUpdate(apartment.apartmentId, value);
-                      }}
-                      hideLabel={true}
-                      showCheckmark={false}
-                      iconPosition="right"
-                      buttonClassName="bg-[#F5F5F5] justify-center px-2"
-                      listClassName="flex flex-col"
+                조건에 해당하는 매물이 없습니다.
+              </TableCell>
+            </TableRow>
+          ) : (
+            <>
+              {virtualItems.length > 0 && virtualItems[0].start > 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={12}
+                    style={{ height: virtualItems[0].start }}
+                  />
+                </TableRow>
+              )}
+              {virtualItems.map((virtualRow) => {
+                if (virtualRow.index >= apartments.length) {
+                  if (hasActiveFilters) {
+                    if (!hasNextPage || virtualRow.index > apartments.length) {
+                      return null;
+                    }
+                    return (
+                      <TableRow
+                        key={`filtered-loader-${virtualRow.key}`}
+                        ref={rowVirtualizer.measureElement}
+                      >
+                        <TableCell
+                          colSpan={12}
+                          className="text-center text-sm text-gray-400"
+                        >
+                          데이터를 불러오는 중입니다...
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
+
+                  if (!hasNextPage) {
+                    return null;
+                  }
+
+                  return (
+                    <TableRow
+                      key={`placeholder-${virtualRow.key}`}
+                      ref={rowVirtualizer.measureElement}
+                    >
+                      <TableCell
+                        colSpan={12}
+                        className="text-center text-sm text-gray-400"
+                      >
+                        데이터를 불러오는 중입니다...
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
+
+                const apartment = apartments[virtualRow.index];
+
+                if (!apartment) {
+                  return null;
+                }
+
+                const isSelected =
+                  selectedApartmentId === apartment.apartmentId;
+                const property = apartment.property;
+                const pendingProperty =
+                  localPropertyStates[apartment.apartmentId];
+                const salePriceValue =
+                  pendingProperty?.salePrice ?? property?.salePrice;
+                const jeonsePriceValue =
+                  pendingProperty?.jeonsePrice ?? property?.jeonsePrice;
+                const depositValue =
+                  pendingProperty?.deposit ?? property?.deposit;
+                const monthPriceValue =
+                  pendingProperty?.monthPrice ?? property?.monthPrice;
+                const ownerPhoneValue =
+                  pendingProperty?.ownerPhone ?? property?.ownerPhone;
+                const ownerNameValue =
+                  pendingProperty?.ownerName ?? property?.ownerName;
+                const formattedOwnerPhone =
+                  formatPhoneNumber(ownerPhoneValue) ??
+                  (ownerPhoneValue ? String(ownerPhoneValue) : undefined);
+                const contractDateValue =
+                  pendingProperty?.contractDate ?? apartment.contractDate;
+
+                const propertyStatus = getDisplayValue(
+                  apartment,
+                  "propertyStatus"
+                );
+                const isActiveStatus =
+                  propertyStatus === "BEFORE" ||
+                  propertyStatus === "ADVERTISING";
+                const dropdownBgColor = isActiveStatus
+                  ? "bg-[#E8EDFF]"
+                  : "bg-[#EDEDED]";
+
+                return (
+                  <TableRow
+                    key={apartment.apartmentId}
+                    ref={rowVirtualizer.measureElement}
+                    data-index={virtualRow.index}
+                    className={`cursor-pointer transition-colors hover:bg-gray-50 ${
+                      isSelected
+                        ? "bg-[#EEF6FF] ring-2 ring-inset ring-[#1499FF]"
+                        : ""
+                    }`}
+                    onClick={() => onPropertyClick?.(apartment.apartmentId)}
+                  >
+                    {/* 관리 타입 */}
+                    <TableCell className="px-2">
+                      <div className="flex items-center justify-center">
+                        <DropdownMenuCell
+                          options={[
+                            {
+                              label: "기본",
+                              value: "NONE",
+                              icon: UnfilledStar,
+                            },
+                            {
+                              label: "관심",
+                              value: "ATTENTION",
+                              icon: FilledStar,
+                            },
+                            { label: "주의", value: "CAUTION", icon: Caution },
+                          ]}
+                          value={getDisplayValue(apartment, "manageType")}
+                          onChange={(value) => {
+                            handleManageTypeUpdate(
+                              apartment.apartmentId,
+                              value
+                            );
+                          }}
+                          hideLabel={true}
+                          showCheckmark={false}
+                          iconPosition="right"
+                          buttonClassName="bg-[#F5F5F5] justify-center px-2"
+                          listClassName="flex flex-col"
+                        />
+                      </div>
+                    </TableCell>
+
+                    {/* 동 */}
+                    <TableCell>{apartment.dong}</TableCell>
+
+                    {/* 호수 */}
+                    <TableCell>{apartment.ho}</TableCell>
+
+                    {/* 면적 */}
+                    <TableCell>{apartment.area}㎡</TableCell>
+
+                    {/* 의뢰 유형 */}
+                    <TableCell>
+                      <div className="flex items-center justify-center">
+                        <DropdownMenuCell
+                          options={requestTypeOptions}
+                          value={getDisplayValue(apartment, "requestType")}
+                          onChange={(value) => {
+                            handleRequestTypeUpdate(
+                              apartment.apartmentId,
+                              value
+                            );
+                          }}
+                          buttonClassName={`w-[70px] min-w-[70px] ${dropdownBgColor}`}
+                        />
+                      </div>
+                    </TableCell>
+
+                    {/* 매물 상태 */}
+                    <TableCell>
+                      <div className="flex items-center justify-center">
+                        <DropdownMenuCell
+                          options={propertyStatusOptions}
+                          value={getDisplayValue(apartment, "propertyStatus")}
+                          onChange={(value) => {
+                            handlePropertyStatusUpdate(
+                              apartment.apartmentId,
+                              value
+                            );
+                          }}
+                          buttonClassName={`w-[90px] min-w-[90px] ${dropdownBgColor}`}
+                        />
+                      </div>
+                    </TableCell>
+
+                    {/* 매매가 */}
+                    <EditablePropertyCell
+                      apartmentId={apartment.apartmentId}
+                      field="salePrice"
+                      value={salePriceValue}
+                      isSelected={isSelected}
+                      type="number"
+                      placeholder=""
+                      suffix="억"
+                      displayValue={formatPriceWithDecimal(salePriceValue)}
+                      onUpdate={handlePropertyUpdate}
                     />
-                  </div>
-                </TableCell>
 
-                {/* 동 */}
-                <TableCell>{apartment.dong}</TableCell>
-
-                {/* 호수 */}
-                <TableCell>{apartment.ho}</TableCell>
-
-                {/* 면적 */}
-                <TableCell>{apartment.area}㎡</TableCell>
-
-                {/* 의뢰 유형 */}
-                <TableCell>
-                  <div className="flex items-center justify-center">
-                    <DropdownMenuCell
-                      options={requestTypeOptions}
-                      value={getDisplayValue(apartment, "requestType")}
-                      onChange={(value) => {
-                        // 즉시 API 호출
-                        handleRequestTypeUpdate(apartment.apartmentId, value);
-                      }}
-                      buttonClassName={`w-[70px] min-w-[70px] ${dropdownBgColor}`}
+                    {/* 전세가 */}
+                    <EditablePropertyCell
+                      apartmentId={apartment.apartmentId}
+                      field="jeonsePrice"
+                      value={jeonsePriceValue}
+                      isSelected={isSelected}
+                      type="number"
+                      placeholder=""
+                      suffix="억"
+                      displayValue={formatPriceWithDecimal(jeonsePriceValue)}
+                      onUpdate={handlePropertyUpdate}
                     />
-                  </div>
-                </TableCell>
 
-                {/* 매물 상태 */}
-                <TableCell>
-                  <div className="flex items-center justify-center">
-                    <DropdownMenuCell
-                      options={propertyStatusOptions}
-                      value={getDisplayValue(apartment, "propertyStatus")}
-                      onChange={(value) => {
-                        // 즉시 API 호출
-                        handlePropertyStatusUpdate(
-                          apartment.apartmentId,
-                          value
-                        );
-                      }}
-                      buttonClassName={`w-[90px] min-w-[90px] ${dropdownBgColor}`}
+                    {/* 보증금/월세 */}
+                    <EditableDepositMonthCell
+                      apartmentId={apartment.apartmentId}
+                      depositValue={depositValue}
+                      monthValue={monthPriceValue}
+                      isSelected={isSelected}
+                      onUpdate={handlePropertyUpdate}
                     />
-                  </div>
-                </TableCell>
 
-                {/* 매매가 */}
-                <EditablePropertyCell
-                  apartmentId={apartment.apartmentId}
-                  field="salePrice"
-                  value={salePriceValue}
-                  isSelected={isSelected}
-                  type="number"
-                  placeholder=""
-                  suffix="억"
-                  displayValue={formatPriceWithDecimal(salePriceValue)}
-                  onUpdate={handlePropertyUpdate}
-                />
+                    {/* 소유자 */}
+                    <EditablePropertyCell
+                      apartmentId={apartment.apartmentId}
+                      field="ownerName"
+                      value={ownerNameValue}
+                      isSelected={isSelected}
+                      type="text"
+                      placeholder="소유자"
+                      displayValue={ownerNameValue}
+                      onUpdate={handlePropertyUpdate}
+                    />
 
-                {/* 전세가 */}
-                <EditablePropertyCell
-                  apartmentId={apartment.apartmentId}
-                  field="jeonsePrice"
-                  value={jeonsePriceValue}
-                  isSelected={isSelected}
-                  type="number"
-                  placeholder=""
-                  suffix="억"
-                  displayValue={formatPriceWithDecimal(jeonsePriceValue)}
-                  onUpdate={handlePropertyUpdate}
-                />
+                    {/* 연락처 */}
+                    <EditablePropertyCell
+                      apartmentId={apartment.apartmentId}
+                      field="ownerPhone"
+                      value={ownerPhoneValue}
+                      isSelected={isSelected}
+                      type="tel"
+                      placeholder="연락처"
+                      displayValue={formattedOwnerPhone}
+                      onUpdate={handlePropertyUpdate}
+                    />
 
-                {/* 보증금/월세 */}
-                <EditableDepositMonthCell
-                  apartmentId={apartment.apartmentId}
-                  depositValue={depositValue}
-                  monthValue={monthPriceValue}
-                  isSelected={isSelected}
-                  onUpdate={handlePropertyUpdate}
-                />
-
-                {/* 소유자 */}
-                <EditablePropertyCell
-                  apartmentId={apartment.apartmentId}
-                  field="ownerName"
-                  value={ownerNameValue}
-                  isSelected={isSelected}
-                  type="text"
-                  placeholder="소유자"
-                  displayValue={ownerNameValue}
-                  onUpdate={handlePropertyUpdate}
-                />
-
-                {/* 연락처 */}
-                <EditablePropertyCell
-                  apartmentId={apartment.apartmentId}
-                  field="ownerPhone"
-                  value={ownerPhoneValue}
-                  isSelected={isSelected}
-                  type="tel"
-                  placeholder="연락처"
-                  displayValue={formattedOwnerPhone}
-                  onUpdate={handlePropertyUpdate}
-                />
-
-                {/* 계약일 */}
-                <EditablePropertyCell
-                  apartmentId={apartment.apartmentId}
-                  field="contractDate"
-                  value={contractDateValue}
-                  isSelected={isSelected}
-                  type="text"
-                  placeholder="yyyy-mm-dd"
-                  displayValue={contractDateValue || undefined}
-                  inputClassName="w-28"
-                  validate={isValidContractDate}
-                  invalidMessage="계약일은 yyyy-mm-dd 형식으로 입력해주세요."
-                  onUpdate={handlePropertyUpdate}
-                  allowEmpty
-                />
-              </TableRow>
-            );
-          })}
+                    {/* 계약일 */}
+                    <EditablePropertyCell
+                      apartmentId={apartment.apartmentId}
+                      field="contractDate"
+                      value={contractDateValue}
+                      isSelected={isSelected}
+                      type="text"
+                      placeholder="yyyy-mm-dd"
+                      displayValue={contractDateValue || undefined}
+                      inputClassName="w-28"
+                      validate={isValidContractDate}
+                      invalidMessage="계약일은 yyyy-mm-dd 형식으로 입력해주세요."
+                      onUpdate={handlePropertyUpdate}
+                      allowEmpty
+                    />
+                  </TableRow>
+                );
+              })}
+              {virtualItems.length > 0 &&
+                rowVirtualizer.getTotalSize() -
+                  virtualItems[virtualItems.length - 1].end >
+                  0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={12}
+                      style={{
+                        height:
+                          rowVirtualizer.getTotalSize() -
+                          virtualItems[virtualItems.length - 1].end,
+                      }}
+                    />
+                  </TableRow>
+                )}
+            </>
+          )}
         </TableBody>
       </Table>
 

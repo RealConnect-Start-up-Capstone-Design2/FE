@@ -63,6 +63,29 @@ export function PropertyManagePage() {
   );
 
   // 아파트 목록 조회 (API 연동)
+  const serverFilterParams = useMemo(() => {
+    const parsedArea =
+      selectedArea !== undefined ? Number(selectedArea) : undefined;
+    return {
+      manageType: selectedManageType,
+      requestType: selectedRequestType,
+      propertyStatus: selectedPropertyStatus,
+      area:
+        parsedArea !== undefined && !Number.isNaN(parsedArea)
+          ? parsedArea
+          : undefined,
+      dong: dong?.trim() ? dong.trim() : undefined,
+      ho: ho?.trim() ? ho.trim() : undefined,
+    };
+  }, [
+    selectedManageType,
+    selectedRequestType,
+    selectedPropertyStatus,
+    selectedArea,
+    dong,
+    ho,
+  ]);
+
   const {
     data,
     isLoading: isPropertiesLoading,
@@ -70,13 +93,23 @@ export function PropertyManagePage() {
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: ["apartments", selectedApartmentComplexId],
+    queryKey: [
+      "apartments",
+      selectedApartmentComplexId,
+      serverFilterParams.manageType ?? null,
+      serverFilterParams.requestType ?? null,
+      serverFilterParams.propertyStatus ?? null,
+      serverFilterParams.area ?? null,
+      serverFilterParams.dong ?? null,
+      serverFilterParams.ho ?? null,
+    ],
     enabled: Boolean(selectedApartmentComplexId),
     queryFn: ({ pageParam }) =>
       fetchProperties({
         apartmentComplexId: selectedApartmentComplexId!,
         cursorId: pageParam,
         size: 100,
+        ...serverFilterParams,
       }),
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) => {
@@ -100,6 +133,26 @@ export function PropertyManagePage() {
     ) as ApartmentWithProperty[];
     return uniqueApartments;
   }, [data?.pages]);
+
+  const hasActiveFilters = useMemo(() => {
+    return Boolean(
+      selectedManageType !== undefined ||
+        selectedRequestType !== undefined ||
+        selectedPropertyStatus !== undefined ||
+        selectedArea !== undefined ||
+        (phoneNumber && phoneNumber.trim() !== "") ||
+        (dong && dong.trim() !== "") ||
+        (ho && ho.trim() !== "")
+    );
+  }, [
+    selectedManageType,
+    selectedRequestType,
+    selectedPropertyStatus,
+    selectedArea,
+    phoneNumber,
+    dong,
+    ho,
+  ]);
 
   // 필터링 및 정렬
   const { filteredAndSortedApartments } = usePropertyFilter({
@@ -360,6 +413,7 @@ export function PropertyManagePage() {
             isFetchingNextPage={isFetchingNextPage}
             hasNextPage={hasNextPage ?? false}
             onLoadMore={selectedApartmentComplexId ? fetchNextPage : undefined}
+            hasActiveFilters={hasActiveFilters}
           />
         </div>
       </div>
