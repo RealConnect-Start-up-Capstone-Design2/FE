@@ -54,36 +54,6 @@ const officeInfoSection = (
   </div>
 );
 
-const businessInfoSection = (
-  <div className="flex flex-col gap-4">
-    <div className="flex flex-col gap-2">
-      <p className="text-[24px] font-semibold text-[#1B1B1B]">사업자 정보</p>
-    </div>
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-1">
-        <p className="text-[15px] font-medium text-[#8D8D8D]">사업자등록번호</p>
-        <p className="text-[15px] font-medium text-[#1B1B1B]">123-45-67890</p>
-      </div>
-      <div className="flex flex-col gap-1">
-        <p className="text-[15px] font-medium text-[#8D8D8D]">개설등록번호</p>
-        <p className="text-[15px] font-medium text-[#1B1B1B]">123-45-67890</p>
-      </div>
-      <div className="flex flex-col gap-1">
-        <p className="text-[15px] font-medium text-[#8D8D8D]">
-          사업자등록증 사본
-        </p>
-        <p className="text-[15px] font-medium text-[#1B1B1B]">123-45-67890</p>
-      </div>
-      <div className="flex flex-col gap-1">
-        <p className="text-[15px] font-medium text-[#8D8D8D]">
-          중개사 자격증 사본
-        </p>
-        <p className="text-[15px] font-medium text-[#1B1B1B]">123-45-67890</p>
-      </div>
-    </div>
-  </div>
-);
-
 interface ProfileSummaryCardProps {
   className?: string;
 }
@@ -92,6 +62,46 @@ export function ProfileSummaryCard({ className }: ProfileSummaryCardProps) {
   const handleComingSoon = () => {
     alert("추후 추가 예정입니다.");
   };
+
+  const businessInfoSection = (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
+        <p className="text-[24px] font-semibold text-[#1B1B1B]">사업자 정보</p>
+      </div>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <p className="text-[15px] font-medium text-[#8D8D8D]">
+            사업자등록번호
+          </p>
+          <p className="text-[15px] font-medium text-[#1B1B1B]">123-45-67890</p>
+        </div>
+        <div className="flex flex-col gap-1">
+          <p className="text-[15px] font-medium text-[#8D8D8D]">개설등록번호</p>
+          <p className="text-[15px] font-medium text-[#1B1B1B]">123-45-67890</p>
+        </div>
+        <div className="flex flex-col gap-1">
+          <p className="text-[15px] font-medium text-[#8D8D8D]">
+            사업자등록증 사본
+          </p>
+          <p className="text-[15px] font-medium text-[#1B1B1B]">123-45-67890</p>
+        </div>
+        <div className="flex flex-col gap-1">
+          <p className="text-[15px] font-medium text-[#8D8D8D]">
+            중개사 자격증 사본
+          </p>
+          <p className="text-[15px] font-medium text-[#1B1B1B]">123-45-67890</p>
+          <div className="mt-2 flex justify-end">
+            <Button
+              onClick={handleComingSoon}
+              className="gap-2 px-5 py-3 text-[18px] font-semibold bg-[#1C2882] text-[#FFFFFF] hover:bg-[#1C2882]"
+            >
+              중개사 인증하기
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <ContentCard
