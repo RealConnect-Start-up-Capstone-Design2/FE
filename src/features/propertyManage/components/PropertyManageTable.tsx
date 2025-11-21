@@ -44,6 +44,7 @@ const propertyFieldDefaults: {
   jeonsePrice: number;
   deposit: number;
   monthPrice: number;
+  contractDate: string;
 } = {
   ownerName: "",
   ownerPhone: "",
@@ -51,6 +52,7 @@ const propertyFieldDefaults: {
   jeonsePrice: 0,
   deposit: 0,
   monthPrice: 0,
+  contractDate: "",
 };
 
 // property가 아직 생성되지 않은 경우에도 안전하게 병합하기 위한 기본값
@@ -64,6 +66,7 @@ const propertyInfoDefaults: PropertyInfo = {
   manageType: "NONE",
   ownerName: "",
   ownerPhone: "",
+  contractDate: "",
 };
 
 type PropertyFieldKey = keyof typeof propertyFieldDefaults;
@@ -80,8 +83,8 @@ const propertyFieldKeys = Object.keys(
 
 const isTextField = (
   key: PropertyFieldKey
-): key is "ownerName" | "ownerPhone" =>
-  key === "ownerName" || key === "ownerPhone";
+): key is "ownerName" | "ownerPhone" | "contractDate" =>
+  key === "ownerName" || key === "ownerPhone" || key === "contractDate";
 
 const normalizeContractDateValue = (value?: string | null) => {
   if (value === undefined || value === null) {
@@ -133,6 +136,7 @@ const buildUpdatedApartment = (
     monthPrice: payload.monthPrice,
     ownerName: payload.ownerName,
     ownerPhone: payload.ownerPhone,
+    contractDate: payload.contractDate ?? "",
     propertyStatus: payload.propertyStatus,
     requestType: payload.requestType,
     manageType: payload.manageType,
@@ -140,7 +144,6 @@ const buildUpdatedApartment = (
 
   return {
     ...apartment,
-    contractDate: payload.contractDate ?? "",
     property: nextProperty,
   };
 };
@@ -343,8 +346,7 @@ export function PropertyManageTable({
     ? Math.max(apartments.length, TOTAL_APARTMENT_COUNT)
     : apartments.length;
   const totalRowCount =
-    nonPlaceholderRowCount +
-    (hasActiveFilters && hasNextPage ? 1 : 0);
+    nonPlaceholderRowCount + (hasActiveFilters && hasNextPage ? 1 : 0);
   const rowVirtualizer = useVirtualizer({
     count: totalRowCount,
     getScrollElement: () => tableContainerRef.current,
@@ -412,10 +414,6 @@ export function PropertyManageTable({
         const hasPropertyFieldChanges = propertyFieldKeys.some(
           (key) => propertyChanges[key] !== undefined
         );
-        const hasContractDateChange = Object.prototype.hasOwnProperty.call(
-          propertyChanges,
-          "contractDate"
-        );
         const pendingDropdown = localDropdownStates[apartmentId];
         const mergedDropdownState =
           pendingDropdown || options?.dropdownOverrides
@@ -426,17 +424,8 @@ export function PropertyManageTable({
             : undefined;
         const hasDropdownChanges =
           !!mergedDropdownState && Object.keys(mergedDropdownState).length > 0;
-        const contractDateOverride =
-          options?.contractDateOverride === undefined
-            ? undefined
-            : normalizeContractDateValue(options.contractDateOverride);
 
-        if (
-          !hasPropertyFieldChanges &&
-          !hasContractDateChange &&
-          !hasDropdownChanges &&
-          contractDateOverride === undefined
-        ) {
+        if (!hasPropertyFieldChanges && !hasDropdownChanges) {
           return;
         }
 
@@ -473,15 +462,9 @@ export function PropertyManageTable({
           currentProperty?.propertyStatus ??
           "NONE";
 
-        const existingContractDate = normalizeContractDateValue(
-          currentApartment.contractDate || null
+        const resolvedContractDate = normalizeContractDateValue(
+          requestData.contractDate || null
         );
-        const resolvedContractDate =
-          contractDateOverride !== undefined
-            ? contractDateOverride
-            : hasContractDateChange
-            ? normalizeContractDateValue(propertyChanges.contractDate as string)
-            : existingContractDate;
 
         const requestPayload: PropertyMutationPayload = {
           apartmentId,
@@ -805,7 +788,7 @@ export function PropertyManageTable({
                   formatPhoneNumber(ownerPhoneValue) ??
                   (ownerPhoneValue ? String(ownerPhoneValue) : undefined);
                 const contractDateValue =
-                  pendingProperty?.contractDate ?? apartment.contractDate;
+                  pendingProperty?.contractDate ?? property?.contractDate;
 
                 const propertyStatus = getDisplayValue(
                   apartment,

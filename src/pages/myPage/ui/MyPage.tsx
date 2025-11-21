@@ -14,11 +14,11 @@ export function MyPage() {
         <PageDescription title="구독중인 멤버십 정보, 내 프로필 등을 보여줍니다" />
       </PageHeader>
 
-      <div className="flex flex-1 flex-row items-stretch">
-        <div className="flex flex-col pb-[46px]">
+      <div className="flex flex-1 flex-row items-stretch gap-[30px]">
+        <div className="flex flex-col pb-[46px] min-w-0">
           <ProfileSummaryCard className="h-full" />
         </div>
-        <div className="ml-[30px] flex flex-1 flex-col pb-[46px]">
+        <div className="flex flex-1 flex-col pb-[46px] min-w-0">
           <MembershipSummaryCard />
           <PaymentManageCard className="mt-[30px]" />
           <PointUsageHistoryCard className="mt-[30px]" />

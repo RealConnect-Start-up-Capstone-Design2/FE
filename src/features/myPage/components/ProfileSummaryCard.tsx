@@ -146,7 +146,10 @@ export function ProfileSummaryCard({ className }: ProfileSummaryCardProps) {
         title="프로필 요약"
         detailLabel="개인 및 사무실 정보"
         detailSections={profileDetailSections}
-        className={cn("w-[435px]", className)}
+        className={cn(
+          "min-w-[300px] max-w-[435px] flex-1 flex-shrink",
+          className
+        )}
         action={
           <Button
             onClick={handleEditProfile}
