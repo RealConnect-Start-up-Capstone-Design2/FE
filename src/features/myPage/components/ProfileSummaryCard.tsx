@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { ContentCard } from "@/components/common/ContentCard";
 import EditNonBox from "@/components/common/EditNonBox.svg";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/shared/utils";
+import { ProfileEditModal } from "./ProfileEditModal";
+import { RealtorCertificationModal } from "./RealtorCertificationModal";
 
 const profileDetailSections = [
   {
@@ -30,6 +33,14 @@ const profileDetailSections = [
     label: "주거래 단지",
     texts: ["파크리오", "잠실 래미안 아이파크"],
   },
+  {
+    label: "블로그 링크",
+    texts: ["blog.naver.com/realconnect"],
+  },
+  {
+    label: "중개사 홈페이지",
+    texts: ["realconnect.co.kr"],
+  },
 ];
 
 const officeInfoSection = (
@@ -50,6 +61,12 @@ const officeInfoSection = (
           서울특별시 강남구 테헤란로 1234
         </p>
       </div>
+      <div className="flex flex-col gap-1">
+        <p className="text-[15px] font-medium text-[#8D8D8D]">
+          중개사무사 대표 전화번호
+        </p>
+        <p className="text-[15px] font-medium text-[#1B1B1B]">02-1111-1111</p>
+      </div>
     </div>
   </div>
 );
@@ -59,8 +76,28 @@ interface ProfileSummaryCardProps {
 }
 
 export function ProfileSummaryCard({ className }: ProfileSummaryCardProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCertificationModalOpen, setIsCertificationModalOpen] =
+    useState(false);
+
   const handleComingSoon = () => {
     alert("추후 추가 예정입니다.");
+  };
+
+  const handleEditProfile = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleOpenCertificationModal = () => {
+    setIsCertificationModalOpen(true);
+  };
+
+  const handleCloseCertificationModal = () => {
+    setIsCertificationModalOpen(false);
   };
 
   const businessInfoSection = (
@@ -92,7 +129,7 @@ export function ProfileSummaryCard({ className }: ProfileSummaryCardProps) {
           <p className="text-[15px] font-medium text-[#1B1B1B]">123-45-67890</p>
           <div className="mt-2 flex justify-end">
             <Button
-              onClick={handleComingSoon}
+              onClick={handleOpenCertificationModal}
               className="gap-2 px-5 py-3 text-[18px] font-semibold bg-[#1C2882] text-[#FFFFFF] hover:bg-[#1C2882]"
             >
               중개사 인증하기
@@ -104,45 +141,52 @@ export function ProfileSummaryCard({ className }: ProfileSummaryCardProps) {
   );
 
   return (
-    <ContentCard
-      title="프로필 요약"
-      detailLabel="개인 및 사무실 정보"
-      detailSections={profileDetailSections}
-      className={cn("w-[435px]", className)}
-      action={
-        <Button
-          onClick={handleComingSoon}
-          className="gap-2 px-5 py-3 text-[18px] font-semibold bg-[#1C2882] text-[#FFFFFF] hover:bg-[#1C2882]"
-        >
-          <img src={EditNonBox} alt="편집" className="h-5 w-5" />
-          프로필 수정
-        </Button>
-      }
-      showDivider
-      dividerContent={officeInfoSection}
-      footerDividerContent={businessInfoSection}
-      showBottomDivider
-      bottomContent={
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex items-center gap-4 text-[15px] font-medium text-[#8D8D8D]">
-            <button
-              type="button"
-              onClick={handleComingSoon}
-              className="cursor-pointer transition-colors hover:text-[#1C2882] hover:underline"
-            >
-              개인정보 처리 방침
-            </button>
-            <span className="h-[12px] w-px bg-[#8D8D8D]" />
-            <button
-              type="button"
-              onClick={handleComingSoon}
-              className="cursor-pointer transition-colors hover:text-[#1C2882] hover:underline"
-            >
-              서비스 이용약관
-            </button>
+    <>
+      <ContentCard
+        title="프로필 요약"
+        detailLabel="개인 및 사무실 정보"
+        detailSections={profileDetailSections}
+        className={cn("w-[435px]", className)}
+        action={
+          <Button
+            onClick={handleEditProfile}
+            className="gap-2 px-5 py-3 text-[18px] font-semibold bg-[#1C2882] text-[#FFFFFF] hover:bg-[#1C2882]"
+          >
+            <img src={EditNonBox} alt="편집" className="h-5 w-5" />
+            프로필 수정
+          </Button>
+        }
+        showDivider
+        dividerContent={officeInfoSection}
+        footerDividerContent={businessInfoSection}
+        showBottomDivider
+        bottomContent={
+          <div className="flex flex-col items-center gap-3">
+            <div className="flex items-center gap-4 text-[15px] font-medium text-[#8D8D8D]">
+              <button
+                type="button"
+                onClick={handleComingSoon}
+                className="cursor-pointer transition-colors hover:text-[#1C2882] hover:underline"
+              >
+                개인정보 처리 방침
+              </button>
+              <span className="h-[12px] w-px bg-[#8D8D8D]" />
+              <button
+                type="button"
+                onClick={handleComingSoon}
+                className="cursor-pointer transition-colors hover:text-[#1C2882] hover:underline"
+              >
+                서비스 이용약관
+              </button>
+            </div>
           </div>
-        </div>
-      }
-    />
+        }
+      />
+      <ProfileEditModal isOpen={isModalOpen} onClose={handleCloseModal} />
+      <RealtorCertificationModal
+        isOpen={isCertificationModalOpen}
+        onClose={handleCloseCertificationModal}
+      />
+    </>
   );
 }

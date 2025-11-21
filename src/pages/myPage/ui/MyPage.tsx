@@ -1,19 +1,28 @@
 import { PageHeader } from "@/components/common/PageHeader";
 import { PageDescription } from "@/components/common/PageDescription";
-import { MembershipSummaryCard, ProfileSummaryCard } from "@/features/myPage";
+import {
+  MembershipSummaryCard,
+  PaymentManageCard,
+  PointUsageHistoryCard,
+  ProfileSummaryCard,
+} from "@/features/myPage";
 
 export function MyPage() {
   return (
     <div className="flex h-full flex-col gap-[46px]">
-      <PageHeader title="마이페이지" titleClassName="pb-[7px]">
+      <PageHeader title="마이페이지" titleClassName="pb-[7px] text-[#1C2882]">
         <PageDescription title="구독중인 멤버십 정보, 내 프로필 등을 보여줍니다" />
       </PageHeader>
 
-      <div className="flex flex-1 flex-row items-start">
+      <div className="flex flex-1 flex-row items-stretch">
         <div className="flex flex-col pb-[46px]">
-          <ProfileSummaryCard />
+          <ProfileSummaryCard className="h-full" />
         </div>
-        <MembershipSummaryCard className="ml-[30px] flex-1" />
+        <div className="ml-[30px] flex flex-1 flex-col pb-[46px]">
+          <MembershipSummaryCard />
+          <PaymentManageCard className="mt-[30px]" />
+          <PointUsageHistoryCard className="mt-[30px]" />
+        </div>
       </div>
     </div>
   );
