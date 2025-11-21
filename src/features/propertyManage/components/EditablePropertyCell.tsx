@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import type { ReactNode } from "react";
 import { TableCell } from "@/components/ui";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,6 +23,8 @@ interface EditablePropertyCellProps {
   inputClassName?: string;
   validate?: (value: string) => boolean;
   invalidMessage?: string;
+  suffix?: ReactNode;
+  allowEmpty?: boolean;
   onUpdate: (
     apartmentId: number,
     field: string,
@@ -44,6 +47,8 @@ export function EditablePropertyCell({
   inputClassName,
   validate,
   invalidMessage,
+  suffix,
+  allowEmpty = false,
   onUpdate,
 }: EditablePropertyCellProps) {
   const [localValue, setLocalValue] = useState<string>(() =>
@@ -62,6 +67,9 @@ export function EditablePropertyCell({
 
   const handleBlur = useCallback(() => {
     if (localValue === "") {
+      if (allowEmpty && value) {
+        onUpdate(apartmentId, field, "");
+      }
       return;
     }
 
@@ -104,6 +112,7 @@ export function EditablePropertyCell({
     validate,
     invalidMessage,
     value,
+    allowEmpty,
   ]);
 
   useEffect(() => {
@@ -113,24 +122,42 @@ export function EditablePropertyCell({
     prevSelectedRef.current = isSelected;
   }, [isSelected, handleBlur]);
 
+  const renderInput = () => (
+    <Input
+      type={type}
+      value={localValue}
+      onChange={(e) => setLocalValue(e.target.value)}
+      onBlur={handleBlur}
+      step={type === "number" ? 0.01 : undefined}
+      inputMode={type === "number" ? "decimal" : undefined}
+      className={cn("h-8 text-sm", suffix && "pr-8", inputClassName)}
+      placeholder={placeholder}
+    />
+  );
+
   return (
-    <TableCell onClick={(e) => isSelected && e.stopPropagation()}>
-      {isSelected ? (
-        <Input
-          type={type}
-          value={localValue}
-          onChange={(e) => setLocalValue(e.target.value)}
-          onBlur={handleBlur}
-          step={type === "number" ? 0.01 : undefined}
-          inputMode={type === "number" ? "decimal" : undefined}
-          className={cn("h-8 text-sm", inputClassName)}
-          placeholder={placeholder}
-        />
-      ) : displayValue ? (
-        displayValue
-      ) : (
-        "-"
-      )}
+    <TableCell className="p-0">
+      <div
+        className="m-2.5 p-0.5"
+        onClick={isSelected ? (e) => e.stopPropagation() : undefined}
+      >
+        {isSelected ? (
+          suffix ? (
+            <div className="relative w-full">
+              {renderInput()}
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                {suffix}
+              </span>
+            </div>
+          ) : (
+            renderInput()
+          )
+        ) : displayValue ? (
+          displayValue
+        ) : (
+          "-"
+        )}
+      </div>
     </TableCell>
   );
 }
@@ -234,32 +261,47 @@ export function EditableDepositMonthCell({
       : "-";
 
   return (
-    <TableCell onClick={(e) => isSelected && e.stopPropagation()}>
-      {isSelected ? (
-        <div className="flex gap-1 items-center">
-          <Input
-            type="number"
-            value={localDeposit}
-            onChange={(e) => setLocalDeposit(e.target.value)}
-            onBlur={handleDepositBlur}
-            step={0.01}
-            inputMode="decimal"
-            className="h-8 text-sm w-20"
-            placeholder="예: 1.5 -> 1억 5000"
-          />
-          <span className="text-gray-400">/</span>
-          <Input
-            type="number"
-            value={localMonth}
-            onChange={(e) => setLocalMonth(e.target.value)}
-            onBlur={handleMonthBlur}
-            className="h-8 text-sm w-20"
-            placeholder="예: 80 -> 80만"
-          />
-        </div>
-      ) : (
-        displayValue
-      )}
+    <TableCell className="p-0">
+      <div
+        className="py-4"
+        onClick={isSelected ? (e) => e.stopPropagation() : undefined}
+      >
+        {isSelected ? (
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Input
+                type="number"
+                value={localDeposit}
+                onChange={(e) => setLocalDeposit(e.target.value)}
+                onBlur={handleDepositBlur}
+                step={0.01}
+                inputMode="decimal"
+                className="h-8 text-sm pr-8"
+                placeholder=""
+              />
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                억
+              </span>
+            </div>
+            <span className="text-gray-400">/</span>
+            <div className="relative">
+              <Input
+                type="number"
+                value={localMonth}
+                onChange={(e) => setLocalMonth(e.target.value)}
+                onBlur={handleMonthBlur}
+                className="h-8 text-sm pr-8"
+                placeholder=""
+              />
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                만
+              </span>
+            </div>
+          </div>
+        ) : (
+          displayValue
+        )}
+      </div>
     </TableCell>
   );
 }

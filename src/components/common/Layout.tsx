@@ -16,7 +16,7 @@ export function Layout({ showSidebar = true }: LayoutProps) {
           showSidebar && "ml-70"
         )}
       >
-        <div className="h-full overflow-y-auto p-13">
+        <div className="h-full overflow-y-auto p-9">
           <Outlet />
         </div>
       </main>

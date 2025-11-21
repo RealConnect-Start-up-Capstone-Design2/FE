@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ContractTypeToggle } from "../ContractTypeToggle";
 import { RentalContractForm } from "../RentalContractForm";
+import { MonthlyRentalContractForm } from "../MonthlyRentalContractForm";
 import { SaleContractForm } from "../SaleContractForm";
 import type { ApartmentWithProperty } from "../../stores/propertyStore";
 import type {
@@ -11,6 +12,7 @@ import type {
   ContractInfoInput,
   ContractType,
 } from "../../stores/contractStore";
+import { DEFAULT_CONTRACT_TYPE } from "../../stores/contractStore";
 import {
   createContractAPI,
   getContractAPI,
@@ -35,13 +37,15 @@ export function PropertyContractBlock({
   const queryClient = useQueryClient();
   const apartmentId = apartment?.apartmentId;
 
-  const [contractType, setContractType] = useState<ContractType>("LEASE");
+  const [contractType, setContractType] =
+    useState<ContractType>(DEFAULT_CONTRACT_TYPE);
   const [formData, setFormData] = useState<Partial<ContractInfo>>({});
   const [isSaved, setIsSaved] = useState(false);
   const lastAutoSaveTokenRef = useRef<number>(0);
   const prevApartmentIdRef = useRef<number | undefined>(undefined);
   const prevFormDataRef = useRef<Partial<ContractInfo>>({});
-  const prevContractTypeRef = useRef<ContractType>("LEASE");
+  const prevContractTypeRef =
+    useRef<ContractType>(DEFAULT_CONTRACT_TYPE);
   const prevResolvedContractRef = useRef<ContractInfo | null>(null);
 
   const {
@@ -50,8 +54,8 @@ export function PropertyContractBlock({
     isFetching: isContractFetching,
     error: contractError,
   } = useQuery({
-    queryKey: ["contract", apartmentId],
-    queryFn: () => getContractAPI(apartmentId!),
+    queryKey: ["contract", apartmentId, contractType],
+    queryFn: () => getContractAPI(apartmentId!, contractType),
     enabled: isOpen && !!apartmentId,
     refetchOnWindowFocus: false,
   });
@@ -62,7 +66,7 @@ export function PropertyContractBlock({
   useEffect(() => {
     setFormData({});
     setIsSaved(false);
-    setContractType("LEASE");
+    setContractType(DEFAULT_CONTRACT_TYPE);
   }, [apartmentId]);
 
   // 계약 정보를 불러오면 폼 상태를 최신 값으로 동기화
@@ -78,27 +82,33 @@ export function PropertyContractBlock({
       return null;
     }
 
-    // 계약 정보가 없으면 매물 정보의 값을 디폴트로 사용
-    const base = resolvedContract
-      ? { ...resolvedContract }
-      : {
-          // 매물 테이블의 값을 초기값으로
-          gapPhone: apartment?.property?.ownerPhone || "",
-          deposit: apartment?.property?.deposit || 0,
-          monthlyRent: apartment?.property?.monthPrice || 0,
-          gapName: apartment?.property?.ownerName || "",
-          contractDate: "", // 매물장 컬럼과 연동 끊기 - 항상 빈 값으로 시작
-          // 나머지는 빈 값
-          eulPhone: "",
-          eulName: "",
-          downPayment: 0,
-          downPaymentDueDate: "",
-          interimPayment: 0,
-          interimPaymentDueDate: "",
-          balance: 0,
-          balanceDueDate: "",
-          monthlyRentDueDate: "",
-        };
+    const defaultContractValues = {
+      gapPhone: apartment?.property?.ownerPhone || "",
+      gapName: apartment?.property?.ownerName || "",
+      eulPhone: "",
+      eulName: "",
+      contractDate: "",
+      moveInDate: "",
+      expireDate: "",
+      salePrice: apartment?.property?.salePrice || 0,
+      jeonsePayment: apartment?.property?.jeonsePrice || 0,
+      jeonsePaymentDueDate: "",
+      deposit: apartment?.property?.deposit || 0,
+      depositDueDate: "",
+      downPayment: 0,
+      downPaymentDueDate: "",
+      interimPayment: 0,
+      interimPaymentDueDate: "",
+      balance: 0,
+      balanceDueDate: "",
+      monthlyRent: apartment?.property?.monthPrice || 0,
+      monthlyRentDueDate: "",
+    };
+
+    const base = {
+      ...defaultContractValues,
+      ...(resolvedContract ?? {}),
+    };
 
     return {
       apartmentId,
@@ -122,7 +132,7 @@ export function PropertyContractBlock({
       return JSON.stringify(resolvedContract) !== JSON.stringify(merged);
     }
 
-    if (contractType !== "LEASE") {
+    if (contractType !== DEFAULT_CONTRACT_TYPE) {
       return true;
     }
 
@@ -154,61 +164,13 @@ export function PropertyContractBlock({
       return await createContractAPI(apartmentId, payload);
     },
     onSuccess: async (_data, variables) => {
+      const targetContractType =
+        (variables.payload.contractType as ContractType | undefined) ??
+        contractType;
       // 계약 정보 쿼리 무효화
       queryClient.invalidateQueries({
-        queryKey: ["contract", variables.apartmentId],
+        queryKey: ["contract", variables.apartmentId, targetContractType],
       });
-
-      // 매물 정보도 함께 동기화 (계약 정보에서 수정한 값을 매물에 반영)
-      const { payload } = variables;
-      if (
-        payload.gapName ||
-        payload.gapPhone ||
-        payload.deposit !== undefined ||
-        payload.monthlyRent !== undefined
-      ) {
-        try {
-          const { updatePropertyAPI, createPropertyAPI } = await import(
-            "../../services/propertyService"
-          );
-
-          // 현재 매물 정보 가져오기
-          const currentProperty = apartment?.property;
-
-          // 매물 정보 업데이트 (동기화할 필드만 업데이트)
-          const propertyUpdateData = {
-            apartmentId: variables.apartmentId,
-            ownerName:
-              payload.gapName !== undefined
-                ? String(payload.gapName)
-                : currentProperty?.ownerName || "",
-            ownerPhone:
-              payload.gapPhone !== undefined
-                ? String(payload.gapPhone)
-                : currentProperty?.ownerPhone || "",
-            salePrice: currentProperty?.salePrice || 0,
-            jeonsePrice: currentProperty?.jeonsePrice || 0,
-            deposit:
-              payload.deposit !== undefined
-                ? Number(payload.deposit)
-                : currentProperty?.deposit || 0,
-            monthPrice:
-              payload.monthlyRent !== undefined
-                ? Number(payload.monthlyRent)
-                : currentProperty?.monthPrice || 0,
-          };
-
-          // 매물이 없으면 POST로 생성, 있으면 PUT으로 업데이트
-          if (!currentProperty) {
-            await createPropertyAPI(propertyUpdateData);
-          } else {
-            await updatePropertyAPI(variables.apartmentId, propertyUpdateData);
-          }
-        } catch (error) {
-          console.error("매물 정보 동기화 실패:", error);
-          // 매물 동기화 실패해도 계약 저장은 성공했으므로 에러 무시
-        }
-      }
 
       // 매물 목록도 무효화하여 최신 데이터 반영
       queryClient.invalidateQueries({ queryKey: ["apartments"] });
@@ -293,7 +255,7 @@ export function PropertyContractBlock({
         hasPrevChanges =
           JSON.stringify(prevResolvedContract) !== JSON.stringify(merged);
       } else {
-        if (prevContractType !== "LEASE") {
+        if (prevContractType !== DEFAULT_CONTRACT_TYPE) {
           hasPrevChanges = true;
         } else {
           hasPrevChanges = Object.entries(prevFormData).some(([, value]) => {
@@ -315,9 +277,15 @@ export function PropertyContractBlock({
           : {
               gapPhone: "",
               deposit: 0,
+              depositDueDate: "",
               monthlyRent: 0,
               gapName: "",
               contractDate: "",
+              moveInDate: "",
+              expireDate: "",
+              salePrice: 0,
+              jeonsePayment: 0,
+              jeonsePaymentDueDate: "",
               eulPhone: "",
               eulName: "",
               downPayment: 0,
@@ -446,6 +414,13 @@ export function PropertyContractBlock({
   const contractErrorMessage = contractError
     ? "계약 정보를 불러오는데 실패했습니다."
     : null;
+  const isJeonseContract = contractType === "JEONSE";
+  const isMonthlyContract = contractType === "MONTHLY";
+  const defaultOwnerName = apartment?.property?.ownerName || "";
+  const defaultOwnerPhone = apartment?.property?.ownerPhone || "";
+  const defaultJeonsePayment = apartment?.property?.jeonsePrice;
+  const defaultDeposit = apartment?.property?.deposit;
+  const defaultMonthlyRent = apartment?.property?.monthPrice;
 
   return (
     <section className="space-y-[18px]">
@@ -473,9 +448,24 @@ export function PropertyContractBlock({
       />
 
       {/* 계약 타입에 따라 다른 폼 표시 */}
-      {contractType === "LEASE" && (
+      {isJeonseContract && (
         <RentalContractForm
           contract={currentContract}
+          defaultOwnerName={defaultOwnerName}
+          defaultOwnerPhone={defaultOwnerPhone}
+          defaultJeonsePayment={defaultJeonsePayment}
+          onChange={handleFieldChange}
+          disabled={isFormDisabled}
+        />
+      )}
+
+      {isMonthlyContract && (
+        <MonthlyRentalContractForm
+          contract={currentContract}
+          defaultOwnerName={defaultOwnerName}
+          defaultOwnerPhone={defaultOwnerPhone}
+          defaultDeposit={defaultDeposit}
+          defaultMonthlyRent={defaultMonthlyRent}
           onChange={handleFieldChange}
           disabled={isFormDisabled}
         />

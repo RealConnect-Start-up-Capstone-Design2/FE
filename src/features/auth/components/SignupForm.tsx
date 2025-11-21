@@ -482,7 +482,9 @@ export function SignupForm() {
           </div>
 
           <Button
-            type="submit"
+            // type="submit"
+            // TEMP : 임시 비활성화 처리
+            disabled={true}
             className="mt-5 h-[42px] w-full rounded-md bg-brand text-lg font-semibold text-white hover:bg-[#151F65]"
           >
             회원가입

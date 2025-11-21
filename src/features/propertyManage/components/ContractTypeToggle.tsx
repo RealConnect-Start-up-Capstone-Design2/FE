@@ -20,11 +20,11 @@ export function ContractTypeToggle({
     <div className="inline-flex items-center gap-1 rounded-full bg-[#E8EDFF] p-1">
       <button
         type="button"
-        onClick={() => onChange("LEASE")}
+        onClick={() => onChange("SALE")}
         disabled={disabled}
         className={cn(
           "rounded-full px-4 py-[6px] text-[12px] font-medium transition-colors",
-          value === "LEASE"
+          value === "SALE"
             ? "bg-white text-black"
             : "bg-transparent text-black hover:bg-white/50"
         )}
@@ -33,11 +33,11 @@ export function ContractTypeToggle({
       </button>
       <button
         type="button"
-        onClick={() => onChange("SALE")}
+        onClick={() => onChange("JEONSE")}
         disabled={disabled}
         className={cn(
           "rounded-full px-4 py-[6px] text-[12px] font-medium transition-colors",
-          value === "SALE"
+          value === "JEONSE"
             ? "bg-white text-black"
             : "bg-transparent text-black hover:bg-white/50"
         )}

@@ -26,7 +26,17 @@ export function SlidingSidebarLayout({
 }: SlidingSidebarLayoutProps) {
   return (
     <div className={cn("relative w-full h-full", className)}>
-      <div className={cn("w-full h-full", contentClassName)}>{children}</div>
+      <div
+        className={cn(
+          "w-full h-full box-border transition-[padding-right] duration-300 ease-in-out",
+          contentClassName
+        )}
+        style={{
+          paddingRight: isOpen ? sidebarWidth : 0,
+        }}
+      >
+        {children}
+      </div>
 
       {/* 토글 버튼 */}
       {showToggleButton && onToggle && (

@@ -5,7 +5,9 @@
 /**
  * 계약 타입
  */
-export type ContractType = "LEASE" | "SALE" | "MONTHLY";
+export type ContractType = "SALE" | "JEONSE" | "MONTHLY";
+
+export const DEFAULT_CONTRACT_TYPE: ContractType = "SALE";
 
 /**
  * 계약 정보
@@ -18,8 +20,14 @@ export interface ContractInfo {
   gapPhone: string;
   eulName: string; // 을 (임차인/매수인)
   eulPhone: string;
+  moveInDate: string; // 입주일
+  expireDate: string; // 만기일
   contractDate: string; // 계약일 (YYYY-MM-DD)
+  salePrice: number; // 매매가
+  jeonsePayment: number; // 전세금
+  jeonsePaymentDueDate: string; // 전세금 지급일
   deposit: number; // 보증금
+  depositDueDate: string; // 보증금 지급일
   downPayment: number; // 계약금
   downPaymentDueDate: string; // 계약금 지급일
   interimPayment: number; // 중도금
@@ -60,13 +68,19 @@ export const saveContract = (
   const existing = dummyContracts.get(apartmentId);
   const updated: ContractInfo = {
     apartmentId,
-    contractType: contract.contractType || "LEASE",
+    contractType: contract.contractType || DEFAULT_CONTRACT_TYPE,
     gapName: contract.gapName || "",
     gapPhone: contract.gapPhone || "",
     eulName: contract.eulName || "",
     eulPhone: contract.eulPhone || "",
+    moveInDate: contract.moveInDate || "",
+    expireDate: contract.expireDate || "",
     contractDate: contract.contractDate || "",
+    salePrice: contract.salePrice || 0,
+    jeonsePayment: contract.jeonsePayment || 0,
+    jeonsePaymentDueDate: contract.jeonsePaymentDueDate || "",
     deposit: contract.deposit || 0,
+    depositDueDate: contract.depositDueDate || "",
     downPayment: contract.downPayment || 0,
     downPaymentDueDate: contract.downPaymentDueDate || "",
     interimPayment: contract.interimPayment || 0,

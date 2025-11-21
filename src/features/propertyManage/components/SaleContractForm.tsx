@@ -26,14 +26,14 @@ export function SaleContractForm({
       {/* 갑(매도인) 정보 */}
       <ContractSection className="items-center">
         <ContractField
-          label="매도인"
+          label="소유자(매도인)"
           value={contract?.gapName || ""}
           onChange={(value) => onChange("gapName", value)}
           disabled={disabled}
           className="flex-1"
         />
         <ContractField
-          label="매도인 연락처"
+          label="소유자(매도인) 연락처"
           value={contract?.gapPhone || ""}
           onChange={(value) => onChange("gapPhone", value)}
           disabled={disabled}
@@ -59,7 +59,7 @@ export function SaleContractForm({
         />
       </ContractSection>
 
-      {/* 계약일 */}
+      {/* 계약일, 입주일 */}
       <ContractSection>
         <ContractField
           label="계약일"
@@ -69,21 +69,26 @@ export function SaleContractForm({
           disabled={disabled}
           className="w-[181px]"
         />
+        <ContractField
+          label="입주일"
+          type="date"
+          value={contract?.moveInDate || ""}
+          onChange={(value) => onChange("moveInDate", value)}
+          disabled={disabled}
+          className="flex-1"
+        />
       </ContractSection>
 
-      {/* 보증금, 계약금, 중도금, 월세, 잔금 */}
+      {/* 매매대금, 계약금, 중도금, 잔금 */}
       <ContractSection className="flex-col p-4">
-        {/* 보증금 */}
-        <div className="w-[181px]">
-          <ContractField
-            label="보증금"
-            type="number"
-            value={contract?.deposit || ""}
-            onChange={(value) => onChange("deposit", Number(value))}
-            disabled={disabled}
-            placeholder="0"
-          />
-        </div>
+        <ContractField
+          label="매매대금"
+          type="number"
+          value={contract?.salePrice ?? ""}
+          onChange={(value) => onChange("salePrice", Number(value))}
+          disabled={disabled}
+          className="w-[181px]"
+        />
 
         {/* 계약금 + 계약금 지급일 */}
         <PaymentFieldGroup
@@ -117,20 +122,6 @@ export function SaleContractForm({
           dateLabel="잔금 지급일"
           dateField="balanceDueDate"
           dateValue={contract?.balanceDueDate || ""}
-          onChange={onChange}
-          disabled={disabled}
-        />
-
-        {/* 월세 + 월세 지급일 */}
-        <PaymentFieldGroup
-          amountLabel="월세"
-          amountField="monthlyRent"
-          amountValue={contract?.monthlyRent || ""}
-          dateLabel="월세 지급일"
-          dateField="monthlyRentDueDate"
-          dateValue={contract?.monthlyRentDueDate || ""}
-          dateType="text"
-          datePlaceholder="매월 25일"
           onChange={onChange}
           disabled={disabled}
         />
