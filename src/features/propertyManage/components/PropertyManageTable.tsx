@@ -110,6 +110,16 @@ const propertyStatusOptions: { label: string; value: PropertyStatus }[] = [
   { label: "거래 완료", value: "COMPLETED" },
 ];
 
+const emptyAllowedFields = [
+  "salePrice",
+  "jeonsePrice",
+  "deposit",
+  "monthPrice",
+  "ownerName",
+  "ownerPhone",
+  "contractDate",
+];
+
 // TODO: API에서 제공되면 전체 아파트 수를 동적으로 계산
 const TOTAL_APARTMENT_COUNT = 6864;
 // 한 행의 높이 (72px 정도로 일단 구현해둠. 해상도에 따라 달라서 대충 이정도로만 유지해도 될 듯?)
@@ -279,7 +289,7 @@ export function PropertyManageTable({
   const handlePropertyUpdate = useCallback(
     (apartmentId: number, field: string, value: string | number) => {
       if (value === undefined) return;
-      if (value === "" && field !== "contractDate") return;
+      if (value === "" && !emptyAllowedFields.includes(field)) return; // 이러면 값을 지우기만 했을 때에도 저장됨.
 
       setLocalPropertyStates((prev) => ({
         ...prev,
@@ -343,8 +353,7 @@ export function PropertyManageTable({
     ? Math.max(apartments.length, TOTAL_APARTMENT_COUNT)
     : apartments.length;
   const totalRowCount =
-    nonPlaceholderRowCount +
-    (hasActiveFilters && hasNextPage ? 1 : 0);
+    nonPlaceholderRowCount + (hasActiveFilters && hasNextPage ? 1 : 0);
   const rowVirtualizer = useVirtualizer({
     count: totalRowCount,
     getScrollElement: () => tableContainerRef.current,
