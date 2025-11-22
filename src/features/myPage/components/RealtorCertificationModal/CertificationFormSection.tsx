@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { INPUT_STYLE, LABEL_STYLE } from "../ProfileEditModal/constants";
+import { LABEL_STYLE } from "../ProfileEditModal/constants";
 
 interface CertificationFormSectionProps {
   formData: {
