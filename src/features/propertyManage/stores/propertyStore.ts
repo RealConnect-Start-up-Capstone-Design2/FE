@@ -43,6 +43,7 @@ export interface PropertyInfo {
   manageType: ManageType; // 관리 타입 (즐겨찾기)
   ownerName: string; // 소유자 이름
   ownerPhone: string; // 소유자 연락처
+  contractDate: string; // 계약일
   memo?: string; // 메모 (optional)
 }
 
@@ -59,7 +60,6 @@ export interface ApartmentWithProperty {
   direction: Direction; // 방향
   img: string; // 이미지 URL
   type: string; // 타입 (아파트, 빌라 등)
-  contractDate: string; // 계약일
   property: PropertyInfo | null; // 매물 정보 (없으면 null)
   isFavorite?: boolean; // 즐겨찾기 여부 (UI 전용, 로컬 상태)
 }
@@ -147,6 +147,7 @@ export const updatePropertyMemo = (apartmentId: number, memo: string): void => {
             manageType: "NONE",
             ownerName: "",
             ownerPhone: "",
+            contractDate: "",
             memo,
           },
         };
@@ -206,6 +207,7 @@ export const updateProperty = (
             manageType: "NONE",
             ownerName: "",
             ownerPhone: "",
+            contractDate: "",
             memo: "",
             [field]: value,
           },
@@ -249,6 +251,7 @@ export const updatePropertyInGlobalState = (
             manageType: "NONE",
             ownerName: "",
             ownerPhone: "",
+            contractDate: "",
             ...updates,
           },
         };

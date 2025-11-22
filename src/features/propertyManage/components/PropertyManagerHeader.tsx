@@ -3,7 +3,10 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import type { DropdownOption } from "@/components/ui/dropdown-menu";
+import CautionIcon from "@/assets/Caution.svg";
+import FilledStar from "@/assets/FilledStar.svg";
 import PlusIcon from "@/assets/Plus.svg";
+import UnfilledStar from "@/assets/UnfilledStar.svg";
 import { Search } from "lucide-react";
 import {
   InputGroup,
@@ -80,9 +83,9 @@ export function PropertyManagerHeader({
 
   const manageTypeOptions: DropdownOption[] = [
     { label: "전체", value: "ALL" },
-    { label: "기본", value: "NONE" },
-    { label: "관심", value: "ATTENTION" },
-    { label: "주의", value: "CAUTION" },
+    { label: "기본", value: "NONE", icon: UnfilledStar },
+    { label: "관심", value: "ATTENTION", icon: FilledStar },
+    { label: "주의", value: "CAUTION", icon: CautionIcon },
   ];
 
   const requestTypeOptions: DropdownOption[] = [
@@ -256,6 +259,7 @@ export function PropertyManagerHeader({
                 options={manageTypeOptions}
                 value={selectedManageType}
                 onChange={handleSelectManageType}
+                iconPosition="right"
               />
               <InputGroup className="w-32 h-12">
                 <InputGroupAddon>
