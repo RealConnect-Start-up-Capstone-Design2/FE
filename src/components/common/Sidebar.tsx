@@ -21,7 +21,7 @@ interface MenuItem {
   disabled?: boolean;
 }
 
-const menuItems: MenuItem[] = [
+const mainMenuItems: MenuItem[] = [
   {
     id: "property-manage",
     label: "매물장",
@@ -49,6 +49,16 @@ const menuItems: MenuItem[] = [
     path: "/inquiry-share",
     icon: ShareIcon,
     disabled: true,
+  },
+];
+
+const bottomMenuItems: MenuItem[] = [
+  {
+    id: "my-page",
+    label: "마이페이지",
+    path: "/my-page",
+    icon: SettingsIcon,
+    disabled: false,
   },
 ];
 
@@ -91,7 +101,7 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* Menu Items */}
       <div className="px-3 py-6 space-y-3">
-        {menuItems.map((item) => {
+        {mainMenuItems.map((item) => {
           const isActive = location.pathname === item.path;
 
           const handleClick = (e: React.MouseEvent) => {
@@ -131,19 +141,42 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* Bottom Actions */}
       <div className="absolute bottom-8 left-3 right-3 space-y-3">
-        <Link
-          to="/settings"
-          className="flex items-center gap-4 px-4 py-3 rounded-lg text-[#989898] hover:bg-gray-50 transition-colors"
-        >
-          <img
-            src={SettingsIcon}
-            alt="Settings"
-            className="w-5 h-5 brightness-0 saturate-100"
-          />
-          <span className="text-lg font-medium leading-[1.193] tracking-[-0.025em] font-pretendard">
-            설정
-          </span>
-        </Link>
+        {bottomMenuItems.map((item) => {
+          const isActive = location.pathname === item.path;
+
+          const handleClick = (e: React.MouseEvent) => {
+            if (item.disabled) {
+              e.preventDefault();
+              alert("추후 추가 예정입니다.");
+            }
+          };
+
+          return (
+            <Link
+              key={item.id}
+              to={item.path}
+              onClick={handleClick}
+              className={cn(
+                "flex items-center gap-4 px-4 py-3 rounded-lg transition-colors",
+                isActive
+                  ? "bg-[#1C2882] text-white"
+                  : "text-[#989898] hover:bg-gray-50"
+              )}
+            >
+              <img
+                src={item.icon}
+                alt={item.label}
+                className={cn(
+                  "w-5 h-5",
+                  isActive ? "brightness-0 invert" : "brightness-0 saturate-100"
+                )}
+              />
+              <span className="text-lg font-medium leading-[1.193] tracking-[-0.025em] font-pretendard">
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-[#989898] hover:bg-gray-50 transition-colors"

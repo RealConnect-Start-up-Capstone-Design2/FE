@@ -4,6 +4,7 @@ import { ProtectedRoute } from "@/features/auth";
 import { HomePage } from "@/pages/home";
 import { PropertyManagePage } from "@/pages/propertyManage";
 import { LoginPage, SignupPage } from "@/pages/auth";
+import { MyPage } from "@/pages/myPage";
 
 export const routes = createBrowserRouter([
   {
@@ -46,8 +47,8 @@ export const routes = createBrowserRouter([
         element: <div className="p-6">문의 공유 페이지</div>,
       },
       {
-        path: "/settings",
-        element: <div className="p-6">설정 페이지</div>,
+        path: "/my-page",
+        element: <MyPage />,
       },
     ],
   },
