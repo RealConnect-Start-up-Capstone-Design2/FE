@@ -8,8 +8,14 @@ import {
   DetailSidebar,
   SlidingSidebarLayout,
 } from "@/components/common/detail-sidebar";
+
+// 사이드바에 들어가는 블록들
 import { PropertyMemoBlock } from "@/features/propertyManage/components/blocks/PropertyMemoBlock";
 import { PropertyContractBlock } from "@/features/propertyManage/components/blocks/PropertyContractBlock";
+// 평면도 블록은 추후에 들어오면 주석 해제 예정
+// import { PropertyFloorPlanBlock } from "@/features/propertyManage/components/blocks/PropertyFloorPlanBlock";
+
+// 서버에서 가져오는 데이터
 import {
   fetchProperties,
   fetchPropertiesByPhone,
@@ -456,6 +462,8 @@ export function PropertyManagePage() {
             isOpen={isSidebarOpen}
             autoSaveToken={autoSaveToken}
           />
+          {/* 평면도는 아직 안 보여줄 예정 - 추후 평면도 들어오면 주석 해제하기 */}
+          {/* <PropertyFloorPlanBlock apartment={selectedApartment} /> */}
         </DetailSidebar>
       }
     >
