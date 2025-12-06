@@ -113,6 +113,7 @@ export function PropertyManagePage() {
     queryKey: ["totalApartmentCount", selectedApartmentComplexId],
     queryFn: () => fetchTotalApartmentCount(selectedApartmentComplexId!),
     enabled: Boolean(selectedApartmentComplexId), // 단지가 선택되었을 때만 실행
+    retry: 2, // 못 가져왔을 때 2번 재시도
   });
 
   // 아파트 목록 조회 (API 연동)

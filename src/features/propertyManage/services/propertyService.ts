@@ -96,6 +96,7 @@ export const fetchApartmentById = async (
  * 아파트 단지의 총 아파트 수 조회
  * GET /api/apartment-complex/totalCnt
  * @param apartmentComplexId
+ * @returns 총 아파트 수
  */
 export const fetchTotalApartmentCount = async (
   apartmentComplexId: number
