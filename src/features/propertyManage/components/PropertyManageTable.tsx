@@ -123,7 +123,6 @@ const emptyAllowedFields = [
   "contractDate",
 ];
 
-// TODO: API에서 제공되면 전체 아파트 수를 동적으로 계산
 // 한 행의 높이 (72px 정도로 일단 구현해둠. 해상도에 따라 달라서 대충 이정도로만 유지해도 될 듯?)
 const ESTIMATED_ROW_HEIGHT = 72;
 
