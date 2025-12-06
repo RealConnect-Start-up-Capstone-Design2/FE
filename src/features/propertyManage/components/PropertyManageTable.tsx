@@ -123,8 +123,6 @@ const emptyAllowedFields = [
   "contractDate",
 ];
 
-// TODO: API에서 제공되면 전체 아파트 수를 동적으로 계산
-const TOTAL_APARTMENT_COUNT = 6864;
 // 한 행의 높이 (72px 정도로 일단 구현해둠. 해상도에 따라 달라서 대충 이정도로만 유지해도 될 듯?)
 const ESTIMATED_ROW_HEIGHT = 72;
 
@@ -213,6 +211,7 @@ interface PropertyManageTableProps {
   hasNextPage?: boolean;
   onLoadMore?: () => void;
   hasActiveFilters?: boolean;
+  totalApartmentCount?: number;
 }
 
 export function PropertyManageTable({
@@ -224,6 +223,7 @@ export function PropertyManageTable({
   hasNextPage,
   onLoadMore,
   hasActiveFilters = false,
+  totalApartmentCount,
 }: PropertyManageTableProps) {
   // React Query로 아파트 목록 조회 (외부에서 데이터를 받지 않을 경우만)
   const { data, isLoading: internalIsLoading } = useQuery({
@@ -353,7 +353,7 @@ export function PropertyManageTable({
   const hasApartments = apartments.length > 0;
   const shouldUseTotalRowCount = hasApartments && !hasActiveFilters;
   const nonPlaceholderRowCount = shouldUseTotalRowCount
-    ? Math.max(apartments.length, TOTAL_APARTMENT_COUNT)
+    ? Math.max(apartments.length, Number(totalApartmentCount ?? 0))
     : apartments.length;
   const totalRowCount =
     nonPlaceholderRowCount + (hasActiveFilters && hasNextPage ? 1 : 0);
@@ -741,6 +741,7 @@ export function PropertyManageTable({
                       <TableRow
                         key={`filtered-loader-${virtualRow.key}`}
                         ref={rowVirtualizer.measureElement}
+                        data-index={virtualRow.index}
                       >
                         <TableCell
                           colSpan={12}
@@ -760,6 +761,7 @@ export function PropertyManageTable({
                     <TableRow
                       key={`placeholder-${virtualRow.key}`}
                       ref={rowVirtualizer.measureElement}
+                      data-index={virtualRow.index}
                     >
                       <TableCell
                         colSpan={12}

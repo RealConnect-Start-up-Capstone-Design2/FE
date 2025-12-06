@@ -8,11 +8,18 @@ import {
   DetailSidebar,
   SlidingSidebarLayout,
 } from "@/components/common/detail-sidebar";
+
+// 사이드바에 들어가는 블록들
 import { PropertyMemoBlock } from "@/features/propertyManage/components/blocks/PropertyMemoBlock";
 import { PropertyContractBlock } from "@/features/propertyManage/components/blocks/PropertyContractBlock";
+// 평면도 블록은 추후에 들어오면 주석 해제 예정
+// import { PropertyFloorPlanBlock } from "@/features/propertyManage/components/blocks/PropertyFloorPlanBlock";
+
+// 서버에서 가져오는 데이터
 import {
   fetchProperties,
   fetchPropertiesByPhone,
+  fetchTotalApartmentCount,
 } from "@/features/propertyManage/services/propertyService";
 import { fetchPreferredComplexList, fetchAreaList } from "@/shared/api/region";
 import type {
@@ -100,6 +107,14 @@ export function PropertyManagePage() {
       })),
     [preferredComplexes]
   );
+
+  // 선택된 단지의 총 아파트 수 조회
+  const { data: totalApartmentCount } = useQuery({
+    queryKey: ["totalApartmentCount", selectedApartmentComplexId],
+    queryFn: () => fetchTotalApartmentCount(selectedApartmentComplexId!),
+    enabled: Boolean(selectedApartmentComplexId), // 단지가 선택되었을 때만 실행
+    retry: 2, // 못 가져왔을 때 2번 재시도
+  });
 
   // 아파트 목록 조회 (API 연동)
   const debouncedDong = useDebouncedValue(dong, 300);
@@ -456,6 +471,8 @@ export function PropertyManagePage() {
             isOpen={isSidebarOpen}
             autoSaveToken={autoSaveToken}
           />
+          {/* 평면도는 아직 안 보여줄 예정 - 추후 평면도 들어오면 주석 해제하기 */}
+          {/* <PropertyFloorPlanBlock apartment={selectedApartment} /> */}
         </DetailSidebar>
       }
     >
@@ -484,6 +501,7 @@ export function PropertyManagePage() {
         />
         <div ref={tableContainerRef} className="flex-1 overflow-hidden">
           <PropertyManageTable
+            totalApartmentCount={totalApartmentCount}
             onPropertyClick={handlePropertyClick}
             selectedApartmentId={selectedPropertyId}
             apartments={filteredAndSortedApartments}
