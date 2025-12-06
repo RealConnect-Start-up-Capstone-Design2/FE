@@ -93,6 +93,25 @@ export const fetchApartmentById = async (
 };
 
 /**
+ * 아파트 단지의 총 아파트 수 조회
+ * GET /api/apartment-complex/totalCnt
+ * @param apartmentComplexId
+ */
+export const fetchTotalApartmentCount = async (
+  apartmentComplexId: number
+): Promise<number> => {
+  const response = await apiClient.get<{ totalCount: number }>(
+    `/api/apartment-complex/totalCnt`,
+    {
+      params: {
+        apartmentComplexId,
+      },
+    }
+  );
+  return response.data.totalCount;
+};
+
+/**
  * 메모 조회 API
  * GET /memo?apartmentId={apartmentId}
  */

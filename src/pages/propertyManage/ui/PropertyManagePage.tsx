@@ -19,6 +19,7 @@ import { PropertyContractBlock } from "@/features/propertyManage/components/bloc
 import {
   fetchProperties,
   fetchPropertiesByPhone,
+  fetchTotalApartmentCount,
 } from "@/features/propertyManage/services/propertyService";
 import { fetchPreferredComplexList, fetchAreaList } from "@/shared/api/region";
 import type {
@@ -106,6 +107,13 @@ export function PropertyManagePage() {
       })),
     [preferredComplexes]
   );
+
+  // 선택된 단지의 총 아파트 수 조회
+  const { data: totalApartmentCount } = useQuery({
+    queryKey: ["totalApartmentCount", selectedApartmentComplexId],
+    queryFn: () => fetchTotalApartmentCount(selectedApartmentComplexId!),
+    enabled: Boolean(selectedApartmentComplexId), // 단지가 선택되었을 때만 실행
+  });
 
   // 아파트 목록 조회 (API 연동)
   const debouncedDong = useDebouncedValue(dong, 300);
@@ -492,6 +500,7 @@ export function PropertyManagePage() {
         />
         <div ref={tableContainerRef} className="flex-1 overflow-hidden">
           <PropertyManageTable
+            totalApartmentCount={totalApartmentCount}
             onPropertyClick={handlePropertyClick}
             selectedApartmentId={selectedPropertyId}
             apartments={filteredAndSortedApartments}
