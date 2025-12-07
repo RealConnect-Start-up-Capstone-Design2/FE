@@ -4,6 +4,7 @@ import {
   AdminTable,
   AdminFilters,
   AdminPagination,
+  MemberDetailModal,
   type CertificationStatus,
 } from "@/features/admin";
 import type { RealtorMember } from "@/features/admin";
@@ -42,6 +43,7 @@ export function AdminPage() {
   const [certificationStatus, setCertificationStatus] =
     useState<CertificationStatus>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedMember, setSelectedMember] = useState<RealtorMember | null>(null);
   const itemsPerPage = 20;
 
   // 필터링 로직
@@ -68,7 +70,24 @@ export function AdminPage() {
   const paginatedData = filteredData.slice(startIndex, endIndex);
 
   const handleViewDetails = (memberId: string) => {
-    alert(`${memberId}의 상세 정보를 조회합니다. (추후 구현 예정)`);
+    const member = mockData.find((m) => m.id === memberId);
+    if (member) {
+      setSelectedMember(member);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedMember(null);
+  };
+
+  const handleApprove = (memberId: string) => {
+    console.log("승인:", memberId);
+    alert(`${memberId} 회원을 승인했습니다.`);
+  };
+
+  const handleReject = (memberId: string) => {
+    console.log("반려:", memberId);
+    alert(`${memberId} 회원을 반려했습니다.`);
   };
 
   const handleLogout = () => {
@@ -77,9 +96,10 @@ export function AdminPage() {
   };
 
   return (
-    <div className="flex h-screen bg-[#FDFEFE]">
-      {/* 사이드바 */}
-      <AdminSidebar onLogout={handleLogout} />
+    <>
+      <div className="flex h-screen bg-[#FDFEFE]">
+        {/* 사이드바 */}
+        <AdminSidebar onLogout={handleLogout} />
 
       {/* 메인 컨텐츠 */}
       <main className="flex-1 ml-[270px] overflow-hidden flex flex-col">
@@ -135,5 +155,16 @@ export function AdminPage() {
         </div>
       </main>
     </div>
+
+    {/* 회원 정보 상세 모달 */}
+    {selectedMember && (
+      <MemberDetailModal
+        member={selectedMember}
+        onClose={handleCloseModal}
+        onApprove={handleApprove}
+        onReject={handleReject}
+      />
+    )}
+  </>
   );
 }
