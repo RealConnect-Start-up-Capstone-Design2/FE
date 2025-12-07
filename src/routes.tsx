@@ -5,6 +5,7 @@ import { HomePage } from "@/pages/home";
 import { PropertyManagePage } from "@/pages/propertyManage";
 import { LoginPage, SignupPage } from "@/pages/auth";
 import { MyPage } from "@/pages/myPage";
+import { AdminPage } from "@/pages/admin";
 
 export const routes = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ export const routes = createBrowserRouter([
   {
     path: "/signup",
     element: <SignupPage />,
+  },
+  {
+    path: "/admin",
+    element: <AdminPage />,
   },
   {
     element: (
