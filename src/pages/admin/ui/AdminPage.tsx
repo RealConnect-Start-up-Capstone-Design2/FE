@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  AdminSidebar,
   AdminTable,
   AdminFilters,
   AdminPagination,
@@ -43,7 +42,9 @@ export function AdminPage() {
   const [certificationStatus, setCertificationStatus] =
     useState<CertificationStatus>("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedMember, setSelectedMember] = useState<RealtorMember | null>(null);
+  const [selectedMember, setSelectedMember] = useState<RealtorMember | null>(
+    null
+  );
   const itemsPerPage = 20;
 
   // 필터링 로직
@@ -90,81 +91,63 @@ export function AdminPage() {
     alert(`${memberId} 회원을 반려했습니다.`);
   };
 
-  const handleLogout = () => {
-    // 로그아웃 로직 (추후 구현)
-    alert("로그아웃 기능은 추후 구현 예정입니다.");
-  };
-
   return (
     <>
-      <div className="flex h-screen bg-[#FDFEFE]">
-        {/* 사이드바 */}
-        <AdminSidebar onLogout={handleLogout} />
+      {/* 헤더 */}
+      <div className="mb-6 flex-shrink-0">
+        <PageHeader
+          title="관리자 페이지"
+          description="공인중개사 회원을 관리하고, 공인중개사의 중개사 회원 인증을 검토합니다"
+          titleClassName="pb-[7px]"
+        />
+      </div>
 
-      {/* 메인 컨텐츠 */}
-      <main className="flex-1 ml-[270px] overflow-hidden flex flex-col">
-        <div className="flex-1 flex flex-col p-9 overflow-hidden">
-          {/* 헤더 */}
-          <div className="mb-6 flex-shrink-0">
-            <PageHeader
-              title="관리자 페이지"
-              description="공인중개사 회원을 관리하고, 공인중개사의 중개사 회원 인증을 검토합니다"
-              titleClassName="pb-[7px]"
+      {/* 메인 컨텐츠 카드 */}
+      <div className="bg-white rounded-lg border border-[#DDE2F2] shadow-[0px_0px_25px_-10px_rgba(177,182,199,1)] p-[30px] flex-1 flex flex-col overflow-hidden">
+        {/* 제목 */}
+        <h2 className="text-[24px] font-semibold leading-[1.193] tracking-[-0.025em] text-[#1B1B1B] mb-[30px] flex-shrink-0">
+          가입 중개사 목록
+        </h2>
+
+        {/* 필터 섹션 */}
+        <div className="mb-[30px] flex-shrink-0">
+          <AdminFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            certificationStatus={certificationStatus}
+            onStatusChange={(status) => {
+              setCertificationStatus(status);
+              setCurrentPage(1); // 필터 변경 시 첫 페이지로
+            }}
+          />
+        </div>
+
+        {/* 테이블 */}
+        <div className="flex-1 overflow-hidden mb-[30px]">
+          <AdminTable data={paginatedData} onViewDetails={handleViewDetails} />
+        </div>
+
+        {/* 페이지네이션 */}
+        {totalPages > 1 && (
+          <div className="flex-shrink-0">
+            <AdminPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
             />
           </div>
+        )}
+      </div>
 
-          {/* 메인 컨텐츠 카드 */}
-          <div className="bg-white rounded-lg border border-[#DDE2F2] shadow-[0px_0px_25px_-10px_rgba(177,182,199,1)] p-[30px] flex-1 flex flex-col overflow-hidden">
-            {/* 제목 */}
-            <h2 className="text-[24px] font-semibold leading-[1.193] tracking-[-0.025em] text-[#1B1B1B] mb-[30px] flex-shrink-0">
-              가입 중개사 목록
-            </h2>
-
-            {/* 필터 섹션 */}
-            <div className="mb-[30px] flex-shrink-0">
-              <AdminFilters
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                certificationStatus={certificationStatus}
-                onStatusChange={(status) => {
-                  setCertificationStatus(status);
-                  setCurrentPage(1); // 필터 변경 시 첫 페이지로
-                }}
-              />
-            </div>
-
-            {/* 테이블 */}
-            <div className="flex-1 overflow-hidden mb-[30px]">
-              <AdminTable
-                data={paginatedData}
-                onViewDetails={handleViewDetails}
-              />
-            </div>
-
-            {/* 페이지네이션 */}
-            {totalPages > 1 && (
-              <div className="flex-shrink-0">
-                <AdminPagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      </main>
-    </div>
-
-    {/* 회원 정보 상세 모달 */}
-    {selectedMember && (
-      <MemberDetailModal
-        member={selectedMember}
-        onClose={handleCloseModal}
-        onApprove={handleApprove}
-        onReject={handleReject}
-      />
-    )}
-  </>
+      {/* 회원 정보 상세 모달 */}
+      {selectedMember && (
+        <MemberDetailModal
+          member={selectedMember}
+          onClose={handleCloseModal}
+          onApprove={handleApprove}
+          onReject={handleReject}
+        />
+      )}
+    </>
   );
 }

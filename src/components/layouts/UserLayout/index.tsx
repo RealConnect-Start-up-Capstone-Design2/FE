@@ -2,11 +2,11 @@ import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { cn } from "@/shared/utils";
 
-interface LayoutProps {
+interface UserLayoutProps {
   showSidebar?: boolean;
 }
 
-export function Layout({ showSidebar = true }: LayoutProps) {
+export function UserLayout({ showSidebar = true }: UserLayoutProps) {
   return (
     <div className="flex h-screen bg-gray-50">
       {showSidebar && <Sidebar />}

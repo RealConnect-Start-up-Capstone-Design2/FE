@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import { Layout } from "@/components/common/Layout";
+import { UserLayout } from "@/components/layouts/UserLayout";
+import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { ProtectedRoute } from "@/features/auth";
 import { HomePage } from "@/pages/home";
 import { PropertyManagePage } from "@/pages/propertyManage";
@@ -8,6 +9,7 @@ import { MyPage } from "@/pages/myPage";
 import { AdminPage } from "@/pages/admin";
 
 export const routes = createBrowserRouter([
+  // 루트 경로
   {
     path: "/",
     element: <Navigate to="/login" replace />,
@@ -20,14 +22,21 @@ export const routes = createBrowserRouter([
     path: "/signup",
     element: <SignupPage />,
   },
+  // 관리자 영역
   {
-    path: "/admin",
-    element: <AdminPage />,
+    element: <AdminLayout />,
+    children: [
+      {
+        path: "/admin",
+        element: <AdminPage />,
+      },
+    ],
   },
+  // 일반 사용자 영역
   {
     element: (
       <ProtectedRoute>
-        <Layout />
+        <UserLayout />
       </ProtectedRoute>
     ),
     children: [

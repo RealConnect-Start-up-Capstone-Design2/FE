@@ -6,12 +6,12 @@ import Logo from "@/assets/Logo.svg";
 import Logout from "@/assets/Logout.svg";
 import User from "@/assets/icons/user.svg";
 
-interface AdminSidebarProps {
+interface SidebarProps {
   className?: string;
   onLogout?: () => void;
 }
 
-export function AdminSidebar({ className, onLogout }: AdminSidebarProps) {
+export function Sidebar({ className, onLogout }: SidebarProps) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
