@@ -40,10 +40,9 @@ export function AdminFilters({
 }: AdminFiltersProps) {
   return (
     <div className="flex items-center gap-3">
-      {/* 필터 버튼? 이거 의도가 뭐지? */}
-      <button className="h-[42px] px-[15px] bg-[#1B1B1B] text-white rounded-lg flex items-center justify-center text-[15px] font-semibold leading-[1.193] tracking-[-0.025em] shadow-[0px_0px_25px_-10px_rgba(177,182,199,1)]">
+      <div className="h-[42px] px-[15px] bg-[#1B1B1B] text-white rounded-lg flex items-center justify-center text-[15px] font-semibold leading-[1.193] tracking-[-0.025em] shadow-[0px_0px_25px_-10px_rgba(177,182,199,1)]">
         필터
-      </button>
+      </div>
 
       {/* 인증 상태 드롭다운 */}
       <DropdownMenu
