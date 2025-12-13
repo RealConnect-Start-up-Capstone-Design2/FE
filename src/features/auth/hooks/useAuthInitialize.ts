@@ -35,7 +35,7 @@ export function useAuthInitialize() {
           accessToken: newAccessToken,
           username: "", // 필요시 별도 API로 사용자 정보 가져오기
         });
-      } catch (error) {
+      } catch {
         // 토큰 갱신 실패 시 액세스 토큰 블랙리스트 처리를 위해 로그아웃 API 호출
         if (currentAccessToken) {
           try {
@@ -51,7 +51,11 @@ export function useAuthInitialize() {
 
         // 로그인 화면으로 리다이렉트
         const currentPath = window.location.pathname;
-        if (currentPath !== "/login" && currentPath !== "/signup") {
+        if (
+          currentPath !== "/login" &&
+          currentPath !== "/signup" &&
+          currentPath !== "/admin"
+        ) {
           window.location.href = "/login";
         }
       } finally {
