@@ -3,7 +3,6 @@ import {
   useQueryClient,
   type InfiniteData,
 } from "@tanstack/react-query";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
   Table,
@@ -22,185 +21,38 @@ import {
   type ManageType,
   type ApartmentWithProperty,
   type PropertiesResponse,
-  type PropertyInfo,
 } from "../stores/propertyStore";
 import { usePropertyEdit } from "../hooks/usePropertyEdit";
+import { useVirtualInfiniteScroll } from "@/shared/hooks";
 import type { PropertyMutationPayload } from "../services/propertyService";
 import { formatPrice, formatPhoneNumber } from "@/shared/utils";
 import {
   EditablePropertyCell,
   EditableDepositMonthCell,
 } from "./EditablePropertyCell";
+import {
+  propertyFieldDefaults,
+  emptyAllowedFields,
+  requestTypeOptions,
+  propertyStatusOptions,
+  ESTIMATED_ROW_HEIGHT,
+} from "../constants/propertyConstants";
+import { isValidDate, normalizeDateValue } from "@/shared/utils";
+import {
+  updateApartmentList,
+  isInfinitePropertiesData,
+  isPropertiesResponse,
+} from "../utils/propertyCacheUtils";
+import type { PropertyFieldKey, DropdownState } from "../types/property";
 
 // 이미지 불러오기
 import UnfilledStar from "@/assets/UnfilledStar.svg";
 import FilledStar from "@/assets/FilledStar.svg";
 import Caution from "@/assets/Caution.svg";
 
-const propertyFieldDefaults: {
-  ownerName: string;
-  ownerPhone: string;
-  salePrice: number;
-  jeonsePrice: number;
-  deposit: number;
-  monthPrice: number;
-  contractDate: string;
-} = {
-  ownerName: "",
-  ownerPhone: "",
-  salePrice: 0,
-  jeonsePrice: 0,
-  deposit: 0,
-  monthPrice: 0,
-  contractDate: "",
-};
-
-// property가 아직 생성되지 않은 경우에도 안전하게 병합하기 위한 기본값
-const propertyInfoDefaults: PropertyInfo = {
-  salePrice: 0,
-  jeonsePrice: 0,
-  deposit: 0,
-  monthPrice: 0,
-  propertyStatus: "NONE",
-  requestType: "NONE",
-  manageType: "NONE",
-  ownerName: "",
-  ownerPhone: "",
-  contractDate: "",
-};
-
-type PropertyFieldKey = keyof typeof propertyFieldDefaults;
-
-type DropdownState = {
-  manageType?: ManageType;
-  requestType?: RequestType;
-  propertyStatus?: PropertyStatus;
-};
-
 const propertyFieldKeys = Object.keys(
   propertyFieldDefaults
 ) as PropertyFieldKey[];
-
-const isTextField = (
-  key: PropertyFieldKey
-): key is "ownerName" | "ownerPhone" | "contractDate" =>
-  key === "ownerName" || key === "ownerPhone" || key === "contractDate";
-
-const normalizeContractDateValue = (value?: string | null) => {
-  if (value === undefined || value === null) {
-    return null;
-  }
-  const trimmed = value.trim();
-  return trimmed === "" ? null : trimmed;
-};
-
-// 의뢰 유형 옵션 (API 스펙 기준)
-const requestTypeOptions: { label: string; value: RequestType }[] = [
-  { label: "없음", value: "NONE" },
-  { label: "입주", value: "SELF" },
-  { label: "매도", value: "SALE" },
-  { label: "전세", value: "JEONSE" },
-  { label: "월세", value: "MONTHLY" },
-  { label: "미수신", value: "NOT_RECEIVED" },
-  { label: "고민중", value: "THINKING" },
-];
-
-// 매물 상태 옵션 (API 스펙 기준)
-const propertyStatusOptions: { label: string; value: PropertyStatus }[] = [
-  { label: "없음", value: "NONE" },
-  { label: "거래 전", value: "BEFORE" },
-  { label: "광고 중", value: "ADVERTISING" },
-  { label: "거래 완료", value: "COMPLETED" },
-];
-
-const emptyAllowedFields = [
-  "salePrice",
-  "jeonsePrice",
-  "deposit",
-  "monthPrice",
-  "ownerName",
-  "ownerPhone",
-  "contractDate",
-];
-
-// 한 행의 높이 (72px 정도로 일단 구현해둠. 해상도에 따라 달라서 대충 이정도로만 유지해도 될 듯?)
-const ESTIMATED_ROW_HEIGHT = 72;
-
-// 낙관적 업데이트에서 단일 아파트 데이터를 새 payload로 대체
-const buildUpdatedApartment = (
-  apartment: ApartmentWithProperty,
-  payload: PropertyMutationPayload
-): ApartmentWithProperty => {
-  const baseProperty: PropertyInfo = {
-    ...propertyInfoDefaults,
-    ...(apartment.property ?? {}),
-  };
-
-  const nextProperty: PropertyInfo = {
-    ...baseProperty,
-    salePrice: payload.salePrice,
-    jeonsePrice: payload.jeonsePrice,
-    deposit: payload.deposit,
-    monthPrice: payload.monthPrice,
-    ownerName: payload.ownerName,
-    ownerPhone: payload.ownerPhone,
-    contractDate: payload.contractDate ?? "",
-    propertyStatus: payload.propertyStatus,
-    requestType: payload.requestType,
-    manageType: payload.manageType,
-  };
-
-  return {
-    ...apartment,
-    property: nextProperty,
-  };
-};
-
-// 페이지/목록 단위에서 특정 apartmentId를 찾아 갱신
-const updateApartmentList = (
-  apartments: ApartmentWithProperty[],
-  payload: PropertyMutationPayload
-): { changed: boolean; content: ApartmentWithProperty[] } => {
-  let changed = false;
-  const content = apartments.map((apt) => {
-    if (apt.apartmentId !== payload.apartmentId) {
-      return apt;
-    }
-    changed = true;
-    return buildUpdatedApartment(apt, payload);
-  });
-
-  return { changed, content };
-};
-
-// useInfiniteQuery 형태인지 판별 (pages/pageParams 존재 여부로 확인)
-const isInfinitePropertiesData = (
-  data: unknown
-): data is InfiniteData<PropertiesResponse> => {
-  if (typeof data !== "object" || data === null) {
-    return false;
-  }
-
-  const maybeInfinite = data as InfiniteData<PropertiesResponse>;
-  return (
-    Array.isArray(maybeInfinite.pages) &&
-    Array.isArray(maybeInfinite.pageParams)
-  );
-};
-
-// 단일 페이지 응답인지 판별
-const isPropertiesResponse = (data: unknown): data is PropertiesResponse => {
-  if (typeof data !== "object" || data === null) {
-    return false;
-  }
-
-  const maybeResponse = data as PropertiesResponse;
-  return (
-    Array.isArray(maybeResponse.content) &&
-    typeof maybeResponse.hasNext === "boolean" &&
-    Object.prototype.hasOwnProperty.call(maybeResponse, "nextCursor")
-  );
-};
 
 interface PropertyManageTableProps {
   onPropertyClick?: (apartmentId: string | number) => void;
@@ -251,43 +103,6 @@ export function PropertyManageTable({
     (price?: number | null) => formatPrice(price),
     []
   );
-
-  const isValidContractDate = useCallback((value: string) => {
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateRegex.test(value)) {
-      return false;
-    }
-    const [yearStr, monthStr, dayStr] = value.split("-");
-    const year = Number(yearStr);
-    const month = Number(monthStr);
-    const day = Number(dayStr);
-
-    if (
-      !Number.isInteger(year) ||
-      !Number.isInteger(month) ||
-      !Number.isInteger(day)
-    ) {
-      return false;
-    }
-    if (month < 1 || month > 12) {
-      return false;
-    }
-    if (day < 1 || day > 31) {
-      return false;
-    }
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return false;
-    }
-    if (
-      date.getUTCFullYear() !== year ||
-      date.getUTCMonth() + 1 !== month ||
-      date.getUTCDate() !== day
-    ) {
-      return false;
-    }
-    return true;
-  }, []);
 
   const handlePropertyUpdate = useCallback(
     (apartmentId: number, field: string, value: string | number) => {
@@ -350,40 +165,19 @@ export function PropertyManageTable({
     [queryClient]
   );
 
-  const hasApartments = apartments.length > 0;
-  const shouldUseTotalRowCount = hasApartments && !hasActiveFilters;
-  const nonPlaceholderRowCount = shouldUseTotalRowCount
-    ? Math.max(apartments.length, Number(totalApartmentCount ?? 0))
-    : apartments.length;
-  const totalRowCount =
-    nonPlaceholderRowCount + (hasActiveFilters && hasNextPage ? 1 : 0);
-  const rowVirtualizer = useVirtualizer({
-    count: totalRowCount,
-    getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => ESTIMATED_ROW_HEIGHT,
-    overscan: 12,
-  });
-  const virtualItems = rowVirtualizer.getVirtualItems();
-
-  useEffect(() => {
-    if (!hasNextPage || !onLoadMore || isFetchingNextPage) {
-      return;
-    }
-    if (virtualItems.length === 0) {
-      return;
-    }
-
-    const lastItem = virtualItems[virtualItems.length - 1];
-    if (lastItem.index >= apartments.length - 5) {
-      onLoadMore();
-    }
-  }, [
-    virtualItems,
+  // 가상 스크롤 + 무한 스크롤
+  const { rowVirtualizer, virtualItems } = useVirtualInfiniteScroll({
+    scrollContainerRef: tableContainerRef,
+    items: apartments,
+    hasActiveFilters,
+    totalItemCount: totalApartmentCount,
     hasNextPage,
     onLoadMore,
-    apartments.length,
     isFetchingNextPage,
-  ]);
+    estimatedRowHeight: ESTIMATED_ROW_HEIGHT,
+  });
+
+  const hasApartments = apartments.length > 0;
 
   const [localDropdownStates, setLocalDropdownStates] = useState<
     Record<number, DropdownState>
@@ -439,50 +233,29 @@ export function PropertyManageTable({
           return;
         }
 
-        const requestData: typeof propertyFieldDefaults = {
+        // 데이터 병합: 기본값 → 현재값 → 변경값
+        const requestData = {
           ...propertyFieldDefaults,
+          ...currentProperty,
+          ...propertyChanges,
         };
-
-        for (const key of propertyFieldKeys) {
-          const changeValue = propertyChanges[key];
-          const currentValue = currentProperty?.[key];
-          const fallbackValue = propertyFieldDefaults[key];
-          const resolvedValue =
-            changeValue !== undefined
-              ? changeValue
-              : currentValue ?? fallbackValue;
-
-          if (isTextField(key)) {
-            requestData[key] = String(resolvedValue);
-          } else {
-            requestData[key] = Number(resolvedValue);
-          }
-        }
-
-        const resolvedManageType: ManageType =
-          mergedDropdownState?.manageType ??
-          currentProperty?.manageType ??
-          "NONE";
-        const resolvedRequestType: RequestType =
-          mergedDropdownState?.requestType ??
-          currentProperty?.requestType ??
-          "NONE";
-        const resolvedPropertyStatus: PropertyStatus =
-          mergedDropdownState?.propertyStatus ??
-          currentProperty?.propertyStatus ??
-          "NONE";
-
-        const resolvedContractDate = normalizeContractDateValue(
-          requestData.contractDate || null
-        );
 
         const requestPayload: PropertyMutationPayload = {
           apartmentId,
           ...requestData,
-          manageType: resolvedManageType,
-          requestType: resolvedRequestType,
-          propertyStatus: resolvedPropertyStatus,
-          contractDate: resolvedContractDate,
+          manageType:
+            mergedDropdownState?.manageType ??
+            currentProperty?.manageType ??
+            "NONE",
+          requestType:
+            mergedDropdownState?.requestType ??
+            currentProperty?.requestType ??
+            "NONE",
+          propertyStatus:
+            mergedDropdownState?.propertyStatus ??
+            currentProperty?.propertyStatus ??
+            "NONE",
+          contractDate: normalizeDateValue(requestData.contractDate || null),
         };
 
         if (!currentProperty) {
@@ -585,58 +358,32 @@ export function PropertyManageTable({
     [localDropdownStates, sendPropertyChanges]
   );
 
-  // 의뢰 유형 전용 핸들러 - onChange 시점에 즉시 처리
-  const handleRequestTypeUpdate = useCallback(
-    (apartmentId: number, requestType: string) => {
-      const currentPropertyStatus = getCurrentPropertyStatus(apartmentId);
+  // 드롭다운 업데이트 통합 핸들러
+  const handleDropdownUpdate = useCallback(
+    (apartmentId: number, field: keyof DropdownState, value: string) => {
       const updates: DropdownState = {
-        requestType: requestType as RequestType,
+        [field]: value,
       };
 
-      if (requestType === "NONE" || requestType === "SELF") {
-        updates.propertyStatus = "NONE";
-      } else if (
-        requestType !== "NOT_RECEIVED" &&
-        requestType !== "THINKING" &&
-        currentPropertyStatus === "NONE"
-      ) {
-        updates.propertyStatus = "BEFORE";
+      // 의뢰 유형 변경 시 매물 상태 자동 조정
+      if (field === "requestType") {
+        const currentPropertyStatus = getCurrentPropertyStatus(apartmentId);
+
+        if (value === "NONE" || value === "SELF") {
+          updates.propertyStatus = "NONE";
+        } else if (
+          value !== "NOT_RECEIVED" &&
+          value !== "THINKING" &&
+          currentPropertyStatus === "NONE"
+        ) {
+          updates.propertyStatus = "BEFORE";
+        }
       }
 
       void applyDropdownUpdates(apartmentId, updates);
     },
     [applyDropdownUpdates, getCurrentPropertyStatus]
   );
-
-  // 매물 상태 전용 핸들러 - onChange 시점에 즉시 처리
-  const handlePropertyStatusUpdate = useCallback(
-    (apartmentId: number, propertyStatus: string) => {
-      void applyDropdownUpdates(apartmentId, {
-        propertyStatus: propertyStatus as PropertyStatus,
-      });
-    },
-    [applyDropdownUpdates]
-  );
-
-  // 관리 타입 전용 핸들러 - onChange 시점에 즉시 처리
-  const handleManageTypeUpdate = useCallback(
-    (apartmentId: number, manageType: string) => {
-      void applyDropdownUpdates(apartmentId, {
-        manageType: manageType as ManageType,
-      });
-    },
-    [applyDropdownUpdates]
-  );
-
-  // 현재 표시할 값 계산 (로컬 상태 우선, 없으면 서버 데이터)
-  const getDisplayValue = (
-    apartment: ApartmentWithProperty,
-    field: "manageType" | "requestType" | "propertyStatus"
-  ) => {
-    const localValue = localDropdownStates[apartment.apartmentId]?.[field];
-    if (localValue) return localValue;
-    return apartment.property?.[field] || "NONE";
-  };
 
   const prevSelectedApartmentIdRef = useRef<number | string | undefined>(
     selectedApartmentId
@@ -802,10 +549,10 @@ export function PropertyManageTable({
                 const contractDateValue =
                   pendingProperty?.contractDate ?? property?.contractDate;
 
-                const propertyStatus = getDisplayValue(
-                  apartment,
-                  "propertyStatus"
-                );
+                const propertyStatus =
+                  localDropdownStates[apartment.apartmentId]?.propertyStatus ??
+                  apartment.property?.propertyStatus ??
+                  "NONE";
                 const isActiveStatus =
                   propertyStatus === "BEFORE" ||
                   propertyStatus === "ADVERTISING";
@@ -842,10 +589,16 @@ export function PropertyManageTable({
                             },
                             { label: "주의", value: "CAUTION", icon: Caution },
                           ]}
-                          value={getDisplayValue(apartment, "manageType")}
+                          value={
+                            localDropdownStates[apartment.apartmentId]
+                              ?.manageType ??
+                            apartment.property?.manageType ??
+                            "NONE"
+                          }
                           onChange={(value) => {
-                            handleManageTypeUpdate(
+                            handleDropdownUpdate(
                               apartment.apartmentId,
+                              "manageType",
                               value
                             );
                           }}
@@ -872,10 +625,16 @@ export function PropertyManageTable({
                       <div className="flex items-center justify-center">
                         <DropdownMenuCell
                           options={requestTypeOptions}
-                          value={getDisplayValue(apartment, "requestType")}
+                          value={
+                            localDropdownStates[apartment.apartmentId]
+                              ?.requestType ??
+                            apartment.property?.requestType ??
+                            "NONE"
+                          }
                           onChange={(value) => {
-                            handleRequestTypeUpdate(
+                            handleDropdownUpdate(
                               apartment.apartmentId,
+                              "requestType",
                               value
                             );
                           }}
@@ -889,10 +648,16 @@ export function PropertyManageTable({
                       <div className="flex items-center justify-center">
                         <DropdownMenuCell
                           options={propertyStatusOptions}
-                          value={getDisplayValue(apartment, "propertyStatus")}
+                          value={
+                            localDropdownStates[apartment.apartmentId]
+                              ?.propertyStatus ??
+                            apartment.property?.propertyStatus ??
+                            "NONE"
+                          }
                           onChange={(value) => {
-                            handlePropertyStatusUpdate(
+                            handleDropdownUpdate(
                               apartment.apartmentId,
+                              "propertyStatus",
                               value
                             );
                           }}
@@ -970,7 +735,7 @@ export function PropertyManageTable({
                       placeholder="yyyy-mm-dd"
                       displayValue={contractDateValue || undefined}
                       inputClassName="w-28"
-                      validate={isValidContractDate}
+                      validate={isValidDate}
                       invalidMessage="계약일은 yyyy-mm-dd 형식으로 입력해주세요."
                       onUpdate={handlePropertyUpdate}
                       allowEmpty

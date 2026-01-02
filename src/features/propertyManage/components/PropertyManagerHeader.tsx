@@ -3,10 +3,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import type { DropdownOption } from "@/components/ui/dropdown-menu";
-import CautionIcon from "@/assets/Caution.svg";
-import FilledStar from "@/assets/FilledStar.svg";
 import PlusIcon from "@/assets/Plus.svg";
-import UnfilledStar from "@/assets/UnfilledStar.svg";
 import { Search } from "lucide-react";
 import {
   InputGroup,
@@ -15,6 +12,11 @@ import {
 } from "@/components/ui/input-group";
 import { MainComplexModal } from "@/shared/components/MainComplexModal";
 import type { ComplexData } from "@/shared/types/complex";
+import {
+  manageTypeFilterOptions,
+  requestTypeFilterOptions,
+  propertyStatusFilterOptions,
+} from "../constants/propertyConstants";
 
 interface PropertyManagerHeaderProps {
   complexOptions: DropdownOption[];
@@ -80,32 +82,6 @@ export function PropertyManagerHeader({
   useEffect(() => {
     setLocalHo(ho || "");
   }, [ho]);
-
-  const manageTypeOptions: DropdownOption[] = [
-    { label: "전체", value: "ALL" },
-    { label: "기본", value: "NONE", icon: UnfilledStar },
-    { label: "관심", value: "ATTENTION", icon: FilledStar },
-    { label: "주의", value: "CAUTION", icon: CautionIcon },
-  ];
-
-  const requestTypeOptions: DropdownOption[] = [
-    { label: "전체", value: "ALL" },
-    { label: "없음", value: "NONE" },
-    { label: "입주", value: "SELF" },
-    { label: "매도", value: "SALE" },
-    { label: "전세", value: "JEONSE" },
-    { label: "월세", value: "MONTHLY" },
-    { label: "미수신", value: "NOT_RECEIVED" },
-    { label: "고민중", value: "THINKING" },
-  ];
-
-  const propertyStatusOptions: DropdownOption[] = [
-    { label: "전체", value: "ALL" },
-    { label: "없음", value: "NONE" },
-    { label: "거래 전", value: "BEFORE" },
-    { label: "광고 중", value: "ADVERTISING" },
-    { label: "거래 완료", value: "COMPLETED" },
-  ];
 
   const handleSelectRequestType = useCallback(
     (value: string) => {
@@ -256,7 +232,7 @@ export function PropertyManagerHeader({
               <DropdownMenu
                 className="font-semibold min-w-[100px]"
                 placeholder="즐겨찾기"
-                options={manageTypeOptions}
+                options={manageTypeFilterOptions}
                 value={selectedManageType}
                 onChange={handleSelectManageType}
                 iconPosition="right"
@@ -294,14 +270,14 @@ export function PropertyManagerHeader({
               <DropdownMenu
                 className="font-semibold min-w-[100px]"
                 placeholder="의뢰 유형"
-                options={requestTypeOptions}
+                options={requestTypeFilterOptions}
                 value={selectedRequestType}
                 onChange={handleSelectRequestType}
               />
               <DropdownMenu
                 className="font-semibold min-w-[100px]"
                 placeholder="매물 상태"
-                options={propertyStatusOptions}
+                options={propertyStatusFilterOptions}
                 value={selectedPropertyStatus}
                 onChange={handleSelectPropertyStatus}
               />
