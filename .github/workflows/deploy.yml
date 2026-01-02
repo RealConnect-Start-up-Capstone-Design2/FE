@@ -6,6 +6,10 @@ on:
       - main
       - realconnect_v2 # 프리뷰 브랜치 추가
 
+env:
+  VERCEL_ORG_ID: ${{ secrets.ORGID }}
+  VERCEL_PROJECT_ID: ${{ secrets.PROJECTID }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
