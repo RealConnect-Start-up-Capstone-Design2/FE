@@ -98,7 +98,7 @@ export function AdminPage() {
         <PageHeader
           title="관리자 페이지"
           description="공인중개사 회원을 관리하고, 공인중개사의 중개사 회원 인증을 검토합니다"
-          titleClassName="pb-[7px]"
+          className="pb-[7px]"
         />
       </div>
 
