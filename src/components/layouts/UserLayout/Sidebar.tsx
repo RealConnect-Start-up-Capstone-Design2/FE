@@ -157,7 +157,7 @@ export function Sidebar({ className }: SidebarProps) {
         </div>
       </button>
       {/* Menu Items */}
-      <div className="px-3 py-6 gap-4 space-y-3">
+      <div className="px-3 py-6 space-y-3">
         {mainMenuItems.map((item) => {
           const isActive = location.pathname === item.path;
 
@@ -201,7 +201,7 @@ export function Sidebar({ className }: SidebarProps) {
       </div>
 
       {/* Bottom Actions */}
-      <div className="absolute bottom-8 left-3 right-3 space-y-3">
+      <div className="absolute bottom-8 left-3 right-3 space-y-3 border-t border-b py-6 border-[rgba(177,182,199,0.4)]">
         {bottomMenuItems.map((item) => {
           const isActive = location.pathname === item.path;
 
@@ -259,6 +259,27 @@ export function Sidebar({ className }: SidebarProps) {
           )}
         </button>
       </div>
+
+      {/* Footer Links */}
+      {!isCollapsed && (
+        <div className="absolute bottom-2 left-3 right-3 px-4">
+          <div className="flex items-center justify-center gap-2 text-xs text-[#989898]">
+            <Link
+              to="/terms/privacy"
+              className="hover:text-[#1C2882] transition-colors"
+            >
+              개인정보 처리방침
+            </Link>
+            <span className="text-[#D1D5DB]">|</span>
+            <Link
+              to="/terms/service"
+              className="hover:text-[#1C2882] transition-colors"
+            >
+              서비스 이용약관
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
