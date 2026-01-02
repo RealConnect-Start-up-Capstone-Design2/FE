@@ -36,7 +36,7 @@ const mainMenuItems: MenuItem[] = [
     label: "문의장",
     path: "/inquiry-manage",
     icon: EditIcon,
-    disabled: false,
+    disabled: true,
   },
   // 26.1.1
   // 계약 페이지 빠져서 주석처리함.
