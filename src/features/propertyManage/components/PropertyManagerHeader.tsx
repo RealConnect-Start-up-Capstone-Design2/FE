@@ -205,7 +205,7 @@ export function PropertyManagerHeader({
 
   return (
     <>
-      <PageHeader title="매물장">
+      <PageHeader className="pb-11" title="매물장">
         <div className="flex w-full flex-col gap-2.5">
           <div className="flex flex-row gap-3 justify-between">
             <div className="flex flex-row gap-3">

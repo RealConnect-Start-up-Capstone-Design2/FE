@@ -5,21 +5,21 @@ interface PageHeaderProps {
   title: string;
   description?: string;
   children?: ReactNode;
-  titleClassName?: string;
+  className?: string;
 }
 
 export function PageHeader({
   title,
   description,
   children,
-  titleClassName,
+  className,
 }: PageHeaderProps) {
   return (
     <div onClick={(e) => e.stopPropagation()}>
       <p
         className={cn(
-          "text-[28px] text-brand-foreground font-bold pb-11",
-          titleClassName
+          "text-[28px] text-brand-foreground font-bold pb-2 text-[#1C2882]",
+          className
         )}
       >
         {title}
