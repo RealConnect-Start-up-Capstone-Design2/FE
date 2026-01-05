@@ -122,7 +122,7 @@ export function Sidebar({ className }: SidebarProps) {
           top: "50%",
           right: "0",
           borderRadius: "100px",
-          transform: "translate(100%, -50%)",
+          transform: "translate(50%, -50%)",
         }}
         aria-label={isCollapsed ? "사이드바 펼치기" : "사이드바 접기"}
       >
