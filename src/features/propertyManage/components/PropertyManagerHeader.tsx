@@ -12,11 +12,6 @@ import {
 } from "@/components/ui/input-group";
 import { MainComplexModal } from "@/shared/components/MainComplexModal";
 import type { ComplexData } from "@/shared/types/complex";
-import {
-  manageTypeFilterOptions,
-  requestTypeFilterOptions,
-  propertyStatusFilterOptions,
-} from "../constants/propertyConstants";
 
 interface PropertyManagerHeaderProps {
   complexOptions: DropdownOption[];
@@ -26,8 +21,6 @@ interface PropertyManagerHeaderProps {
   isComplexLoading?: boolean;
   selectedRequestType?: string;
   onSelectRequestType?: (requestType: string | undefined) => void;
-  selectedPropertyStatus?: string;
-  onSelectPropertyStatus?: (propertyStatus: string | undefined) => void;
   selectedManageType?: string;
   onSelectManageType?: (manageType: string | undefined) => void;
   areaOptions?: DropdownOption[];
@@ -47,15 +40,6 @@ export function PropertyManagerHeader({
   onSelectComplex,
   onRefreshPreferredComplexes,
   isComplexLoading = false,
-  selectedRequestType,
-  onSelectRequestType,
-  selectedPropertyStatus,
-  onSelectPropertyStatus,
-  selectedManageType,
-  onSelectManageType,
-  areaOptions = [],
-  selectedArea,
-  onSelectArea,
   phoneNumber,
   onPhoneNumberChange,
   dong,
@@ -83,36 +67,6 @@ export function PropertyManagerHeader({
     setLocalHo(ho || "");
   }, [ho]);
 
-  const handleSelectRequestType = useCallback(
-    (value: string) => {
-      if (onSelectRequestType) {
-        // "전체" 선택 시 undefined로 전달하여 필터 해제
-        onSelectRequestType(value === "ALL" ? undefined : value);
-      }
-    },
-    [onSelectRequestType]
-  );
-
-  const handleSelectPropertyStatus = useCallback(
-    (value: string) => {
-      if (onSelectPropertyStatus) {
-        // "전체" 선택 시 undefined로 전달하여 필터 해제
-        onSelectPropertyStatus(value === "ALL" ? undefined : value);
-      }
-    },
-    [onSelectPropertyStatus]
-  );
-
-  const handleSelectManageType = useCallback(
-    (value: string) => {
-      if (onSelectManageType) {
-        // "전체" 선택 시 undefined로 전달하여 필터 해제
-        onSelectManageType(value === "ALL" ? undefined : value);
-      }
-    },
-    [onSelectManageType]
-  );
-
   const handlePhoneNumberChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
@@ -124,16 +78,6 @@ export function PropertyManagerHeader({
       }
     },
     [onPhoneNumberChange]
-  );
-
-  const handleSelectArea = useCallback(
-    (value: string) => {
-      if (onSelectArea) {
-        // "전체" 선택 시 undefined로 전달하여 필터 해제
-        onSelectArea(value === "ALL" ? undefined : value);
-      }
-    },
-    [onSelectArea]
   );
 
   const handleDongChange = useCallback(
@@ -229,14 +173,6 @@ export function PropertyManagerHeader({
           </div>
           <div className="flex flex-row gap-3">
             <div className="flex flex-row gap-3">
-              <DropdownMenu
-                className="font-semibold min-w-[100px]"
-                placeholder="즐겨찾기"
-                options={manageTypeFilterOptions}
-                value={selectedManageType}
-                onChange={handleSelectManageType}
-                iconPosition="right"
-              />
               <InputGroup className="w-32 h-12">
                 <InputGroupAddon>
                   <InputGroupInput
@@ -259,28 +195,6 @@ export function PropertyManagerHeader({
                   <Search />
                 </InputGroupAddon>
               </InputGroup>
-              <DropdownMenu
-                className="font-semibold min-w-[100px]"
-                placeholder="면적 선택"
-                options={areaOptions}
-                disabled={areaOptions.length === 0}
-                value={selectedArea}
-                onChange={handleSelectArea}
-              />
-              <DropdownMenu
-                className="font-semibold min-w-[100px]"
-                placeholder="의뢰 유형"
-                options={requestTypeFilterOptions}
-                value={selectedRequestType}
-                onChange={handleSelectRequestType}
-              />
-              <DropdownMenu
-                className="font-semibold min-w-[100px]"
-                placeholder="매물 상태"
-                options={propertyStatusFilterOptions}
-                value={selectedPropertyStatus}
-                onChange={handleSelectPropertyStatus}
-              />
             </div>
           </div>
         </div>

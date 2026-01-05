@@ -438,6 +438,26 @@ export function PropertyManagePage() {
     void refetchPreferredComplexes();
   }, [refetchPreferredComplexes]);
 
+  // 테이블 헤더 필터용 핸들러 (ALL 선택 시 undefined로 변환)
+  const handleSelectManageTypeForTable = useCallback((value: string) => {
+    setSelectedManageType(value === "ALL" ? undefined : value);
+  }, []);
+
+  // 테이블 헤더 필터용 핸들러 (ALL 선택 시 undefined로 변환)
+  const handleSelectAreaForTable = useCallback((value: string) => {
+    setSelectedArea(value === "ALL" ? undefined : value);
+  }, []);
+
+  // 동일하게 의뢰 유형에 대한 필터 핸들러
+  const handleSelectRequestTypeForTable = useCallback((value: string) => {
+    setSelectedRequestType(value === "NONE" ? undefined : value);
+  }, []);
+
+  // 동일하게 매물 상태에 대한 필터 핸들러
+  const handleSelectPropertyStatusForTable = useCallback((value: string) => {
+    setSelectedPropertyStatus(value === "NONE" ? undefined : value);
+  }, []);
+
   // 면적 옵션 생성 (㎡ 형식)
   const areaOptions = useMemo<DropdownOption[]>(() => {
     return [
@@ -485,13 +505,6 @@ export function PropertyManagePage() {
           isComplexLoading={isPreferredComplexLoading}
           selectedRequestType={selectedRequestType}
           onSelectRequestType={setSelectedRequestType}
-          selectedPropertyStatus={selectedPropertyStatus}
-          onSelectPropertyStatus={setSelectedPropertyStatus}
-          selectedManageType={selectedManageType}
-          onSelectManageType={setSelectedManageType}
-          areaOptions={areaOptions}
-          selectedArea={selectedArea}
-          onSelectArea={setSelectedArea}
           phoneNumber={phoneNumber}
           onPhoneNumberChange={setPhoneNumber}
           dong={dong}
@@ -510,6 +523,15 @@ export function PropertyManagePage() {
             hasNextPage={hasNextPage ?? false}
             onLoadMore={selectedApartmentComplexId ? fetchNextPage : undefined}
             hasActiveFilters={hasActiveFilters}
+            selectedManageType={selectedManageType}
+            onSelectManageType={handleSelectManageTypeForTable}
+            areaOptions={areaOptions}
+            selectedArea={selectedArea}
+            onSelectArea={handleSelectAreaForTable}
+            selectedRequestType={selectedRequestType}
+            onSelectRequestType={handleSelectRequestTypeForTable}
+            selectedPropertyStatus={selectedPropertyStatus}
+            onSelectPropertyStatus={handleSelectPropertyStatusForTable}
           />
         </div>
       </div>

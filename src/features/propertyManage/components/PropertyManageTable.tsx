@@ -35,6 +35,7 @@ import {
   emptyAllowedFields,
   requestTypeOptions,
   propertyStatusOptions,
+  manageTypeFilterOptions,
   ESTIMATED_ROW_HEIGHT,
 } from "../constants/propertyConstants";
 import { isValidDate, normalizeDateValue } from "@/shared/utils";
@@ -44,6 +45,8 @@ import {
   isPropertiesResponse,
 } from "../utils/propertyCacheUtils";
 import type { PropertyFieldKey, DropdownState } from "../types/property";
+import { TableHeaderFilter } from "@/components/ui";
+import type { DropdownOption } from "@/components/ui/dropdown-menu";
 
 // 이미지 불러오기
 import UnfilledStar from "@/assets/UnfilledStar.svg";
@@ -64,6 +67,15 @@ interface PropertyManageTableProps {
   onLoadMore?: () => void;
   hasActiveFilters?: boolean;
   totalApartmentCount?: number;
+  selectedManageType?: string;
+  onSelectManageType?: (value: string) => void;
+  areaOptions?: DropdownOption[];
+  selectedArea?: string;
+  onSelectArea?: (value: string) => void;
+  selectedRequestType?: string;
+  onSelectRequestType?: (value: string) => void;
+  selectedPropertyStatus?: string;
+  onSelectPropertyStatus?: (value: string) => void;
 }
 
 export function PropertyManageTable({
@@ -76,6 +88,15 @@ export function PropertyManageTable({
   onLoadMore,
   hasActiveFilters = false,
   totalApartmentCount,
+  selectedManageType,
+  onSelectManageType,
+  areaOptions,
+  selectedArea,
+  onSelectArea,
+  selectedRequestType,
+  onSelectRequestType,
+  selectedPropertyStatus,
+  onSelectPropertyStatus,
 }: PropertyManageTableProps) {
   // React Query로 아파트 목록 조회 (외부에서 데이터를 받지 않을 경우만)
   const { data, isLoading: internalIsLoading } = useQuery({
@@ -444,12 +465,36 @@ export function PropertyManageTable({
       <Table className="min-w-[1100px] whitespace-nowrap">
         <TableHeader className="sticky top-0 z-40 shadow-sm bg-[#E8EDFF]">
           <TableRow>
-            <TableHead className="w-24 text-center">관리 타입</TableHead>
+            <TableHeaderFilter
+              title="관리 타입"
+              value={selectedManageType}
+              onChange={onSelectManageType}
+              options={manageTypeFilterOptions}
+              className="w-24 text-center"
+            />
             <TableHead>동</TableHead>
             <TableHead>호수</TableHead>
-            <TableHead>면적</TableHead>
-            <TableHead>의뢰 유형</TableHead>
-            <TableHead>매물 상태</TableHead>
+            <TableHeaderFilter
+              title="면적"
+              value={selectedArea}
+              onChange={onSelectArea}
+              options={areaOptions ?? []}
+              className="w-24 text-center"
+            />
+            <TableHeaderFilter
+              title="의뢰 유형"
+              value={selectedRequestType}
+              onChange={onSelectRequestType}
+              options={requestTypeOptions}
+              className="w-24 text-center"
+            />
+            <TableHeaderFilter
+              title="매물 상태"
+              value={selectedPropertyStatus}
+              onChange={onSelectPropertyStatus}
+              options={propertyStatusOptions}
+              className="w-24 text-center"
+            />
             <TableHead>매매</TableHead>
             <TableHead>전세</TableHead>
             <TableHead>보증금/월세</TableHead>
