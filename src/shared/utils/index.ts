@@ -11,3 +11,4 @@ export {
   formatPhoneNumber,
 } from "./numberFormat";
 export { isValidDate, normalizeDateValue } from "./dateValidation";
+export { sqmToPyeong, pyeongToSqm, formatArea } from "./areaConversion";

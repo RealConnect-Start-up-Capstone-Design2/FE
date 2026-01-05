@@ -47,6 +47,7 @@ import {
 import type { PropertyFieldKey, DropdownState } from "../types/property";
 import { TableHeaderFilter } from "@/components/ui";
 import type { DropdownOption } from "@/components/ui/dropdown-menu";
+import { sqmToPyeong, formatArea } from "@/shared/utils";
 
 // 이미지 불러오기
 import UnfilledStar from "@/assets/UnfilledStar.svg";
@@ -76,6 +77,7 @@ interface PropertyManageTableProps {
   onSelectRequestType?: (value: string) => void;
   selectedPropertyStatus?: string;
   onSelectPropertyStatus?: (value: string) => void;
+  isSqmOrPyeong?: "sqm" | "pyeong";
 }
 
 export function PropertyManageTable({
@@ -97,6 +99,7 @@ export function PropertyManageTable({
   onSelectRequestType,
   selectedPropertyStatus,
   onSelectPropertyStatus,
+  isSqmOrPyeong,
 }: PropertyManageTableProps) {
   // React Query로 아파트 목록 조회 (외부에서 데이터를 받지 않을 경우만)
   const { data, isLoading: internalIsLoading } = useQuery({
@@ -663,7 +666,14 @@ export function PropertyManageTable({
                     <TableCell>{apartment.ho}</TableCell>
 
                     {/* 면적 */}
-                    <TableCell>{apartment.area}㎡</TableCell>
+                    <TableCell>
+                      {isSqmOrPyeong === "sqm"
+                        ? `${apartment.area}㎡`
+                        : `${formatArea(
+                            sqmToPyeong(apartment.area),
+                            "pyeong"
+                          )}`}
+                    </TableCell>
 
                     {/* 의뢰 유형 */}
                     <TableCell>
