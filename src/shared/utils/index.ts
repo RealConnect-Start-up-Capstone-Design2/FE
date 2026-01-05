@@ -10,3 +10,4 @@ export {
   parseNumberWithComma,
   formatPhoneNumber,
 } from "./numberFormat";
+export { isValidDate, normalizeDateValue } from "./dateValidation";

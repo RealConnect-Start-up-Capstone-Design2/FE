@@ -12,7 +12,6 @@ export function MyPage() {
       <PageHeader
         title="마이페이지"
         description="구독중인 멤버십 정보, 내 프로필 등을 보여줍니다"
-        titleClassName="pb-[7px] text-[#1C2882]"
       />
 
       <div className="flex flex-1 flex-row items-stretch gap-[30px]">

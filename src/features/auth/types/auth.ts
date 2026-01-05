@@ -3,6 +3,13 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface AgreementState {
+  all: boolean;
+  termsOfService: boolean;
+  privacyPolicy: boolean;
+  marketingConsent: boolean;
+}
+
 export interface RegisterRequest {
   username: string;
   password: string;

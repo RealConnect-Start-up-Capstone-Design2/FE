@@ -3,10 +3,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import type { DropdownOption } from "@/components/ui/dropdown-menu";
-import CautionIcon from "@/assets/Caution.svg";
-import FilledStar from "@/assets/FilledStar.svg";
 import PlusIcon from "@/assets/Plus.svg";
-import UnfilledStar from "@/assets/UnfilledStar.svg";
 import { Search } from "lucide-react";
 import {
   InputGroup,
@@ -24,8 +21,6 @@ interface PropertyManagerHeaderProps {
   isComplexLoading?: boolean;
   selectedRequestType?: string;
   onSelectRequestType?: (requestType: string | undefined) => void;
-  selectedPropertyStatus?: string;
-  onSelectPropertyStatus?: (propertyStatus: string | undefined) => void;
   selectedManageType?: string;
   onSelectManageType?: (manageType: string | undefined) => void;
   areaOptions?: DropdownOption[];
@@ -45,15 +40,6 @@ export function PropertyManagerHeader({
   onSelectComplex,
   onRefreshPreferredComplexes,
   isComplexLoading = false,
-  selectedRequestType,
-  onSelectRequestType,
-  selectedPropertyStatus,
-  onSelectPropertyStatus,
-  selectedManageType,
-  onSelectManageType,
-  areaOptions = [],
-  selectedArea,
-  onSelectArea,
   phoneNumber,
   onPhoneNumberChange,
   dong,
@@ -81,62 +67,6 @@ export function PropertyManagerHeader({
     setLocalHo(ho || "");
   }, [ho]);
 
-  const manageTypeOptions: DropdownOption[] = [
-    { label: "전체", value: "ALL" },
-    { label: "기본", value: "NONE", icon: UnfilledStar },
-    { label: "관심", value: "ATTENTION", icon: FilledStar },
-    { label: "주의", value: "CAUTION", icon: CautionIcon },
-  ];
-
-  const requestTypeOptions: DropdownOption[] = [
-    { label: "전체", value: "ALL" },
-    { label: "없음", value: "NONE" },
-    { label: "입주", value: "SELF" },
-    { label: "매도", value: "SALE" },
-    { label: "전세", value: "JEONSE" },
-    { label: "월세", value: "MONTHLY" },
-    { label: "미수신", value: "NOT_RECEIVED" },
-    { label: "고민중", value: "THINKING" },
-  ];
-
-  const propertyStatusOptions: DropdownOption[] = [
-    { label: "전체", value: "ALL" },
-    { label: "없음", value: "NONE" },
-    { label: "거래 전", value: "BEFORE" },
-    { label: "광고 중", value: "ADVERTISING" },
-    { label: "거래 완료", value: "COMPLETED" },
-  ];
-
-  const handleSelectRequestType = useCallback(
-    (value: string) => {
-      if (onSelectRequestType) {
-        // "전체" 선택 시 undefined로 전달하여 필터 해제
-        onSelectRequestType(value === "ALL" ? undefined : value);
-      }
-    },
-    [onSelectRequestType]
-  );
-
-  const handleSelectPropertyStatus = useCallback(
-    (value: string) => {
-      if (onSelectPropertyStatus) {
-        // "전체" 선택 시 undefined로 전달하여 필터 해제
-        onSelectPropertyStatus(value === "ALL" ? undefined : value);
-      }
-    },
-    [onSelectPropertyStatus]
-  );
-
-  const handleSelectManageType = useCallback(
-    (value: string) => {
-      if (onSelectManageType) {
-        // "전체" 선택 시 undefined로 전달하여 필터 해제
-        onSelectManageType(value === "ALL" ? undefined : value);
-      }
-    },
-    [onSelectManageType]
-  );
-
   const handlePhoneNumberChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
@@ -148,16 +78,6 @@ export function PropertyManagerHeader({
       }
     },
     [onPhoneNumberChange]
-  );
-
-  const handleSelectArea = useCallback(
-    (value: string) => {
-      if (onSelectArea) {
-        // "전체" 선택 시 undefined로 전달하여 필터 해제
-        onSelectArea(value === "ALL" ? undefined : value);
-      }
-    },
-    [onSelectArea]
   );
 
   const handleDongChange = useCallback(
@@ -205,7 +125,7 @@ export function PropertyManagerHeader({
 
   return (
     <>
-      <PageHeader title="매물장">
+      <PageHeader className="pb-11" title="매물장">
         <div className="flex w-full flex-col gap-2.5">
           <div className="flex flex-row gap-3 justify-between">
             <div className="flex flex-row gap-3">
@@ -253,14 +173,6 @@ export function PropertyManagerHeader({
           </div>
           <div className="flex flex-row gap-3">
             <div className="flex flex-row gap-3">
-              <DropdownMenu
-                className="font-semibold min-w-[100px]"
-                placeholder="즐겨찾기"
-                options={manageTypeOptions}
-                value={selectedManageType}
-                onChange={handleSelectManageType}
-                iconPosition="right"
-              />
               <InputGroup className="w-32 h-12">
                 <InputGroupAddon>
                   <InputGroupInput
@@ -283,28 +195,6 @@ export function PropertyManagerHeader({
                   <Search />
                 </InputGroupAddon>
               </InputGroup>
-              <DropdownMenu
-                className="font-semibold min-w-[100px]"
-                placeholder="면적 선택"
-                options={areaOptions}
-                disabled={areaOptions.length === 0}
-                value={selectedArea}
-                onChange={handleSelectArea}
-              />
-              <DropdownMenu
-                className="font-semibold min-w-[100px]"
-                placeholder="의뢰 유형"
-                options={requestTypeOptions}
-                value={selectedRequestType}
-                onChange={handleSelectRequestType}
-              />
-              <DropdownMenu
-                className="font-semibold min-w-[100px]"
-                placeholder="매물 상태"
-                options={propertyStatusOptions}
-                value={selectedPropertyStatus}
-                onChange={handleSelectPropertyStatus}
-              />
             </div>
           </div>
         </div>

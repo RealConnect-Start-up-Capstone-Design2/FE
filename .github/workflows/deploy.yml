@@ -1,0 +1,53 @@
+name: Vercel Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - realconnect_v2 # 프리뷰 브랜치 추가
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.ORGID }}
+  VERCEL_PROJECT_ID: ${{ secrets.PROJECTID }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=$VERCEL_TOKEN
+
+      - name: Build Project Artifacts
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            vercel build --prod --token=$VERCEL_TOKEN
+          else
+            vercel build --token=$VERCEL_TOKEN
+          fi
+
+      - name: Deploy Project Artifacts to Vercel
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+          else
+            vercel deploy --prebuilt --token=$VERCEL_TOKEN
+          fi
