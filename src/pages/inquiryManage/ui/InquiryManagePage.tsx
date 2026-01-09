@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { InquiryManageHeader } from "@/features/inquiryManage/components/InquiryManageHeader";
 import { InquiryManageTable } from "@/features/inquiryManage/components/InquiryManageTable";
+import { AddInquiryModal } from "@/features/inquiryManage/components/AddInquiryModal";
+import type { AddInquiryFormData } from "@/features/inquiryManage/components/AddInquiryModal";
 import { useInquirySidebar } from "@/features/inquiryManage/hooks";
 import {
   DetailSidebar,
@@ -11,6 +13,7 @@ import type {
   InquiryRequestType,
   InquiryStatus,
 } from "@/features/inquiryManage/types/inquiry";
+import { pyeongToSqm } from "@/shared/utils";
 
 // 더미 데이터 기본 템플릿
 const baseInquiry = {
@@ -116,6 +119,9 @@ export function InquiryManagePage() {
   const [selectedRequestType, setSelectedRequestType] = useState<string>();
   const [selectedStatus, setSelectedStatus] = useState<string>();
 
+  // 모달 상태
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
   // Refs
   const tableContainerRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
@@ -149,11 +155,79 @@ export function InquiryManagePage() {
     setIsSqmOrPyeong((prev) => (prev === "sqm" ? "pyeong" : "sqm"));
   }, []);
 
-  // 문의 추가
+  // 문의 추가 모달 열기
   const handleAddInquiry = useCallback(() => {
-    // TODO: 문의 추가 모달 열기
-    alert("문의 추가 기능은 추후 구현 예정입니다.");
+    setIsAddModalOpen(true);
   }, []);
+
+  // 문의 추가 모달 닫기
+  const handleCloseAddModal = useCallback(() => {
+    setIsAddModalOpen(false);
+  }, []);
+
+  // 문의 저장 핸들러
+  const handleSaveInquiry = useCallback(
+    async (formData: AddInquiryFormData) => {
+      // 면적 변환 (평으로 입력된 경우 ㎡로 변환)
+      const area1Value = formData.area1
+        ? parseFloat(formData.area1)
+        : undefined;
+      const area2Value = formData.area2
+        ? parseFloat(formData.area2)
+        : undefined;
+      const area1 = area1Value
+        ? formData.isAreaInPyeong
+          ? pyeongToSqm(area1Value)
+          : area1Value
+        : undefined;
+      const area2 = area2Value
+        ? formData.isAreaInPyeong
+          ? pyeongToSqm(area2Value)
+          : area2Value
+        : undefined;
+
+      // 새 문의 생성 (임시 ID)
+      const newInquiry: Inquiry = {
+        inquiryId: Date.now(), // 임시 ID (실제로는 서버에서 발급)
+        region:
+          formData.eupmyeondong || formData.sigungu || formData.sido || "",
+        complex: formData.complexName,
+        propertyType: formData.propertyType,
+        registeredDate: new Date().toLocaleDateString("ko-KR", {
+          year: "2-digit",
+          month: "2-digit",
+          day: "2-digit",
+        }),
+        title: formData.title,
+        requestType: formData.requestType,
+        status: "GENERAL",
+        area1,
+        area2,
+        deposit1: formData.deposit1 ? parseFloat(formData.deposit1) : undefined,
+        deposit2: formData.deposit2 ? parseFloat(formData.deposit2) : undefined,
+        purchasePrice1: formData.purchasePrice1
+          ? parseFloat(formData.purchasePrice1)
+          : undefined,
+        purchasePrice2: formData.purchasePrice2
+          ? parseFloat(formData.purchasePrice2)
+          : undefined,
+        monthlyRent1: formData.monthlyRent1
+          ? parseFloat(formData.monthlyRent1)
+          : undefined,
+        monthlyRent2: formData.monthlyRent2
+          ? parseFloat(formData.monthlyRent2)
+          : undefined,
+        inquirer: formData.inquirer1Name,
+        inquirerPhone: formData.inquirer1Phone,
+        isFavorite: false,
+        memo: formData.privateNote,
+      };
+
+      // TODO: 실제 API 호출로 대체
+      setInquiries((prev) => [newInquiry, ...prev]);
+    },
+    []
+  );
 
   // 문의 삭제
   const handleDeleteInquiry = useCallback((inquiryId: number) => {
@@ -275,6 +349,13 @@ export function InquiryManagePage() {
           />
         </div>
       </div>
+
+      {/* 문의 추가 모달 */}
+      <AddInquiryModal
+        isOpen={isAddModalOpen}
+        onClose={handleCloseAddModal}
+        onSave={handleSaveInquiry}
+      />
     </SlidingSidebarLayout>
   );
 }
