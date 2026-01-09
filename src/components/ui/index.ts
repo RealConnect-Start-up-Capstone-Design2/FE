@@ -15,3 +15,4 @@ export {
 } from "./table";
 export { DropdownMenuCell } from "./dropdown-menu-cell";
 export { TableHeaderFilter } from "./table-header-filter";
+export { FormField } from "./form-field";

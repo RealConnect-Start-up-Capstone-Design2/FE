@@ -1,15 +1,17 @@
 import CancelIcon from "@/assets/Cancel.svg";
 
 interface ModalHeaderProps {
+  title: string;
+  description?: string;
   onClose: () => void;
 }
 
-export function ModalHeader({ onClose }: ModalHeaderProps) {
+export function ModalHeader({ title, description, onClose }: ModalHeaderProps) {
   return (
     <div>
-      <div className="flex items-center justify-between mb-[7px]">
-        <h2 className="text-[28px] font-semibold text-black leading-[1.19] tracking-[-0.025em]">
-          중개사 회원 인증
+      <div className={`flex items-center justify-between ${description ? "mb-[7px]" : "mb-[48px]"}`}>
+        <h2 className={`${description ? "text-[28px]" : "text-[24px]"} font-semibold text-black ${description ? "leading-[1.19] tracking-[-0.025em]" : ""}`}>
+          {title}
         </h2>
         <button
           onClick={onClose}
@@ -26,9 +28,11 @@ export function ModalHeader({ onClose }: ModalHeaderProps) {
           />
         </button>
       </div>
-      <p className="text-[20px] font-medium text-[#8D8D8D] leading-[1.19] tracking-[-0.025em] mb-[40px]">
-        사업자 정보를 통해 중개사 회원 자격을 인증하세요
-      </p>
+      {description && (
+        <p className="text-[20px] font-medium text-[#8D8D8D] leading-[1.19] tracking-[-0.025em] mb-[40px]">
+          {description}
+        </p>
+      )}
     </div>
   );
 }
