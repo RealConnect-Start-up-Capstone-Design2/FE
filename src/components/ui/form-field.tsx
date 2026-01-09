@@ -1,4 +1,7 @@
-import { INPUT_STYLE, LABEL_STYLE } from "./constants";
+import {
+  INPUT_STYLE,
+  LABEL_STYLE,
+} from "@/features/myPage/components/ProfileEditModal/constants";
 
 interface FormFieldProps {
   label: string;
@@ -7,7 +10,7 @@ interface FormFieldProps {
   onChange: (field: string, value: string) => void;
   type?: string;
   placeholder?: string;
-  readOnly?: boolean;
+  disabled?: boolean;
   onClick?: () => void;
   className?: string;
 }
@@ -19,7 +22,7 @@ export function FormField({
   onChange,
   type = "text",
   placeholder,
-  readOnly,
+  disabled,
   onClick,
   className = "",
 }: FormFieldProps) {
@@ -31,13 +34,19 @@ export function FormField({
         value={value}
         onChange={(e) => onChange(name, e.target.value)}
         placeholder={placeholder}
-        readOnly={readOnly}
+        disabled={disabled}
         onClick={onClick}
         className={`${INPUT_STYLE} ${className} ${
-          readOnly ? "cursor-pointer" : ""
+          disabled
+            ? "cursor-default text-[#989898] disabled:text-[#989898] bg-[#EBEBEB] disabled:bg-[#EBEBEB]"
+            : ""
         }`}
+        style={
+          disabled
+            ? { color: "#989898", backgroundColor: "#EBEBEB" }
+            : undefined
+        }
       />
     </div>
   );
 }
-

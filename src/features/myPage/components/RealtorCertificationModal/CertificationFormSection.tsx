@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { LABEL_STYLE } from "../ProfileEditModal/constants";
+import { openNaverAddressSearch } from "@/shared/utils/naverAddressSearch";
 
 interface CertificationFormSectionProps {
   formData: {
@@ -11,6 +12,8 @@ interface CertificationFormSectionProps {
     officePhone: string;
     businessNumber: string;
     registrationNumber: string;
+    sigunguCode: string;
+    roadNameAddressCode: string;
   };
   onInputChange: (field: string, value: string) => void;
 }
@@ -42,12 +45,26 @@ export function CertificationFormSection({
               type="text"
               value={formData.address1}
               readOnly
-              onClick={() => alert("추후 추가 예정입니다.")}
+              onClick={() => {
+                openNaverAddressSearch((data) => {
+                  onInputChange("address1", data.roadAddress);
+                  onInputChange("address2", data.jibunAddress);
+                  onInputChange("sigunguCode", data.sigunguCode || "");
+                  onInputChange("roadNameAddressCode", data.roadNameAddressCode || data.roadAddress || "");
+                });
+              }}
               placeholder="도로명주소"
               className={`flex-1 h-[48px] px-[15px] rounded-lg border border-[rgba(177,182,199,0.4)] bg-white text-[15px] font-medium text-[#8D8D8D] focus:outline-none cursor-pointer`}
             />
             <Button
-              onClick={() => alert("추후 추가 예정입니다.")}
+              onClick={() => {
+                openNaverAddressSearch((data) => {
+                  onInputChange("address1", data.roadAddress);
+                  onInputChange("address2", data.jibunAddress);
+                  onInputChange("sigunguCode", data.sigunguCode || "");
+                  onInputChange("roadNameAddressCode", data.roadNameAddressCode || data.roadAddress || "");
+                });
+              }}
               className="w-[138px] h-[48px] rounded-lg bg-[#1B1B1B] text-white text-[15px] font-semibold hover:bg-[#1B1B1B]"
             >
               주소 검색
@@ -57,17 +74,23 @@ export function CertificationFormSection({
             type="text"
             value={formData.address2}
             readOnly
-            onClick={() => alert("추후 추가 예정입니다.")}
-            placeholder="주소"
+            onClick={() => {
+              openNaverAddressSearch((data) => {
+                onInputChange("address1", data.roadAddress);
+                onInputChange("address2", data.jibunAddress);
+                onInputChange("sigunguCode", data.sigunguCode || "");
+                onInputChange("roadNameAddressCode", data.roadNameAddressCode || "");
+              });
+            }}
+            placeholder="지번주소"
             className={`w-full h-[48px] px-[15px] rounded-lg border border-[rgba(177,182,199,0.4)] bg-white text-[15px] font-medium text-[#8D8D8D] focus:outline-none cursor-pointer`}
           />
           <input
             type="text"
             value={formData.address3}
-            readOnly
-            onClick={() => alert("추후 추가 예정입니다.")}
+            onChange={(e) => onInputChange("address3", e.target.value)}
             placeholder="상세 주소 입력"
-            className={`w-full h-[48px] px-[15px] rounded-lg border border-[rgba(177,182,199,0.4)] bg-white text-[15px] font-medium text-[#8D8D8D] focus:outline-none cursor-pointer`}
+            className={`w-full h-[48px] px-[15px] rounded-lg border border-[rgba(177,182,199,0.4)] bg-white text-[15px] font-medium text-[#8D8D8D] focus:outline-none focus:ring-2 focus:ring-[#1C2882]`}
           />
         </div>
       </div>
