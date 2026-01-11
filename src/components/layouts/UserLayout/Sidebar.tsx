@@ -91,7 +91,7 @@ export function Sidebar({ className }: SidebarProps) {
     <div
       className={cn(
         "fixed left-0 top-0 h-screen bg-white border-r border-[rgba(177,182,199,0.4)] shadow-[0px_0px_25px_-10px_rgba(177,182,199,1)] z-50",
-        isCollapsed ? "w-20" : "w-67",
+        isCollapsed ? "w-20" : "w-50",
         className
       )}
     >
@@ -99,7 +99,7 @@ export function Sidebar({ className }: SidebarProps) {
       <div
         className={cn(
           "bg-[#1C2882] flex items-center justify-center py-9",
-          isCollapsed ? "px-2" : "px-9"
+          isCollapsed ? "px-2" : "p-auto"
         )}
       >
         <div className="flex items-center gap-3">
@@ -122,7 +122,7 @@ export function Sidebar({ className }: SidebarProps) {
           top: "50%",
           right: "0",
           borderRadius: "100px",
-          transform: "translate(100%, -50%)",
+          transform: "translate(50%, -50%)",
         }}
         aria-label={isCollapsed ? "사이드바 펼치기" : "사이드바 접기"}
       >

@@ -2,6 +2,7 @@ export { Button } from "./button";
 export { Input } from "./input";
 export { Label } from "./label";
 export { DropdownMenu } from "./dropdown-menu";
+export { Textarea } from "./textarea";
 export {
   Table,
   TableHeader,

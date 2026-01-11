@@ -7,6 +7,7 @@ import { PropertyManagePage } from "@/pages/propertyManage";
 import { LoginPage, SignupPage, TermsDetailPage } from "@/pages/auth";
 import { MyPage } from "@/pages/myPage";
 import { AdminPage } from "@/pages/admin";
+import { InquiryManagePage } from "@/pages/inquiryManage";
 
 export const routes = createBrowserRouter([
   // 루트 경로
@@ -54,7 +55,7 @@ export const routes = createBrowserRouter([
       },
       {
         path: "/inquiry-manage",
-        element: <div className="p-6">문의 관리 페이지</div>,
+        element: <InquiryManagePage />,
       },
       {
         path: "/contract-manage",

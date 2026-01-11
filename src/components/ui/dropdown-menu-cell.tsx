@@ -170,7 +170,7 @@ export function DropdownMenuCell({
           }
         }}
         className={cn(
-          "relative flex min-w-15 items-center justify-between gap-2 rounded-full border border-grayscale-400 whitespace-nowrap bg-[#EDEDED] px-2 py-1 text-left text-[13px] font-medium text-[#1B1B1B] focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 z-10",
+          "relative flex min-w-15 items-center justify-between rounded-full border border-grayscale-400 whitespace-nowrap bg-[#EDEDED] px-2 py-1 text-left text-[13px] font-medium text-[#1B1B1B] focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 z-10",
           buttonClassName
         )}
       >

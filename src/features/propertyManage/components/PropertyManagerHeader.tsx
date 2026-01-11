@@ -13,6 +13,9 @@ import {
 import { MainComplexModal } from "@/shared/components/MainComplexModal";
 import type { ComplexData } from "@/shared/types/complex";
 
+// 이미지 불러오기
+import RefreshIcon from "@/assets/Refresh.svg";
+
 interface PropertyManagerHeaderProps {
   complexOptions: DropdownOption[];
   selectedComplexId?: number;
@@ -32,6 +35,8 @@ interface PropertyManagerHeaderProps {
   onDongChange?: (dong: string) => void;
   ho?: string;
   onHoChange?: (ho: string) => void;
+  isSqmOrPyeong?: "sqm" | "pyeong";
+  onSqmOrPyeongChange?: () => void;
 }
 
 export function PropertyManagerHeader({
@@ -46,6 +51,8 @@ export function PropertyManagerHeader({
   onDongChange,
   ho,
   onHoChange,
+  isSqmOrPyeong,
+  onSqmOrPyeongChange,
 }: PropertyManagerHeaderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [localPhoneNumber, setLocalPhoneNumber] = useState(phoneNumber || "");
@@ -154,24 +161,9 @@ export function PropertyManagerHeader({
                 onChange={handleSelectComplex}
                 disabled={isComplexLoading || complexOptions.length === 0}
               />
-              <div className="w-98">
-                <InputGroup>
-                  <InputGroupInput
-                    placeholder="전화번호 검색"
-                    value={localPhoneNumber}
-                    onChange={handlePhoneNumberChange}
-                    type="text"
-                    inputMode="numeric"
-                    className="text-black dark:text-white"
-                  />
-                  <InputGroupAddon>
-                    <Search />
-                  </InputGroupAddon>
-                </InputGroup>
-              </div>
             </div>
           </div>
-          <div className="flex flex-row gap-3">
+          <div className="flex justify-between gap-3">
             <div className="flex flex-row gap-3">
               <InputGroup className="w-32 h-12">
                 <InputGroupAddon>
@@ -179,7 +171,7 @@ export function PropertyManagerHeader({
                     placeholder="동 검색"
                     value={localDong}
                     onChange={handleDongChange}
-                    className="text-black dark:text-white"
+                    className="text-black"
                   />
                   <Search />
                 </InputGroupAddon>
@@ -190,11 +182,34 @@ export function PropertyManagerHeader({
                     placeholder="호 검색"
                     value={localHo}
                     onChange={handleHoChange}
-                    className="text-black dark:text-white"
+                    className="text-black"
                   />
                   <Search />
                 </InputGroupAddon>
               </InputGroup>
+              <div className="w-98">
+                <InputGroup>
+                  <InputGroupInput
+                    placeholder="전화번호 검색"
+                    value={localPhoneNumber}
+                    onChange={handlePhoneNumberChange}
+                    type="text"
+                    inputMode="numeric"
+                    className="text-black"
+                  />
+                  <InputGroupAddon>
+                    <Search />
+                  </InputGroupAddon>
+                </InputGroup>
+              </div>
+            </div>
+            <div>
+              <Button className="bg-[#ffffff]" onClick={onSqmOrPyeongChange}>
+                <span className="text-black font-semibold shadow-drop">
+                  {isSqmOrPyeong === "sqm" ? "㎡ 변환" : "평 변환"}
+                </span>
+                <img src={RefreshIcon} alt="refresh" />
+              </Button>
             </div>
           </div>
         </div>

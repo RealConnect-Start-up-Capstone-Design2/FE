@@ -40,10 +40,6 @@ export function EmployeeManagementModal({
   const [countdown, setCountdown] = useState(60);
   const [verificationCode, setVerificationCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
-  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
-  const [isUsernameAvailable, setIsUsernameAvailable] = useState<
-    boolean | null
-  >(null);
   const [passwordError, setPasswordError] = useState("");
   const [isAddingStaff, setIsAddingStaff] = useState(false);
 
@@ -62,7 +58,6 @@ export function EmployeeManagementModal({
       setCountdown(60);
       setVerificationCode("");
       setIsVerifying(false);
-      setIsUsernameAvailable(null);
       setPasswordError("");
     }
   }, [isOpen]);
@@ -117,9 +112,8 @@ export function EmployeeManagementModal({
     setIsPhoneVerified(false);
     setIsCodeSent(false);
     setCountdown(60);
-    setVerificationCode("");
-    setIsVerifying(false);
-    setIsUsernameAvailable(null);
+      setVerificationCode("");
+      setIsVerifying(false);
   };
 
   const handleSendVerificationCode = async () => {

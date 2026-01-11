@@ -89,6 +89,7 @@ export function PropertyManagePage() {
   const [ho, setHo] = useState<string>("");
   const tableContainerRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
+  const [isSqmOrPyeong, setIsSqmOrPyeong] = useState<"sqm" | "pyeong">("sqm");
 
   const {
     data: preferredComplexes,
@@ -458,6 +459,11 @@ export function PropertyManagePage() {
     setSelectedPropertyStatus(value === "NONE" ? undefined : value);
   }, []);
 
+  // ㎡ 형식과 평 형식 변환 핸들러
+  const handleSqmOrPyeongChange = useCallback(() => {
+    setIsSqmOrPyeong((prev) => (prev === "sqm" ? "pyeong" : "sqm"));
+  }, []);
+
   // 면적 옵션 생성 (㎡ 형식)
   const areaOptions = useMemo<DropdownOption[]>(() => {
     return [
@@ -511,6 +517,8 @@ export function PropertyManagePage() {
           onDongChange={setDong}
           ho={ho}
           onHoChange={setHo}
+          isSqmOrPyeong={isSqmOrPyeong}
+          onSqmOrPyeongChange={handleSqmOrPyeongChange}
         />
         <div ref={tableContainerRef} className="flex-1 overflow-hidden">
           <PropertyManageTable
@@ -532,6 +540,7 @@ export function PropertyManagePage() {
             onSelectRequestType={handleSelectRequestTypeForTable}
             selectedPropertyStatus={selectedPropertyStatus}
             onSelectPropertyStatus={handleSelectPropertyStatusForTable}
+            isSqmOrPyeong={isSqmOrPyeong}
           />
         </div>
       </div>
