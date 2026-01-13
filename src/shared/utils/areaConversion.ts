@@ -17,7 +17,7 @@ export const formatArea = (
   unit: "pyeong" | "sqm" = "sqm"
 ): string => {
   if (unit === "pyeong") {
-    return `${value.toFixed(1)}평`;
+    return `${value.toFixed(0)}평`;
   }
   return `${value.toFixed(2)}㎡`;
 };
