@@ -45,8 +45,8 @@ export function TableHeaderFilter({
 
   // 26.01.05 : 각 필터 옵션의 값을 표시하면 컬럼이 길어지는 이슈가 있어 우선 주석처리
   // const selectedOption = options.find((option) => option.value === value);
-  // 기본값(ALL, NONE, GENERAL)이 아닌 다른 값이 선택되었는지 확인
-  const defaultValues = ["ALL", "NONE", "GENERAL"];
+  // 기본값(ALL, NONE, GENERAL, 빈 문자열)이 아닌 다른 값이 선택되었는지 확인
+  const defaultValues = ["ALL", "NONE", "GENERAL", ""];
   const hasActiveFilter = value !== undefined && !defaultValues.includes(value);
 
   return (
