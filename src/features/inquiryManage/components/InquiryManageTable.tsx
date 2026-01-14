@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -9,55 +8,19 @@ import {
 } from "@/components/ui";
 import { DropdownMenuCell } from "@/components/ui";
 import { TableHeaderFilter } from "@/components/ui";
-import type {
-  Inquiry,
-  InquiryRequestType,
-  InquiryStatus,
-} from "../types/inquiry";
+import type { Inquiry, InquiryStatus } from "../types/inquiry";
 import { sqmToPyeong, formatArea, formatNumberWithComma } from "@/shared/utils";
-import { Trash2 } from "lucide-react";
+import { Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  REQUEST_TYPE_FILTER_OPTIONS,
+  INQUIRY_STATUS_OPTIONS,
+  INQUIRY_STATUS_STYLES,
+  PROPERTY_TYPE_LABELS,
+  REQUEST_TYPE_LABELS,
+} from "../constants";
 
 // 이미지 불러오기
 import UnfilledStar from "@/assets/UnfilledStar.svg";
-import FilledStar from "@/assets/FilledStar.svg";
-
-// 의뢰 상태 옵션
-const statusOptions = [
-  { label: "일반", value: "GENERAL" },
-  { label: "소개", value: "INTRODUCTION" },
-  { label: "공동중개", value: "CO_BROKERAGE" },
-  { label: "완료", value: "COMPLETED" },
-];
-const statusOptionsForCell = statusOptions;
-
-// 의뢰 유형 옵션
-const requestTypeOptions = [
-  { label: "전체", value: "NONE" },
-  { label: "매도", value: "SALE" },
-  { label: "전세", value: "JEONSE" },
-  { label: "월세", value: "MONTHLY" },
-  { label: "미수령", value: "NOT_RECEIVED" },
-  { label: "생각중", value: "THINKING" },
-];
-// 전체는 테이블 body에서 보여질 필요가 없으니까 제외
-const requestTypeOptionsForCell = requestTypeOptions.slice(1);
-
-// 물건 종류 라벨
-const propertyTypeLabels: Record<string, string> = {
-  APARTMENT: "아파트",
-  OFFICETEL: "오피스텔",
-  COMMERCIAL: "상가",
-  VILLA: "빌라",
-};
-
-// 의뢰 상태 스타일
-const defaultStatusStyle = { bg: "bg-[#EDEDED]", text: "text-[#1B1B1B]" };
-const statusStyles: Record<InquiryStatus, { bg: string; text: string }> = {
-  GENERAL: defaultStatusStyle,
-  INTRODUCTION: { bg: "bg-[#E8EDFF]", text: "text-[#1C2882]" },
-  CO_BROKERAGE: { bg: "bg-[#E8EDFF]", text: "text-[#1C2882]" },
-  COMPLETED: { bg: "bg-[#E8EDFF]", text: "text-[#1C2882]" },
-};
 
 interface InquiryManageTableProps {
   inquiries: Inquiry[];
@@ -66,7 +29,6 @@ interface InquiryManageTableProps {
   onInquiryClick?: (inquiryId: number) => void;
   onDeleteInquiry?: (inquiryId: number) => void;
   onToggleFavorite?: (inquiryId: number) => void;
-  onRequestTypeChange?: (inquiryId: number, value: InquiryRequestType) => void;
   onStatusChange?: (inquiryId: number, value: InquiryStatus) => void;
   // 필터 props
   selectedRequestType?: string;
@@ -74,6 +36,11 @@ interface InquiryManageTableProps {
   selectedStatus?: string;
   onSelectStatus?: (value: string) => void;
   isSqmOrPyeong?: "sqm" | "pyeong";
+  // 페이지네이션 props
+  currentPage?: number;
+  totalPages?: number;
+  totalElements?: number;
+  onPageChange?: (page: number) => void;
 }
 
 export function InquiryManageTable({
@@ -83,46 +50,26 @@ export function InquiryManageTable({
   onInquiryClick,
   onDeleteInquiry,
   onToggleFavorite,
-  onRequestTypeChange,
   onStatusChange,
   selectedRequestType,
   onSelectRequestType,
   selectedStatus,
   onSelectStatus,
   isSqmOrPyeong = "sqm",
+  currentPage = 0,
+  totalPages = 0,
+  totalElements = 0,
+  onPageChange,
 }: InquiryManageTableProps) {
   const formatAreaDisplay = (area?: number) => {
     if (area === undefined || area === null || area === 0) return "-";
     if (isSqmOrPyeong === "sqm") {
-      return `${area}㎡`;
+      return `${area.toFixed(2)}㎡`;
     }
     return formatArea(sqmToPyeong(area), "pyeong");
   };
 
   const hasInquiries = inquiries.length > 0;
-
-  // 필터링된 문의 목록
-  const filteredInquiries = useMemo(() => {
-    return inquiries.filter((inquiry) => {
-      // 의뢰 유형 필터
-      if (
-        selectedRequestType &&
-        selectedRequestType !== "NONE" &&
-        inquiry.requestType !== selectedRequestType
-      ) {
-        return false;
-      }
-      // 의뢰 상태 필터
-      if (
-        selectedStatus &&
-        selectedStatus !== "GENERAL" &&
-        inquiry.status !== selectedStatus
-      ) {
-        return false;
-      }
-      return true;
-    });
-  }, [inquiries, selectedRequestType, selectedStatus]);
 
   if (isLoading) {
     return (
@@ -133,243 +80,264 @@ export function InquiryManageTable({
   }
 
   return (
-    <div
-      className="h-full rounded-lg bg-white overflow-auto"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <Table className="min-w-[1000px] whitespace-nowrap">
-        <TableHeader className="sticky top-0 z-40 shadow-sm bg-[#E8EDFF]">
-          <TableRow>
-            <TableHead className="w-16 text-center">
-              <span className="flex items-center justify-center gap-1">
-                즐겨찾기
-                <svg
-                  width="7"
-                  height="7"
-                  viewBox="0 0 7 7"
-                  fill="none"
-                  className="mt-0.5"
-                >
-                  <path
-                    d="M3.5 6L0.5 1.5H6.5L3.5 6Z"
-                    fill="#8D8D8D"
-                    stroke="#8D8D8D"
-                    strokeWidth="1"
-                  />
-                </svg>
-              </span>
-            </TableHead>
-            <TableHead>등록일</TableHead>
-            <TableHead>물건 종류</TableHead>
-            <TableHead>지역</TableHead>
-            <TableHead>단지</TableHead>
-            <TableHead className="min-w-[170px]">문의 제목</TableHead>
-            <TableHeaderFilter
-              title="의뢰 상태"
-              value={selectedStatus}
-              onChange={onSelectStatus}
-              options={statusOptions}
-              className="w-28 text-center"
-            />
-            <TableHeaderFilter
-              title="의뢰 유형"
-              value={selectedRequestType}
-              onChange={onSelectRequestType}
-              options={requestTypeOptions}
-              className="w-24 text-center"
-            />
-            <TableHead>면적1</TableHead>
-            <TableHead>면적2</TableHead>
-            <TableHead>보증금1</TableHead>
-            <TableHead>보증금2</TableHead>
-            <TableHead>매수가1</TableHead>
-            <TableHead>매수가2</TableHead>
-            <TableHead>월세1</TableHead>
-            <TableHead>월세2</TableHead>
-            <TableHead>문의자</TableHead>
-            <TableHead>연락처</TableHead>
-            <TableHead className="w-12"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {!hasInquiries || filteredInquiries.length === 0 ? (
+    <div className="h-full flex flex-col">
+      <div
+        className="flex-1 rounded-lg bg-white overflow-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Table className="min-w-[1000px] whitespace-nowrap">
+          <TableHeader className="sticky top-0 z-40 shadow-sm bg-[#E8EDFF]">
             <TableRow>
-              <TableCell
-                colSpan={17}
-                className="py-10 text-center text-sm text-gray-400"
-              >
-                {!hasInquiries
-                  ? "등록된 문의가 없습니다."
-                  : "조건에 해당하는 문의가 없습니다."}
-              </TableCell>
+              <TableHead className="w-16 text-center">
+                <span className="flex items-center justify-center gap-1">
+                  관리 타입
+                  <svg
+                    width="7"
+                    height="7"
+                    viewBox="0 0 7 7"
+                    fill="none"
+                    className="mt-0.5"
+                  >
+                    <path
+                      d="M3.5 6L0.5 1.5H6.5L3.5 6Z"
+                      fill="#8D8D8D"
+                      stroke="#8D8D8D"
+                      strokeWidth="1"
+                    />
+                  </svg>
+                </span>
+              </TableHead>
+              <TableHead>등록일</TableHead>
+              <TableHead>물건 종류</TableHead>
+              <TableHead>지역</TableHead>
+              <TableHead className="min-w-[150px]">문의 제목</TableHead>
+              <TableHeaderFilter
+                title="의뢰 상태"
+                value={selectedStatus}
+                onChange={onSelectStatus}
+                options={INQUIRY_STATUS_OPTIONS}
+                className="w-28 text-center"
+              />
+              <TableHeaderFilter
+                title="의뢰 유형"
+                value={selectedRequestType}
+                onChange={onSelectRequestType}
+                options={REQUEST_TYPE_FILTER_OPTIONS}
+                className="w-24 text-center"
+              />
+              <TableHead>면적1</TableHead>
+              <TableHead>면적2</TableHead>
+              <TableHead>보증금1</TableHead>
+              <TableHead>보증금2</TableHead>
+              <TableHead>매매가1</TableHead>
+              <TableHead>매매가2</TableHead>
+              <TableHead>월세1</TableHead>
+              <TableHead>월세2</TableHead>
+              <TableHead>문의자</TableHead>
+              <TableHead>연락처</TableHead>
+              <TableHead className="w-12"></TableHead>
             </TableRow>
-          ) : (
-            filteredInquiries.map((inquiry) => {
-              const isSelected = selectedInquiryId === inquiry.inquiryId;
-              const statusStyle =
-                statusStyles[inquiry.status] || defaultStatusStyle;
-
-              return (
-                <TableRow
-                  key={inquiry.inquiryId}
-                  className={`cursor-pointer transition-colors hover:bg-gray-50 ${
-                    isSelected
-                      ? "bg-[#EEF6FF] ring-2 ring-inset ring-[#1499FF]"
-                      : ""
-                  }`}
-                  onClick={() => onInquiryClick?.(inquiry.inquiryId)}
+          </TableHeader>
+          <TableBody>
+            {!hasInquiries ? (
+              <TableRow>
+                <TableCell
+                  colSpan={18}
+                  className="py-10 text-center text-sm text-gray-400"
                 >
-                  {/* 즐겨찾기 */}
-                  <TableCell className="px-2 py-4">
-                    <div className="flex items-center justify-center">
+                  등록된 문의가 없습니다.
+                </TableCell>
+              </TableRow>
+            ) : (
+              inquiries.map((inquiry) => {
+                const isSelected = selectedInquiryId === inquiry.inquiryId;
+                const statusStyle = inquiry.inquiryStatus
+                  ? INQUIRY_STATUS_STYLES[inquiry.inquiryStatus]
+                  : INQUIRY_STATUS_STYLES.GENERAL;
+
+                return (
+                  <TableRow
+                    key={inquiry.inquiryId}
+                    className={`cursor-pointer transition-colors hover:bg-gray-50 ${
+                      isSelected
+                        ? "bg-[#EEF6FF] ring-2 ring-inset ring-[#1499FF]"
+                        : ""
+                    }`}
+                    onClick={() => onInquiryClick?.(inquiry.inquiryId)}
+                  >
+                    {/* 즐겨찾기 - 현재 백엔드에 없으므로 placeholder */}
+                    <TableCell className="px-2 py-4">
+                      <div className="flex items-center justify-center">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleFavorite?.(inquiry.inquiryId);
+                          }}
+                          className="p-1 hover:bg-gray-100 rounded"
+                        >
+                          <img
+                            src={UnfilledStar}
+                            alt="즐겨찾기"
+                            className="w-5 h-5"
+                          />
+                        </button>
+                      </div>
+                    </TableCell>
+
+                    {/* 등록일 */}
+                    <TableCell className="py-4">
+                      {inquiry.createdDate}
+                    </TableCell>
+
+                    {/* 물건 종류 */}
+                    <TableCell className="py-4">
+                      {PROPERTY_TYPE_LABELS[inquiry.propertyType] ||
+                        inquiry.propertyType}
+                    </TableCell>
+
+                    {/* 지역(동) */}
+                    <TableCell className="py-4">
+                      {inquiry.dong || "-"}
+                    </TableCell>
+
+                    {/* 문의 제목 */}
+                    <TableCell className="py-4 max-w-[200px]">
+                      <div className="truncate">{inquiry.title || "-"}</div>
+                    </TableCell>
+
+                    {/* 의뢰 상태 */}
+                    <TableCell className="py-4">
+                      <div
+                        className="flex items-center justify-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <DropdownMenuCell
+                          options={INQUIRY_STATUS_OPTIONS}
+                          value={inquiry.inquiryStatus ?? "GENERAL"}
+                          onChange={(value) => {
+                            onStatusChange?.(
+                              inquiry.inquiryId,
+                              value as InquiryStatus
+                            );
+                          }}
+                          buttonClassName={`w-[90px] min-w-[90px] ${statusStyle.bg}`}
+                        />
+                      </div>
+                    </TableCell>
+
+                    {/* 의뢰 유형 (읽기 전용) */}
+                    <TableCell className="py-4">
+                      <div className="flex items-center justify-center">
+                        <span className="px-3 py-1.5 text-sm bg-[#EDEDED] rounded-md">
+                          {REQUEST_TYPE_LABELS[inquiry.requestType] ||
+                            inquiry.requestType ||
+                            "-"}
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    {/* 최소면적 */}
+                    <TableCell className="py-4">
+                      {formatAreaDisplay(inquiry.specs?.minArea)}
+                    </TableCell>
+
+                    {/* 최대면적 */}
+                    <TableCell className="py-4">
+                      {formatAreaDisplay(inquiry.specs?.maxArea)}
+                    </TableCell>
+
+                    {/* 최소보증금 */}
+                    <TableCell className="py-4">
+                      {formatNumberWithComma(inquiry.specs?.minDeposit)}
+                    </TableCell>
+
+                    {/* 최대보증금 */}
+                    <TableCell className="py-4">
+                      {formatNumberWithComma(inquiry.specs?.maxDeposit)}
+                    </TableCell>
+
+                    {/* 최소매매가 */}
+                    <TableCell className="py-4">
+                      {formatNumberWithComma(inquiry.specs?.minSalePrice)}
+                    </TableCell>
+
+                    {/* 최대매매가 */}
+                    <TableCell className="py-4">
+                      {formatNumberWithComma(inquiry.specs?.maxSalePrice)}
+                    </TableCell>
+
+                    {/* 최소월세 */}
+                    <TableCell className="py-4">
+                      {formatNumberWithComma(inquiry.specs?.minMonthlyPrice)}
+                    </TableCell>
+
+                    {/* 최대월세 */}
+                    <TableCell className="py-4">
+                      {formatNumberWithComma(inquiry.specs?.maxMonthlyPrice)}
+                    </TableCell>
+
+                    {/* 문의자 */}
+                    <TableCell className="py-4">
+                      {inquiry.inquirerInfo?.inquirerName || "-"}
+                    </TableCell>
+
+                    {/* 연락처 */}
+                    <TableCell className="py-4">
+                      {inquiry.inquirerInfo?.contractPhone || "-"}
+                    </TableCell>
+
+                    {/* 삭제 버튼 */}
+                    <TableCell className="px-2 py-4">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onToggleFavorite?.(inquiry.inquiryId);
+                          onDeleteInquiry?.(inquiry.inquiryId);
                         }}
-                        className="p-1 hover:bg-gray-100 rounded"
+                        className="p-1 hover:bg-gray-100 rounded text-[#989898] hover:text-red-500 transition-colors"
                       >
-                        <img
-                          src={inquiry.isFavorite ? FilledStar : UnfilledStar}
-                          alt={
-                            inquiry.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"
-                          }
-                          className="w-5 h-5"
-                        />
+                        <Trash2 size={18} />
                       </button>
-                    </div>
-                  </TableCell>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
-                  {/* 등록일 */}
-                  <TableCell className="py-4">
-                    {inquiry.registeredDate}
-                  </TableCell>
-
-                  {/* 물건 종류 */}
-                  <TableCell className="py-4">
-                    {propertyTypeLabels[inquiry.propertyType] ||
-                      inquiry.propertyType}
-                  </TableCell>
-
-                  {/* 지역 */}
-                  <TableCell className="py-4">{inquiry.region}</TableCell>
-
-                  {/* 단지 */}
-                  <TableCell className="py-4">{inquiry.complex}</TableCell>
-
-                  {/* 문의 제목 */}
-                  <TableCell className="py-4 max-w-0">
-                    <div className="truncate">{inquiry.title}</div>
-                  </TableCell>
-
-                  {/* 의뢰 상태 */}
-                  <TableCell className="py-4">
-                    <div
-                      className="flex items-center justify-center"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <DropdownMenuCell
-                        options={statusOptionsForCell}
-                        value={inquiry.status}
-                        onChange={(value) => {
-                          onStatusChange?.(
-                            inquiry.inquiryId,
-                            value as InquiryStatus
-                          );
-                        }}
-                        buttonClassName={`w-[90px] min-w-[90px] ${statusStyle.bg}`}
-                      />
-                    </div>
-                  </TableCell>
-
-                  {/* 의뢰 유형 */}
-                  <TableCell className="py-4">
-                    <div
-                      className="flex items-center justify-center"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <DropdownMenuCell
-                        options={requestTypeOptionsForCell}
-                        value={inquiry.requestType}
-                        onChange={(value) => {
-                          onRequestTypeChange?.(
-                            inquiry.inquiryId,
-                            value as InquiryRequestType
-                          );
-                        }}
-                        buttonClassName="w-[70px] min-w-[70px] bg-[#EDEDED]"
-                      />
-                    </div>
-                  </TableCell>
-
-                  {/* 면적1 */}
-                  <TableCell className="py-4">
-                    {formatAreaDisplay(inquiry.area1)}
-                  </TableCell>
-
-                  {/* 면적2 */}
-                  <TableCell className="py-4">
-                    {formatAreaDisplay(inquiry.area2)}
-                  </TableCell>
-
-                  {/* 보증금1 */}
-                  <TableCell className="py-4">
-                    {formatNumberWithComma(inquiry.deposit1)}
-                  </TableCell>
-
-                  {/* 보증금2 */}
-                  <TableCell className="py-4">
-                    {formatNumberWithComma(inquiry.deposit2)}
-                  </TableCell>
-
-                  {/* 매수가1 */}
-                  <TableCell className="py-4">
-                    {formatNumberWithComma(inquiry.purchasePrice1)}
-                  </TableCell>
-
-                  {/* 매수가2 */}
-                  <TableCell className="py-4">
-                    {formatNumberWithComma(inquiry.purchasePrice2)}
-                  </TableCell>
-
-                  {/* 월세1 */}
-                  <TableCell className="py-4">
-                    {formatNumberWithComma(inquiry.monthlyRent1)}
-                  </TableCell>
-
-                  {/* 월세2 */}
-                  <TableCell className="py-4">
-                    {formatNumberWithComma(inquiry.monthlyRent2)}
-                  </TableCell>
-
-                  {/* 문의자 */}
-                  <TableCell className="py-4">{inquiry.inquirer}</TableCell>
-
-                  {/* 연락처 */}
-                  <TableCell className="py-4">
-                    {inquiry.inquirerPhone}
-                  </TableCell>
-
-                  {/* 삭제 버튼 */}
-                  <TableCell className="px-2 py-4">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteInquiry?.(inquiry.inquiryId);
-                      }}
-                      className="p-1 hover:bg-gray-100 rounded text-[#989898] hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </TableCell>
-                </TableRow>
-              );
-            })
-          )}
-        </TableBody>
-      </Table>
+      {/* 페이지네이션 */}
+      {totalPages > 0 && (
+        <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 rounded-b-lg">
+          <div className="text-sm text-gray-500">
+            총 {totalElements}개 중 {currentPage * 10 + 1}-
+            {Math.min((currentPage + 1) * 10, totalElements)}개
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onPageChange?.(currentPage - 1)}
+              disabled={currentPage === 0}
+              className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <span className="text-sm">
+              {currentPage + 1} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => onPageChange?.(currentPage + 1)}
+              disabled={currentPage >= totalPages - 1}
+              className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,11 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import type { AddInquiryFormData, RegionOption } from "./types";
-import {
-  fetchSidoList,
-  fetchSigunguList,
-  fetchEmdList,
-} from "@/shared/api/region";
-import type { Sido, Sigungu, Emd } from "@/shared/api/region";
+import type { AddInquiryFormData } from "./types";
+import { useRegionOptions } from "./useRegionOptions";
 
 interface UseAddInquiryModalParams {
   isOpen: boolean;
@@ -49,129 +44,26 @@ export function useAddInquiryModal({
   const [formData, setFormData] = useState<AddInquiryFormData>(initialFormData);
   const [isSaving, setIsSaving] = useState(false);
 
-  // 지역 옵션 상태
-  const [sidoOptions, setSidoOptions] = useState<RegionOption[]>([]);
-  const [sigunguOptions, setSigunguOptions] = useState<RegionOption[]>([]);
-  const [emdOptions, setEmdOptions] = useState<RegionOption[]>([]);
-
-  // 로딩 상태
-  const [isLoadingSido, setIsLoadingSido] = useState(false);
-  const [isLoadingSigungu, setIsLoadingSigungu] = useState(false);
-  const [isLoadingEmd, setIsLoadingEmd] = useState(false);
+  // 지역 옵션 (커스텀 훅 사용)
+  const {
+    sidoOptions,
+    sigunguOptions,
+    emdOptions,
+    isLoadingSido,
+    isLoadingSigungu,
+    isLoadingEmd,
+  } = useRegionOptions({
+    isOpen,
+    selectedSido: formData.sido,
+    selectedSigungu: formData.sigungu,
+  });
 
   // 모달 열릴 때 초기화
   useEffect(() => {
     if (isOpen) {
       setFormData(initialFormData);
-      setSigunguOptions([]);
-      setEmdOptions([]);
     }
   }, [isOpen]);
-
-  // 시/도 목록 로드
-  useEffect(() => {
-    if (!isOpen) return;
-
-    let isMounted = true;
-
-    const loadSidoOptions = async () => {
-      setIsLoadingSido(true);
-      try {
-        const data = await fetchSidoList();
-        if (!isMounted) return;
-
-        const options = data.map(
-          (sido: Sido): RegionOption => ({
-            label: sido.name_kr,
-            value: sido.sidoCode,
-          })
-        );
-        setSidoOptions(options);
-      } catch (error) {
-        console.error("시/도 목록 조회 실패:", error);
-      } finally {
-        if (isMounted) setIsLoadingSido(false);
-      }
-    };
-
-    void loadSidoOptions();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [isOpen]);
-
-  // 시/군/구 목록 로드 (시/도 변경 시)
-  useEffect(() => {
-    if (!formData.sido) {
-      setSigunguOptions([]);
-      return;
-    }
-
-    let isMounted = true;
-
-    const loadSigunguOptions = async () => {
-      setIsLoadingSigungu(true);
-      try {
-        const data = await fetchSigunguList(formData.sido);
-        if (!isMounted) return;
-
-        const options = data.map(
-          (sigungu: Sigungu): RegionOption => ({
-            label: sigungu.name_kr,
-            value: sigungu.sigunguCode,
-          })
-        );
-        setSigunguOptions(options);
-      } catch (error) {
-        console.error("시/군/구 목록 조회 실패:", error);
-      } finally {
-        if (isMounted) setIsLoadingSigungu(false);
-      }
-    };
-
-    void loadSigunguOptions();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [formData.sido]);
-
-  // 읍/면/동 목록 로드 (시/군/구 변경 시)
-  useEffect(() => {
-    if (!formData.sigungu) {
-      setEmdOptions([]);
-      return;
-    }
-
-    let isMounted = true;
-
-    const loadEmdOptions = async () => {
-      setIsLoadingEmd(true);
-      try {
-        const data = await fetchEmdList(formData.sigungu);
-        if (!isMounted) return;
-
-        const options = data.map(
-          (emd: Emd): RegionOption => ({
-            label: emd.name_kr,
-            value: emd.emdCode,
-          })
-        );
-        setEmdOptions(options);
-      } catch (error) {
-        console.error("읍/면/동 목록 조회 실패:", error);
-      } finally {
-        if (isMounted) setIsLoadingEmd(false);
-      }
-    };
-
-    void loadEmdOptions();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [formData.sigungu]);
 
   // 폼 필드 변경 핸들러
   const handleFieldChange = useCallback(

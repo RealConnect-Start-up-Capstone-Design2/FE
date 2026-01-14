@@ -26,9 +26,9 @@ const propertyTypeOptions: { label: string; value: PropertyType }[] = [
 // 문의자 관계 옵션
 const relationOptions: { label: string; value: InquirerRelation }[] = [
   { label: "본인", value: "SELF" },
-  { label: "부모", value: "PARENT" },
-  { label: "자녀", value: "CHILD" },
-  { label: "타부동산", value: "OTHER_REALTOR" },
+  { label: "부모", value: "PARENTS" },
+  { label: "자녀", value: "CHILDREN" },
+  { label: "기타", value: "OTHER" },
 ];
 
 // 라벨 컴포넌트
