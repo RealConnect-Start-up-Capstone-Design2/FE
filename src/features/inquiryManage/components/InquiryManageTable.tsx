@@ -8,19 +8,17 @@ import {
 } from "@/components/ui";
 import { DropdownMenuCell } from "@/components/ui";
 import { TableHeaderFilter } from "@/components/ui";
-import type { Inquiry, InquiryStatus } from "../types/inquiry";
+import type { Inquiry, InquiryStatus, ManageType } from "../types/inquiry";
 import { sqmToPyeong, formatArea, formatNumberWithComma } from "@/shared/utils";
-import { Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import {
   REQUEST_TYPE_FILTER_OPTIONS,
   INQUIRY_STATUS_OPTIONS,
   INQUIRY_STATUS_STYLES,
   PROPERTY_TYPE_LABELS,
   REQUEST_TYPE_LABELS,
+  MANAGE_TYPE_OPTIONS,
 } from "../constants";
-
-// 이미지 불러오기
-import UnfilledStar from "@/assets/UnfilledStar.svg";
 
 interface InquiryManageTableProps {
   inquiries: Inquiry[];
@@ -28,7 +26,7 @@ interface InquiryManageTableProps {
   selectedInquiryId?: number;
   onInquiryClick?: (inquiryId: number) => void;
   onDeleteInquiry?: (inquiryId: number) => void;
-  onToggleFavorite?: (inquiryId: number) => void;
+  onManageTypeChange?: (inquiryId: number, value: ManageType) => void;
   onStatusChange?: (inquiryId: number, value: InquiryStatus) => void;
   // 필터 props
   selectedRequestType?: string;
@@ -49,17 +47,13 @@ export function InquiryManageTable({
   selectedInquiryId,
   onInquiryClick,
   onDeleteInquiry,
-  onToggleFavorite,
+  onManageTypeChange,
   onStatusChange,
   selectedRequestType,
   onSelectRequestType,
   selectedStatus,
   onSelectStatus,
   isSqmOrPyeong = "sqm",
-  currentPage = 0,
-  totalPages = 0,
-  totalElements = 0,
-  onPageChange,
 }: InquiryManageTableProps) {
   const formatAreaDisplay = (area?: number) => {
     if (area === undefined || area === null || area === 0) return "-";
@@ -165,23 +159,27 @@ export function InquiryManageTable({
                     }`}
                     onClick={() => onInquiryClick?.(inquiry.inquiryId)}
                   >
-                    {/* 즐겨찾기 - 현재 백엔드에 없으므로 placeholder */}
+                    {/* 관리 타입 */}
                     <TableCell className="px-2 py-4">
-                      <div className="flex items-center justify-center">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onToggleFavorite?.(inquiry.inquiryId);
+                      <div
+                        className="flex items-center justify-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <DropdownMenuCell
+                          options={MANAGE_TYPE_OPTIONS}
+                          value={inquiry.manageType ?? "NONE"}
+                          onChange={(value) => {
+                            onManageTypeChange?.(
+                              inquiry.inquiryId,
+                              value as ManageType
+                            );
                           }}
-                          className="p-1 hover:bg-gray-100 rounded"
-                        >
-                          <img
-                            src={UnfilledStar}
-                            alt="즐겨찾기"
-                            className="w-5 h-5"
-                          />
-                        </button>
+                          hideLabel={true}
+                          showCheckmark={false}
+                          iconPosition="right"
+                          buttonClassName="bg-[#F5F5F5] justify-center px-2"
+                          listClassName="flex flex-col"
+                        />
                       </div>
                     </TableCell>
 
@@ -307,37 +305,6 @@ export function InquiryManageTable({
           </TableBody>
         </Table>
       </div>
-
-      {/* 페이지네이션 */}
-      {totalPages > 0 && (
-        <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 rounded-b-lg">
-          <div className="text-sm text-gray-500">
-            총 {totalElements}개 중 {currentPage * 10 + 1}-
-            {Math.min((currentPage + 1) * 10, totalElements)}개
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => onPageChange?.(currentPage - 1)}
-              disabled={currentPage === 0}
-              className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <span className="text-sm">
-              {currentPage + 1} / {totalPages}
-            </span>
-            <button
-              type="button"
-              onClick={() => onPageChange?.(currentPage + 1)}
-              disabled={currentPage >= totalPages - 1}
-              className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
