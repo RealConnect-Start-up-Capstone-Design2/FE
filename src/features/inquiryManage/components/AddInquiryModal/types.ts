@@ -10,7 +10,7 @@ export type { InquirerRelation };
 // 문의 추가 폼 데이터
 export interface AddInquiryFormData {
   // 유형 & 물건 종류
-  requestType: RequestType;
+  requestType: RequestType | ""; // 폼 초기 상태를 위해 빈 문자열 허용
   propertyType: PropertyType;
 
   // 문의자 1

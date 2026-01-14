@@ -1,4 +1,25 @@
-import type { InquiryStatus, RequestType, PropertyType } from "../types/inquiry";
+import type {
+  InquiryStatus,
+  RequestType,
+  PropertyType,
+  ManageType,
+} from "../types/inquiry";
+
+// 관리 타입 아이콘 import
+import UnfilledStar from "@/assets/UnfilledStar.svg";
+import FilledStar from "@/assets/FilledStar.svg";
+import Caution from "@/assets/Caution.svg";
+
+// 관리 타입 옵션 (아이콘 포함)
+export const MANAGE_TYPE_OPTIONS: {
+  label: string;
+  value: ManageType;
+  icon: string;
+}[] = [
+  { label: "기본", value: "NONE", icon: UnfilledStar },
+  { label: "관심", value: "ATTENTION", icon: FilledStar },
+  { label: "주의", value: "CAUTION", icon: Caution },
+];
 
 // 의뢰 유형 옵션 (필터용)
 export const REQUEST_TYPE_FILTER_OPTIONS: { label: string; value: string }[] = [

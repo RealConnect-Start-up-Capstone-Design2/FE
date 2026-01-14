@@ -10,9 +10,7 @@ import {
 } from "@/components/ui";
 import { DropdownMenuCell } from "@/components/ui";
 import type {
-  RequestType,
   PropertyStatus,
-  ManageType,
   ApartmentWithProperty,
   PropertiesResponse,
 } from "../stores/propertyStore";

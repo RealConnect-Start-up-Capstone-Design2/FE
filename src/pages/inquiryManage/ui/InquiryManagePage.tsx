@@ -12,6 +12,7 @@ import {
 import type {
   InquiryStatus,
   RequestType,
+  ManageType,
   InquiriesQueryParams,
   CreateInquiryPayload,
   InquirerInfo,
@@ -51,7 +52,7 @@ export function InquiryManagePage() {
   const [selectedStatus, setSelectedStatus] = useState<InquiryStatus | "">();
 
   // 페이지네이션 상태
-  const [page, setPage] = useState(0);
+  const [page] = useState(0);
   const [size] = useState(10);
 
   // 모달 상태
@@ -222,11 +223,11 @@ export function InquiryManagePage() {
     [refetch]
   );
 
-  // 즐겨찾기 토글
-  const handleToggleFavorite = useCallback(
-    async (inquiryId: number) => {
-      // TODO: 실제 즐겨찾기 토글 API 연동
-      console.log("Toggle favorite:", inquiryId);
+  // 관리 타입 변경
+  const handleManageTypeChange = useCallback(
+    async (inquiryId: number, manageType: ManageType) => {
+      // TODO: 실제 관리 타입 변경 API 연동
+      console.log("Change manageType:", inquiryId, manageType);
       await refetch();
     },
     [refetch]
@@ -307,7 +308,7 @@ export function InquiryManagePage() {
             selectedInquiryId={selectedInquiryId}
             onInquiryClick={handleInquiryClick}
             onDeleteInquiry={handleDeleteInquiry}
-            onToggleFavorite={handleToggleFavorite}
+            onManageTypeChange={handleManageTypeChange}
             onStatusChange={handleStatusChange}
             selectedRequestType={selectedRequestType}
             onSelectRequestType={(value) =>
@@ -318,11 +319,6 @@ export function InquiryManagePage() {
               setSelectedStatus(value as InquiryStatus | "")
             }
             isSqmOrPyeong={isSqmOrPyeong}
-            // 페이지네이션 정보
-            currentPage={inquiriesResponse?.currentPage ?? 0}
-            totalPages={inquiriesResponse?.totalPages ?? 0}
-            totalElements={inquiriesResponse?.totalElements ?? 0}
-            onPageChange={setPage}
           />
         </div>
       </div>

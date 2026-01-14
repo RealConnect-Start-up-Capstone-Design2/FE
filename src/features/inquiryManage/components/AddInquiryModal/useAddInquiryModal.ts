@@ -9,7 +9,7 @@ interface UseAddInquiryModalParams {
 }
 
 const initialFormData: AddInquiryFormData = {
-  requestType: "NONE",
+  requestType: "",
   propertyType: "APARTMENT",
   inquirer1Name: "",
   inquirer1Phone: "",
@@ -100,7 +100,7 @@ export function useAddInquiryModal({
   // 저장 핸들러
   const handleSave = useCallback(async () => {
     // 기본 유효성 검사
-    if (!formData.requestType || formData.requestType === "NONE") {
+    if (!formData.requestType) {
       alert("유형을 선택해주세요.");
       return;
     }
