@@ -1,8 +1,4 @@
-import {
-  useQuery,
-  useQueryClient,
-  type InfiniteData,
-} from "@tanstack/react-query";
+import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
   Table,
@@ -13,14 +9,12 @@ import {
   TableRow,
 } from "@/components/ui";
 import { DropdownMenuCell } from "@/components/ui";
-import {
-  getApartments,
-  updatePropertyInGlobalState,
-  type RequestType,
-  type PropertyStatus,
-  type ManageType,
-  type ApartmentWithProperty,
-  type PropertiesResponse,
+import type {
+  RequestType,
+  PropertyStatus,
+  ManageType,
+  ApartmentWithProperty,
+  PropertiesResponse,
 } from "../stores/propertyStore";
 import { usePropertyEdit } from "../hooks/usePropertyEdit";
 import { useVirtualInfiniteScroll } from "@/shared/hooks";
@@ -101,23 +95,12 @@ export function PropertyManageTable({
   onSelectPropertyStatus,
   isSqmOrPyeong,
 }: PropertyManageTableProps) {
-  // React Query로 아파트 목록 조회 (외부에서 데이터를 받지 않을 경우만)
-  const { data, isLoading: internalIsLoading } = useQuery({
-    queryKey: ["apartments"],
-    queryFn: async () => {
-      // TODO: 추후 API 연동 시 fetchProperties({ apartmentComplexId: 1 })로 변경
-      // return await fetchProperties({ apartmentComplexId: 1 });
-      return getApartments();
-    },
-    enabled: !externalApartments, // 외부 데이터가 없을 때만 실행
-  });
-
-  // 외부에서 받은 데이터 우선 사용
+  // 외부에서 받은 데이터 사용
   const apartments = useMemo(
-    () => externalApartments || data?.content || [],
-    [externalApartments, data?.content]
+    () => externalApartments || [],
+    [externalApartments]
   );
-  const isLoading = externalIsLoading ?? internalIsLoading;
+  const isLoading = externalIsLoading ?? false;
 
   // 편집 관련 로직
   const { handlePropertyBatchUpdate } = usePropertyEdit();
@@ -355,26 +338,6 @@ export function PropertyManageTable({
           delete newState[apartmentId];
           return newState;
         });
-
-        const propertyUpdates: Partial<{
-          propertyStatus: PropertyStatus;
-          requestType: RequestType;
-          manageType: ManageType;
-        }> = {};
-
-        if (nextState.requestType) {
-          propertyUpdates.requestType = nextState.requestType;
-        }
-        if (nextState.propertyStatus) {
-          propertyUpdates.propertyStatus = nextState.propertyStatus;
-        }
-        if (nextState.manageType) {
-          propertyUpdates.manageType = nextState.manageType;
-        }
-
-        if (Object.keys(propertyUpdates).length > 0) {
-          updatePropertyInGlobalState(apartmentId, propertyUpdates);
-        }
       } catch {
         // 실패 시 로컬 상태를 유지하여 재시도 가능하도록 함
       }
