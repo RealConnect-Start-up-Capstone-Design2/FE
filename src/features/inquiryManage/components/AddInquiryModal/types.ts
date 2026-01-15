@@ -1,12 +1,16 @@
-import type { PropertyType, InquiryRequestType } from "../../types/inquiry";
+import type {
+  PropertyType,
+  RequestType,
+  InquirerRelation,
+} from "../../types/inquiry";
 
 // 문의자 관계 타입
-export type InquirerRelation = "SELF" | "PARENT" | "CHILD" | "OTHER_REALTOR";
+export type { InquirerRelation };
 
 // 문의 추가 폼 데이터
 export interface AddInquiryFormData {
   // 유형 & 물건 종류
-  requestType: InquiryRequestType;
+  requestType: RequestType | ""; // 폼 초기 상태를 위해 빈 문자열 허용
   propertyType: PropertyType;
 
   // 문의자 1

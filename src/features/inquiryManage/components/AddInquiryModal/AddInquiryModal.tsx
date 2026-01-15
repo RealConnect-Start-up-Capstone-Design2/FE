@@ -2,14 +2,14 @@ import { cn } from "@/shared/utils";
 import { Label, DropdownMenu, Textarea, Input } from "@/components/ui";
 import type { AddInquiryModalProps, InquirerRelation } from "./types";
 import { useAddInquiryModal } from "./useAddInquiryModal";
-import type { PropertyType, InquiryRequestType } from "../../types/inquiry";
+import type { PropertyType, RequestType } from "../../types/inquiry";
 
 // 이미지 불러오기
 import RefreshIcon from "@/assets/Refresh.svg";
 
 // 유형 옵션
 // TODO: 추후 constants로 분리
-const requestTypeOptions: { label: string; value: InquiryRequestType }[] = [
+const requestTypeOptions: { label: string; value: RequestType }[] = [
   { label: "매수", value: "SALE" },
   { label: "전세", value: "JEONSE" },
   { label: "월세", value: "MONTHLY" },
@@ -26,9 +26,9 @@ const propertyTypeOptions: { label: string; value: PropertyType }[] = [
 // 문의자 관계 옵션
 const relationOptions: { label: string; value: InquirerRelation }[] = [
   { label: "본인", value: "SELF" },
-  { label: "부모", value: "PARENT" },
-  { label: "자녀", value: "CHILD" },
-  { label: "타부동산", value: "OTHER_REALTOR" },
+  { label: "부모", value: "PARENTS" },
+  { label: "자녀", value: "CHILDREN" },
+  { label: "기타", value: "OTHER" },
 ];
 
 // 라벨 컴포넌트
@@ -113,11 +113,9 @@ export function AddInquiryModal(props: AddInquiryModalProps) {
                 <DropdownMenu
                   placeholder="매수/전세/월세"
                   options={requestTypeOptions}
-                  value={
-                    formData.requestType === "NONE" ? "" : formData.requestType
-                  }
+                  value={formData.requestType}
                   onChange={(v) =>
-                    handleFieldChange("requestType", v as InquiryRequestType)
+                    handleFieldChange("requestType", v as RequestType)
                   }
                   className="w-[180px]"
                 />

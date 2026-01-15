@@ -1,74 +1,107 @@
-/**
- * 문의 관리 관련 타입 정의
- */
-
-// 거래 유형
-export type TradeType = "ALL" | "SALE" | "JEONSE" | "MONTHLY";
-
-// 의뢰 유형
-export type InquiryRequestType =
-  | "NONE"
-  | "SALE"
-  | "JEONSE"
+export type RequestType =
   | "MONTHLY"
-  | "NOT_RECEIVED"
-  | "THINKING";
+  | "JEONSE"
+  | "SALE"
+  | "THINKING"
+  | "DEPOSIT";
 
-// 의뢰 상태
-export type InquiryStatus =
-  | "GENERAL"
-  | "INTRODUCTION"
-  | "CO_BROKERAGE"
-  | "COMPLETED";
-
-// 물건 종류
 export type PropertyType = "APARTMENT" | "OFFICETEL" | "COMMERCIAL" | "VILLA";
 
-// 문의 데이터 타입
+export type InquiryStatus = "GENERAL" | "ANOTHER" | "SHARED" | "COMPLETED";
+
+export type ManageType = "NONE" | "ATTENTION" | "CAUTION";
+
+export type InquirerRelation = "SELF" | "PARENTS" | "CHILDREN" | "OTHER";
+
+// 문의자 정보
+export interface InquirerInfo {
+  inquirerName: string;
+  inquirerRelation?: string;
+  contractPhone: string;
+}
+
+// ============================================
+// 문의 조회 관련
+// ============================================
+
+// 문의 데이터 (GET 응답)
 export interface Inquiry {
   inquiryId: number;
-  // 기본 정보
-  region: string; // 지역
-  complex: string; // 단지
-  propertyType: PropertyType; // 물건 종류
-  registeredDate: string; // 등록일
-  title: string; // 문의 제목
-  // 의뢰 정보
-  requestType: InquiryRequestType; // 의뢰 유형
-  status: InquiryStatus; // 의뢰 상태
-  // 면적
-  area1?: number; // 면적1
-  area2?: number; // 면적2
-  // 가격 정보
-  deposit1?: number; // 보증금1
-  deposit2?: number; // 보증금2
-  purchasePrice1?: number; // 매수가1
-  purchasePrice2?: number; // 매수가2
-  monthlyRent1?: number; // 월세1
-  monthlyRent2?: number; // 월세2
-  inquirer: string; // 문의자
-  inquirerPhone: string; // 연락처
-  // 즐겨찾기
-  isFavorite: boolean;
-  // 메모
-  memo?: string;
+  requestType: RequestType;
+  propertyType: PropertyType;
+  inquirerInfo: InquirerInfo;
+  inquiryStatus: InquiryStatus | null;
+  createdDate: string;
+  manageType: ManageType;
+  dong: string;
+  title: string;
+  specs: {
+    minArea: number;
+    maxArea: number;
+    minSalePrice: number;
+    maxSalePrice: number;
+    minDeposit: number;
+    maxDeposit: number;
+    minMonthlyPrice: number;
+    maxMonthlyPrice: number;
+  };
 }
 
-// 문의 목록 응답 타입
+// 문의 목록 조회 파라미터
+export interface InquiriesQueryParams {
+  keyword?: string;
+  manageType?: ManageType;
+  minArea?: number;
+  maxArea?: number;
+  requestType?: RequestType;
+  inquiryStatus?: InquiryStatus;
+  minPrice?: number;
+  maxPrice?: number;
+  page?: number;
+  size?: number;
+  sort?: string[];
+}
+
+// 문의 목록 조회 응답 (페이지네이션)
 export interface InquiriesResponse {
   content: Inquiry[];
-  nextCursor: number | null;
-  hasNext: boolean;
+  currentPage: number;
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  first: boolean;
+  last: boolean;
 }
 
-// 테이블 필터 상태
-export interface InquiryFilterState {
-  tradeType?: TradeType;
-  requestType?: InquiryRequestType;
-  status?: InquiryStatus;
-  searchKeyword?: string;
-  priceMin?: number;
-  priceMax?: number;
-  areaMin?: number;
-  areaMax?: number;
+// ============================================
+// 문의 등록 관련
+// ============================================
+
+// 문의 등록 응답 (POST)
+export interface CreateInquiryResponse {
+  message: string;
+  data: number; // 생성된 문의 ID
+}
+
+// 문의 등록 요청 payload (POST)
+export interface CreateInquiryPayload {
+  requestType: RequestType;
+  propertyType: PropertyType;
+  inquirerInfo: InquirerInfo[];
+  inquirerAddress: string;
+  sido: string;
+  sigungu: string;
+  dong: string;
+  complexName: string;
+  minArea: number;
+  maxArea: number;
+  minSalePrice: number;
+  maxSalePrice: number;
+  minDeposit: number;
+  maxDeposit: number;
+  minMonthlyPrice: number;
+  maxMonthlyPrice: number;
+  title: string;
+  publicDescription: string;
+  privateNote: string;
 }

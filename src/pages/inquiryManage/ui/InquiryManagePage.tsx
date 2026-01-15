@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { InquiryManageHeader } from "@/features/inquiryManage/components/InquiryManageHeader";
 import { InquiryManageTable } from "@/features/inquiryManage/components/InquiryManageTable";
 import { AddInquiryModal } from "@/features/inquiryManage/components/AddInquiryModal";
@@ -9,115 +10,50 @@ import {
   SlidingSidebarLayout,
 } from "@/components/common/detail-sidebar";
 import type {
-  Inquiry,
-  InquiryRequestType,
   InquiryStatus,
+  RequestType,
+  ManageType,
+  InquiriesQueryParams,
+  CreateInquiryPayload,
+  InquirerInfo,
 } from "@/features/inquiryManage/types/inquiry";
+import {
+  fetchInquiries,
+  createInquiry,
+} from "@/features/inquiryManage/services/inquiryService";
 import { pyeongToSqm } from "@/shared/utils";
 
-// 더미 데이터 기본 템플릿
-const baseInquiry = {
-  region: "신천동",
-  complex: "파크리오",
-  registeredDate: "25. 03. 02.",
-  title: "강남 지역 아파트 매매 문의입니다. 전망이 좋은 고층 아파트",
-  area1: 151,
-  area2: 151,
-  deposit1: 220000,
-  deposit2: 220000,
-  purchasePrice1: 220000,
-  purchasePrice2: 220000,
-  monthlyRent1: 220000,
-  monthlyRent2: 220000,
-  inquirer: "김철수",
-  inquirerPhone: "010-1234-5678",
-};
+// 헬퍼 함수: 문의자 정보 생성
+const createInquirerInfo = (
+  name: string,
+  relation: string,
+  phone: string
+): InquirerInfo | null =>
+  name || phone
+    ? { inquirerName: name, inquirerRelation: relation, contractPhone: phone }
+    : null;
 
-// 더미 데이터 (추후 API 연동 시 제거)
-const MOCK_INQUIRIES: Inquiry[] = [
-  {
-    ...baseInquiry,
-    inquiryId: 1,
-    propertyType: "APARTMENT",
-    requestType: "SALE",
-    status: "GENERAL",
-    isFavorite: false,
-  },
-  {
-    ...baseInquiry,
-    inquiryId: 2,
-    propertyType: "COMMERCIAL",
-    requestType: "JEONSE",
-    status: "CO_BROKERAGE",
-    isFavorite: true,
-  },
-  {
-    ...baseInquiry,
-    inquiryId: 3,
-    propertyType: "OFFICETEL",
-    requestType: "MONTHLY",
-    status: "COMPLETED",
-    isFavorite: true,
-  },
-  {
-    ...baseInquiry,
-    inquiryId: 4,
-    propertyType: "APARTMENT",
-    requestType: "SALE",
-    status: "GENERAL",
-    isFavorite: true,
-  },
-  {
-    ...baseInquiry,
-    inquiryId: 5,
-    propertyType: "APARTMENT",
-    requestType: "SALE",
-    status: "GENERAL",
-    isFavorite: true,
-  },
-  {
-    ...baseInquiry,
-    inquiryId: 6,
-    propertyType: "APARTMENT",
-    requestType: "SALE",
-    status: "GENERAL",
-    isFavorite: false,
-  },
-  {
-    ...baseInquiry,
-    inquiryId: 7,
-    propertyType: "APARTMENT",
-    requestType: "SALE",
-    status: "GENERAL",
-    isFavorite: true,
-  },
-  {
-    ...baseInquiry,
-    inquiryId: 8,
-    propertyType: "APARTMENT",
-    requestType: "SALE",
-    status: "GENERAL",
-    isFavorite: true,
-  },
-];
+// 헬퍼 함수: 문자열을 숫자로 변환 (빈 값은 0)
+const toNumber = (value: string): number => (value ? parseFloat(value) : 0);
 
 export function InquiryManagePage() {
-  // 상태 관리
-  const [inquiries, setInquiries] = useState<Inquiry[]>(MOCK_INQUIRIES);
-  const [isLoading] = useState(false);
-
   // 검색 및 필터 상태
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [selectedPriceType, setSelectedPriceType] = useState("SALE");
+  const [selectedRequestType, setSelectedRequestType] = useState<
+    RequestType | ""
+  >("");
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [areaMin, setAreaMin] = useState("");
   const [areaMax, setAreaMax] = useState("");
   const [isSqmOrPyeong, setIsSqmOrPyeong] = useState<"sqm" | "pyeong">("sqm");
 
-  // 테이블 필터 상태
-  const [selectedRequestType, setSelectedRequestType] = useState<string>();
-  const [selectedStatus, setSelectedStatus] = useState<string>();
+  // 테이블 필터 상태 (서버 쿼리에 사용)
+  const [selectedStatus, setSelectedStatus] = useState<InquiryStatus | "">();
+
+  // 페이지네이션 상태
+  const [page] = useState(0);
+  const [size] = useState(10);
 
   // 모달 상태
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -125,6 +61,60 @@ export function InquiryManagePage() {
   // Refs
   const tableContainerRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
+
+  // API 쿼리 파라미터 생성
+  const queryParams: InquiriesQueryParams = useMemo(() => {
+    const params: InquiriesQueryParams = {
+      page,
+      size,
+    };
+
+    if (searchKeyword) params.keyword = searchKeyword;
+    if (selectedRequestType) params.requestType = selectedRequestType;
+    if (selectedStatus) params.inquiryStatus = selectedStatus;
+    if (priceMin) params.minPrice = parseInt(priceMin, 10);
+    if (priceMax) params.maxPrice = parseInt(priceMax, 10);
+
+    // 면적 변환 (평 -> ㎡)
+    if (areaMin) {
+      const areaMinValue = parseFloat(areaMin);
+      params.minArea =
+        isSqmOrPyeong === "pyeong" ? pyeongToSqm(areaMinValue) : areaMinValue;
+    }
+    if (areaMax) {
+      const areaMaxValue = parseFloat(areaMax);
+      params.maxArea =
+        isSqmOrPyeong === "pyeong" ? pyeongToSqm(areaMaxValue) : areaMaxValue;
+    }
+
+    return params;
+  }, [
+    page,
+    size,
+    searchKeyword,
+    selectedRequestType,
+    selectedStatus,
+    priceMin,
+    priceMax,
+    areaMin,
+    areaMax,
+    isSqmOrPyeong,
+  ]);
+
+  // 문의 목록 조회
+  const {
+    data: inquiriesResponse,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["inquiries", queryParams],
+    queryFn: () => fetchInquiries(queryParams),
+  });
+
+  const inquiries = useMemo(
+    () => inquiriesResponse?.content ?? [],
+    [inquiriesResponse?.content]
+  );
 
   // 사이드바 훅
   const {
@@ -147,7 +137,7 @@ export function InquiryManagePage() {
     if (!selectedInquiry) {
       return "문의 상세 정보";
     }
-    return `${selectedInquiry.complex} - ${selectedInquiry.title}`;
+    return `${selectedInquiry.dong || ""} - ${selectedInquiry.title}`;
   }, [selectedInquiry]);
 
   // 면적 단위 변환
@@ -168,107 +158,89 @@ export function InquiryManagePage() {
   // 문의 저장 핸들러
   const handleSaveInquiry = useCallback(
     async (formData: AddInquiryFormData) => {
-      // 면적 변환 (평으로 입력된 경우 ㎡로 변환)
-      const area1Value = formData.area1
-        ? parseFloat(formData.area1)
-        : undefined;
-      const area2Value = formData.area2
-        ? parseFloat(formData.area2)
-        : undefined;
-      const area1 = area1Value
-        ? formData.isAreaInPyeong
-          ? pyeongToSqm(area1Value)
-          : area1Value
-        : undefined;
-      const area2 = area2Value
-        ? formData.isAreaInPyeong
-          ? pyeongToSqm(area2Value)
-          : area2Value
-        : undefined;
+      // 문의자 정보 배열 생성
+      const inquirerInfo = [
+        createInquirerInfo(
+          formData.inquirer1Name,
+          formData.inquirer1Relation,
+          formData.inquirer1Phone
+        ),
+        createInquirerInfo(
+          formData.inquirer2Name,
+          formData.inquirer2Relation,
+          formData.inquirer2Phone
+        ),
+      ].filter((info): info is InquirerInfo => info !== null);
 
-      // 새 문의 생성 (임시 ID)
-      const newInquiry: Inquiry = {
-        inquiryId: Date.now(), // 임시 ID (실제로는 서버에서 발급)
-        region:
-          formData.eupmyeondong || formData.sigungu || formData.sido || "",
-        complex: formData.complexName,
+      // 면적 변환 (평 → ㎡)
+      const area1 = toNumber(formData.area1);
+      const area2 = toNumber(formData.area2);
+      const minArea = formData.isAreaInPyeong ? pyeongToSqm(area1) : area1;
+      const maxArea = formData.isAreaInPyeong ? pyeongToSqm(area2) : area2;
+
+      // 백엔드 요청 payload 생성
+      const payload: CreateInquiryPayload = {
+        requestType: formData.requestType as RequestType,
         propertyType: formData.propertyType,
-        registeredDate: new Date().toLocaleDateString("ko-KR", {
-          year: "2-digit",
-          month: "2-digit",
-          day: "2-digit",
-        }),
+        inquirerInfo,
+        inquirerAddress: formData.inquirerAddress,
+        sido: formData.sido,
+        sigungu: formData.sigungu,
+        dong: formData.eupmyeondong,
+        complexName: formData.complexName,
+        minArea,
+        maxArea,
+        minSalePrice: toNumber(formData.purchasePrice1),
+        maxSalePrice: toNumber(formData.purchasePrice2),
+        minDeposit: toNumber(formData.deposit1),
+        maxDeposit: toNumber(formData.deposit2),
+        minMonthlyPrice: toNumber(formData.monthlyRent1),
+        maxMonthlyPrice: toNumber(formData.monthlyRent2),
         title: formData.title,
-        requestType: formData.requestType,
-        status: "GENERAL",
-        area1,
-        area2,
-        deposit1: formData.deposit1 ? parseFloat(formData.deposit1) : undefined,
-        deposit2: formData.deposit2 ? parseFloat(formData.deposit2) : undefined,
-        purchasePrice1: formData.purchasePrice1
-          ? parseFloat(formData.purchasePrice1)
-          : undefined,
-        purchasePrice2: formData.purchasePrice2
-          ? parseFloat(formData.purchasePrice2)
-          : undefined,
-        monthlyRent1: formData.monthlyRent1
-          ? parseFloat(formData.monthlyRent1)
-          : undefined,
-        monthlyRent2: formData.monthlyRent2
-          ? parseFloat(formData.monthlyRent2)
-          : undefined,
-        inquirer: formData.inquirer1Name,
-        inquirerPhone: formData.inquirer1Phone,
-        isFavorite: false,
-        memo: formData.privateNote,
+        publicDescription: formData.publicDescription,
+        privateNote: formData.privateNote,
       };
 
-      // TODO: 실제 API 호출로 대체
-      setInquiries((prev) => [newInquiry, ...prev]);
+      // API 호출
+      await createInquiry(payload);
+
+      // 목록 새로고침
+      await refetch();
+      setIsAddModalOpen(false);
     },
-    []
+    [refetch]
   );
 
   // 문의 삭제
-  const handleDeleteInquiry = useCallback((inquiryId: number) => {
-    if (confirm("정말로 이 문의를 삭제하시겠습니까?")) {
-      setInquiries((prev) => prev.filter((inq) => inq.inquiryId !== inquiryId));
-    }
-  }, []);
-
-  // 즐겨찾기 토글
-  const handleToggleFavorite = useCallback((inquiryId: number) => {
-    setInquiries((prev) =>
-      prev.map((inq) =>
-        inq.inquiryId === inquiryId
-          ? { ...inq, isFavorite: !inq.isFavorite }
-          : inq
-      )
-    );
-  }, []);
-
-  // 의뢰 유형 변경
-  const handleRequestTypeChange = useCallback(
-    (inquiryId: number, value: InquiryRequestType) => {
-      setInquiries((prev) =>
-        prev.map((inq) =>
-          inq.inquiryId === inquiryId ? { ...inq, requestType: value } : inq
-        )
-      );
+  const handleDeleteInquiry = useCallback(
+    async (inquiryId: number) => {
+      if (confirm("정말로 이 문의를 삭제하시겠습니까?")) {
+        // TODO: 실제 삭제 API 연동
+        console.log("Delete inquiry:", inquiryId);
+        await refetch();
+      }
     },
-    []
+    [refetch]
+  );
+
+  // 관리 타입 변경
+  const handleManageTypeChange = useCallback(
+    async (inquiryId: number, manageType: ManageType) => {
+      // TODO: 실제 관리 타입 변경 API 연동
+      console.log("Change manageType:", inquiryId, manageType);
+      await refetch();
+    },
+    [refetch]
   );
 
   // 의뢰 상태 변경
   const handleStatusChange = useCallback(
-    (inquiryId: number, value: InquiryStatus) => {
-      setInquiries((prev) =>
-        prev.map((inq) =>
-          inq.inquiryId === inquiryId ? { ...inq, status: value } : inq
-        )
-      );
+    async (inquiryId: number, value: InquiryStatus) => {
+      // TODO: 실제 상태 변경 API 연동
+      console.log("Change status:", inquiryId, value);
+      await refetch();
     },
-    []
+    [refetch]
   );
 
   // 외부 클릭 핸들러
@@ -318,8 +290,6 @@ export function InquiryManagePage() {
           onAddInquiry={handleAddInquiry}
           searchKeyword={searchKeyword}
           onSearchKeywordChange={setSearchKeyword}
-          selectedPriceType={selectedPriceType}
-          onSelectPriceType={setSelectedPriceType}
           priceMin={priceMin}
           onPriceMinChange={setPriceMin}
           priceMax={priceMax}
@@ -338,13 +308,16 @@ export function InquiryManagePage() {
             selectedInquiryId={selectedInquiryId}
             onInquiryClick={handleInquiryClick}
             onDeleteInquiry={handleDeleteInquiry}
-            onToggleFavorite={handleToggleFavorite}
-            onRequestTypeChange={handleRequestTypeChange}
+            onManageTypeChange={handleManageTypeChange}
             onStatusChange={handleStatusChange}
             selectedRequestType={selectedRequestType}
-            onSelectRequestType={setSelectedRequestType}
+            onSelectRequestType={(value) =>
+              setSelectedRequestType(value as RequestType | "")
+            }
             selectedStatus={selectedStatus}
-            onSelectStatus={setSelectedStatus}
+            onSelectStatus={(value) =>
+              setSelectedStatus(value as InquiryStatus | "")
+            }
             isSqmOrPyeong={isSqmOrPyeong}
           />
         </div>

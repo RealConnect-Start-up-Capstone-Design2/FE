@@ -19,6 +19,30 @@ import {
   saveContractAPI,
 } from "../../services/contractService";
 
+/**
+ * 계약 정보 변경사항 여부 확인 헬퍼 함수
+ */
+const checkContractChanges = (
+  resolvedContract: ContractInfo | null,
+  formData: Partial<ContractInfo>,
+  contractType: ContractType
+): boolean => {
+  if (resolvedContract) {
+    const merged = { ...resolvedContract, ...formData, contractType };
+    return JSON.stringify(resolvedContract) !== JSON.stringify(merged);
+  }
+
+  if (contractType !== DEFAULT_CONTRACT_TYPE) {
+    return true;
+  }
+
+  return Object.entries(formData).some(([, value]) => {
+    if (value === undefined || value === null) return false;
+    if (typeof value === "string") return value.trim() !== "";
+    return true;
+  });
+};
+
 interface PropertyContractBlockProps {
   apartment?: ApartmentWithProperty;
   isOpen: boolean;
@@ -37,15 +61,15 @@ export function PropertyContractBlock({
   const queryClient = useQueryClient();
   const apartmentId = apartment?.apartmentId;
 
-  const [contractType, setContractType] =
-    useState<ContractType>(DEFAULT_CONTRACT_TYPE);
+  const [contractType, setContractType] = useState<ContractType>(
+    DEFAULT_CONTRACT_TYPE
+  );
   const [formData, setFormData] = useState<Partial<ContractInfo>>({});
   const [isSaved, setIsSaved] = useState(false);
   const lastAutoSaveTokenRef = useRef<number>(0);
   const prevApartmentIdRef = useRef<number | undefined>(undefined);
   const prevFormDataRef = useRef<Partial<ContractInfo>>({});
-  const prevContractTypeRef =
-    useRef<ContractType>(DEFAULT_CONTRACT_TYPE);
+  const prevContractTypeRef = useRef<ContractType>(DEFAULT_CONTRACT_TYPE);
   const prevResolvedContractRef = useRef<ContractInfo | null>(null);
 
   const {
@@ -119,32 +143,8 @@ export function PropertyContractBlock({
   }, [apartmentId, resolvedContract, formData, contractType, apartment]);
 
   const hasUnsavedChanges = useMemo(() => {
-    if (!apartmentId) {
-      return false;
-    }
-
-    if (resolvedContract) {
-      const merged = {
-        ...resolvedContract,
-        ...formData,
-        contractType,
-      };
-      return JSON.stringify(resolvedContract) !== JSON.stringify(merged);
-    }
-
-    if (contractType !== DEFAULT_CONTRACT_TYPE) {
-      return true;
-    }
-
-    return Object.entries(formData).some(([, value]) => {
-      if (value === undefined || value === null) {
-        return false;
-      }
-      if (typeof value === "string") {
-        return value.trim() !== "";
-      }
-      return true;
-    });
+    if (!apartmentId) return false;
+    return checkContractChanges(resolvedContract, formData, contractType);
   }, [apartmentId, resolvedContract, formData, contractType]);
 
   // 계약 정보 저장 mutation
@@ -243,32 +243,12 @@ export function PropertyContractBlock({
       const prevFormData = prevFormDataRef.current;
       const prevContractType = prevContractTypeRef.current;
 
-      // 변경사항이 있는지 확인
-      let hasPrevChanges = false;
-
-      if (prevResolvedContract) {
-        const merged = {
-          ...prevResolvedContract,
-          ...prevFormData,
-          contractType: prevContractType,
-        };
-        hasPrevChanges =
-          JSON.stringify(prevResolvedContract) !== JSON.stringify(merged);
-      } else {
-        if (prevContractType !== DEFAULT_CONTRACT_TYPE) {
-          hasPrevChanges = true;
-        } else {
-          hasPrevChanges = Object.entries(prevFormData).some(([, value]) => {
-            if (value === undefined || value === null) {
-              return false;
-            }
-            if (typeof value === "string") {
-              return value.trim() !== "";
-            }
-            return true;
-          });
-        }
-      }
+      // 헬퍼 함수로 변경사항 확인
+      const hasPrevChanges = checkContractChanges(
+        prevResolvedContract,
+        prevFormData,
+        prevContractType
+      );
 
       // 변경사항이 있으면 저장
       if (hasPrevChanges && !contractMutation.isPending) {

@@ -304,65 +304,24 @@ export function PropertyManagePage() {
     (apt) => apt.apartmentId === displayedPropertyId
   );
 
-  // 매물 상세 사이드바 title 구성하는 부분
+  // 매물 상세 사이드바 title 구성
   const detailSidebarTitle = useMemo(() => {
     if (!selectedApartment) {
       return "매물 상세 정보";
     }
 
-    const segments: string[] = [];
+    const { apartmentName, dong, ho, area, type } = selectedApartment;
+    const dongHo = [dong, ho].filter(Boolean).join("-");
+    const areaStr =
+      typeof area === "number" && Number.isFinite(area)
+        ? area.toFixed(2).replace(/\.?0+$/, "")
+        : "";
 
-    const cleanString = (value: unknown) => {
-      if (typeof value === "number") {
-        return Number.isFinite(value) ? `${value}` : "";
-      }
-      if (typeof value === "string") {
-        return value.trim();
-      }
-      return "";
-    };
-
-    const apartmentName = cleanString(selectedApartment.apartmentName);
-    if (apartmentName) {
-      segments.push(apartmentName);
-    }
-
-    const dongHo = [
-      cleanString(selectedApartment.dong),
-      cleanString(selectedApartment.ho),
-    ]
+    const title = [apartmentName, dongHo, areaStr, type]
+      .map((v) => (typeof v === "string" ? v.trim() : ""))
       .filter(Boolean)
-      .join("-");
-    if (dongHo) {
-      segments.push(dongHo);
-    }
+      .join(" ");
 
-    const areaLabel = (() => {
-      const rawArea = selectedApartment.area;
-      if (rawArea === undefined || rawArea === null) {
-        return "";
-      }
-      if (typeof rawArea === "number") {
-        if (!Number.isFinite(rawArea)) {
-          return "";
-        }
-        const formatted = Number.isInteger(rawArea)
-          ? rawArea.toString()
-          : rawArea.toFixed(2).replace(/\.?0+$/, "");
-        return formatted;
-      }
-      return "";
-    })();
-    if (areaLabel) {
-      segments.push(areaLabel);
-    }
-
-    const typeLabel = cleanString(selectedApartment.type);
-    if (typeLabel) {
-      segments.push(typeLabel);
-    }
-
-    const title = segments.join(" ").trim();
     return title || "매물 상세 정보";
   }, [selectedApartment]);
 

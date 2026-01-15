@@ -1,7 +1,5 @@
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
-import type { DropdownOption } from "@/components/ui/dropdown-menu";
 import PlusIcon from "@/assets/Plus.svg";
 import RefreshIcon from "@/assets/Refresh.svg";
 import { Search } from "lucide-react";
@@ -10,14 +8,6 @@ import {
   InputGroupInput,
   InputGroupAddon,
 } from "@/components/ui/input-group";
-
-// 가격 종류 옵션
-const priceTypeOptions: DropdownOption[] = [
-  { label: "매매가", value: "SALE" },
-  { label: "전세가", value: "JEONSE" },
-  { label: "보증금", value: "DEPOSIT" },
-  { label: "월세", value: "MONTHLY" },
-];
 
 // 숫자만 추출하는 헬퍼
 const extractNumbers = (value: string) => value.replace(/[^0-9]/g, "");
@@ -28,8 +18,6 @@ interface InquiryManageHeaderProps {
   searchKeyword?: string;
   onSearchKeywordChange?: (keyword: string) => void;
   // 가격 필터
-  selectedPriceType?: string;
-  onSelectPriceType?: (priceType: string) => void;
   priceMin?: string;
   onPriceMinChange?: (value: string) => void;
   priceMax?: string;
@@ -48,8 +36,6 @@ export function InquiryManageHeader({
   onAddInquiry,
   searchKeyword = "",
   onSearchKeywordChange,
-  selectedPriceType = "SALE",
-  onSelectPriceType,
   priceMin = "",
   onPriceMinChange,
   priceMax = "",
@@ -97,14 +83,6 @@ export function InquiryManageHeader({
                 가격
               </span>
             </div>
-
-            {/* 가격 종류 선택 */}
-            <DropdownMenu
-              className="w-[124px] font-semibold"
-              options={priceTypeOptions}
-              value={selectedPriceType}
-              onChange={(value) => onSelectPriceType?.(value)}
-            />
 
             {/* 가격 범위 입력 */}
             <div className="flex flex-row items-center gap-2.5">
