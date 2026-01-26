@@ -466,7 +466,6 @@ export function PropertyManagePage() {
           complexOptions={preferredComplexOptions}
           selectedComplexId={selectedApartmentComplexId}
           onSelectComplex={handleSelectApartmentComplex}
-          onRefreshPreferredComplexes={handleRefreshPreferredComplexes}
           isComplexLoading={isPreferredComplexLoading}
           selectedRequestType={selectedRequestType}
           onSelectRequestType={setSelectedRequestType}
