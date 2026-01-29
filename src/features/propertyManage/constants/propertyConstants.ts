@@ -4,16 +4,17 @@ import FilledStar from "@/assets/FilledStar.svg";
 import Caution from "@/assets/Caution.svg";
 
 /**
- * 의뢰 유형 드롭다운 옵션 (API 스펙 기준)
+ * 의뢰 유형 드롭다운 옵션 (API 스펙펙 기준)
  */
 export const requestTypeOptions: DropdownOption[] = [
   { label: "없음", value: "NONE" },
-  { label: "입주", value: "SELF" },
   { label: "매도", value: "SALE" },
   { label: "전세", value: "JEONSE" },
   { label: "월세", value: "MONTHLY" },
-  { label: "미수신", value: "NOT_RECEIVED" },
-  { label: "고민중", value: "THINKING" },
+  { label: "매도+전세", value: "SALE_JEONSE" },
+  { label: "매도+월세", value: "SALE_MONTHLY" },
+  { label: "전세+월세", value: "JEONSE_MONTHLY" },
+  { label: "매도+전세+월세", value: "SALE_JEONSE_MONTHLY" },
 ];
 
 /**

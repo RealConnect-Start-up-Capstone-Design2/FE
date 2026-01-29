@@ -13,11 +13,13 @@ import type {
   PropertyStatus,
   ApartmentWithProperty,
   PropertiesResponse,
+  ManageType,
 } from "../stores/propertyStore";
 import { usePropertyEdit } from "../hooks/usePropertyEdit";
 import { useVirtualInfiniteScroll } from "@/shared/hooks";
 import type { PropertyMutationPayload } from "../services/propertyService";
 import { formatPrice, formatPhoneNumber } from "@/shared/utils";
+import { updatePropertyManage } from "../services/propertyService";
 import {
   EditablePropertyCell,
   EditableDepositMonthCell,
@@ -345,7 +347,64 @@ export function PropertyManageTable({
 
   // 드롭다운 업데이트 통합 핸들러
   const handleDropdownUpdate = useCallback(
-    (apartmentId: number, field: keyof DropdownState, value: string) => {
+    async (apartmentId: number, field: keyof DropdownState, value: string) => {
+      // 즐겨찾기 변경 시 새로운 API 호출
+      if (field === "manageType") {
+        try {
+          await updatePropertyManage(apartmentId, value as ManageType);
+          // 성공 시 로컬 상태 업데이트
+          setLocalDropdownStates((prev) => ({
+            ...prev,
+            [apartmentId]: {
+              ...prev[apartmentId],
+              manageType: value as ManageType,
+            },
+          }));
+          // 캐시 업데이트
+          queryClient.setQueriesData<
+            PropertiesResponse | InfiniteData<PropertiesResponse>
+          >({ queryKey: ["apartments"] }, (oldData) => {
+            if (!oldData) return oldData;
+
+            const updateApartment = (apt: ApartmentWithProperty) => {
+              if (apt.apartmentId === apartmentId) {
+                return {
+                  ...apt,
+                  property: apt.property
+                    ? {
+                        ...apt.property,
+                        manageType: value as ManageType,
+                      }
+                    : null,
+                };
+              }
+              return apt;
+            };
+
+            if (isInfinitePropertiesData(oldData)) {
+              const updatedPages = oldData.pages.map((page) => ({
+                ...page,
+                content: page.content.map(updateApartment),
+              }));
+              return { ...oldData, pages: updatedPages };
+            }
+
+            if (isPropertiesResponse(oldData)) {
+              return {
+                ...oldData,
+                content: oldData.content.map(updateApartment),
+              };
+            }
+
+            return oldData;
+          });
+        } catch (error) {
+          console.error("즐겨찾기 업데이트 실패:", error);
+          alert("즐겨찾기 업데이트에 실패했습니다.");
+        }
+        return;
+      }
+
       const updates: DropdownState = {
         [field]: value,
       };
@@ -354,20 +413,16 @@ export function PropertyManageTable({
       if (field === "requestType") {
         const currentPropertyStatus = getCurrentPropertyStatus(apartmentId);
 
-        if (value === "NONE" || value === "SELF") {
+        if (value === "NONE") {
           updates.propertyStatus = "NONE";
-        } else if (
-          value !== "NOT_RECEIVED" &&
-          value !== "THINKING" &&
-          currentPropertyStatus === "NONE"
-        ) {
+        } else if (currentPropertyStatus === "NONE") {
           updates.propertyStatus = "BEFORE";
         }
       }
 
       void applyDropdownUpdates(apartmentId, updates);
     },
-    [applyDropdownUpdates, getCurrentPropertyStatus]
+    [applyDropdownUpdates, getCurrentPropertyStatus, queryClient]
   );
 
   const prevSelectedApartmentIdRef = useRef<number | string | undefined>(
@@ -430,7 +485,7 @@ export function PropertyManageTable({
         <TableHeader className="sticky top-0 z-40 shadow-sm bg-[#E8EDFF]">
           <TableRow>
             <TableHeaderFilter
-              title="관리 타입"
+              title="즐겨찾기"
               value={selectedManageType}
               onChange={onSelectManageType}
               options={manageTypeFilterOptions}
@@ -438,40 +493,25 @@ export function PropertyManageTable({
             />
             <TableHead>동</TableHead>
             <TableHead>호수</TableHead>
-            <TableHeaderFilter
-              title="면적"
-              value={selectedArea}
-              onChange={onSelectArea}
-              options={areaOptions ?? []}
-              className="w-24 text-center"
-            />
-            <TableHeaderFilter
-              title="의뢰 유형"
-              value={selectedRequestType}
-              onChange={onSelectRequestType}
-              options={requestTypeOptions}
-              className="w-24 text-center"
-            />
-            <TableHeaderFilter
-              title="매물 상태"
-              value={selectedPropertyStatus}
-              onChange={onSelectPropertyStatus}
-              options={propertyStatusOptions}
-              className="w-24 text-center"
-            />
-            <TableHead>매매</TableHead>
-            <TableHead>전세</TableHead>
-            <TableHead>보증금/월세</TableHead>
+            <TableHead>타입</TableHead>
+            <TableHead>점유 상태</TableHead>
+            <TableHead>기매입금</TableHead>
+            <TableHead>현임차</TableHead>
+            <TableHead>만기일</TableHead>
+            <TableHead>의뢰 유형</TableHead>
+            <TableHead>매도가</TableHead>
+            <TableHead>전세가</TableHead>
+            <TableHead>보증금/월세가</TableHead>
+            <TableHead>의뢰 등록일</TableHead>
             <TableHead>소유자</TableHead>
             <TableHead>연락처</TableHead>
-            <TableHead>계약일</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {!hasApartments ? (
             <TableRow>
               <TableCell
-                colSpan={12}
+                colSpan={14}
                 className="py-10 text-center text-sm text-gray-400"
               >
                 조건에 해당하는 매물이 없습니다.
@@ -482,7 +522,7 @@ export function PropertyManageTable({
               {virtualItems.length > 0 && virtualItems[0].start > 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={12}
+                    colSpan={14}
                     style={{ height: virtualItems[0].start }}
                   />
                 </TableRow>
@@ -500,7 +540,7 @@ export function PropertyManageTable({
                         data-index={virtualRow.index}
                       >
                         <TableCell
-                          colSpan={12}
+                          colSpan={14}
                           className="text-center text-sm text-gray-400"
                         >
                           데이터를 불러오는 중입니다...
@@ -520,7 +560,7 @@ export function PropertyManageTable({
                       data-index={virtualRow.index}
                     >
                       <TableCell
-                        colSpan={12}
+                        colSpan={14}
                         className="text-center text-sm text-gray-400"
                       >
                         데이터를 불러오는 중입니다...
@@ -581,7 +621,7 @@ export function PropertyManageTable({
                     }`}
                     onClick={() => onPropertyClick?.(apartment.apartmentId)}
                   >
-                    {/* 관리 타입 */}
+                    {/* 즐겨찾기 */}
                     <TableCell className="px-2">
                       <div className="flex items-center justify-center">
                         <DropdownMenuCell
@@ -626,136 +666,85 @@ export function PropertyManageTable({
                     {/* 호수 */}
                     <TableCell>{apartment.ho}</TableCell>
 
-                    {/* 면적 */}
+                    {/* 타입 */}
+                    <TableCell>{apartment.type}</TableCell>
+
+                    {/* 점유 상태 */}
                     <TableCell>
-                      {isSqmOrPyeong === "sqm"
-                        ? `${apartment.area}㎡`
-                        : `${formatArea(
-                            sqmToPyeong(apartment.area),
-                            "pyeong"
-                          )}`}
+                      {apartment.property?.occupancyStatus || "-"}
+                    </TableCell>
+
+                    {/* 기매입금 */}
+                    <TableCell>
+                      {apartment.property?.contractSalePrice != null
+                        ? formatPriceWithDecimal(
+                            apartment.property.contractSalePrice
+                          )
+                        : "-"}
+                    </TableCell>
+
+                    {/* 현임차 */}
+                    <TableCell>
+                      {apartment.property?.occupancyStatus === "JEONSE"
+                        ? apartment.property?.contractJeonsePrice != null
+                          ? formatPriceWithDecimal(
+                              apartment.property.contractJeonsePrice
+                            )
+                          : "-"
+                        : apartment.property?.occupancyStatus ===
+                            "MONTHLY_RENT"
+                          ? apartment.property?.contractDeposit != null ||
+                              apartment.property?.contractMonthlyRent != null
+                            ? `${apartment.property?.contractDeposit != null ? formatPriceWithDecimal(apartment.property.contractDeposit) : "-"} / ${apartment.property?.contractMonthlyRent != null ? formatPriceWithDecimal(apartment.property.contractMonthlyRent) : "-"}`
+                            : "-"
+                          : "-"}
+                    </TableCell>
+
+                    {/* 만기일 */}
+                    <TableCell>
+                      {apartment.property?.expireDate || "-"}
                     </TableCell>
 
                     {/* 의뢰 유형 */}
                     <TableCell>
-                      <div className="flex items-center justify-center">
-                        <DropdownMenuCell
-                          options={requestTypeOptions}
-                          value={
-                            localDropdownStates[apartment.apartmentId]
-                              ?.requestType ??
-                            apartment.property?.requestType ??
-                            "NONE"
-                          }
-                          onChange={(value) => {
-                            handleDropdownUpdate(
-                              apartment.apartmentId,
-                              "requestType",
-                              value
-                            );
-                          }}
-                          buttonClassName={`w-[70px] min-w-[70px] ${dropdownBgColor}`}
-                        />
-                      </div>
+                      {requestTypeOptions.find(
+                        (opt) =>
+                          opt.value ===
+                          (apartment.property?.requestType ?? "NONE")
+                      )?.label || "-"}
                     </TableCell>
 
-                    {/* 매물 상태 */}
+                    {/* 매도가 */}
                     <TableCell>
-                      <div className="flex items-center justify-center">
-                        <DropdownMenuCell
-                          options={propertyStatusOptions}
-                          value={
-                            localDropdownStates[apartment.apartmentId]
-                              ?.propertyStatus ??
-                            apartment.property?.propertyStatus ??
-                            "NONE"
-                          }
-                          onChange={(value) => {
-                            handleDropdownUpdate(
-                              apartment.apartmentId,
-                              "propertyStatus",
-                              value
-                            );
-                          }}
-                          buttonClassName={`w-[90px] min-w-[90px] ${dropdownBgColor}`}
-                        />
-                      </div>
+                      {salePriceValue
+                        ? formatPriceWithDecimal(salePriceValue)
+                        : "-"}
                     </TableCell>
-
-                    {/* 매매가 */}
-                    <EditablePropertyCell
-                      apartmentId={apartment.apartmentId}
-                      field="salePrice"
-                      value={salePriceValue}
-                      isSelected={isSelected}
-                      type="number"
-                      placeholder=""
-                      suffix="억"
-                      displayValue={formatPriceWithDecimal(salePriceValue)}
-                      onUpdate={handlePropertyUpdate}
-                    />
 
                     {/* 전세가 */}
-                    <EditablePropertyCell
-                      apartmentId={apartment.apartmentId}
-                      field="jeonsePrice"
-                      value={jeonsePriceValue}
-                      isSelected={isSelected}
-                      type="number"
-                      placeholder=""
-                      suffix="억"
-                      displayValue={formatPriceWithDecimal(jeonsePriceValue)}
-                      onUpdate={handlePropertyUpdate}
-                    />
+                    <TableCell>
+                      {jeonsePriceValue
+                        ? formatPriceWithDecimal(jeonsePriceValue)
+                        : "-"}
+                    </TableCell>
 
-                    {/* 보증금/월세 */}
-                    <EditableDepositMonthCell
-                      apartmentId={apartment.apartmentId}
-                      depositValue={depositValue}
-                      monthValue={monthPriceValue}
-                      isSelected={isSelected}
-                      onUpdate={handlePropertyUpdate}
-                    />
+                    {/* 보증금/월세가 */}
+                    <TableCell>
+                      {depositValue || monthPriceValue
+                        ? `${depositValue ? formatPriceWithDecimal(depositValue) : "-"} / ${monthPriceValue ? formatPriceWithDecimal(monthPriceValue) : "-"}`
+                        : "-"}
+                    </TableCell>
+
+                    {/* 의뢰 등록일 */}
+                    <TableCell>
+                      {apartment.property?.requestRegistrationDate || "-"}
+                    </TableCell>
 
                     {/* 소유자 */}
-                    <EditablePropertyCell
-                      apartmentId={apartment.apartmentId}
-                      field="ownerName"
-                      value={ownerNameValue}
-                      isSelected={isSelected}
-                      type="text"
-                      placeholder="소유자"
-                      displayValue={ownerNameValue}
-                      onUpdate={handlePropertyUpdate}
-                    />
+                    <TableCell>{ownerNameValue || "-"}</TableCell>
 
                     {/* 연락처 */}
-                    <EditablePropertyCell
-                      apartmentId={apartment.apartmentId}
-                      field="ownerPhone"
-                      value={ownerPhoneValue}
-                      isSelected={isSelected}
-                      type="tel"
-                      placeholder="연락처"
-                      displayValue={formattedOwnerPhone}
-                      onUpdate={handlePropertyUpdate}
-                    />
-
-                    {/* 계약일 */}
-                    <EditablePropertyCell
-                      apartmentId={apartment.apartmentId}
-                      field="contractDate"
-                      value={contractDateValue}
-                      isSelected={isSelected}
-                      type="text"
-                      placeholder="yyyy-mm-dd"
-                      displayValue={contractDateValue || undefined}
-                      inputClassName="w-28"
-                      validate={isValidDate}
-                      invalidMessage="계약일은 yyyy-mm-dd 형식으로 입력해주세요."
-                      onUpdate={handlePropertyUpdate}
-                      allowEmpty
-                    />
+                    <TableCell>{formattedOwnerPhone || "-"}</TableCell>
                   </TableRow>
                 );
               })}
@@ -765,7 +754,7 @@ export function PropertyManageTable({
                   0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={12}
+                      colSpan={14}
                       style={{
                         height:
                           rowVirtualizer.getTotalSize() -

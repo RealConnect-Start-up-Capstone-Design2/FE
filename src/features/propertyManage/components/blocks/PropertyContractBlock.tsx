@@ -72,6 +72,7 @@ export function PropertyContractBlock({
   const prevContractTypeRef = useRef<ContractType>(DEFAULT_CONTRACT_TYPE);
   const prevResolvedContractRef = useRef<ContractInfo | null>(null);
 
+  // 계약 조회 (카드 열기 시 API 호출 비활성화)
   const {
     data: fetchedContract,
     isLoading: isContractLoading,
@@ -80,7 +81,7 @@ export function PropertyContractBlock({
   } = useQuery({
     queryKey: ["contract", apartmentId, contractType],
     queryFn: () => getContractAPI(apartmentId!, contractType),
-    enabled: isOpen && !!apartmentId,
+    enabled: false,
     refetchOnWindowFocus: false,
   });
 

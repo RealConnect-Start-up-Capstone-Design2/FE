@@ -17,7 +17,7 @@ import { PropertyContractBlock } from "@/features/propertyManage/components/bloc
 
 // 서버에서 가져오는 데이터
 import {
-  fetchProperties,
+  fetchPropertyList,
   fetchPropertiesByPhone,
   fetchTotalApartmentCount,
 } from "@/features/propertyManage/services/propertyService";
@@ -43,12 +43,13 @@ const manageTypeValues: readonly ManageType[] = [
 ];
 const requestTypeValues: readonly RequestType[] = [
   "NONE",
-  "SELF",
   "SALE",
   "JEONSE",
   "MONTHLY",
-  "NOT_RECEIVED",
-  "THINKING",
+  "SALE_JEONSE",
+  "SALE_MONTHLY",
+  "JEONSE_MONTHLY",
+  "SALE_JEONSE_MONTHLY",
 ];
 const propertyStatusValues: readonly PropertyStatus[] = [
   "NONE",
@@ -198,7 +199,7 @@ export function PropertyManagePage() {
         });
       }
 
-      return fetchProperties({
+      return fetchPropertyList({
         apartmentComplexId: selectedApartmentComplexId,
         cursorId: pageParam,
         size: 100,

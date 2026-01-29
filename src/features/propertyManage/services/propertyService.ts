@@ -1,8 +1,10 @@
 import apiClient from "@/shared/api/client";
 import type {
   PropertiesResponse,
+  PropertiesApiResponse,
   PropertiesQueryParams,
   ApartmentWithProperty,
+  PropertyApiResponse,
   PropertyStatus,
   RequestType,
   ManageType,
@@ -213,6 +215,90 @@ export const toggleFavoriteAPI = async (
   const response = await apiClient.patch(
     `/api/properties/${apartmentId}/favorite`,
     { isFavorite }
+  );
+  return response.data;
+};
+
+/**
+ * API 응답을 내부 타입으로 변환
+ */
+const mapApiResponseToApartment = (
+  apiData: PropertyApiResponse,
+  apartmentName?: string
+): ApartmentWithProperty => {
+  return {
+    apartmentId: apiData.apartmentId,
+    apartmentName: apartmentName || "",
+    dong: apiData.dong,
+    ho: apiData.ho,
+    area: apiData.supplyArea,
+    direction: apiData.direction,
+    img: "",
+    type: apiData.supplyType,
+    property: {
+      salePrice: apiData.requestSalePrice,
+      jeonsePrice: apiData.requestJeonsePrice,
+      deposit: apiData.requestMonthlyDeposit,
+      monthPrice: apiData.requestMonthlyRent,
+      propertyStatus: "NONE" as PropertyStatus,
+      requestType: apiData.requestType,
+      manageType: apiData.manageType,
+      ownerName: apiData.ownerName,
+      ownerPhone: apiData.ownerPhone,
+      contractDate: "",
+      occupancyStatus: apiData.contractOccupancyStatus,
+      contractSalePrice: apiData.contractSalePrice, // 기매입금
+      contractJeonsePrice: apiData.contractJeonsePrice,
+      contractDeposit: apiData.contractDeposit,
+      contractMonthlyRent: apiData.contractMonthlyRent,
+      expireDate: apiData.contractExpireDate,
+      requestRegistrationDate: apiData.requestRegisteredAt,
+    },
+  };
+};
+
+/**
+ * 매물 목록 조회 API (읽기 전용)
+ * GET /api/property
+ */
+export const fetchPropertyList = async (
+  params: PropertiesQueryParams
+): Promise<PropertiesResponse> => {
+  const response = await apiClient.get<PropertiesApiResponse>("/api/property", {
+    params: {
+      apartmentComplexId: params.apartmentComplexId,
+      cursorId: params.cursorId,
+      size: params.size || 30,
+      dong: params.dong,
+      ho: params.ho,
+      area: params.area,
+      propertyStatus: params.propertyStatus,
+      requestType: params.requestType,
+      manageType: params.manageType,
+    },
+  });
+
+  // API 응답을 내부 타입으로 변환
+  return {
+    content: response.data.content.map((item) =>
+      mapApiResponseToApartment(item)
+    ),
+    nextCursor: response.data.nextCursor,
+    hasNext: response.data.hasNext,
+  };
+};
+
+/**
+ * 즐겨찾기 관리 API
+ * POST /api/property/manage/{apartmentId}
+ */
+export const updatePropertyManage = async (
+  apartmentId: number,
+  manageType: ManageType
+): Promise<{ apartmentId: number; manageType: ManageType }> => {
+  const response = await apiClient.post(
+    `/api/property/manage/${apartmentId}`,
+    { manageType }
   );
   return response.data;
 };
