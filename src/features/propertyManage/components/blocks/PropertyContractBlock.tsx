@@ -55,7 +55,7 @@ interface PropertyContractBlockProps {
  */
 export function PropertyContractBlock({
   apartment,
-  isOpen,
+  isOpen: _isOpen,
   autoSaveToken = 0,
 }: PropertyContractBlockProps) {
   const queryClient = useQueryClient();

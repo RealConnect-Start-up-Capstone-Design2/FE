@@ -21,18 +21,12 @@ import type { PropertyMutationPayload } from "../services/propertyService";
 import { formatPrice, formatPhoneNumber } from "@/shared/utils";
 import { updatePropertyManage } from "../services/propertyService";
 import {
-  EditablePropertyCell,
-  EditableDepositMonthCell,
-} from "./EditablePropertyCell";
-import {
   propertyFieldDefaults,
-  emptyAllowedFields,
   requestTypeOptions,
-  propertyStatusOptions,
   manageTypeFilterOptions,
   ESTIMATED_ROW_HEIGHT,
 } from "../constants/propertyConstants";
-import { isValidDate, normalizeDateValue } from "@/shared/utils";
+import { normalizeDateValue } from "@/shared/utils";
 import {
   updateApartmentList,
   isInfinitePropertiesData,
@@ -41,7 +35,6 @@ import {
 import type { PropertyFieldKey, DropdownState } from "../types/property";
 import { TableHeaderFilter } from "@/components/ui";
 import type { DropdownOption } from "@/components/ui/dropdown-menu";
-import { sqmToPyeong, formatArea } from "@/shared/utils";
 
 // 이미지 불러오기
 import UnfilledStar from "@/assets/UnfilledStar.svg";
@@ -86,14 +79,14 @@ export function PropertyManageTable({
   totalApartmentCount,
   selectedManageType,
   onSelectManageType,
-  areaOptions,
-  selectedArea,
-  onSelectArea,
-  selectedRequestType,
-  onSelectRequestType,
-  selectedPropertyStatus,
-  onSelectPropertyStatus,
-  isSqmOrPyeong,
+  areaOptions: _areaOptions,
+  selectedArea: _selectedArea,
+  onSelectArea: _onSelectArea,
+  selectedRequestType: _selectedRequestType,
+  onSelectRequestType: _onSelectRequestType,
+  selectedPropertyStatus: _selectedPropertyStatus,
+  onSelectPropertyStatus: _onSelectPropertyStatus,
+  isSqmOrPyeong: _isSqmOrPyeong,
 }: PropertyManageTableProps) {
   // 외부에서 받은 데이터 사용
   const apartments = useMemo(
@@ -111,21 +104,6 @@ export function PropertyManageTable({
     []
   );
 
-  const handlePropertyUpdate = useCallback(
-    (apartmentId: number, field: string, value: string | number) => {
-      if (value === undefined) return;
-      if (value === "" && !emptyAllowedFields.includes(field)) return; // 이러면 값을 지우기만 했을 때에도 저장됨.
-
-      setLocalPropertyStates((prev) => ({
-        ...prev,
-        [apartmentId]: {
-          ...prev[apartmentId],
-          [field]: value,
-        },
-      }));
-    },
-    []
-  );
   const queryClient = useQueryClient();
 
   // PUT 응답과 무관하게 UI를 즉시 업데이트하기 위해 캐시를 직접 수정
@@ -595,19 +573,6 @@ export function PropertyManageTable({
                 const formattedOwnerPhone =
                   formatPhoneNumber(ownerPhoneValue) ??
                   (ownerPhoneValue ? String(ownerPhoneValue) : undefined);
-                const contractDateValue =
-                  pendingProperty?.contractDate ?? property?.contractDate;
-
-                const propertyStatus =
-                  localDropdownStates[apartment.apartmentId]?.propertyStatus ??
-                  apartment.property?.propertyStatus ??
-                  "NONE";
-                const isActiveStatus =
-                  propertyStatus === "BEFORE" ||
-                  propertyStatus === "ADVERTISING";
-                const dropdownBgColor = isActiveStatus
-                  ? "bg-[#E8EDFF]"
-                  : "bg-[#EDEDED]";
 
                 return (
                   <TableRow

@@ -95,7 +95,7 @@ export function PropertyManagePage() {
   const {
     data: preferredComplexes,
     isLoading: isPreferredComplexLoading,
-    refetch: refetchPreferredComplexes,
+    refetch: _refetchPreferredComplexes,
   } = useQuery({
     queryKey: ["preferredComplexes"],
     queryFn: fetchPreferredComplexList,
@@ -394,10 +394,6 @@ export function PropertyManagePage() {
     },
     [resetPropertySelection, selectedApartmentComplexId]
   );
-
-  const handleRefreshPreferredComplexes = useCallback(() => {
-    void refetchPreferredComplexes();
-  }, [refetchPreferredComplexes]);
 
   // 테이블 헤더 필터용 핸들러 (ALL 선택 시 undefined로 변환)
   const handleSelectManageTypeForTable = useCallback((value: string) => {
