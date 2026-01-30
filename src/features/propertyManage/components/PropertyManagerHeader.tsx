@@ -3,15 +3,12 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import type { DropdownOption } from "@/components/ui/dropdown-menu";
-import PlusIcon from "@/assets/Plus.svg";
 import { Search } from "lucide-react";
 import {
   InputGroup,
   InputGroupInput,
   InputGroupAddon,
 } from "@/components/ui/input-group";
-import { MainComplexModal } from "@/shared/components/MainComplexModal";
-import type { ComplexData } from "@/shared/types/complex";
 
 // 이미지 불러오기
 import RefreshIcon from "@/assets/Refresh.svg";
@@ -20,7 +17,6 @@ interface PropertyManagerHeaderProps {
   complexOptions: DropdownOption[];
   selectedComplexId?: number;
   onSelectComplex: (apartmentComplexId: number) => void;
-  onRefreshPreferredComplexes: () => void;
   isComplexLoading?: boolean;
   selectedRequestType?: string;
   onSelectRequestType?: (requestType: string | undefined) => void;
@@ -43,7 +39,6 @@ export function PropertyManagerHeader({
   complexOptions,
   selectedComplexId,
   onSelectComplex,
-  onRefreshPreferredComplexes,
   isComplexLoading = false,
   phoneNumber,
   onPhoneNumberChange,
@@ -54,7 +49,6 @@ export function PropertyManagerHeader({
   isSqmOrPyeong,
   onSqmOrPyeongChange,
 }: PropertyManagerHeaderProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [localPhoneNumber, setLocalPhoneNumber] = useState(phoneNumber || "");
   const [localDong, setLocalDong] = useState(dong || "");
   const [localHo, setLocalHo] = useState(ho || "");
@@ -119,30 +113,12 @@ export function PropertyManagerHeader({
     [onSelectComplex]
   );
 
-  const handleSaveComplexes = async (complexes: ComplexData[]) => {
-    console.log("Saving complexes:", complexes);
-    // TODO: 실제 API 호출
-    alert(`${complexes.length}개의 주거래 단지가 저장되었습니다.`);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    onRefreshPreferredComplexes();
-  };
-
   return (
     <>
       <PageHeader className="pb-11" title="매물장">
         <div className="flex w-full flex-col gap-2.5">
-          <div className="flex flex-row gap-3 justify-between">
+          <div className="flex justify-between gap-3">
             <div className="flex flex-row gap-3">
-              <Button
-                className="bg-[#1B1B1B]"
-                onClick={() => setIsModalOpen(true)}
-              >
-                <span className="text-white font-semibold">단지 추가</span>
-                <img src={PlusIcon} alt="plus" />
-              </Button>
               <DropdownMenu
                 className="w-67 font-semibold"
                 placeholder={
@@ -161,10 +137,6 @@ export function PropertyManagerHeader({
                 onChange={handleSelectComplex}
                 disabled={isComplexLoading || complexOptions.length === 0}
               />
-            </div>
-          </div>
-          <div className="flex justify-between gap-3">
-            <div className="flex flex-row gap-3">
               <InputGroup className="w-32 h-12">
                 <InputGroupAddon>
                   <InputGroupInput
@@ -214,12 +186,6 @@ export function PropertyManagerHeader({
           </div>
         </div>
       </PageHeader>
-
-      <MainComplexModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSave={handleSaveComplexes}
-      />
     </>
   );
 }

@@ -35,11 +35,11 @@ export function PropertyMemoBlock({
     undefined
   );
 
-  // 메모 조회
+  // 메모 조회 (카드 열기 시 API 호출 비활성화)
   const { data: memoData, isLoading: isMemoLoading } = useQuery({
     queryKey: ["memo", apartment?.apartmentId],
     queryFn: () => getMemoAPI(apartment!.apartmentId),
-    enabled: isOpen && !!apartment?.apartmentId,
+    enabled: false,
     retry: (failureCount, error: unknown) => {
       // 404 에러(메모 없음)는 재시도 안함
       if (error && typeof error === "object" && "response" in error) {
