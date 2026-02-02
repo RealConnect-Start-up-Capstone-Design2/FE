@@ -160,7 +160,7 @@ export function InquiryManageTable({
                     onClick={() => onInquiryClick?.(inquiry.inquiryId)}
                   >
                     {/* 관리 타입 */}
-                    <TableCell className="px-2 py-4">
+                    <TableCell className="px-2">
                       <div
                         className="flex items-center justify-center"
                         onClick={(e) => e.stopPropagation()}

@@ -626,10 +626,10 @@ export function PropertyManageTable({
                     </TableCell>
 
                     {/* 동 */}
-                    <TableCell>{apartment.dong}</TableCell>
+                    <TableCell>{apartment.dong}동</TableCell>
 
                     {/* 호수 */}
-                    <TableCell>{apartment.ho}</TableCell>
+                    <TableCell>{apartment.ho}호</TableCell>
 
                     {/* 타입 */}
                     <TableCell>{apartment.type}</TableCell>
@@ -656,13 +656,24 @@ export function PropertyManageTable({
                               apartment.property.contractJeonsePrice
                             )
                           : "-"
-                        : apartment.property?.occupancyStatus ===
-                            "MONTHLY_RENT"
-                          ? apartment.property?.contractDeposit != null ||
+                        : apartment.property?.occupancyStatus === "MONTHLY_RENT"
+                        ? apartment.property?.contractDeposit != null ||
+                          apartment.property?.contractMonthlyRent != null
+                          ? `${
+                              apartment.property?.contractDeposit != null
+                                ? formatPriceWithDecimal(
+                                    apartment.property.contractDeposit
+                                  )
+                                : "-"
+                            } / ${
                               apartment.property?.contractMonthlyRent != null
-                            ? `${apartment.property?.contractDeposit != null ? formatPriceWithDecimal(apartment.property.contractDeposit) : "-"} / ${apartment.property?.contractMonthlyRent != null ? formatPriceWithDecimal(apartment.property.contractMonthlyRent) : "-"}`
-                            : "-"
-                          : "-"}
+                                ? formatPriceWithDecimal(
+                                    apartment.property.contractMonthlyRent
+                                  )
+                                : "-"
+                            }`
+                          : "-"
+                        : "-"}
                     </TableCell>
 
                     {/* 만기일 */}
@@ -696,7 +707,15 @@ export function PropertyManageTable({
                     {/* 보증금/월세가 */}
                     <TableCell>
                       {depositValue || monthPriceValue
-                        ? `${depositValue ? formatPriceWithDecimal(depositValue) : "-"} / ${monthPriceValue ? formatPriceWithDecimal(monthPriceValue) : "-"}`
+                        ? `${
+                            depositValue
+                              ? formatPriceWithDecimal(depositValue)
+                              : "-"
+                          } / ${
+                            monthPriceValue
+                              ? formatPriceWithDecimal(monthPriceValue)
+                              : "-"
+                          }`
                         : "-"}
                     </TableCell>
 
