@@ -4,7 +4,7 @@ import type {
   ContractInfo,
   ContractInfoInput,
   ContractType,
-} from "../stores/contractStore";
+} from "../types";
 
 /**
  * 계약 정보 조회

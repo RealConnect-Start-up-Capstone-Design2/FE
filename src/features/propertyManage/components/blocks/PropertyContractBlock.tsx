@@ -6,13 +6,13 @@ import { ContractTypeToggle } from "../ContractTypeToggle";
 import { RentalContractForm } from "../RentalContractForm";
 import { MonthlyRentalContractForm } from "../MonthlyRentalContractForm";
 import { SaleContractForm } from "../SaleContractForm";
-import type { ApartmentWithProperty } from "../../stores/propertyStore";
+import type { ApartmentWithProperty } from "../../types";
 import type {
   ContractInfo,
   ContractInfoInput,
   ContractType,
-} from "../../stores/contractStore";
-import { DEFAULT_CONTRACT_TYPE } from "../../stores/contractStore";
+} from "../../types";
+import { DEFAULT_CONTRACT_TYPE } from "../../types";
 import {
   createContractAPI,
   getContractAPI,

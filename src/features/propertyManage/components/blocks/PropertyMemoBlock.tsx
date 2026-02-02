@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import type { ApartmentWithProperty } from "../../stores/propertyStore";
+import type { ApartmentWithProperty } from "../../types";
 import {
   getMemoAPI,
   createMemoAPI,

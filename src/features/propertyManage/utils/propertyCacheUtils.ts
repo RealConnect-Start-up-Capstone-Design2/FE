@@ -1,8 +1,5 @@
 import type { InfiniteData } from "@tanstack/react-query";
-import type {
-  ApartmentWithProperty,
-  PropertiesResponse,
-} from "../stores/propertyStore";
+import type { PropertiesResponse } from "../types";
 
 /**
  * useInfiniteQuery 형태인지 판별 (pages/pageParams 존재 여부로 확인)

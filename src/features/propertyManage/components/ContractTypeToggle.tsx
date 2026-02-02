@@ -1,5 +1,5 @@
 import { cn } from "@/shared/utils";
-import type { ContractType } from "../stores/contractStore";
+import type { ContractType } from "../types";
 
 interface ContractTypeToggleProps {
   value: ContractType;

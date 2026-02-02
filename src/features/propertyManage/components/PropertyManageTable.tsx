@@ -13,15 +13,16 @@ import type {
   ApartmentWithProperty,
   PropertiesResponse,
   ManageType,
-} from "../stores/propertyStore";
+} from "../types";
 import { useVirtualInfiniteScroll } from "@/shared/hooks";
 import { formatNumber, formatPhoneNumber } from "@/shared/utils";
 import { updatePropertyManage } from "../services/propertyService";
 import {
   requestTypeOptions,
   manageTypeFilterOptions,
+  occupancyStatusOptions,
   ESTIMATED_ROW_HEIGHT,
-} from "../constants/propertyConstants";
+} from "../types";
 import {
   isInfinitePropertiesData,
   isPropertiesResponse,
@@ -326,7 +327,11 @@ export function PropertyManageTable({
                     <TableCell>{apartment.type}</TableCell>
 
                     {/* 점유 상태 */}
-                    <TableCell>{property?.occupancyStatus || "-"}</TableCell>
+                    <TableCell>
+                      {occupancyStatusOptions.find(
+                        (opt) => opt.value === (property?.occupancyStatus ?? "NONE")
+                      )?.label || "-"}
+                    </TableCell>
 
                     {/* 기매입금 */}
                     <TableCell>

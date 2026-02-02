@@ -8,8 +8,8 @@ import {
 } from "@/components/ui";
 import { DropdownMenuCell } from "@/components/ui";
 import { TableHeaderFilter } from "@/components/ui";
-import type { Inquiry, InquiryStatus, ManageType } from "../types/inquiry";
-import { sqmToPyeong, formatArea, formatNumberWithComma } from "@/shared/utils";
+import type { Inquiry, InquiryStatus, ManageType, PropertyType, RequestType } from "../types/inquiry";
+import { sqmToPyeong, formatArea, formatNumber } from "@/shared/utils";
 import { Trash2 } from "lucide-react";
 import {
   REQUEST_TYPE_FILTER_OPTIONS,
@@ -18,7 +18,7 @@ import {
   PROPERTY_TYPE_LABELS,
   REQUEST_TYPE_LABELS,
   MANAGE_TYPE_OPTIONS,
-} from "../constants";
+} from "../types/enums";
 
 interface InquiryManageTableProps {
   inquiries: Inquiry[];
@@ -145,9 +145,10 @@ export function InquiryManageTable({
             ) : (
               inquiries.map((inquiry) => {
                 const isSelected = selectedInquiryId === inquiry.inquiryId;
-                const statusStyle = inquiry.inquiryStatus
-                  ? INQUIRY_STATUS_STYLES[inquiry.inquiryStatus]
-                  : INQUIRY_STATUS_STYLES.GENERAL;
+                const statusStyle =
+                  inquiry.inquiryStatus && inquiry.inquiryStatus in INQUIRY_STATUS_STYLES
+                    ? INQUIRY_STATUS_STYLES[inquiry.inquiryStatus as InquiryStatus]
+                    : INQUIRY_STATUS_STYLES.GENERAL;
 
                 return (
                   <TableRow
@@ -190,8 +191,9 @@ export function InquiryManageTable({
 
                     {/* 물건 종류 */}
                     <TableCell className="py-4">
-                      {PROPERTY_TYPE_LABELS[inquiry.propertyType] ||
-                        inquiry.propertyType}
+                      {inquiry.propertyType in PROPERTY_TYPE_LABELS
+                        ? PROPERTY_TYPE_LABELS[inquiry.propertyType as PropertyType]
+                        : inquiry.propertyType}
                     </TableCell>
 
                     {/* 지역(동) */}
@@ -228,9 +230,9 @@ export function InquiryManageTable({
                     <TableCell className="py-4">
                       <div className="flex items-center justify-center">
                         <span className="px-3 py-1.5 text-sm bg-[#EDEDED] rounded-md">
-                          {REQUEST_TYPE_LABELS[inquiry.requestType] ||
-                            inquiry.requestType ||
-                            "-"}
+                          {inquiry.requestType in REQUEST_TYPE_LABELS
+                            ? REQUEST_TYPE_LABELS[inquiry.requestType as RequestType]
+                            : inquiry.requestType || "-"}
                         </span>
                       </div>
                     </TableCell>
@@ -247,32 +249,32 @@ export function InquiryManageTable({
 
                     {/* 최소보증금 */}
                     <TableCell className="py-4">
-                      {formatNumberWithComma(inquiry.specs?.minDeposit)}
+                      {formatNumber(inquiry.specs?.minDeposit) || "-"}
                     </TableCell>
 
                     {/* 최대보증금 */}
                     <TableCell className="py-4">
-                      {formatNumberWithComma(inquiry.specs?.maxDeposit)}
+                      {formatNumber(inquiry.specs?.maxDeposit) || "-"}
                     </TableCell>
 
                     {/* 최소매매가 */}
                     <TableCell className="py-4">
-                      {formatNumberWithComma(inquiry.specs?.minSalePrice)}
+                      {formatNumber(inquiry.specs?.minSalePrice) || "-"}
                     </TableCell>
 
                     {/* 최대매매가 */}
                     <TableCell className="py-4">
-                      {formatNumberWithComma(inquiry.specs?.maxSalePrice)}
+                      {formatNumber(inquiry.specs?.maxSalePrice) || "-"}
                     </TableCell>
 
                     {/* 최소월세 */}
                     <TableCell className="py-4">
-                      {formatNumberWithComma(inquiry.specs?.minMonthlyPrice)}
+                      {formatNumber(inquiry.specs?.minMonthlyPrice) || "-"}
                     </TableCell>
 
                     {/* 최대월세 */}
                     <TableCell className="py-4">
-                      {formatNumberWithComma(inquiry.specs?.maxMonthlyPrice)}
+                      {formatNumber(inquiry.specs?.maxMonthlyPrice) || "-"}
                     </TableCell>
 
                     {/* 문의자 */}

@@ -1,5 +1,5 @@
 import { Label } from "@/components/ui/label";
-import type { ApartmentWithProperty } from "../../stores/propertyStore";
+import type { ApartmentWithProperty } from "../../types";
 
 interface Props {
   apartment?: ApartmentWithProperty;

@@ -3,8 +3,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
   cn,
-  formatNumberWithComma,
-  parseNumberWithComma,
+  formatNumber,
+  parseNumber,
 } from "@/shared/utils";
 
 interface ContractFieldProps {
@@ -33,13 +33,13 @@ export function ContractField({
 }: ContractFieldProps) {
   // number 타입일 때만 로컬 상태로 포맷팅 처리
   const [localValue, setLocalValue] = useState<string>(() =>
-    type === "number" ? formatNumberWithComma(value) : String(value || "")
+    type === "number" ? (formatNumber(Number(value)) || "") : String(value || "")
   );
 
   // 외부에서 value가 변경되면 로컬 상태 동기화
   useEffect(() => {
     if (type === "number") {
-      setLocalValue(formatNumberWithComma(value));
+      setLocalValue(formatNumber(Number(value)) || "");
     } else {
       setLocalValue(String(value || ""));
     }
@@ -52,7 +52,7 @@ export function ContractField({
       setLocalValue(sanitized);
 
       // 실제 숫자 값으로 변환하여 onChange 호출
-      const parsed = parseNumberWithComma(sanitized);
+      const parsed = parseNumber(sanitized);
       if (parsed !== undefined) {
         onChange(String(parsed));
       } else if (sanitized === "") {
@@ -67,7 +67,7 @@ export function ContractField({
   const handleBlur = () => {
     if (type === "number") {
       // blur 시 포맷팅 재적용
-      setLocalValue(formatNumberWithComma(value));
+      setLocalValue(formatNumber(Number(value)) || "");
     }
   };
 

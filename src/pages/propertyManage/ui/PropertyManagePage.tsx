@@ -28,7 +28,7 @@ import type {
   ManageType,
   RequestType,
   PropertyStatus,
-} from "@/features/propertyManage/stores/propertyStore";
+} from "@/features/propertyManage/types";
 import type { DropdownOption } from "@/components/ui/dropdown-menu";
 import {
   usePropertyFilter,
@@ -77,13 +77,13 @@ export function PropertyManagePage() {
   const [selectedRequestType, setSelectedRequestType] = useState<
     string | undefined
   >();
-  const [selectedPropertyStatus, setSelectedPropertyStatus] = useState<
+  const [selectedPropertyStatus, _setSelectedPropertyStatus] = useState<
     string | undefined
   >();
   const [selectedManageType, setSelectedManageType] = useState<
     string | undefined
   >();
-  const [selectedArea, setSelectedArea] = useState<string | undefined>();
+  const [selectedArea, _setSelectedArea] = useState<string | undefined>();
   const [areaList, setAreaList] = useState<number[]>([]);
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [dong, setDong] = useState<string>("");

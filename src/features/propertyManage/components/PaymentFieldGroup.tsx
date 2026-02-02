@@ -1,5 +1,5 @@
 import { ContractField } from "./ContractField";
-import type { ContractInfo } from "../stores/contractStore";
+import type { ContractInfo } from "../types";
 
 interface PaymentFieldGroupProps {
   amountLabel: string;

@@ -1,7 +1,7 @@
 import { ContractField } from "./ContractField";
 import { ContractSection } from "./ContractSection";
 import { PaymentFieldGroup } from "./PaymentFieldGroup";
-import type { ContractInfo } from "../stores/contractStore";
+import type { ContractInfo } from "../types";
 
 interface RentalContractFormProps {
   contract: ContractInfo | null;

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { ApartmentWithProperty } from "../stores/propertyStore";
+import type { ApartmentWithProperty } from "../types";
 
 interface UsePropertySidebarParams {
   apartments: ApartmentWithProperty[];

@@ -8,7 +8,7 @@ import type {
   PropertyStatus,
   RequestType,
   ManageType,
-} from "../stores/propertyStore";
+} from "../types";
 
 export interface PropertyMutationPayload {
   apartmentId: number;
@@ -39,7 +39,7 @@ export interface PropertyMutationPayload {
  * @returns 아파트 목록 + 페이지네이션 정보
  */
 export const fetchProperties = async (
-  params: PropertiesQueryParams
+  params: PropertiesQueryParams,
 ): Promise<PropertiesResponse> => {
   const response = await apiClient.get<PropertiesResponse>("/api/properties", {
     params: {
@@ -65,7 +65,7 @@ interface PropertiesPhoneQueryParams {
 }
 
 export const fetchPropertiesByPhone = async (
-  params: PropertiesPhoneQueryParams
+  params: PropertiesPhoneQueryParams,
 ): Promise<PropertiesResponse> => {
   const response = await apiClient.get<PropertiesResponse>(
     "/api/properties/phone",
@@ -76,7 +76,7 @@ export const fetchPropertiesByPhone = async (
         size: params.size || 30,
         phone: params.phone,
       },
-    }
+    },
   );
   return response.data;
 };
@@ -86,10 +86,10 @@ export const fetchPropertiesByPhone = async (
  * GET /api/properties/:apartmentId
  */
 export const fetchApartmentById = async (
-  apartmentId: number
+  apartmentId: number,
 ): Promise<ApartmentWithProperty> => {
   const response = await apiClient.get<ApartmentWithProperty>(
-    `/api/properties/${apartmentId}`
+    `/api/properties/${apartmentId}`,
   );
   return response.data;
 };
@@ -101,7 +101,7 @@ export const fetchApartmentById = async (
  * @returns 총 아파트 수
  */
 export const fetchTotalApartmentCount = async (
-  apartmentComplexId: number
+  apartmentComplexId: number,
 ): Promise<number> => {
   const response = await apiClient.get<{ totalCount: number }>(
     `/api/apartment-complex/totalCnt`,
@@ -109,7 +109,7 @@ export const fetchTotalApartmentCount = async (
       params: {
         apartmentComplexId,
       },
-    }
+    },
   );
   return response.data.totalCount;
 };
@@ -119,7 +119,7 @@ export const fetchTotalApartmentCount = async (
  * GET /memo?apartmentId={apartmentId}
  */
 export const getMemoAPI = async (
-  apartmentId: number
+  apartmentId: number,
 ): Promise<{ apartmentId: number; content: string }> => {
   const response = await apiClient.get<{
     apartmentId: number;
@@ -136,7 +136,7 @@ export const getMemoAPI = async (
  */
 export const createMemoAPI = async (
   apartmentId: number,
-  content: string
+  content: string,
 ): Promise<{ apartmentId: number; content: string }> => {
   const response = await apiClient.post<{
     apartmentId: number;
@@ -151,7 +151,7 @@ export const createMemoAPI = async (
  */
 export const updateMemoAPI = async (
   apartmentId: number,
-  content: string
+  content: string,
 ): Promise<{ apartmentId: number; content: string }> => {
   const response = await apiClient.put<{
     apartmentId: number;
@@ -165,7 +165,7 @@ export const updateMemoAPI = async (
  * PUT /api/properties
  */
 export const updatePropertyAPI = async (
-  data: PropertyMutationPayload
+  data: PropertyMutationPayload,
 ): Promise<{
   propertyStatus: string;
   requestType: string;
@@ -187,7 +187,7 @@ export const updatePropertyAPI = async (
  * POST /api/properties
  */
 export const createPropertyAPI = async (
-  data: PropertyMutationPayload
+  data: PropertyMutationPayload,
 ): Promise<{
   propertyStatus: string;
   requestType: string;
@@ -210,11 +210,11 @@ export const createPropertyAPI = async (
  */
 export const toggleFavoriteAPI = async (
   apartmentId: number,
-  isFavorite: boolean
+  isFavorite: boolean,
 ): Promise<{ apartmentId: number; isFavorite: boolean }> => {
   const response = await apiClient.patch(
     `/api/properties/${apartmentId}/favorite`,
-    { isFavorite }
+    { isFavorite },
   );
   return response.data;
 };
@@ -224,7 +224,7 @@ export const toggleFavoriteAPI = async (
  */
 const mapApiResponseToApartment = (
   apiData: PropertyApiResponse,
-  apartmentName?: string
+  apartmentName?: string,
 ): ApartmentWithProperty => {
   return {
     apartmentId: apiData.apartmentId,
@@ -262,7 +262,7 @@ const mapApiResponseToApartment = (
  * GET /api/property
  */
 export const fetchPropertyList = async (
-  params: PropertiesQueryParams
+  params: PropertiesQueryParams,
 ): Promise<PropertiesResponse> => {
   const response = await apiClient.get<PropertiesApiResponse>("/api/property", {
     params: {
@@ -281,7 +281,7 @@ export const fetchPropertyList = async (
   // API 응답을 내부 타입으로 변환
   return {
     content: response.data.content.map((item) =>
-      mapApiResponseToApartment(item)
+      mapApiResponseToApartment(item),
     ),
     nextCursor: response.data.nextCursor,
     hasNext: response.data.hasNext,
@@ -294,11 +294,10 @@ export const fetchPropertyList = async (
  */
 export const updatePropertyManage = async (
   apartmentId: number,
-  manageType: ManageType
+  manageType: ManageType,
 ): Promise<{ apartmentId: number; manageType: ManageType }> => {
-  const response = await apiClient.post(
-    `/api/property/manage/${apartmentId}`,
-    { manageType }
-  );
+  const response = await apiClient.post(`/api/property/manage/${apartmentId}`, {
+    manageType,
+  });
   return response.data;
 };
