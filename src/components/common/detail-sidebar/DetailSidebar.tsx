@@ -1,3 +1,4 @@
+// TODO: 삭제 예정
 import { cn } from "@/shared/utils";
 import type { PropsWithChildren, ReactNode } from "react";
 
@@ -18,15 +19,15 @@ export function DetailSidebar({
       className={cn(
         "flex h-full w-full flex-col bg-white shadow-xl",
         "border-l border-gray-200",
-        className
+        className,
       )}
     >
       {header}
 
       <div
         className={cn(
-          "flex-1 overflow-y-auto p-3 flex flex-col gap-3",
-          contentClassName
+          "flex-1 overflow-y-auto flex flex-col gap-3",
+          contentClassName,
         )}
       >
         {children}
