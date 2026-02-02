@@ -15,7 +15,7 @@ import type {
   ManageType,
 } from "../stores/propertyStore";
 import { useVirtualInfiniteScroll } from "@/shared/hooks";
-import { formatPrice, formatPhoneNumber } from "@/shared/utils";
+import { formatNumber, formatPhoneNumber } from "@/shared/utils";
 import { updatePropertyManage } from "../services/propertyService";
 import {
   requestTypeOptions,
@@ -128,9 +128,11 @@ export function PropertyManageTable({
   // 셀 클릭 핸들러
   const handleCellClick = useCallback(
     (apartmentId: number, fieldKey: PropertyFieldKey) => {
-      const apartment = apartments.find((apt) => apt.apartmentId === apartmentId);
+      const apartment = apartments.find(
+        (apt) => apt.apartmentId === apartmentId
+      );
       const currentValue = apartment?.property?.[fieldKey];
-      
+
       onCellClick?.({
         rowId: apartmentId,
         fieldKey,
@@ -280,7 +282,7 @@ export function PropertyManageTable({
                   >
                     {/* 즐겨찾기 */}
                     <TableCell className="px-2">
-                      <div 
+                      <div
                         className="flex items-center justify-center"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -324,14 +326,12 @@ export function PropertyManageTable({
                     <TableCell>{apartment.type}</TableCell>
 
                     {/* 점유 상태 */}
-                    <TableCell>
-                      {property?.occupancyStatus || "-"}
-                    </TableCell>
+                    <TableCell>{property?.occupancyStatus || "-"}</TableCell>
 
                     {/* 기매입금 */}
                     <TableCell>
                       {property?.contractSalePrice != null
-                        ? formatPrice(property.contractSalePrice)
+                        ? formatNumber(property.contractSalePrice)
                         : "-"}
                     </TableCell>
 
@@ -339,18 +339,18 @@ export function PropertyManageTable({
                     <TableCell>
                       {property?.occupancyStatus === "JEONSE"
                         ? property?.contractJeonsePrice != null
-                          ? formatPrice(property.contractJeonsePrice)
+                          ? formatNumber(property.contractJeonsePrice)
                           : "-"
                         : property?.occupancyStatus === "MONTHLY_RENT"
                         ? property?.contractDeposit != null ||
                           property?.contractMonthlyRent != null
                           ? `${
                               property?.contractDeposit != null
-                                ? formatPrice(property.contractDeposit)
+                                ? formatNumber(property.contractDeposit)
                                 : "-"
                             } / ${
                               property?.contractMonthlyRent != null
-                                ? formatPrice(property.contractMonthlyRent)
+                                ? formatNumber(property.contractMonthlyRent)
                                 : "-"
                             }`
                           : "-"
@@ -358,15 +358,12 @@ export function PropertyManageTable({
                     </TableCell>
 
                     {/* 만기일 */}
-                    <TableCell>
-                      {property?.expireDate || "-"}
-                    </TableCell>
+                    <TableCell>{property?.expireDate || "-"}</TableCell>
 
                     {/* 의뢰 유형 */}
                     <TableCell>
                       {requestTypeOptions.find(
-                        (opt) =>
-                          opt.value === (property?.requestType ?? "NONE")
+                        (opt) => opt.value === (property?.requestType ?? "NONE")
                       )?.label || "-"}
                     </TableCell>
 
@@ -379,7 +376,7 @@ export function PropertyManageTable({
                       className="cursor-pointer hover:bg-blue-50"
                     >
                       {property?.salePrice
-                        ? formatPrice(property.salePrice)
+                        ? formatNumber(property.salePrice)
                         : "-"}
                     </TableCell>
 
@@ -392,7 +389,7 @@ export function PropertyManageTable({
                       className="cursor-pointer hover:bg-blue-50"
                     >
                       {property?.jeonsePrice
-                        ? formatPrice(property.jeonsePrice)
+                        ? formatNumber(property.jeonsePrice)
                         : "-"}
                     </TableCell>
 
@@ -407,11 +404,11 @@ export function PropertyManageTable({
                       {property?.deposit || property?.monthPrice
                         ? `${
                             property?.deposit
-                              ? formatPrice(property.deposit)
+                              ? formatNumber(property.deposit)
                               : "-"
                           } / ${
                             property?.monthPrice
-                              ? formatPrice(property.monthPrice)
+                              ? formatNumber(property.monthPrice)
                               : "-"
                           }`
                         : "-"}
@@ -442,7 +439,8 @@ export function PropertyManageTable({
                       className="cursor-pointer hover:bg-blue-50"
                     >
                       {property?.ownerPhone
-                        ? formatPhoneNumber(property.ownerPhone) || property.ownerPhone
+                        ? formatPhoneNumber(property.ownerPhone) ||
+                          property.ownerPhone
                         : "-"}
                     </TableCell>
                   </TableRow>
