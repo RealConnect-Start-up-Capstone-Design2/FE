@@ -275,8 +275,34 @@ export function InquiryManagePage() {
       sidebarRef={sidebarRef}
       sidebar={
         <DetailSidebar
-          title={detailSidebarTitle}
-          onClose={() => closeSidebar(true)}
+          header={
+            // TODO: InquirySidebarHeader 컴포넌트로 교체 예정
+            <div className="flex items-center justify-between gap-4 border-b border-gray-200 px-6 py-4">
+              <h2 className="truncate text-xl font-semibold text-gray-900">
+                {detailSidebarTitle}
+              </h2>
+              <button
+                type="button"
+                onClick={() => closeSidebar(true)}
+                className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                aria-label="사이드바 닫기"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          }
         >
           {/* 사이드바 내부 blocks는 추후 구현 예정 */}
           <div className="flex items-center justify-center h-full text-gray-400">

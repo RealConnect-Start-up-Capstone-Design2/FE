@@ -5,15 +5,11 @@ import {
   PropertyManageTable,
 } from "@/features/propertyManage";
 import {
-  DetailSidebar,
   SlidingSidebarLayout,
 } from "@/components/common/detail-sidebar";
 
-// 사이드바에 들어가는 블록들
-import { PropertyMemoBlock } from "@/features/propertyManage/components/blocks/PropertyMemoBlock";
-import { PropertyContractBlock } from "@/features/propertyManage/components/blocks/PropertyContractBlock";
-// 평면도 블록은 추후에 들어오면 주석 해제 예정
-// import { PropertyFloorPlanBlock } from "@/features/propertyManage/components/blocks/PropertyFloorPlanBlock";
+// 사이드바 컴포넌트
+import { PropertySidebar } from "@/features/propertyManage/components/sidebar";
 
 // 서버에서 가져오는 데이터
 import {
@@ -265,7 +261,6 @@ export function PropertyManagePage() {
     selectedPropertyId,
     displayedPropertyId,
     isSidebarOpen,
-    autoSaveToken,
     handlePropertyClick,
     handleToggleSidebar,
     handleExternalClick,
@@ -304,27 +299,6 @@ export function PropertyManagePage() {
   const selectedApartment = filteredAndSortedApartments.find(
     (apt) => apt.apartmentId === displayedPropertyId
   );
-
-  // 매물 상세 사이드바 title 구성
-  const detailSidebarTitle = useMemo(() => {
-    if (!selectedApartment) {
-      return "매물 상세 정보";
-    }
-
-    const { apartmentName, dong, ho, area, type } = selectedApartment;
-    const dongHo = [dong, ho].filter(Boolean).join("-");
-    const areaStr =
-      typeof area === "number" && Number.isFinite(area)
-        ? area.toFixed(2).replace(/\.?0+$/, "")
-        : "";
-
-    const title = [apartmentName, dongHo, areaStr, type]
-      .map((v) => (typeof v === "string" ? v.trim() : ""))
-      .filter(Boolean)
-      .join(" ");
-
-    return title || "매물 상세 정보";
-  }, [selectedApartment]);
 
   useEffect(() => {
     const handleDocumentMouseDown = (event: MouseEvent) => {
@@ -424,23 +398,16 @@ export function PropertyManagePage() {
       onToggle={handleToggleSidebar}
       sidebarRef={sidebarRef}
       sidebar={
-        <DetailSidebar
-          title={detailSidebarTitle}
+        <PropertySidebar
+          apartment={selectedApartment}
           onClose={() => closeSidebar(true)}
-        >
-          <PropertyMemoBlock
-            apartment={selectedApartment}
-            isOpen={isSidebarOpen}
-            autoSaveToken={autoSaveToken}
-          />
-          <PropertyContractBlock
-            apartment={selectedApartment}
-            isOpen={isSidebarOpen}
-            autoSaveToken={autoSaveToken}
-          />
-          {/* 평면도는 아직 안 보여줄 예정 - 추후 평면도 들어오면 주석 해제하기 */}
-          {/* <PropertyFloorPlanBlock apartment={selectedApartment} /> */}
-        </DetailSidebar>
+          isOpen={isSidebarOpen}
+          onCancel={() => closeSidebar(true)}
+          onSave={() => {
+            // TODO: 저장 로직 구현
+            closeSidebar(true);
+          }}
+        />
       }
     >
       <div className="flex flex-col gap-6 h-full">
