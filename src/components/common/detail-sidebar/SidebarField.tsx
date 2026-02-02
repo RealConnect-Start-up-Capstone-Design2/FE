@@ -64,14 +64,14 @@ export function SidebarField({
       className={cn(
         "flex",
         isRow ? "flex-row items-center gap-2" : "flex-col gap-[5px]",
-        className
+        className,
       )}
     >
       {/* 라벨 */}
       <label
         className={cn(
           "text-[13px] font-medium tracking-[-0.025em] text-[#8D8D8D]",
-          isRow && "flex-shrink-0"
+          isRow && "flex-shrink-0",
         )}
         style={isRow ? { width: labelWidth } : undefined}
       >
@@ -97,9 +97,9 @@ export function SidebarField({
 export const sidebarInputClassName = cn(
   "w-full h-[34px] px-2 rounded-md",
   "bg-[#FFFFFF] border border-[rgba(177,182,199,0.4)]",
-  "text-[15px] font-medium tracking-[-0.025em] text-[#8D8D8D]",
+  "text-[15px] font-medium tracking-[-0.025em] text-[#1C2882]",
   "placeholder:text-[#B1B6C7]",
-  "focus:outline-none focus:ring-1 focus:ring-[#8D8D8D]"
+  "focus:outline-none focus:ring-1 focus:ring-[#8D8D8D]",
 );
 
 /**
@@ -110,5 +110,5 @@ export const sidebarSelectClassName = cn(
   "bg-white border border-[rgba(177,182,199,0.4)]",
   "text-[15px] font-medium tracking-[-0.025em] text-[#8D8D8D]",
   "focus:outline-none focus:ring-1 focus:ring-[#8D8D8D]",
-  "appearance-none cursor-pointer"
+  "appearance-none cursor-pointer",
 );

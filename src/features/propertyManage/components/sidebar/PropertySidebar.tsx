@@ -66,7 +66,7 @@ export function PropertySidebar({
 
     const observer = new IntersectionObserver(
       observerCallback,
-      observerOptions
+      observerOptions,
     );
 
     const sections = [
@@ -100,7 +100,7 @@ export function PropertySidebar({
 
       <div
         ref={contentRef}
-        className="flex-1 overflow-y-auto flex flex-col gap-3"
+        className="flex-1 overflow-y-auto p-3 flex flex-col gap-3"
       >
         <div id="consultation" ref={consultationRef}>
           <CustomerConsultationBlock apartment={apartment} isOpen={isOpen} />

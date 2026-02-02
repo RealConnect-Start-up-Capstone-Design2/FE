@@ -68,7 +68,7 @@ export function PropertyManageTable({
   // 외부에서 받은 데이터 사용
   const apartments = useMemo(
     () => externalApartments || [],
-    [externalApartments]
+    [externalApartments],
   );
   const isLoading = externalIsLoading ?? false;
 
@@ -123,14 +123,14 @@ export function PropertyManageTable({
         alert("즐겨찾기 업데이트에 실패했습니다.");
       }
     },
-    [queryClient]
+    [queryClient],
   );
 
   // 셀 클릭 핸들러
   const handleCellClick = useCallback(
     (apartmentId: number, fieldKey: PropertyFieldKey) => {
       const apartment = apartments.find(
-        (apt) => apt.apartmentId === apartmentId
+        (apt) => apt.apartmentId === apartmentId,
       );
       const currentValue = apartment?.property?.[fieldKey];
 
@@ -140,7 +140,7 @@ export function PropertyManageTable({
         currentValue,
       });
     },
-    [apartments, onCellClick]
+    [apartments, onCellClick],
   );
 
   // 가상 스크롤 + 무한 스크롤
@@ -305,7 +305,7 @@ export function PropertyManageTable({
                           onChange={(value) => {
                             handleManageTypeChange(
                               apartment.apartmentId,
-                              value as ManageType
+                              value as ManageType,
                             );
                           }}
                           hideLabel={true}
@@ -329,7 +329,8 @@ export function PropertyManageTable({
                     {/* 점유 상태 */}
                     <TableCell>
                       {occupancyStatusOptions.find(
-                        (opt) => opt.value === (property?.occupancyStatus ?? "NONE")
+                        (opt) =>
+                          opt.value === (property?.occupancyStatus ?? "NONE"),
                       )?.label || "-"}
                     </TableCell>
 
@@ -342,24 +343,34 @@ export function PropertyManageTable({
 
                     {/* 현임차 */}
                     <TableCell>
-                      {property?.occupancyStatus === "JEONSE"
-                        ? property?.contractJeonsePrice != null
-                          ? formatNumber(property.contractJeonsePrice)
-                          : "-"
-                        : property?.occupancyStatus === "MONTHLY_RENT"
-                        ? property?.contractDeposit != null ||
-                          property?.contractMonthlyRent != null
-                          ? `${
-                              property?.contractDeposit != null
+                      {property?.occupancyStatus === "JEONSE" ? (
+                        property?.contractJeonsePrice != null ? (
+                          formatNumber(property.contractJeonsePrice)
+                        ) : (
+                          "-"
+                        )
+                      ) : property?.occupancyStatus === "MONTHLY_RENT" ? (
+                        property?.contractDeposit != null ||
+                        property?.contractMonthlyRent != null ? (
+                          <span className="flex flex-col">
+                            <span>
+                              {property?.contractDeposit != null
                                 ? formatNumber(property.contractDeposit)
-                                : "-"
-                            } / ${
-                              property?.contractMonthlyRent != null
+                                : "-"}{" "}
+                              /
+                            </span>
+                            <span>
+                              {property?.contractMonthlyRent != null
                                 ? formatNumber(property.contractMonthlyRent)
-                                : "-"
-                            }`
-                          : "-"
-                        : "-"}
+                                : "-"}
+                            </span>
+                          </span>
+                        ) : (
+                          "-"
+                        )
+                      ) : (
+                        "-"
+                      )}
                     </TableCell>
 
                     {/* 만기일 */}
@@ -368,7 +379,8 @@ export function PropertyManageTable({
                     {/* 의뢰 유형 */}
                     <TableCell>
                       {requestTypeOptions.find(
-                        (opt) => opt.value === (property?.requestType ?? "NONE")
+                        (opt) =>
+                          opt.value === (property?.requestType ?? "NONE"),
                       )?.label || "-"}
                     </TableCell>
 
@@ -406,17 +418,23 @@ export function PropertyManageTable({
                       }}
                       className="cursor-pointer hover:bg-blue-50"
                     >
-                      {property?.deposit || property?.monthPrice
-                        ? `${
-                            property?.deposit
+                      {property?.deposit || property?.monthPrice ? (
+                        <span className="flex flex-col">
+                          <span>
+                            {property?.deposit
                               ? formatNumber(property.deposit)
-                              : "-"
-                          } / ${
-                            property?.monthPrice
+                              : "-"}{" "}
+                            /
+                          </span>
+                          <span>
+                            {property?.monthPrice
                               ? formatNumber(property.monthPrice)
-                              : "-"
-                          }`
-                        : "-"}
+                              : "-"}
+                          </span>
+                        </span>
+                      ) : (
+                        "-"
+                      )}
                     </TableCell>
 
                     {/* 의뢰 등록일 */}

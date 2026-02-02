@@ -23,15 +23,6 @@ interface SidebarBlockProps extends PropsWithChildren {
 
 /**
  * 사이드바 블록 레이아웃 컴포넌트
- *
- * 디자인 스펙:
- * - 배경: #F8F8F8
- * - borderRadius: 8px
- * - boxShadow: 0px 0px 8px 0px rgba(177, 182, 199, 0.4)
- * - 제목: 18px, 600, #1B1B1B
- * - 태그: 12px, 500, #515151, 배경 #EBEBEB, border #515151
- * - 구분선: rgba(177, 182, 199, 0.4)
- *
  * @example
  * <SidebarBlock title="고객 상담 내역">
  *   <p>내용</p>
@@ -58,7 +49,7 @@ export function SidebarBlock({
       className={cn(
         "rounded-lg bg-[#F8F8F8] shadow-[0px_0px_8px_0px_rgba(177,182,199,0.4)]",
         "px-[18px] pt-5 pb-5",
-        className
+        className,
       )}
     >
       {/* 제목 영역 */}
