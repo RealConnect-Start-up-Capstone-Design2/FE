@@ -400,21 +400,6 @@ export function PropertyManagePage() {
     setSelectedManageType(value === "ALL" ? undefined : value);
   }, []);
 
-  // 테이블 헤더 필터용 핸들러 (ALL 선택 시 undefined로 변환)
-  const handleSelectAreaForTable = useCallback((value: string) => {
-    setSelectedArea(value === "ALL" ? undefined : value);
-  }, []);
-
-  // 동일하게 의뢰 유형에 대한 필터 핸들러
-  const handleSelectRequestTypeForTable = useCallback((value: string) => {
-    setSelectedRequestType(value === "NONE" ? undefined : value);
-  }, []);
-
-  // 동일하게 매물 상태에 대한 필터 핸들러
-  const handleSelectPropertyStatusForTable = useCallback((value: string) => {
-    setSelectedPropertyStatus(value === "NONE" ? undefined : value);
-  }, []);
-
   // ㎡ 형식과 평 형식 변환 핸들러
   const handleSqmOrPyeongChange = useCallback(() => {
     setIsSqmOrPyeong((prev) => (prev === "sqm" ? "pyeong" : "sqm"));
@@ -488,14 +473,6 @@ export function PropertyManagePage() {
             hasActiveFilters={hasActiveFilters}
             selectedManageType={selectedManageType}
             onSelectManageType={handleSelectManageTypeForTable}
-            areaOptions={areaOptions}
-            selectedArea={selectedArea}
-            onSelectArea={handleSelectAreaForTable}
-            selectedRequestType={selectedRequestType}
-            onSelectRequestType={handleSelectRequestTypeForTable}
-            selectedPropertyStatus={selectedPropertyStatus}
-            onSelectPropertyStatus={handleSelectPropertyStatusForTable}
-            isSqmOrPyeong={isSqmOrPyeong}
           />
         </div>
       </div>
