@@ -46,13 +46,17 @@ export function ContractInfoBlock({
             ]}
           />
         </SidebarField>
-        <SidebarField label="기매입금" suffix="만원">
-          <input
-            type="text"
-            className={sidebarInputClassName}
-            placeholder="0"
-          />
-        </SidebarField>
+        <div className="flex flex-row gap-4">
+          <SidebarField label="기매입금" suffix="만원">
+            <input
+              type="text"
+              className={sidebarInputClassName}
+              placeholder="0"
+            />
+          </SidebarField>
+          {/* 절반만 차지하게끔 해놓는 용도 */}
+          <div></div>
+        </div>
         <div className="flex flex-row gap-4">
           <SidebarField label="융자금" suffix="만원">
             <input

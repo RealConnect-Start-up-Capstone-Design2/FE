@@ -32,7 +32,7 @@ export function CustomerConsultationBlock({
   return (
     <SidebarBlock title="고객 상담 내역">
       <div className="flex flex-col gap-3">
-        <div className="flex flex-row gap-8">
+        <div className="flex flex-row gap-4">
           <SidebarField label="소유자" direction="row">
             <input type="text" className={sidebarInputClassName} />
           </SidebarField>
@@ -40,7 +40,7 @@ export function CustomerConsultationBlock({
             <input type="text" className={sidebarInputClassName} />
           </SidebarField>
         </div>
-        <div className="flex flex-row gap-8">
+        <div className="flex flex-row gap-4">
           <SidebarField label="임차인" direction="row">
             <input type="text" className={sidebarInputClassName} />
           </SidebarField>
@@ -48,7 +48,7 @@ export function CustomerConsultationBlock({
             <input type="text" className={sidebarInputClassName} />
           </SidebarField>
         </div>
-        <div className="flex flex-row gap-8">
+        <div className="flex flex-row gap-4">
           <SidebarField label="기타" direction="row">
             <input type="text" className={sidebarInputClassName} />
           </SidebarField>

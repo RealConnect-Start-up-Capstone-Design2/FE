@@ -63,15 +63,15 @@ export function SidebarField({
     <div
       className={cn(
         "flex",
-        isRow ? "flex-row items-center gap-2" : "flex-col gap-[5px]",
+        isRow ? "flex-1 flex-row items-center gap-2" : "flex-col gap-[5px]",
         className,
       )}
     >
       {/* 라벨 */}
       <label
         className={cn(
-          "text-[13px] font-medium tracking-[-0.025em] text-[#8D8D8D]",
-          isRow && "flex-shrink-0",
+          "flex text-[13px] font-medium tracking-[-0.025em] text-[#8D8D8D]",
+          isRow && "flex-shrink-0 justify-center",
         )}
         style={isRow ? { width: labelWidth } : undefined}
       >
@@ -80,9 +80,9 @@ export function SidebarField({
 
       {/* input + suffix 영역 */}
       <div className="flex items-center gap-[6px]">
-        <div>{children}</div>
+        <div className="flex-1 min-w-0">{children}</div>
         {suffix && (
-          <span className="text-[13px] font-normal text-[#8D8D8D]">
+          <span className="flex text-[13px] font-normal text-[#8D8D8D]">
             {suffix}
           </span>
         )}
@@ -95,7 +95,7 @@ export function SidebarField({
  * 사이드바 필드용 기본 Input 스타일
  */
 export const sidebarInputClassName = cn(
-  "max-w-45 h-[34px] px-2 rounded-md",
+  "w-full h-[34px] px-2 rounded-md",
   "bg-[#FFFFFF] border border-[rgba(177,182,199,0.4)]",
   "text-[13px] font-medium tracking-[-0.025em] text-[#1C2882]",
   "placeholder:text-[#B1B6C7]",
