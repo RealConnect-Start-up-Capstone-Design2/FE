@@ -17,12 +17,7 @@ import type {
 import { useVirtualInfiniteScroll } from "@/shared/hooks";
 import { formatNumber, formatPhoneNumber } from "@/shared/utils";
 import { updatePropertyManage } from "../services/propertyService";
-import {
-  requestTypeOptions,
-  manageTypeFilterOptions,
-  occupancyStatusOptions,
-  ESTIMATED_ROW_HEIGHT,
-} from "../types";
+import { manageTypeFilterOptions, ESTIMATED_ROW_HEIGHT } from "../types";
 import {
   isInfinitePropertiesData,
   isPropertiesResponse,
@@ -30,6 +25,8 @@ import {
 import type { PropertyFieldKey } from "../types/property";
 import { TableHeaderFilter } from "@/components/ui";
 import type { CellClickHandler } from "@/shared/types";
+import { OccupancyStatusTag } from "./OccupancyStatusTag";
+import { RequestTypeTag } from "./RequestTypeTag";
 
 // 이미지 불러오기
 import UnfilledStar from "@/assets/UnfilledStar.svg";
@@ -328,10 +325,7 @@ export function PropertyManageTable({
 
                     {/* 점유 상태 */}
                     <TableCell>
-                      {occupancyStatusOptions.find(
-                        (opt) =>
-                          opt.value === (property?.occupancyStatus ?? "NONE"),
-                      )?.label || "-"}
+                      <OccupancyStatusTag status={property?.occupancyStatus} />
                     </TableCell>
 
                     {/* 기매입금 */}
@@ -378,10 +372,7 @@ export function PropertyManageTable({
 
                     {/* 의뢰 유형 */}
                     <TableCell>
-                      {requestTypeOptions.find(
-                        (opt) =>
-                          opt.value === (property?.requestType ?? "NONE"),
-                      )?.label || "-"}
+                      <RequestTypeTag type={property?.requestType} />
                     </TableCell>
 
                     {/* 매도가 */}
