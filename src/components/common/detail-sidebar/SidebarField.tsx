@@ -79,10 +79,10 @@ export function SidebarField({
       </label>
 
       {/* input + suffix 영역 */}
-      <div className="flex flex-1 items-center gap-[6px]">
-        <div className="flex-1">{children}</div>
+      <div className="flex items-center gap-[6px]">
+        <div>{children}</div>
         {suffix && (
-          <span className="flex-shrink-0 text-[13px] font-normal tracking-[-0.025em] text-[#8D8D8D]">
+          <span className="text-[13px] font-normal text-[#8D8D8D]">
             {suffix}
           </span>
         )}
@@ -95,9 +95,9 @@ export function SidebarField({
  * 사이드바 필드용 기본 Input 스타일
  */
 export const sidebarInputClassName = cn(
-  "w-full h-[34px] px-2 rounded-md",
+  "max-w-45 h-[34px] px-2 rounded-md",
   "bg-[#FFFFFF] border border-[rgba(177,182,199,0.4)]",
-  "text-[15px] font-medium tracking-[-0.025em] text-[#1C2882]",
+  "text-[13px] font-medium tracking-[-0.025em] text-[#1C2882]",
   "placeholder:text-[#B1B6C7]",
   "focus:outline-none focus:ring-1 focus:ring-[#8D8D8D]",
 );
