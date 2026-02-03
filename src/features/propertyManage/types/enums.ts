@@ -22,6 +22,8 @@ export const OCCUPANCY_STATUS_LABELS: Record<OccupancyStatus, string> = {
 
 export const PROPERTY_STATUS = {
   NONE: "NONE",
+  BEFORE: "BEFORE",
+  ADVERTISING: "ADVERTISING",
   COMPLETED: "COMPLETED",
   PROGRESS: "PROGRESS",
 } as const;
@@ -31,6 +33,8 @@ export type PropertyStatus =
 
 export const PROPERTY_STATUS_LABELS: Record<PropertyStatus, string> = {
   NONE: "미등록",
+  BEFORE: "진행 전",
+  ADVERTISING: "광고 중",
   COMPLETED: "완료",
   PROGRESS: "진행중",
 };
@@ -40,6 +44,11 @@ export const REQUEST_TYPE = {
   MONTHLY: "MONTHLY",
   JEONSE: "JEONSE",
   SALE: "SALE",
+  SALE_JEONSE: "SALE_JEONSE",
+  SALE_MONTHLY: "SALE_MONTHLY",
+  JEONSE_MONTHLY: "JEONSE_MONTHLY",
+  SALE_JEONSE_MONTHLY: "SALE_JEONSE_MONTHLY",
+  HOLD: "HOLD",
 } as const;
 
 export type RequestType = (typeof REQUEST_TYPE)[keyof typeof REQUEST_TYPE];
@@ -48,7 +57,12 @@ export const REQUEST_TYPE_LABELS: Record<RequestType, string> = {
   NONE: "없음",
   MONTHLY: "월세",
   JEONSE: "전세",
-  SALE: "매매",
+  SALE: "매도",
+  SALE_JEONSE: "매/전",
+  SALE_MONTHLY: "매/월",
+  JEONSE_MONTHLY: "전/월",
+  SALE_JEONSE_MONTHLY: "매/전/월",
+  HOLD: "보류",
 };
 
 export const DIRECTION = {

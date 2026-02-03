@@ -4,9 +4,7 @@ import {
   PropertyManagerHeader,
   PropertyManageTable,
 } from "@/features/propertyManage";
-import {
-  SlidingSidebarLayout,
-} from "@/components/common/detail-sidebar";
+import { SlidingSidebarLayout } from "@/components/common/detail-sidebar";
 
 // 사이드바 컴포넌트
 import { PropertySidebar } from "@/features/propertyManage/components/sidebar";
@@ -25,7 +23,6 @@ import type {
   RequestType,
   PropertyStatus,
 } from "@/features/propertyManage/types";
-import type { DropdownOption } from "@/components/ui/dropdown-menu";
 import {
   usePropertyFilter,
   usePropertySidebar,
@@ -46,17 +43,19 @@ const requestTypeValues: readonly RequestType[] = [
   "SALE_MONTHLY",
   "JEONSE_MONTHLY",
   "SALE_JEONSE_MONTHLY",
+  "HOLD",
 ];
 const propertyStatusValues: readonly PropertyStatus[] = [
   "NONE",
   "BEFORE",
   "ADVERTISING",
   "COMPLETED",
+  "PROGRESS",
 ];
 
 const parseEnumValue = <T extends string>(
   value: string | undefined,
-  validValues: readonly T[]
+  validValues: readonly T[],
 ): T | undefined => {
   if (!value) return undefined;
   return validValues.includes(value as T) ? (value as T) : undefined;
@@ -73,14 +72,12 @@ export function PropertyManagePage() {
   const [selectedRequestType, setSelectedRequestType] = useState<
     string | undefined
   >();
-  const [selectedPropertyStatus, _setSelectedPropertyStatus] = useState<
-    string | undefined
-  >();
+  const [selectedPropertyStatus] = useState<string | undefined>();
   const [selectedManageType, setSelectedManageType] = useState<
     string | undefined
   >();
-  const [selectedArea, _setSelectedArea] = useState<string | undefined>();
-  const [areaList, setAreaList] = useState<number[]>([]);
+  const [selectedArea] = useState<string | undefined>();
+  const [, setAreaList] = useState<number[]>([]);
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [dong, setDong] = useState<string>("");
   const [ho, setHo] = useState<string>("");
@@ -88,14 +85,11 @@ export function PropertyManagePage() {
   const sidebarRef = useRef<HTMLElement | null>(null);
   const [isSqmOrPyeong, setIsSqmOrPyeong] = useState<"sqm" | "pyeong">("sqm");
 
-  const {
-    data: preferredComplexes,
-    isLoading: isPreferredComplexLoading,
-    refetch: _refetchPreferredComplexes,
-  } = useQuery({
-    queryKey: ["preferredComplexes"],
-    queryFn: fetchPreferredComplexList,
-  });
+  const { data: preferredComplexes, isLoading: isPreferredComplexLoading } =
+    useQuery({
+      queryKey: ["preferredComplexes"],
+      queryFn: fetchPreferredComplexList,
+    });
 
   const preferredComplexOptions = useMemo(
     () =>
@@ -103,7 +97,7 @@ export function PropertyManagePage() {
         label: complex.apartmentName,
         value: String(complex.apartmentComplexId),
       })),
-    [preferredComplexes]
+    [preferredComplexes],
   );
 
   // 선택된 단지의 총 아파트 수 조회
@@ -136,7 +130,7 @@ export function PropertyManagePage() {
       requestType: parseEnumValue(selectedRequestType, requestTypeValues),
       propertyStatus: parseEnumValue(
         selectedPropertyStatus,
-        propertyStatusValues
+        propertyStatusValues,
       ),
       area:
         parsedArea !== undefined && !Number.isNaN(parsedArea)
@@ -163,7 +157,7 @@ export function PropertyManagePage() {
       serverFilterParams.dong ?? null,
       serverFilterParams.ho ?? null,
     ],
-    [serverFilterParams]
+    [serverFilterParams],
   );
 
   const {
@@ -211,7 +205,7 @@ export function PropertyManagePage() {
   const apartments = useMemo(() => {
     const allApartments =
       (data?.pages.flatMap(
-        (page) => page.content
+        (page) => page.content,
       ) as ApartmentWithProperty[]) || [];
     // 중복 제거: 같은 apartmentId를 가진 항목 중 첫 번째만 유지
     const uniqueApartments = Array.from(
@@ -219,8 +213,8 @@ export function PropertyManagePage() {
         allApartments.map((apt: ApartmentWithProperty) => [
           apt.apartmentId,
           apt,
-        ])
-      ).values()
+        ]),
+      ).values(),
     ) as ApartmentWithProperty[];
     return uniqueApartments;
   }, [data?.pages]);
@@ -228,12 +222,12 @@ export function PropertyManagePage() {
   const hasActiveFilters = useMemo(() => {
     return Boolean(
       selectedManageType !== undefined ||
-        selectedRequestType !== undefined ||
-        selectedPropertyStatus !== undefined ||
-        selectedArea !== undefined ||
-        (phoneNumber && phoneNumber.trim() !== "") ||
-        (dong && dong.trim() !== "") ||
-        (ho && ho.trim() !== "")
+      selectedRequestType !== undefined ||
+      selectedPropertyStatus !== undefined ||
+      selectedArea !== undefined ||
+      (phoneNumber && phoneNumber.trim() !== "") ||
+      (dong && dong.trim() !== "") ||
+      (ho && ho.trim() !== ""),
     );
   }, [
     selectedManageType,
@@ -282,7 +276,7 @@ export function PropertyManagePage() {
     }
 
     const hasSelectedComplex = preferredComplexes.some(
-      (complex) => complex.apartmentComplexId === selectedApartmentComplexId
+      (complex) => complex.apartmentComplexId === selectedApartmentComplexId,
     );
 
     if (hasSelectedComplex) {
@@ -297,7 +291,7 @@ export function PropertyManagePage() {
   }, [preferredComplexes, resetPropertySelection, selectedApartmentComplexId]);
 
   const selectedApartment = filteredAndSortedApartments.find(
-    (apt) => apt.apartmentId === displayedPropertyId
+    (apt) => apt.apartmentId === displayedPropertyId,
   );
 
   useEffect(() => {
@@ -366,7 +360,7 @@ export function PropertyManagePage() {
       setSelectedApartmentComplexId(complexId);
       resetPropertySelection();
     },
-    [resetPropertySelection, selectedApartmentComplexId]
+    [resetPropertySelection, selectedApartmentComplexId],
   );
 
   // 테이블 헤더 필터용 핸들러 (ALL 선택 시 undefined로 변환)
@@ -378,17 +372,6 @@ export function PropertyManagePage() {
   const handleSqmOrPyeongChange = useCallback(() => {
     setIsSqmOrPyeong((prev) => (prev === "sqm" ? "pyeong" : "sqm"));
   }, []);
-
-  // 면적 옵션 생성 (㎡ 형식)
-  const areaOptions = useMemo<DropdownOption[]>(() => {
-    return [
-      { label: "전체", value: "ALL" },
-      ...areaList.map((area) => ({
-        label: `${area}㎡`,
-        value: String(area),
-      })),
-    ];
-  }, [areaList]);
 
   const isTableLoading = isPreferredComplexLoading || isPropertiesLoading;
 

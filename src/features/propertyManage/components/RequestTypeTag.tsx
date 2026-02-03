@@ -5,6 +5,8 @@ type RequestTypeValue =
   | "SALE"
   | "JEONSE"
   | "MONTHLY"
+  | "SALE_JEONSE"
+  | "SALE_MONTHLY"
   | "JEONSE_MONTHLY"
   | "SALE_JEONSE_MONTHLY"
   | "HOLD";
@@ -22,6 +24,8 @@ const TYPE_CONFIG: Record<
   SALE: { label: "매도", variant: "primary" },
   JEONSE: { label: "전세", variant: "primary" },
   MONTHLY: { label: "월세", variant: "primary" },
+  SALE_JEONSE: { label: "매/전", variant: "primary" },
+  SALE_MONTHLY: { label: "매/월", variant: "primary" },
   JEONSE_MONTHLY: { label: "전/월", variant: "primary" },
   SALE_JEONSE_MONTHLY: { label: "매/전/월", variant: "primary" },
   HOLD: { label: "보류", variant: "secondary" },
