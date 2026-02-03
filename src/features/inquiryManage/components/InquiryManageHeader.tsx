@@ -1,5 +1,5 @@
-import { PageHeader } from "@/components/common/PageHeader";
-import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/shared/components/PageHeader";
+import { Button } from "@/shared/ui/button";
 import PlusIcon from "@/assets/Plus.svg";
 import RefreshIcon from "@/assets/Refresh.svg";
 import { Search } from "lucide-react";
@@ -7,7 +7,7 @@ import {
   InputGroup,
   InputGroupInput,
   InputGroupAddon,
-} from "@/components/ui/input-group";
+} from "@/shared/ui/input-group";
 
 // 숫자만 추출하는 헬퍼
 const extractNumbers = (value: string) => value.replace(/[^0-9]/g, "");

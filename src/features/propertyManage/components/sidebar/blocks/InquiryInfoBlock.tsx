@@ -1,4 +1,4 @@
-import { SidebarBlock } from "@/components/common/detail-sidebar";
+import { SidebarBlock } from "@/shared/components/detail-sidebar";
 import type { ApartmentWithProperty } from "../../../types";
 
 interface InquiryInfoBlockProps {

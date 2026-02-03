@@ -3,8 +3,8 @@ import {
   SidebarField,
   sidebarInputClassName,
   sidebarSelectClassName,
-} from "@/components/common/detail-sidebar";
-import { DropdownMenu } from "@/components/ui";
+} from "@/shared/components/detail-sidebar";
+import { DropdownMenu } from "@/shared/ui";
 import type { ApartmentWithProperty } from "../../../types";
 
 interface ContractInfoBlockProps {

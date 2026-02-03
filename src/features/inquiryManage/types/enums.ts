@@ -1,4 +1,4 @@
-import type { DropdownOption } from "@/components/ui/dropdown-menu";
+import type { DropdownOption } from "@/shared/ui/dropdown-menu";
 import UnfilledStar from "@/assets/UnfilledStar.svg";
 import FilledStar from "@/assets/FilledStar.svg";
 import Caution from "@/assets/Caution.svg";

@@ -1,10 +1,10 @@
 import {
   SidebarBlock,
   sidebarInputClassName,
-} from "@/components/common/detail-sidebar";
-import { SidebarField } from "@/components/common/detail-sidebar";
-import { Textarea, Label, Input, Button } from "@/components/ui";
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
+} from "@/shared/components/detail-sidebar";
+import { SidebarField } from "@/shared/components/detail-sidebar";
+import { Textarea, Label, Input, Button } from "@/shared/ui";
+import { DropdownMenu } from "@/shared/ui/dropdown-menu";
 import type { ApartmentWithProperty } from "../../../types";
 interface CustomerConsultationBlockProps {
   apartment?: ApartmentWithProperty;

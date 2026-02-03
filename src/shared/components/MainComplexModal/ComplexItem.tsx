@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
+import { DropdownMenu } from "@/shared/ui/dropdown-menu";
 import { cn } from "@/shared/utils";
 import type { ComplexData, RegionOption } from "@/shared/types/complex";
 import {

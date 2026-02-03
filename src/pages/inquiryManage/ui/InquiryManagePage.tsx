@@ -8,7 +8,7 @@ import { useInquirySidebar } from "@/features/inquiryManage/hooks";
 import {
   DetailSidebar,
   SlidingSidebarLayout,
-} from "@/components/common/detail-sidebar";
+} from "@/shared/components/detail-sidebar";
 import type {
   InquiryStatus,
   RequestType,

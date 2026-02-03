@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import LockIcon from "@/assets/Lock.svg";
 import { VerificationButton } from "./VerificationButton";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { INPUT_STYLE, LABEL_STYLE, SECTION_TITLE_STYLE } from "./constants";
 import { formatPhoneNumber } from "@/shared/utils";
 import {

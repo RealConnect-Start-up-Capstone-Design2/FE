@@ -1,6 +1,6 @@
-import { FormField } from "@/components/ui/form-field";
+import { FormField } from "@/shared/ui/form-field";
 import { VerificationButton } from "./VerificationButton";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { INPUT_STYLE, LABEL_STYLE } from "./constants";
 import { formatPhoneNumber } from "@/shared/utils";
 import { useState, useEffect } from "react";

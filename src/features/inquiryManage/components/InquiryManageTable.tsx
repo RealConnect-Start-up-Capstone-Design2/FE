@@ -5,9 +5,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui";
-import { DropdownMenuCell } from "@/components/ui";
-import { TableHeaderFilter } from "@/components/ui";
+} from "@/shared/ui";
+import { DropdownMenuCell } from "@/shared/ui";
+import { TableHeaderFilter } from "@/shared/ui";
 import type { Inquiry, InquiryStatus, ManageType, PropertyType, RequestType } from "../types/inquiry";
 import { sqmToPyeong, formatArea, formatNumber } from "@/shared/utils";
 import { Trash2 } from "lucide-react";

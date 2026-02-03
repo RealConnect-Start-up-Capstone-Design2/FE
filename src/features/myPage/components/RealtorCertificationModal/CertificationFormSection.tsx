@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { LABEL_STYLE } from "../ProfileEditModal/constants";
 import { openNaverAddressSearch } from "@/shared/utils/naverAddressSearch";
 

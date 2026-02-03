@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ModalHeader } from "@/components/common/ModalHeader";
+import { ModalHeader } from "@/shared/components/ModalHeader";
 import { CertificationFormSection } from "./CertificationFormSection";
 import { ActionButtons } from "./ActionButtons";
 import {

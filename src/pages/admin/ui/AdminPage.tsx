@@ -7,7 +7,7 @@ import {
   type CertificationStatus,
 } from "@/features/admin";
 import type { RealtorMember } from "@/features/admin";
-import { PageHeader } from "@/components/common/PageHeader";
+import { PageHeader } from "@/shared/components/PageHeader";
 
 // 목 데이터 생성
 const generateMockData = (): RealtorMember[] => {

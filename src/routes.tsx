@@ -1,6 +1,6 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import { UserLayout } from "@/components/layouts/UserLayout";
-import { AdminLayout } from "@/components/layouts/AdminLayout";
+import { UserLayout } from "@/shared/layouts/UserLayout";
+import { AdminLayout } from "@/shared/layouts/AdminLayout";
 import { ProtectedRoute } from "@/features/auth";
 import { HomePage } from "@/pages/home";
 import { PropertyManagePage } from "@/pages/propertyManage";

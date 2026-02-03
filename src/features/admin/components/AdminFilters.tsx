@@ -4,11 +4,11 @@ import {
   InputGroupAddon,
   InputGroupInput,
   InputGroupText,
-} from "@/components/ui/input-group";
+} from "@/shared/ui/input-group";
 import {
   DropdownMenu,
   type DropdownOption,
-} from "@/components/ui/dropdown-menu";
+} from "@/shared/ui/dropdown-menu";
 
 export type CertificationStatus =
   | "all"

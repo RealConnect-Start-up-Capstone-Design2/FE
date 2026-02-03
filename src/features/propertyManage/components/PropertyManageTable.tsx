@@ -7,8 +7,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui";
-import { DropdownMenuCell } from "@/components/ui";
+} from "@/shared/ui";
+import { DropdownMenuCell } from "@/shared/ui";
 import type {
   ApartmentWithProperty,
   PropertiesResponse,
@@ -23,7 +23,7 @@ import {
   isPropertiesResponse,
 } from "../utils/propertyCacheUtils";
 import type { PropertyFieldKey } from "../types/property";
-import { TableHeaderFilter } from "@/components/ui";
+import { TableHeaderFilter } from "@/shared/ui";
 import type { CellClickHandler } from "@/shared/types";
 import { OccupancyStatusTag } from "./OccupancyStatusTag";
 import { RequestTypeTag } from "./RequestTypeTag";

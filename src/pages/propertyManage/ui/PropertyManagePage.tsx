@@ -4,7 +4,7 @@ import {
   PropertyManagerHeader,
   PropertyManageTable,
 } from "@/features/propertyManage";
-import { SlidingSidebarLayout } from "@/components/common/detail-sidebar";
+import { SlidingSidebarLayout } from "@/shared/components/detail-sidebar";
 
 // 사이드바 컴포넌트
 import { PropertySidebar } from "@/features/propertyManage/components/sidebar";
