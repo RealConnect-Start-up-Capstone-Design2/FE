@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { ApartmentWithProperty } from "../stores/propertyStore";
+import type { ApartmentWithProperty } from "../types";
 
 interface UsePropertySidebarParams {
   apartments: ApartmentWithProperty[];
@@ -12,25 +12,16 @@ export function usePropertySidebar({ apartments }: UsePropertySidebarParams) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isManuallyClosedByButton, setIsManuallyClosedByButton] =
     useState(false);
-  const [autoSaveToken, setAutoSaveToken] = useState(0);
   const [lastViewedPropertyId, setLastViewedPropertyId] = useState<
     string | number | undefined
   >();
 
-  const triggerAutoSave = useCallback(() => {
-    setAutoSaveToken((prev) => prev + 1);
+  const closeSidebar = useCallback((isManualClose = false) => {
+    setIsSidebarOpen(false);
+    if (isManualClose) {
+      setIsManuallyClosedByButton(true);
+    }
   }, []);
-
-  const closeSidebar = useCallback(
-    (isManualClose = false) => {
-      triggerAutoSave();
-      setIsSidebarOpen(false);
-      if (isManualClose) {
-        setIsManuallyClosedByButton(true);
-      }
-    },
-    [triggerAutoSave]
-  );
 
   const selectProperty = useCallback(
     (propertyId: string | number) => {
@@ -46,7 +37,6 @@ export function usePropertySidebar({ apartments }: UsePropertySidebarParams) {
     setSelectedPropertyId(undefined);
     setIsSidebarOpen(false);
     setIsManuallyClosedByButton(false);
-    setAutoSaveToken(0);
     setLastViewedPropertyId(undefined);
   }, []);
 
@@ -137,7 +127,6 @@ export function usePropertySidebar({ apartments }: UsePropertySidebarParams) {
     selectedPropertyId,
     displayedPropertyId,
     isSidebarOpen,
-    autoSaveToken,
     selectProperty,
     clearSelection,
     resetSelection,

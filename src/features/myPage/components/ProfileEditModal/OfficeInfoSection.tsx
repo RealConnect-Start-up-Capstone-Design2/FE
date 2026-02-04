@@ -1,4 +1,4 @@
-import { FormField } from "@/components/ui/form-field";
+import { FormField } from "@/shared/ui/form-field";
 import { SECTION_TITLE_STYLE } from "./constants";
 import { formatPhoneNumber } from "@/shared/utils";
 

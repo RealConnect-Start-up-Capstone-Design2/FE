@@ -1,4 +1,4 @@
-import { Label } from "@/components/ui/label";
+import { Label } from "@/shared/ui/label";
 import { cn } from "@/shared/utils";
 import RepeatIcon from "@/assets/Repeat.svg";
 import CancelIcon from "@/assets/Cancel.svg";

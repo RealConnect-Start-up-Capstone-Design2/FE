@@ -1,5 +1,5 @@
 import { cn } from "@/shared/utils";
-import { Label, DropdownMenu, Textarea, Input } from "@/components/ui";
+import { Label, DropdownMenu, Textarea, Input } from "@/shared/ui";
 import type { AddInquiryModalProps, InquirerRelation } from "./types";
 import { useAddInquiryModal } from "./useAddInquiryModal";
 import type { PropertyType, RequestType } from "../../types/inquiry";

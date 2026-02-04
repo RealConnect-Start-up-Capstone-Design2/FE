@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ModalHeader } from "@/components/common/ModalHeader";
+import { ModalHeader } from "@/shared/components/ModalHeader";
 import { ProfileImageSection } from "./ProfileImageSection";
 import { ProfileFormSection } from "./ProfileFormSection";
 import { SaveButton } from "./SaveButton";

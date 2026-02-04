@@ -4,3 +4,9 @@ export type {
   RegionOption,
   MainComplexModalProps,
 } from "./complex";
+
+export type {
+  CellClickEvent,
+  RowClickHandler,
+  CellClickHandler,
+} from "./table";

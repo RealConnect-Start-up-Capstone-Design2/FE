@@ -4,16 +4,10 @@ import {
   PropertyManagerHeader,
   PropertyManageTable,
 } from "@/features/propertyManage";
-import {
-  DetailSidebar,
-  SlidingSidebarLayout,
-} from "@/components/common/detail-sidebar";
+import { SlidingSidebarLayout } from "@/shared/components/detail-sidebar";
 
-// 사이드바에 들어가는 블록들
-import { PropertyMemoBlock } from "@/features/propertyManage/components/blocks/PropertyMemoBlock";
-import { PropertyContractBlock } from "@/features/propertyManage/components/blocks/PropertyContractBlock";
-// 평면도 블록은 추후에 들어오면 주석 해제 예정
-// import { PropertyFloorPlanBlock } from "@/features/propertyManage/components/blocks/PropertyFloorPlanBlock";
+// 사이드바 컴포넌트
+import { PropertySidebar } from "@/features/propertyManage/components/sidebar";
 
 // 서버에서 가져오는 데이터
 import {
@@ -28,8 +22,7 @@ import type {
   ManageType,
   RequestType,
   PropertyStatus,
-} from "@/features/propertyManage/stores/propertyStore";
-import type { DropdownOption } from "@/components/ui/dropdown-menu";
+} from "@/features/propertyManage/types";
 import {
   usePropertyFilter,
   usePropertySidebar,
@@ -50,17 +43,19 @@ const requestTypeValues: readonly RequestType[] = [
   "SALE_MONTHLY",
   "JEONSE_MONTHLY",
   "SALE_JEONSE_MONTHLY",
+  "HOLD",
 ];
 const propertyStatusValues: readonly PropertyStatus[] = [
   "NONE",
   "BEFORE",
   "ADVERTISING",
   "COMPLETED",
+  "PROGRESS",
 ];
 
 const parseEnumValue = <T extends string>(
   value: string | undefined,
-  validValues: readonly T[]
+  validValues: readonly T[],
 ): T | undefined => {
   if (!value) return undefined;
   return validValues.includes(value as T) ? (value as T) : undefined;
@@ -77,14 +72,12 @@ export function PropertyManagePage() {
   const [selectedRequestType, setSelectedRequestType] = useState<
     string | undefined
   >();
-  const [selectedPropertyStatus, setSelectedPropertyStatus] = useState<
-    string | undefined
-  >();
+  const [selectedPropertyStatus] = useState<string | undefined>();
   const [selectedManageType, setSelectedManageType] = useState<
     string | undefined
   >();
-  const [selectedArea, setSelectedArea] = useState<string | undefined>();
-  const [areaList, setAreaList] = useState<number[]>([]);
+  const [selectedArea] = useState<string | undefined>();
+  const [, setAreaList] = useState<number[]>([]);
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [dong, setDong] = useState<string>("");
   const [ho, setHo] = useState<string>("");
@@ -92,14 +85,11 @@ export function PropertyManagePage() {
   const sidebarRef = useRef<HTMLElement | null>(null);
   const [isSqmOrPyeong, setIsSqmOrPyeong] = useState<"sqm" | "pyeong">("sqm");
 
-  const {
-    data: preferredComplexes,
-    isLoading: isPreferredComplexLoading,
-    refetch: _refetchPreferredComplexes,
-  } = useQuery({
-    queryKey: ["preferredComplexes"],
-    queryFn: fetchPreferredComplexList,
-  });
+  const { data: preferredComplexes, isLoading: isPreferredComplexLoading } =
+    useQuery({
+      queryKey: ["preferredComplexes"],
+      queryFn: fetchPreferredComplexList,
+    });
 
   const preferredComplexOptions = useMemo(
     () =>
@@ -107,7 +97,7 @@ export function PropertyManagePage() {
         label: complex.apartmentName,
         value: String(complex.apartmentComplexId),
       })),
-    [preferredComplexes]
+    [preferredComplexes],
   );
 
   // 선택된 단지의 총 아파트 수 조회
@@ -140,7 +130,7 @@ export function PropertyManagePage() {
       requestType: parseEnumValue(selectedRequestType, requestTypeValues),
       propertyStatus: parseEnumValue(
         selectedPropertyStatus,
-        propertyStatusValues
+        propertyStatusValues,
       ),
       area:
         parsedArea !== undefined && !Number.isNaN(parsedArea)
@@ -167,7 +157,7 @@ export function PropertyManagePage() {
       serverFilterParams.dong ?? null,
       serverFilterParams.ho ?? null,
     ],
-    [serverFilterParams]
+    [serverFilterParams],
   );
 
   const {
@@ -215,7 +205,7 @@ export function PropertyManagePage() {
   const apartments = useMemo(() => {
     const allApartments =
       (data?.pages.flatMap(
-        (page) => page.content
+        (page) => page.content,
       ) as ApartmentWithProperty[]) || [];
     // 중복 제거: 같은 apartmentId를 가진 항목 중 첫 번째만 유지
     const uniqueApartments = Array.from(
@@ -223,8 +213,8 @@ export function PropertyManagePage() {
         allApartments.map((apt: ApartmentWithProperty) => [
           apt.apartmentId,
           apt,
-        ])
-      ).values()
+        ]),
+      ).values(),
     ) as ApartmentWithProperty[];
     return uniqueApartments;
   }, [data?.pages]);
@@ -232,12 +222,12 @@ export function PropertyManagePage() {
   const hasActiveFilters = useMemo(() => {
     return Boolean(
       selectedManageType !== undefined ||
-        selectedRequestType !== undefined ||
-        selectedPropertyStatus !== undefined ||
-        selectedArea !== undefined ||
-        (phoneNumber && phoneNumber.trim() !== "") ||
-        (dong && dong.trim() !== "") ||
-        (ho && ho.trim() !== "")
+      selectedRequestType !== undefined ||
+      selectedPropertyStatus !== undefined ||
+      selectedArea !== undefined ||
+      (phoneNumber && phoneNumber.trim() !== "") ||
+      (dong && dong.trim() !== "") ||
+      (ho && ho.trim() !== ""),
     );
   }, [
     selectedManageType,
@@ -265,7 +255,6 @@ export function PropertyManagePage() {
     selectedPropertyId,
     displayedPropertyId,
     isSidebarOpen,
-    autoSaveToken,
     handlePropertyClick,
     handleToggleSidebar,
     handleExternalClick,
@@ -287,7 +276,7 @@ export function PropertyManagePage() {
     }
 
     const hasSelectedComplex = preferredComplexes.some(
-      (complex) => complex.apartmentComplexId === selectedApartmentComplexId
+      (complex) => complex.apartmentComplexId === selectedApartmentComplexId,
     );
 
     if (hasSelectedComplex) {
@@ -302,29 +291,8 @@ export function PropertyManagePage() {
   }, [preferredComplexes, resetPropertySelection, selectedApartmentComplexId]);
 
   const selectedApartment = filteredAndSortedApartments.find(
-    (apt) => apt.apartmentId === displayedPropertyId
+    (apt) => apt.apartmentId === displayedPropertyId,
   );
-
-  // 매물 상세 사이드바 title 구성
-  const detailSidebarTitle = useMemo(() => {
-    if (!selectedApartment) {
-      return "매물 상세 정보";
-    }
-
-    const { apartmentName, dong, ho, area, type } = selectedApartment;
-    const dongHo = [dong, ho].filter(Boolean).join("-");
-    const areaStr =
-      typeof area === "number" && Number.isFinite(area)
-        ? area.toFixed(2).replace(/\.?0+$/, "")
-        : "";
-
-    const title = [apartmentName, dongHo, areaStr, type]
-      .map((v) => (typeof v === "string" ? v.trim() : ""))
-      .filter(Boolean)
-      .join(" ");
-
-    return title || "매물 상세 정보";
-  }, [selectedApartment]);
 
   useEffect(() => {
     const handleDocumentMouseDown = (event: MouseEvent) => {
@@ -392,7 +360,7 @@ export function PropertyManagePage() {
       setSelectedApartmentComplexId(complexId);
       resetPropertySelection();
     },
-    [resetPropertySelection, selectedApartmentComplexId]
+    [resetPropertySelection, selectedApartmentComplexId],
   );
 
   // 테이블 헤더 필터용 핸들러 (ALL 선택 시 undefined로 변환)
@@ -400,36 +368,10 @@ export function PropertyManagePage() {
     setSelectedManageType(value === "ALL" ? undefined : value);
   }, []);
 
-  // 테이블 헤더 필터용 핸들러 (ALL 선택 시 undefined로 변환)
-  const handleSelectAreaForTable = useCallback((value: string) => {
-    setSelectedArea(value === "ALL" ? undefined : value);
-  }, []);
-
-  // 동일하게 의뢰 유형에 대한 필터 핸들러
-  const handleSelectRequestTypeForTable = useCallback((value: string) => {
-    setSelectedRequestType(value === "NONE" ? undefined : value);
-  }, []);
-
-  // 동일하게 매물 상태에 대한 필터 핸들러
-  const handleSelectPropertyStatusForTable = useCallback((value: string) => {
-    setSelectedPropertyStatus(value === "NONE" ? undefined : value);
-  }, []);
-
   // ㎡ 형식과 평 형식 변환 핸들러
   const handleSqmOrPyeongChange = useCallback(() => {
     setIsSqmOrPyeong((prev) => (prev === "sqm" ? "pyeong" : "sqm"));
   }, []);
-
-  // 면적 옵션 생성 (㎡ 형식)
-  const areaOptions = useMemo<DropdownOption[]>(() => {
-    return [
-      { label: "전체", value: "ALL" },
-      ...areaList.map((area) => ({
-        label: `${area}㎡`,
-        value: String(area),
-      })),
-    ];
-  }, [areaList]);
 
   const isTableLoading = isPreferredComplexLoading || isPropertiesLoading;
 
@@ -439,23 +381,16 @@ export function PropertyManagePage() {
       onToggle={handleToggleSidebar}
       sidebarRef={sidebarRef}
       sidebar={
-        <DetailSidebar
-          title={detailSidebarTitle}
+        <PropertySidebar
+          apartment={selectedApartment}
           onClose={() => closeSidebar(true)}
-        >
-          <PropertyMemoBlock
-            apartment={selectedApartment}
-            isOpen={isSidebarOpen}
-            autoSaveToken={autoSaveToken}
-          />
-          <PropertyContractBlock
-            apartment={selectedApartment}
-            isOpen={isSidebarOpen}
-            autoSaveToken={autoSaveToken}
-          />
-          {/* 평면도는 아직 안 보여줄 예정 - 추후 평면도 들어오면 주석 해제하기 */}
-          {/* <PropertyFloorPlanBlock apartment={selectedApartment} /> */}
-        </DetailSidebar>
+          isOpen={isSidebarOpen}
+          onCancel={() => closeSidebar(true)}
+          onSave={() => {
+            // TODO: 저장 로직 구현
+            closeSidebar(true);
+          }}
+        />
       }
     >
       <div className="flex flex-col gap-6 h-full">
@@ -488,14 +423,6 @@ export function PropertyManagePage() {
             hasActiveFilters={hasActiveFilters}
             selectedManageType={selectedManageType}
             onSelectManageType={handleSelectManageTypeForTable}
-            areaOptions={areaOptions}
-            selectedArea={selectedArea}
-            onSelectArea={handleSelectAreaForTable}
-            selectedRequestType={selectedRequestType}
-            onSelectRequestType={handleSelectRequestTypeForTable}
-            selectedPropertyStatus={selectedPropertyStatus}
-            onSelectPropertyStatus={handleSelectPropertyStatusForTable}
-            isSqmOrPyeong={isSqmOrPyeong}
           />
         </div>
       </div>

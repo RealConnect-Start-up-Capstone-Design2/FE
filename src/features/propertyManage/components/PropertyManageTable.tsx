@@ -1,5 +1,5 @@
 import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useRef, useCallback, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -7,49 +7,38 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui";
-import { DropdownMenuCell } from "@/components/ui";
+} from "@/shared/ui";
+import { DropdownMenuCell } from "@/shared/ui";
 import type {
-  PropertyStatus,
   ApartmentWithProperty,
   PropertiesResponse,
   ManageType,
-} from "../stores/propertyStore";
-import { usePropertyEdit } from "../hooks/usePropertyEdit";
+} from "../types";
 import { useVirtualInfiniteScroll } from "@/shared/hooks";
-import type { PropertyMutationPayload } from "../services/propertyService";
-import { formatPrice, formatPhoneNumber } from "@/shared/utils";
+import { formatNumber, formatPhoneNumber } from "@/shared/utils";
 import { updatePropertyManage } from "../services/propertyService";
+import { manageTypeFilterOptions, ESTIMATED_ROW_HEIGHT } from "../types";
 import {
-  propertyFieldDefaults,
-  requestTypeOptions,
-  manageTypeFilterOptions,
-  ESTIMATED_ROW_HEIGHT,
-} from "../constants/propertyConstants";
-import { normalizeDateValue } from "@/shared/utils";
-import {
-  updateApartmentList,
   isInfinitePropertiesData,
   isPropertiesResponse,
 } from "../utils/propertyCacheUtils";
-import type { PropertyFieldKey, DropdownState } from "../types/property";
-import { TableHeaderFilter } from "@/components/ui";
-import type { DropdownOption } from "@/components/ui/dropdown-menu";
+import type { PropertyFieldKey } from "../types/property";
+import { TableHeaderFilter } from "@/shared/ui";
+import type { CellClickHandler } from "@/shared/types";
+import { OccupancyStatusTag } from "./OccupancyStatusTag";
+import { RequestTypeTag } from "./RequestTypeTag";
 
 // 이미지 불러오기
 import UnfilledStar from "@/assets/UnfilledStar.svg";
 import FilledStar from "@/assets/FilledStar.svg";
 import Caution from "@/assets/Caution.svg";
 
-const propertyFieldKeys = Object.keys(
-  propertyFieldDefaults
-) as PropertyFieldKey[];
-
 interface PropertyManageTableProps {
   onPropertyClick?: (apartmentId: string | number) => void;
+  onCellClick?: CellClickHandler<PropertyFieldKey>;
   selectedApartmentId?: string | number;
-  apartments?: ApartmentWithProperty[]; // 외부에서 데이터를 받아올 경우
-  isLoading?: boolean; // 로딩 상태
+  apartments?: ApartmentWithProperty[];
+  isLoading?: boolean;
   isFetchingNextPage?: boolean;
   hasNextPage?: boolean;
   onLoadMore?: () => void;
@@ -57,18 +46,11 @@ interface PropertyManageTableProps {
   totalApartmentCount?: number;
   selectedManageType?: string;
   onSelectManageType?: (value: string) => void;
-  areaOptions?: DropdownOption[];
-  selectedArea?: string;
-  onSelectArea?: (value: string) => void;
-  selectedRequestType?: string;
-  onSelectRequestType?: (value: string) => void;
-  selectedPropertyStatus?: string;
-  onSelectPropertyStatus?: (value: string) => void;
-  isSqmOrPyeong?: "sqm" | "pyeong";
 }
 
 export function PropertyManageTable({
   onPropertyClick,
+  onCellClick,
   selectedApartmentId,
   apartments: externalApartments,
   isLoading: externalIsLoading,
@@ -79,75 +61,83 @@ export function PropertyManageTable({
   totalApartmentCount,
   selectedManageType,
   onSelectManageType,
-  areaOptions: _areaOptions,
-  selectedArea: _selectedArea,
-  onSelectArea: _onSelectArea,
-  selectedRequestType: _selectedRequestType,
-  onSelectRequestType: _onSelectRequestType,
-  selectedPropertyStatus: _selectedPropertyStatus,
-  onSelectPropertyStatus: _onSelectPropertyStatus,
-  isSqmOrPyeong: _isSqmOrPyeong,
 }: PropertyManageTableProps) {
   // 외부에서 받은 데이터 사용
   const apartments = useMemo(
     () => externalApartments || [],
-    [externalApartments]
+    [externalApartments],
   );
   const isLoading = externalIsLoading ?? false;
 
-  // 편집 관련 로직
-  const { handlePropertyBatchUpdate } = usePropertyEdit();
   const tableContainerRef = useRef<HTMLDivElement>(null);
-
-  const formatPriceWithDecimal = useCallback(
-    (price?: number | null) => formatPrice(price),
-    []
-  );
-
   const queryClient = useQueryClient();
 
-  // PUT 응답과 무관하게 UI를 즉시 업데이트하기 위해 캐시를 직접 수정
-  const updateApartmentCache = useCallback(
-    (payload: PropertyMutationPayload) => {
-      queryClient.setQueriesData<
-        PropertiesResponse | InfiniteData<PropertiesResponse>
-      >({ queryKey: ["apartments"] }, (oldData) => {
-        if (!oldData) {
-          return oldData;
-        }
+  // 즐겨찾기 업데이트 핸들러
+  const handleManageTypeChange = useCallback(
+    async (apartmentId: number, value: ManageType) => {
+      try {
+        await updatePropertyManage(apartmentId, value);
+        // 캐시 업데이트
+        queryClient.setQueriesData<
+          PropertiesResponse | InfiniteData<PropertiesResponse>
+        >({ queryKey: ["apartments"] }, (oldData) => {
+          if (!oldData) return oldData;
 
-        if (isInfinitePropertiesData(oldData)) {
-          let hasChanges = false;
-          const nextPages = oldData.pages.map((page) => {
-            const { changed, content } = updateApartmentList(
-              page.content,
-              payload
-            );
-            if (!changed) {
-              return page;
+          const updateApartment = (apt: ApartmentWithProperty) => {
+            if (apt.apartmentId === apartmentId) {
+              return {
+                ...apt,
+                property: apt.property
+                  ? {
+                      ...apt.property,
+                      manageType: value,
+                    }
+                  : null,
+              };
             }
-            hasChanges = true;
-            return {
+            return apt;
+          };
+
+          if (isInfinitePropertiesData(oldData)) {
+            const updatedPages = oldData.pages.map((page) => ({
               ...page,
-              content,
+              content: page.content.map(updateApartment),
+            }));
+            return { ...oldData, pages: updatedPages };
+          }
+
+          if (isPropertiesResponse(oldData)) {
+            return {
+              ...oldData,
+              content: oldData.content.map(updateApartment),
             };
-          });
+          }
 
-          return hasChanges ? { ...oldData, pages: nextPages } : oldData;
-        }
+          return oldData;
+        });
+      } catch (error) {
+        console.error("즐겨찾기 업데이트 실패:", error);
+        alert("즐겨찾기 업데이트에 실패했습니다.");
+      }
+    },
+    [queryClient],
+  );
 
-        if (isPropertiesResponse(oldData)) {
-          const { changed, content } = updateApartmentList(
-            oldData.content,
-            payload
-          );
-          return changed ? { ...oldData, content } : oldData;
-        }
+  // 셀 클릭 핸들러
+  const handleCellClick = useCallback(
+    (apartmentId: number, fieldKey: PropertyFieldKey) => {
+      const apartment = apartments.find(
+        (apt) => apt.apartmentId === apartmentId,
+      );
+      const currentValue = apartment?.property?.[fieldKey];
 
-        return oldData;
+      onCellClick?.({
+        rowId: apartmentId,
+        fieldKey,
+        currentValue,
       });
     },
-    [queryClient]
+    [apartments, onCellClick],
   );
 
   // 가상 스크롤 + 무한 스크롤
@@ -163,287 +153,6 @@ export function PropertyManageTable({
   });
 
   const hasApartments = apartments.length > 0;
-
-  const [localDropdownStates, setLocalDropdownStates] = useState<
-    Record<number, DropdownState>
-  >({});
-
-  const [localPropertyStates, setLocalPropertyStates] = useState<{
-    [apartmentId: number]: {
-      ownerName?: string;
-      ownerPhone?: string;
-      salePrice?: number;
-      jeonsePrice?: number;
-      deposit?: number;
-      monthPrice?: number;
-      contractDate?: string;
-    };
-  }>({});
-
-  const sendPropertyChanges = useCallback(
-    async (
-      apartmentId: number,
-      options?: {
-        dropdownOverrides?: DropdownState;
-        contractDateOverride?: string | null;
-      }
-    ) => {
-      const propertyChanges = localPropertyStates[apartmentId] ?? {};
-
-      try {
-        const currentApartment = apartments.find(
-          (apt) => apt.apartmentId === apartmentId
-        );
-
-        if (!currentApartment) {
-          throw new Error("APARTMENT_NOT_FOUND");
-        }
-        const currentProperty = currentApartment.property;
-
-        const hasPropertyFieldChanges = propertyFieldKeys.some(
-          (key) => propertyChanges[key] !== undefined
-        );
-        const pendingDropdown = localDropdownStates[apartmentId];
-        const mergedDropdownState =
-          pendingDropdown || options?.dropdownOverrides
-            ? {
-                ...(pendingDropdown ?? {}),
-                ...(options?.dropdownOverrides ?? {}),
-              }
-            : undefined;
-        const hasDropdownChanges =
-          !!mergedDropdownState && Object.keys(mergedDropdownState).length > 0;
-
-        if (!hasPropertyFieldChanges && !hasDropdownChanges) {
-          return;
-        }
-
-        // 데이터 병합: 기본값 → 현재값 → 변경값
-        const requestData = {
-          ...propertyFieldDefaults,
-          ...currentProperty,
-          ...propertyChanges,
-        };
-
-        const requestPayload: PropertyMutationPayload = {
-          apartmentId,
-          ...requestData,
-          manageType:
-            mergedDropdownState?.manageType ??
-            currentProperty?.manageType ??
-            "NONE",
-          requestType:
-            mergedDropdownState?.requestType ??
-            currentProperty?.requestType ??
-            "NONE",
-          propertyStatus:
-            mergedDropdownState?.propertyStatus ??
-            currentProperty?.propertyStatus ??
-            "NONE",
-          contractDate: normalizeDateValue(requestData.contractDate || null),
-        };
-
-        if (!currentProperty) {
-          await handlePropertyBatchUpdate(requestPayload, true);
-        } else {
-          await handlePropertyBatchUpdate(requestPayload, false);
-        }
-
-        if (localPropertyStates[apartmentId]) {
-          setLocalPropertyStates((prev) => {
-            const newState = { ...prev };
-            delete newState[apartmentId];
-            return newState;
-          });
-        }
-
-        // refetch를 기다리지 않고 방금 바꾼 행만 즉시 반영
-        updateApartmentCache(requestPayload);
-      } catch (error) {
-        console.error(error);
-        alert("매물 정보 업데이트에 실패했습니다.");
-        throw error;
-      }
-    },
-    [
-      apartments,
-      localPropertyStates,
-      handlePropertyBatchUpdate,
-      localDropdownStates,
-      updateApartmentCache,
-    ]
-  );
-
-  const getCurrentPropertyStatus = useCallback(
-    (apartmentId: number): PropertyStatus => {
-      const overriddenStatus = localDropdownStates[apartmentId]?.propertyStatus;
-      if (overriddenStatus) {
-        return overriddenStatus;
-      }
-      const propertyStatus = apartments.find(
-        (apt) => apt.apartmentId === apartmentId
-      )?.property?.propertyStatus;
-      return propertyStatus ?? "NONE";
-    },
-    [apartments, localDropdownStates]
-  );
-
-  const applyDropdownUpdates = useCallback(
-    async (apartmentId: number, updates: DropdownState) => {
-      if (!updates || Object.keys(updates).length === 0) {
-        return;
-      }
-
-      const nextState = {
-        ...(localDropdownStates[apartmentId] ?? {}),
-        ...updates,
-      };
-
-      setLocalDropdownStates((prev) => ({
-        ...prev,
-        [apartmentId]: nextState,
-      }));
-
-      try {
-        await sendPropertyChanges(apartmentId, {
-          dropdownOverrides: nextState,
-        });
-        setLocalDropdownStates((prev) => {
-          if (prev[apartmentId] !== nextState) {
-            return prev;
-          }
-          const newState = { ...prev };
-          delete newState[apartmentId];
-          return newState;
-        });
-      } catch {
-        // 실패 시 로컬 상태를 유지하여 재시도 가능하도록 함
-      }
-    },
-    [localDropdownStates, sendPropertyChanges]
-  );
-
-  // 드롭다운 업데이트 통합 핸들러
-  const handleDropdownUpdate = useCallback(
-    async (apartmentId: number, field: keyof DropdownState, value: string) => {
-      // 즐겨찾기 변경 시 새로운 API 호출
-      if (field === "manageType") {
-        try {
-          await updatePropertyManage(apartmentId, value as ManageType);
-          // 성공 시 로컬 상태 업데이트
-          setLocalDropdownStates((prev) => ({
-            ...prev,
-            [apartmentId]: {
-              ...prev[apartmentId],
-              manageType: value as ManageType,
-            },
-          }));
-          // 캐시 업데이트
-          queryClient.setQueriesData<
-            PropertiesResponse | InfiniteData<PropertiesResponse>
-          >({ queryKey: ["apartments"] }, (oldData) => {
-            if (!oldData) return oldData;
-
-            const updateApartment = (apt: ApartmentWithProperty) => {
-              if (apt.apartmentId === apartmentId) {
-                return {
-                  ...apt,
-                  property: apt.property
-                    ? {
-                        ...apt.property,
-                        manageType: value as ManageType,
-                      }
-                    : null,
-                };
-              }
-              return apt;
-            };
-
-            if (isInfinitePropertiesData(oldData)) {
-              const updatedPages = oldData.pages.map((page) => ({
-                ...page,
-                content: page.content.map(updateApartment),
-              }));
-              return { ...oldData, pages: updatedPages };
-            }
-
-            if (isPropertiesResponse(oldData)) {
-              return {
-                ...oldData,
-                content: oldData.content.map(updateApartment),
-              };
-            }
-
-            return oldData;
-          });
-        } catch (error) {
-          console.error("즐겨찾기 업데이트 실패:", error);
-          alert("즐겨찾기 업데이트에 실패했습니다.");
-        }
-        return;
-      }
-
-      const updates: DropdownState = {
-        [field]: value,
-      };
-
-      // 의뢰 유형 변경 시 매물 상태 자동 조정
-      if (field === "requestType") {
-        const currentPropertyStatus = getCurrentPropertyStatus(apartmentId);
-
-        if (value === "NONE") {
-          updates.propertyStatus = "NONE";
-        } else if (currentPropertyStatus === "NONE") {
-          updates.propertyStatus = "BEFORE";
-        }
-      }
-
-      void applyDropdownUpdates(apartmentId, updates);
-    },
-    [applyDropdownUpdates, getCurrentPropertyStatus, queryClient]
-  );
-
-  const prevSelectedApartmentIdRef = useRef<number | string | undefined>(
-    selectedApartmentId
-  );
-
-  // 다른 매물 클릭 시 이전 매물의 변경사항 일괄 전송
-  useEffect(() => {
-    const prevId = prevSelectedApartmentIdRef.current;
-    const currentId = selectedApartmentId;
-
-    // 이전에 선택된 매물이 있고, 현재 다른 매물을 선택했을 때
-    if (
-      prevId &&
-      prevId !== currentId &&
-      (localPropertyStates[prevId as number] ||
-        (localDropdownStates[prevId as number] &&
-          Object.keys(localDropdownStates[prevId as number]).length > 0))
-    ) {
-      const prevKey = prevId as number;
-      // 이전 매물의 변경사항을 일괄 전송
-      sendPropertyChanges(prevKey)
-        .then(() => {
-          setLocalDropdownStates((prev) => {
-            if (!prev[prevKey]) {
-              return prev;
-            }
-            const newState = { ...prev };
-            delete newState[prevKey];
-            return newState;
-          });
-        })
-        .catch(() => {});
-    }
-
-    // 현재 선택된 매물 ID 업데이트
-    prevSelectedApartmentIdRef.current = currentId;
-  }, [
-    selectedApartmentId,
-    sendPropertyChanges,
-    localPropertyStates,
-    localDropdownStates,
-  ]);
 
   if (isLoading) {
     return (
@@ -556,23 +265,6 @@ export function PropertyManageTable({
                 const isSelected =
                   selectedApartmentId === apartment.apartmentId;
                 const property = apartment.property;
-                const pendingProperty =
-                  localPropertyStates[apartment.apartmentId];
-                const salePriceValue =
-                  pendingProperty?.salePrice ?? property?.salePrice;
-                const jeonsePriceValue =
-                  pendingProperty?.jeonsePrice ?? property?.jeonsePrice;
-                const depositValue =
-                  pendingProperty?.deposit ?? property?.deposit;
-                const monthPriceValue =
-                  pendingProperty?.monthPrice ?? property?.monthPrice;
-                const ownerPhoneValue =
-                  pendingProperty?.ownerPhone ?? property?.ownerPhone;
-                const ownerNameValue =
-                  pendingProperty?.ownerName ?? property?.ownerName;
-                const formattedOwnerPhone =
-                  formatPhoneNumber(ownerPhoneValue) ??
-                  (ownerPhoneValue ? String(ownerPhoneValue) : undefined);
 
                 return (
                   <TableRow
@@ -588,7 +280,10 @@ export function PropertyManageTable({
                   >
                     {/* 즐겨찾기 */}
                     <TableCell className="px-2">
-                      <div className="flex items-center justify-center">
+                      <div
+                        className="flex items-center justify-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <DropdownMenuCell
                           options={[
                             {
@@ -603,17 +298,11 @@ export function PropertyManageTable({
                             },
                             { label: "주의", value: "CAUTION", icon: Caution },
                           ]}
-                          value={
-                            localDropdownStates[apartment.apartmentId]
-                              ?.manageType ??
-                            apartment.property?.manageType ??
-                            "NONE"
-                          }
+                          value={property?.manageType ?? "NONE"}
                           onChange={(value) => {
-                            handleDropdownUpdate(
+                            handleManageTypeChange(
                               apartment.apartmentId,
-                              "manageType",
-                              value
+                              value as ManageType,
                             );
                           }}
                           hideLabel={true}
@@ -626,90 +315,148 @@ export function PropertyManageTable({
                     </TableCell>
 
                     {/* 동 */}
-                    <TableCell>{apartment.dong}</TableCell>
+                    <TableCell>{apartment.dong}동</TableCell>
 
                     {/* 호수 */}
-                    <TableCell>{apartment.ho}</TableCell>
+                    <TableCell>{apartment.ho}호</TableCell>
 
                     {/* 타입 */}
                     <TableCell>{apartment.type}</TableCell>
 
                     {/* 점유 상태 */}
                     <TableCell>
-                      {apartment.property?.occupancyStatus || "-"}
+                      <OccupancyStatusTag status={property?.occupancyStatus} />
                     </TableCell>
 
                     {/* 기매입금 */}
                     <TableCell>
-                      {apartment.property?.contractSalePrice != null
-                        ? formatPriceWithDecimal(
-                            apartment.property.contractSalePrice
-                          )
+                      {property?.contractSalePrice != null
+                        ? formatNumber(property.contractSalePrice)
                         : "-"}
                     </TableCell>
 
                     {/* 현임차 */}
                     <TableCell>
-                      {apartment.property?.occupancyStatus === "JEONSE"
-                        ? apartment.property?.contractJeonsePrice != null
-                          ? formatPriceWithDecimal(
-                              apartment.property.contractJeonsePrice
-                            )
-                          : "-"
-                        : apartment.property?.occupancyStatus ===
-                            "MONTHLY_RENT"
-                          ? apartment.property?.contractDeposit != null ||
-                              apartment.property?.contractMonthlyRent != null
-                            ? `${apartment.property?.contractDeposit != null ? formatPriceWithDecimal(apartment.property.contractDeposit) : "-"} / ${apartment.property?.contractMonthlyRent != null ? formatPriceWithDecimal(apartment.property.contractMonthlyRent) : "-"}`
-                            : "-"
-                          : "-"}
+                      {property?.occupancyStatus === "JEONSE" ? (
+                        property?.contractJeonsePrice != null ? (
+                          formatNumber(property.contractJeonsePrice)
+                        ) : (
+                          "-"
+                        )
+                      ) : property?.occupancyStatus === "MONTHLY_RENT" ? (
+                        property?.contractDeposit != null ||
+                        property?.contractMonthlyRent != null ? (
+                          <span className="flex flex-col">
+                            <span>
+                              {property?.contractDeposit != null
+                                ? formatNumber(property.contractDeposit)
+                                : "-"}{" "}
+                              /
+                            </span>
+                            <span>
+                              {property?.contractMonthlyRent != null
+                                ? formatNumber(property.contractMonthlyRent)
+                                : "-"}
+                            </span>
+                          </span>
+                        ) : (
+                          "-"
+                        )
+                      ) : (
+                        "-"
+                      )}
                     </TableCell>
 
                     {/* 만기일 */}
-                    <TableCell>
-                      {apartment.property?.expireDate || "-"}
-                    </TableCell>
+                    <TableCell>{property?.expireDate || "-"}</TableCell>
 
                     {/* 의뢰 유형 */}
                     <TableCell>
-                      {requestTypeOptions.find(
-                        (opt) =>
-                          opt.value ===
-                          (apartment.property?.requestType ?? "NONE")
-                      )?.label || "-"}
+                      <RequestTypeTag type={property?.requestType} />
                     </TableCell>
 
                     {/* 매도가 */}
-                    <TableCell>
-                      {salePriceValue
-                        ? formatPriceWithDecimal(salePriceValue)
+                    <TableCell
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCellClick(apartment.apartmentId, "salePrice");
+                      }}
+                      className="cursor-pointer hover:bg-blue-50"
+                    >
+                      {property?.salePrice
+                        ? formatNumber(property.salePrice)
                         : "-"}
                     </TableCell>
 
                     {/* 전세가 */}
-                    <TableCell>
-                      {jeonsePriceValue
-                        ? formatPriceWithDecimal(jeonsePriceValue)
+                    <TableCell
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCellClick(apartment.apartmentId, "jeonsePrice");
+                      }}
+                      className="cursor-pointer hover:bg-blue-50"
+                    >
+                      {property?.jeonsePrice
+                        ? formatNumber(property.jeonsePrice)
                         : "-"}
                     </TableCell>
 
                     {/* 보증금/월세가 */}
-                    <TableCell>
-                      {depositValue || monthPriceValue
-                        ? `${depositValue ? formatPriceWithDecimal(depositValue) : "-"} / ${monthPriceValue ? formatPriceWithDecimal(monthPriceValue) : "-"}`
-                        : "-"}
+                    <TableCell
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCellClick(apartment.apartmentId, "deposit");
+                      }}
+                      className="cursor-pointer hover:bg-blue-50"
+                    >
+                      {property?.deposit || property?.monthPrice ? (
+                        <span className="flex flex-col">
+                          <span>
+                            {property?.deposit
+                              ? formatNumber(property.deposit)
+                              : "-"}{" "}
+                            /
+                          </span>
+                          <span>
+                            {property?.monthPrice
+                              ? formatNumber(property.monthPrice)
+                              : "-"}
+                          </span>
+                        </span>
+                      ) : (
+                        "-"
+                      )}
                     </TableCell>
 
                     {/* 의뢰 등록일 */}
                     <TableCell>
-                      {apartment.property?.requestRegistrationDate || "-"}
+                      {property?.requestRegistrationDate || "-"}
                     </TableCell>
 
                     {/* 소유자 */}
-                    <TableCell>{ownerNameValue || "-"}</TableCell>
+                    <TableCell
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCellClick(apartment.apartmentId, "ownerName");
+                      }}
+                      className="cursor-pointer hover:bg-blue-50"
+                    >
+                      {property?.ownerName || "-"}
+                    </TableCell>
 
                     {/* 연락처 */}
-                    <TableCell>{formattedOwnerPhone || "-"}</TableCell>
+                    <TableCell
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCellClick(apartment.apartmentId, "ownerPhone");
+                      }}
+                      className="cursor-pointer hover:bg-blue-50"
+                    >
+                      {property?.ownerPhone
+                        ? formatPhoneNumber(property.ownerPhone) ||
+                          property.ownerPhone
+                        : "-"}
+                    </TableCell>
                   </TableRow>
                 );
               })}

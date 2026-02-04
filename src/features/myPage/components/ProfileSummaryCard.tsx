@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { ContentCard } from "@/components/common/ContentCard";
-import EditNonBox from "@/components/common/EditNonBox.svg";
+import { ContentCard } from "@/shared/components/ContentCard";
+import EditNonBox from "@/shared/components/EditNonBox.svg";
 import UsersIcon from "@/assets/Users.svg";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/shared/ui/button";
+import { Label } from "@/shared/ui/label";
 import { cn, formatPhoneNumber } from "@/shared/utils";
 import { ProfileEditModal } from "./ProfileEditModal";
 import { RealtorCertificationModal } from "./RealtorCertificationModal";

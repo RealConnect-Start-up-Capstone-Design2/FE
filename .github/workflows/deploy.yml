@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - realconnect_v2 # 프리뷰 브랜치 추가
 
 env:
   VERCEL_ORG_ID: ${{ secrets.ORGID }}

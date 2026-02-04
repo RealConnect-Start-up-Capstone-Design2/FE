@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { VerificationButton } from "../ProfileEditModal/VerificationButton";
 import { INPUT_STYLE, LABEL_STYLE } from "../ProfileEditModal/constants";
 import { formatPhoneNumber } from "@/shared/utils";

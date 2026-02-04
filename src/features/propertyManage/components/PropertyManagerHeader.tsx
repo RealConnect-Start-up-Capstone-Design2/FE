@@ -1,14 +1,14 @@
 import { useCallback, useState, useEffect } from "react";
-import { PageHeader } from "@/components/common/PageHeader";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
-import type { DropdownOption } from "@/components/ui/dropdown-menu";
+import { PageHeader } from "@/shared/components/PageHeader";
+import { Button } from "@/shared/ui/button";
+import { DropdownMenu } from "@/shared/ui/dropdown-menu";
+import type { DropdownOption } from "@/shared/ui/dropdown-menu";
 import { Search } from "lucide-react";
 import {
   InputGroup,
   InputGroupInput,
   InputGroupAddon,
-} from "@/components/ui/input-group";
+} from "@/shared/ui/input-group";
 
 // 이미지 불러오기
 import RefreshIcon from "@/assets/Refresh.svg";

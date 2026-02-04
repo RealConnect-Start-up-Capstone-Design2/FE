@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { ApartmentWithProperty } from "../stores/propertyStore";
+import type { ApartmentWithProperty } from "../types";
 
 interface UsePropertyFilterParams {
   apartments: ApartmentWithProperty[];

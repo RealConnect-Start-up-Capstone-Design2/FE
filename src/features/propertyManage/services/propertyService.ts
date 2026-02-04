@@ -8,7 +8,7 @@ import type {
   PropertyStatus,
   RequestType,
   ManageType,
-} from "../stores/propertyStore";
+} from "../types";
 
 export interface PropertyMutationPayload {
   apartmentId: number;
@@ -83,13 +83,13 @@ export const fetchPropertiesByPhone = async (
 
 /**
  * 특정 아파트 조회 API
- * GET /api/properties/:apartmentId
+ * GET /api/property/detail/:apartmentId
  */
 export const fetchApartmentById = async (
   apartmentId: number
 ): Promise<ApartmentWithProperty> => {
   const response = await apiClient.get<ApartmentWithProperty>(
-    `/api/properties/${apartmentId}`
+    `/api/property/detail/${apartmentId}`
   );
   return response.data;
 };
@@ -296,9 +296,8 @@ export const updatePropertyManage = async (
   apartmentId: number,
   manageType: ManageType
 ): Promise<{ apartmentId: number; manageType: ManageType }> => {
-  const response = await apiClient.post(
-    `/api/property/manage/${apartmentId}`,
-    { manageType }
-  );
+  const response = await apiClient.post(`/api/property/manage/${apartmentId}`, {
+    manageType,
+  });
   return response.data;
 };
