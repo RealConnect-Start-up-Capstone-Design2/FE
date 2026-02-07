@@ -1,11 +1,32 @@
+import type { OccupancyStatus, ContractRelationType } from "./enums";
+
 // ============================================
 // 계약 정보 타입 정의 (백엔드 API 스펙 기준)
 // ============================================
 
 /**
- * 계약 타입
+ * 계약 타입 (매매/전세/월세)
  */
 export type ContractType = "SALE" | "JEONSE" | "MONTHLY";
+
+/**
+ * 계약 정보 조회 API 응답 (apartmentId 경로 기준)
+ * GET /api/properties/contractInfo/{apartmentId}
+ * PUT /api/properties/contractInfo/{apartmentId} (생성/수정 시 동일 바디)
+ */
+export interface ContractInfoByApartmentResponse {
+  occupancyStatus: OccupancyStatus;
+  salePrice: number;
+  loanAmount: number;
+  jeonsePrice: number;
+  deposit: number;
+  monthlyRent: number;
+  maintenanceFee: number;
+  expireDate: string;
+  registrationDate: string;
+  contractOffice: string;
+  contractType: ContractRelationType;
+}
 
 export const DEFAULT_CONTRACT_TYPE: ContractType = "SALE";
 
@@ -63,7 +84,7 @@ export const getContract = (apartmentId: number): ContractInfo | null => {
  */
 export const saveContract = (
   apartmentId: number,
-  contract: Partial<ContractInfo>
+  contract: Partial<ContractInfo>,
 ): void => {
   const existing = dummyContracts.get(apartmentId);
   const updated: ContractInfo = {
@@ -109,7 +130,7 @@ export const deleteContract = (apartmentId: number): void => {
 export const updateContractField = (
   apartmentId: number,
   field: keyof Omit<ContractInfo, "apartmentId">,
-  value: string | number
+  value: string | number,
 ): void => {
   const existing = getContract(apartmentId);
   if (existing) {

@@ -8,6 +8,7 @@ export const OCCUPANCY_STATUS = {
   SELF: "SELF",
   JEONSE: "JEONSE",
   MONTHLY_RENT: "MONTHLY_RENT",
+  VACANT: "VACANT",
 } as const;
 
 export type OccupancyStatus =
@@ -18,6 +19,28 @@ export const OCCUPANCY_STATUS_LABELS: Record<OccupancyStatus, string> = {
   SELF: "자가",
   JEONSE: "전세",
   MONTHLY_RENT: "월세",
+  VACANT: "공실",
+};
+
+/** 계약 정보 - 계약 구분 (본인/타사/공동중개/소개) */
+export const CONTRACT_RELATION_TYPE = {
+  MY_CONTRACT: "MY_CONTRACT",
+  OTHER_CONTRACT: "OTHER_CONTRACT",
+  CO_BROKERAGE: "CO_BROKERAGE",
+  INTRODUCTION: "INTRODUCTION",
+} as const;
+
+export type ContractRelationType =
+  (typeof CONTRACT_RELATION_TYPE)[keyof typeof CONTRACT_RELATION_TYPE];
+
+export const CONTRACT_RELATION_TYPE_LABELS: Record<
+  ContractRelationType,
+  string
+> = {
+  MY_CONTRACT: "본인 계약",
+  OTHER_CONTRACT: "타사 계약",
+  CO_BROKERAGE: "공동 중개",
+  INTRODUCTION: "소개",
 };
 
 export const PROPERTY_STATUS = {
@@ -65,6 +88,42 @@ export const REQUEST_TYPE_LABELS: Record<RequestType, string> = {
   HOLD: "보류",
 };
 
+/** 의뢰정보 - 융자 상태 */
+export const LOAN_STATE = {
+  NONE: "NONE",
+  NOT_EXIST: "NOT_EXIST",
+  UNDER30: "UNDER30",
+  OVER30: "OVER30",
+} as const;
+
+export type LoanState = (typeof LOAN_STATE)[keyof typeof LOAN_STATE];
+
+export const LOAN_STATE_LABELS: Record<LoanState, string> = {
+  NONE: "없음",
+  NOT_EXIST: "융자 없음",
+  UNDER30: "30% 미만",
+  OVER30: "30% 이상",
+};
+
+/** 고객 상담 로그 - 고객 구분 */
+export const CONSULTATION_CUSTOMER_TYPE = {
+  OWNER: "OWNER",
+  TENENT: "TENENT",
+  ETC: "ETC",
+} as const;
+
+export type ConsultationCustomerType =
+  (typeof CONSULTATION_CUSTOMER_TYPE)[keyof typeof CONSULTATION_CUSTOMER_TYPE];
+
+export const CONSULTATION_CUSTOMER_TYPE_LABELS: Record<
+  ConsultationCustomerType,
+  string
+> = {
+  OWNER: "소유자",
+  TENENT: "임차인",
+  ETC: "기타",
+};
+
 export const DIRECTION = {
   NONE: "NONE",
   EAST: "EAST",
@@ -91,6 +150,83 @@ export const DIRECTION_LABELS: Record<Direction, string> = {
   NORTHWEST: "북서",
 };
 
+/** 매물 상세 - 방향 기준 (거실/침실) */
+export const DIRECTION_BASE = {
+  LIVING_ROOM: "LIVING_ROOM",
+  BEDROOM: "BEDROOM",
+} as const;
+
+export type DirectionBase =
+  (typeof DIRECTION_BASE)[keyof typeof DIRECTION_BASE];
+
+export const DIRECTION_BASE_LABELS: Record<DirectionBase, string> = {
+  LIVING_ROOM: "거실",
+  BEDROOM: "침실",
+};
+
+/** 매물 상세 - 층 위치 */
+export const FLOOR_LEVEL = {
+  LOW: "LOW",
+  MIDDLE: "MIDDLE",
+  HIGH: "HIGH",
+} as const;
+
+export type FloorLevel = (typeof FLOOR_LEVEL)[keyof typeof FLOOR_LEVEL];
+
+export const FLOOR_LEVEL_LABELS: Record<FloorLevel, string> = {
+  LOW: "저층",
+  MIDDLE: "중층",
+  HIGH: "고층",
+};
+
+/** 매물 상세 - 구조 타입 */
+export const STRUCTURE_TYPE = {
+  SINGLE: "SINGLE",
+  DUPLEX: "DUPLEX",
+} as const;
+
+export type StructureType =
+  (typeof STRUCTURE_TYPE)[keyof typeof STRUCTURE_TYPE];
+
+export const STRUCTURE_TYPE_LABELS: Record<StructureType, string> = {
+  SINGLE: "단층",
+  DUPLEX: "복층",
+};
+
+/** 매물 상세 - 입구 타입 */
+export const ENTRANCE_TYPE = {
+  NONE: "NONE",
+  STAIR: "STAIR",
+  CORRIDOR: "CORRIDOR",
+  MIXED: "MIXED",
+} as const;
+
+export type EntranceType = (typeof ENTRANCE_TYPE)[keyof typeof ENTRANCE_TYPE];
+
+export const ENTRANCE_TYPE_LABELS: Record<EntranceType, string> = {
+  NONE: "없음",
+  STAIR: "계단식",
+  CORRIDOR: "복도식",
+  MIXED: "혼합",
+};
+
+/** 매물 상세 - 주용도 */
+export const MAIN_USAGE = {
+  NONE: "NONE",
+  RESIDENTIAL: "RESIDENTIAL",
+  ACCOMMODATION: "ACCOMMODATION",
+  OFFICE: "OFFICE",
+} as const;
+
+export type MainUsage = (typeof MAIN_USAGE)[keyof typeof MAIN_USAGE];
+
+export const MAIN_USAGE_LABELS: Record<MainUsage, string> = {
+  NONE: "없음",
+  RESIDENTIAL: "주거",
+  ACCOMMODATION: "숙박",
+  OFFICE: "사무",
+};
+
 export const MANAGE_TYPE = {
   NONE: "NONE",
   ATTENTION: "ATTENTION",
@@ -114,6 +250,7 @@ export const occupancyStatusOptions: DropdownOption[] = [
   { label: "자가", value: "SELF" },
   { label: "전세", value: "JEONSE" },
   { label: "월세", value: "MONTHLY_RENT" },
+  { label: "공실", value: "VACANT" },
 ];
 
 export const propertyStatusOptions: DropdownOption[] = [
