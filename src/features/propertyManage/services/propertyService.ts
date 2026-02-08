@@ -5,6 +5,13 @@ import type {
   PropertiesQueryParams,
   ApartmentWithProperty,
   PropertyApiResponse,
+  PropertyDetailResponse,
+  PropertyRequestInfoResponse,
+  ConsultationResponse,
+  ConsultationPayload,
+  ConsultationLogPayload,
+  PropertyImageResponse,
+  PresignImageRequest,
   PropertyStatus,
   RequestType,
   ManageType,
@@ -39,7 +46,7 @@ export interface PropertyMutationPayload {
  * @returns 아파트 목록 + 페이지네이션 정보
  */
 export const fetchProperties = async (
-  params: PropertiesQueryParams
+  params: PropertiesQueryParams,
 ): Promise<PropertiesResponse> => {
   const response = await apiClient.get<PropertiesResponse>("/api/properties", {
     params: {
@@ -65,7 +72,7 @@ interface PropertiesPhoneQueryParams {
 }
 
 export const fetchPropertiesByPhone = async (
-  params: PropertiesPhoneQueryParams
+  params: PropertiesPhoneQueryParams,
 ): Promise<PropertiesResponse> => {
   const response = await apiClient.get<PropertiesResponse>(
     "/api/properties/phone",
@@ -76,7 +83,7 @@ export const fetchPropertiesByPhone = async (
         size: params.size || 30,
         phone: params.phone,
       },
-    }
+    },
   );
   return response.data;
 };
@@ -86,10 +93,161 @@ export const fetchPropertiesByPhone = async (
  * GET /api/property/detail/:apartmentId
  */
 export const fetchApartmentById = async (
-  apartmentId: number
+  apartmentId: number,
 ): Promise<ApartmentWithProperty> => {
   const response = await apiClient.get<ApartmentWithProperty>(
-    `/api/property/detail/${apartmentId}`
+    `/api/property/detail/${apartmentId}`,
+  );
+  return response.data;
+};
+
+/**
+ * 매물 상세 조회 API
+ * GET /api/property/detail/:apartmentId
+ * (방향, 층, 구조, 입구타입, 주용도 등 상세 필드)
+ */
+export const fetchPropertyDetail = async (
+  apartmentId: number,
+): Promise<PropertyDetailResponse> => {
+  const response = await apiClient.get<PropertyDetailResponse>(
+    `/api/property/detail/${apartmentId}`,
+  );
+  return response.data;
+};
+
+/**
+ * 매물 상세 수정 API
+ * PUT /api/property/detail/:apartmentId
+ */
+export const updatePropertyDetail = async (
+  apartmentId: number,
+  data: PropertyDetailResponse,
+): Promise<PropertyDetailResponse> => {
+  const response = await apiClient.put<PropertyDetailResponse>(
+    `/api/property/detail/${apartmentId}`,
+    data,
+  );
+  return response.data;
+};
+
+/**
+ * 의뢰정보 조회 API
+ * GET /api/property/requestInfo/:apartmentId
+ */
+export const fetchRequestInfo = async (
+  apartmentId: number,
+): Promise<PropertyRequestInfoResponse> => {
+  const response = await apiClient.get<PropertyRequestInfoResponse>(
+    `/api/property/requestInfo/${apartmentId}`,
+  );
+  return response.data;
+};
+
+/**
+ * 의뢰정보 생성/수정 API
+ * PUT /api/property/requestInfo/:apartmentId
+ */
+export const updateRequestInfo = async (
+  apartmentId: number,
+  data: PropertyRequestInfoResponse,
+): Promise<PropertyRequestInfoResponse> => {
+  const response = await apiClient.put<PropertyRequestInfoResponse>(
+    `/api/property/requestInfo/${apartmentId}`,
+    data,
+  );
+  return response.data;
+};
+
+/**
+ * 고객 상담 카드 조회 API
+ * GET /api/property/consultation/:apartmentId
+ */
+export const fetchConsultation = async (
+  apartmentId: number,
+): Promise<ConsultationResponse> => {
+  const response = await apiClient.get<ConsultationResponse>(
+    `/api/property/consultation/${apartmentId}`,
+  );
+  return response.data;
+};
+
+/**
+ * 고객 상담 생성/수정 API
+ * PUT /api/property/consultation/:apartmentId
+ */
+export const updateConsultation = async (
+  apartmentId: number,
+  data: ConsultationPayload,
+): Promise<ConsultationResponse> => {
+  const response = await apiClient.put<ConsultationResponse>(
+    `/api/property/consultation/${apartmentId}`,
+    data,
+  );
+  return response.data;
+};
+
+/**
+ * 상담 로그 추가 API
+ * POST /api/property/consultation/:apartmentId
+ */
+export const createConsultationLog = async (
+  apartmentId: number,
+  data: ConsultationLogPayload,
+): Promise<ConsultationResponse> => {
+  const response = await apiClient.post<ConsultationResponse>(
+    `/api/property/consultation/${apartmentId}`,
+    data,
+  );
+  return response.data;
+};
+
+/**
+ * 매물 사진 조회 API
+ * GET /api/property/image/:apartmentId
+ * 이미지 없으면 빈 배열 반환
+ */
+export const fetchPropertyImages = async (
+  apartmentId: number,
+): Promise<PropertyImageResponse[]> => {
+  const response = await apiClient.get<PropertyImageResponse[]>(
+    `/api/property/image/${apartmentId}`,
+  );
+  return response.data;
+};
+
+/**
+ * 매물 사진 Presigned URL 발급 API
+ * POST /api/property/image/:apartmentId
+ * params: originalFileName, contentType (image/jpeg, image/png, image/webp 등, ; 앞부분만 사용)
+ * 발급 후 S3에 form-data file 필드로 업로드, 완료 후 confirm 호출 필요
+ */
+export const createPropertyImagePresign = async (
+  apartmentId: number,
+  data: PresignImageRequest,
+): Promise<PropertyImageResponse> => {
+  const response = await apiClient.post<PropertyImageResponse>(
+    `/api/property/image/${apartmentId}`,
+    undefined,
+    {
+      params: {
+        originalFileName: data.originalFileName,
+        contentType: data.contentType,
+      },
+    },
+  );
+  return response.data;
+};
+
+/**
+ * 매물 사진 업로드 확정 API
+ * POST /api/property/image/confirm/:imageId
+ * S3 업로드 완료 후 호출해야 조회 시 이미지 포함됨
+ */
+export const confirmPropertyImage = async (
+  imageId: number,
+): Promise<PropertyImageResponse> => {
+  const response = await apiClient.post<PropertyImageResponse>(
+    `/api/property/image/confirm/${imageId}`,
   );
   return response.data;
 };
@@ -101,7 +259,7 @@ export const fetchApartmentById = async (
  * @returns 총 아파트 수
  */
 export const fetchTotalApartmentCount = async (
-  apartmentComplexId: number
+  apartmentComplexId: number,
 ): Promise<number> => {
   const response = await apiClient.get<{ totalCount: number }>(
     `/api/apartment-complex/totalCnt`,
@@ -109,7 +267,7 @@ export const fetchTotalApartmentCount = async (
       params: {
         apartmentComplexId,
       },
-    }
+    },
   );
   return response.data.totalCount;
 };
@@ -119,7 +277,7 @@ export const fetchTotalApartmentCount = async (
  * GET /memo?apartmentId={apartmentId}
  */
 export const getMemoAPI = async (
-  apartmentId: number
+  apartmentId: number,
 ): Promise<{ apartmentId: number; content: string }> => {
   const response = await apiClient.get<{
     apartmentId: number;
@@ -136,7 +294,7 @@ export const getMemoAPI = async (
  */
 export const createMemoAPI = async (
   apartmentId: number,
-  content: string
+  content: string,
 ): Promise<{ apartmentId: number; content: string }> => {
   const response = await apiClient.post<{
     apartmentId: number;
@@ -151,7 +309,7 @@ export const createMemoAPI = async (
  */
 export const updateMemoAPI = async (
   apartmentId: number,
-  content: string
+  content: string,
 ): Promise<{ apartmentId: number; content: string }> => {
   const response = await apiClient.put<{
     apartmentId: number;
@@ -165,7 +323,7 @@ export const updateMemoAPI = async (
  * PUT /api/properties
  */
 export const updatePropertyAPI = async (
-  data: PropertyMutationPayload
+  data: PropertyMutationPayload,
 ): Promise<{
   propertyStatus: string;
   requestType: string;
@@ -187,7 +345,7 @@ export const updatePropertyAPI = async (
  * POST /api/properties
  */
 export const createPropertyAPI = async (
-  data: PropertyMutationPayload
+  data: PropertyMutationPayload,
 ): Promise<{
   propertyStatus: string;
   requestType: string;
@@ -210,11 +368,11 @@ export const createPropertyAPI = async (
  */
 export const toggleFavoriteAPI = async (
   apartmentId: number,
-  isFavorite: boolean
+  isFavorite: boolean,
 ): Promise<{ apartmentId: number; isFavorite: boolean }> => {
   const response = await apiClient.patch(
     `/api/properties/${apartmentId}/favorite`,
-    { isFavorite }
+    { isFavorite },
   );
   return response.data;
 };
@@ -224,7 +382,7 @@ export const toggleFavoriteAPI = async (
  */
 const mapApiResponseToApartment = (
   apiData: PropertyApiResponse,
-  apartmentName?: string
+  apartmentName?: string,
 ): ApartmentWithProperty => {
   return {
     apartmentId: apiData.apartmentId,
@@ -262,7 +420,7 @@ const mapApiResponseToApartment = (
  * GET /api/property
  */
 export const fetchPropertyList = async (
-  params: PropertiesQueryParams
+  params: PropertiesQueryParams,
 ): Promise<PropertiesResponse> => {
   const response = await apiClient.get<PropertiesApiResponse>("/api/property", {
     params: {
@@ -281,7 +439,7 @@ export const fetchPropertyList = async (
   // API 응답을 내부 타입으로 변환
   return {
     content: response.data.content.map((item) =>
-      mapApiResponseToApartment(item)
+      mapApiResponseToApartment(item),
     ),
     nextCursor: response.data.nextCursor,
     hasNext: response.data.hasNext,
@@ -294,7 +452,7 @@ export const fetchPropertyList = async (
  */
 export const updatePropertyManage = async (
   apartmentId: number,
-  manageType: ManageType
+  manageType: ManageType,
 ): Promise<{ apartmentId: number; manageType: ManageType }> => {
   const response = await apiClient.post(`/api/property/manage/${apartmentId}`, {
     manageType,
