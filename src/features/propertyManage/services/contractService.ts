@@ -1,36 +1,9 @@
-import type { AxiosError } from "axios";
 import apiClient from "@/shared/api/client";
 import type {
   ContractInfo,
   ContractInfoInput,
-  ContractType,
   ContractInfoByApartmentResponse,
 } from "../types";
-
-/**
- * 계약 정보 조회
- * GET /api/properties/contractInfo
- */
-export const getContractAPI = async (
-  apartmentId: number,
-  contractType: ContractType,
-): Promise<ContractInfo | null> => {
-  try {
-    const response = await apiClient.get<ContractInfo>(
-      "/api/properties/contractInfo",
-      {
-        params: { apartmentId, contractType },
-      },
-    );
-    return response.data;
-  } catch (error) {
-    const axiosError = error as AxiosError;
-    if (axiosError?.response?.status === 404) {
-      return null;
-    }
-    throw error;
-  }
-};
 
 /**
  * 계약 정보 생성
@@ -54,7 +27,7 @@ export const createContractAPI = async (
  * 계약 정보 수정
  * PUT /api/properties/contractInfo
  */
-export const saveContractAPI = async (
+export const updateContractAPI = async (
   apartmentId: number,
   contract: Partial<ContractInfoInput>,
 ): Promise<ContractInfo> => {
@@ -69,10 +42,10 @@ export const saveContractAPI = async (
 };
 
 /**
- * 계약 정보 조회 (apartmentId 경로)
+ * 계약 정보 조회
  * GET /api/properties/contractInfo/:apartmentId
  */
-export const fetchContractInfo = async (
+export const fetchContractAPI = async (
   apartmentId: number,
 ): Promise<ContractInfoByApartmentResponse> => {
   const response = await apiClient.get<ContractInfoByApartmentResponse>(
