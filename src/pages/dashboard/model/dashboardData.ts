@@ -1,0 +1,169 @@
+import type { DashboardData } from "./types";
+
+export const dashboardData: DashboardData = {
+  office: {
+    name: "잠실공인중개사사무소",
+    representative: "최정현 (대표)",
+    plan: "Basic",
+    phone: "02-2222-2222",
+    businessNumber: "123-45-67890",
+    registrationNumber: "123-45-67890",
+    mainComplexes: ["파크리오", "잠실 래미안 아이파크"],
+    shareGroups: ["그룹1", "그룹2"],
+    todayTasks: [
+      { label: "오늘 상담", value: "6건", tone: "primary" },
+      { label: "계약 임박", value: "2건", tone: "danger" },
+      { label: "미확인 의뢰", value: "3건", tone: "warning" },
+    ],
+  },
+  kpis: [
+    {
+      id: "properties",
+      label: "전체 매물",
+      value: "128",
+      helper: "활성 96건",
+      tone: "primary",
+    },
+    {
+      id: "expiry",
+      label: "만기 임박",
+      value: "12",
+      helper: "30일 이내",
+      tone: "danger",
+    },
+    {
+      id: "consultations",
+      label: "오늘 상담",
+      value: "0",
+      helper: "예정 0건",
+      tone: "success",
+    },
+    {
+      id: "requests",
+      label: "미확인 의뢰",
+      value: "0",
+      helper: "문의 0건 포함",
+      tone: "warning",
+    },
+  ],
+  requestSummaries: [
+    {
+      title: "매물 의뢰 현황",
+      count: "8건",
+      delta: "전일 대비 +2",
+      description: "",
+      // items: [
+      //   { label: "매도", value: "1건", tone: "primary" },
+      //   { label: "전세", value: "4건", tone: "success" },
+      //   { label: "월세", value: "3건", tone: "warning" },
+      // ],
+    },
+    {
+      title: "문의 의뢰 현황",
+      count: "0건",
+      delta: "미확인 0건",
+      description: "",
+      // items: [
+      //   { label: "매수", value: "1건", tone: "primary" },
+      //   { label: "전세", value: "4건", tone: "success" },
+      //   { label: "월세", value: "3건", tone: "warning" },
+      // ],
+    },
+  ],
+  systemNotices: [
+    {
+      id: 1,
+      title: "공동 중개 알림 정책 업데이트",
+      description: "공유 그룹 승인 상태가 알림 목록에 함께 표시됩니다.",
+      date: "2025. 03. 21. 오후 02:00",
+      tone: "primary",
+    },
+    {
+      id: 2,
+      title: "만기일 알림 발송 기준 개선",
+      description: "1개월, 3개월, 6개월 필터별 알림 기준이 정교해집니다.",
+      date: "2025. 03. 20. 오전 10:30",
+      tone: "success",
+    },
+    {
+      id: 3,
+      title: "정기 점검 예정",
+      description: "금요일 새벽 일부 통계 집계가 지연될 수 있습니다.",
+      date: "2025. 03. 19. 오후 06:10",
+      tone: "warning",
+    },
+  ],
+  expiryAlerts: [
+    {
+      id: 1,
+      daysLeft: 1,
+      owner: "김규식",
+      dealType: "매매",
+      expiryDate: "2025년 5월 12일",
+      propertyTitle: "파크리오 아파트 101동 1012호",
+      tone: "danger",
+    },
+    {
+      id: 2,
+      daysLeft: 5,
+      owner: "김규식",
+      dealType: "매매",
+      expiryDate: "2025년 5월 12일",
+      propertyTitle: "파크리오 아파트 101동 1012호",
+      tone: "danger",
+    },
+    {
+      id: 3,
+      daysLeft: 12,
+      owner: "김규식",
+      dealType: "매매",
+      expiryDate: "2025년 5월 12일",
+      propertyTitle: "파크리오 아파트 101동 1012호",
+      tone: "warning",
+    },
+    {
+      id: 4,
+      daysLeft: 30,
+      owner: "김규식",
+      dealType: "매매",
+      expiryDate: "2025년 5월 12일",
+      propertyTitle: "파크리오 아파트 101동 1012호",
+      tone: "success",
+    },
+    {
+      id: 5,
+      daysLeft: 45,
+      owner: "이민주",
+      dealType: "전세",
+      expiryDate: "2025년 6월 26일",
+      propertyTitle: "잠실 래미안 아이파크 203동 1203호",
+      tone: "success",
+    },
+  ],
+  unsupportedFeatures: [
+    {
+      id: "property-share",
+      title: "매물 공유 알림",
+      eyebrow: "공동 중개 준비 중",
+      description: "매물 공유 기능은 아직 지원하지 않습니다.",
+      detail:
+        "기능이 열리면 공유 요청, 승인 상태, 신규 알림을 이곳에서 확인할 수 있습니다.",
+      // badges: [
+      //   { label: "현재 비활성화", tone: "warning" },
+      //   { label: "출시 예정", tone: "primary" },
+      // ],
+    },
+    {
+      id: "inquiry-share",
+      title: "문의 공유 알림",
+      eyebrow: "문의 공유 준비 중",
+      description: "문의 공유 기능은 아직 지원하지 않습니다.",
+      detail:
+        "기능이 열리면 공유 문의, 담당자 배정, 처리 상태를 이곳에서 확인할 수 있습니다.",
+      // badges: [
+      //   { label: "현재 비활성화", tone: "warning" },
+      //   { label: "알림 준비 중", tone: "primary" },
+      // ],
+    },
+  ],
+};
