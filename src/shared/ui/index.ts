@@ -16,3 +16,12 @@ export {
 export { DropdownMenuCell } from "./dropdown-menu-cell";
 export { TableHeaderFilter } from "./table-header-filter";
 export { FormField } from "./form-field";
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "./card";
+export { ScrollArea, ScrollBar } from "./scroll-area";
