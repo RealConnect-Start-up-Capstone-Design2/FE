@@ -1,11 +1,15 @@
-import {
-  SidebarBlock,
-  sidebarInputClassName,
-} from "@/shared/components/detail-sidebar";
-import { SidebarField } from "@/shared/components/detail-sidebar";
-import { Textarea, Label, Input, Button } from "@/shared/ui";
-import { DropdownMenu } from "@/shared/ui/dropdown-menu";
+import { SidebarBlock } from "@/shared/components/detail-sidebar";
 import type { ApartmentWithProperty } from "../../../types";
+import {
+  EmptyBlockState,
+  Field,
+  FieldRow,
+  SidebarActionButton,
+  SidebarInput,
+  SidebarSelect,
+  SidebarTextarea,
+} from "./SidebarFormControls";
+
 interface CustomerConsultationBlockProps {
   apartment?: ApartmentWithProperty;
   isOpen: boolean;
@@ -17,14 +21,11 @@ interface CustomerConsultationBlockProps {
  */
 export function CustomerConsultationBlock({
   apartment,
-  isOpen: _isOpen,
 }: CustomerConsultationBlockProps) {
   if (!apartment) {
     return (
       <SidebarBlock title="고객 상담 내역">
-        <div className="min-h-[200px] flex items-center justify-center bg-gray-50 rounded-md border border-gray-200">
-          <p className="text-gray-400">아파트를 선택해주세요.</p>
-        </div>
+        <EmptyBlockState />
       </SidebarBlock>
     );
   }
@@ -32,47 +33,54 @@ export function CustomerConsultationBlock({
   return (
     <SidebarBlock title="고객 상담 내역">
       <div className="flex flex-col gap-3">
-        <div className="flex flex-row gap-4">
-          <SidebarField label="소유자" direction="row">
-            <input type="text" className={sidebarInputClassName} />
-          </SidebarField>
-          <SidebarField label="연락처" direction="row">
-            <input type="text" className={sidebarInputClassName} />
-          </SidebarField>
-        </div>
-        <div className="flex flex-row gap-4">
-          <SidebarField label="임차인" direction="row">
-            <input type="text" className={sidebarInputClassName} />
-          </SidebarField>
-          <SidebarField label="연락처" direction="row">
-            <input type="text" className={sidebarInputClassName} />
-          </SidebarField>
-        </div>
-        <div className="flex flex-row gap-4">
-          <SidebarField label="기타" direction="row">
-            <input type="text" className={sidebarInputClassName} />
-          </SidebarField>
-          <SidebarField label="연락처" direction="row">
-            <input type="text" className={sidebarInputClassName} />
-          </SidebarField>
-        </div>
-        <Textarea />
-        <Label>상담 내용 추가</Label>
-        <div className="flex flex-row gap-2">
-          <DropdownMenu
-            className="w-25 text-[15px]"
-            placeholder="소유자"
-            options={[
-              { value: "소유자", label: "소유자" },
-              { value: "임차인", label: "임차인" },
-              { value: "기타", label: "기타" },
-            ]}
-          />
-          <Input
-            type="text"
-            placeholder="로얄층이라 시세 이상 받고 싶다고 함."
-          />
-          <Button className="bg-[#1C2882] text-[#ffffff]">저장</Button>
+        <FieldRow>
+          <Field label="소유자">
+            <SidebarInput defaultValue={apartment.property?.ownerName ?? ""} />
+          </Field>
+          <Field label="연락처">
+            <SidebarInput defaultValue={apartment.property?.ownerPhone ?? ""} />
+          </Field>
+        </FieldRow>
+
+        <FieldRow>
+          <Field label="임차인">
+            <SidebarInput />
+          </Field>
+          <Field label="연락처">
+            <SidebarInput placeholder="010-0000-0000" />
+          </Field>
+        </FieldRow>
+
+        <FieldRow>
+          <Field label="가족">
+            <SidebarInput />
+          </Field>
+          <Field label="관리자">
+            <SidebarInput placeholder="010-0000-0000" />
+          </Field>
+        </FieldRow>
+
+        <SidebarTextarea
+          defaultValue={`아는 곳에서 매물로 진행된다고 함.\n아는 곳에서 매물로 진행된다고 함.\n아는 곳에서 매물로 진행된다고 함.`}
+        />
+
+        <div className="mt-1 flex flex-col gap-[5px]">
+          <span className="text-[13px] font-medium tracking-[-0.025em] text-[#8D8D8D]">
+            상담 내용 추가
+          </span>
+          <div className="grid grid-cols-[96px_1fr_54px] gap-2">
+            <SidebarSelect
+              value="owner"
+              options={[
+                { value: "owner", label: "소유자" },
+                { value: "tenant", label: "임차인" },
+                { value: "family", label: "가족" },
+                { value: "etc", label: "기타" },
+              ]}
+            />
+            <SidebarInput placeholder="로얄층이라 시세 이상 받고 싶다고 함." />
+            <SidebarActionButton type="button">등록</SidebarActionButton>
+          </div>
         </div>
       </div>
     </SidebarBlock>

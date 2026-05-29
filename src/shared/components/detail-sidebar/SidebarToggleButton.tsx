@@ -1,6 +1,7 @@
 interface SidebarToggleButtonProps {
   isOpen: boolean;
   onClick: () => void;
+  sidebarWidth: number;
 }
 
 /**
@@ -10,6 +11,7 @@ interface SidebarToggleButtonProps {
 export function SidebarToggleButton({
   isOpen,
   onClick,
+  sidebarWidth,
 }: SidebarToggleButtonProps) {
   return (
     <button
@@ -21,7 +23,7 @@ export function SidebarToggleButton({
         width: "28px",
         height: "127px",
         top: "50px", // Layout padding(52px) + PageHeader(72px) + gap(12px) + 1.5rem(24px)
-        right: isOpen ? "480px" : "0", // 사이드바 너비만큼
+        right: isOpen ? `${sidebarWidth}px` : "0",
         transform: isOpen ? "translateX(0)" : "translateX(0)",
       }}
       aria-label={isOpen ? "카드 닫기" : "카드 열기"}

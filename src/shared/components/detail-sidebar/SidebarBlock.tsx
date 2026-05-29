@@ -7,7 +7,6 @@ interface SidebarBlockProps extends PropsWithChildren {
    */
   title: string;
   /**
-  /**
    * 제목 우측에 표시할 추가 액션 (버튼 등)
    */
   headerAction?: ReactNode;
@@ -47,7 +46,7 @@ export function SidebarBlock({
   return (
     <section
       className={cn(
-        "rounded-lg bg-[#F8F8F8] shadow-[0px_0px_8px_0px_rgba(177,182,199,0.4)]",
+        "rounded-lg border border-[rgba(177,182,199,0.4)] bg-[#F8F8F8] shadow-[0px_0px_8px_0px_rgba(177,182,199,0.4)]",
         "px-[18px] pt-5 pb-5",
         className,
       )}

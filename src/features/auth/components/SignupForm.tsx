@@ -104,7 +104,7 @@ export function SignupForm() {
     } catch (error: unknown) {
       const message = getErrorMessage(
         error,
-        "인증번호 발송 중 오류가 발생했습니다."
+        "인증번호 발송 중 오류가 발생했습니다.",
       );
       alert(message);
     }
@@ -117,7 +117,7 @@ export function SignupForm() {
     } catch (error: unknown) {
       const message = getErrorMessage(
         error,
-        "인증번호 확인 중 오류가 발생했습니다."
+        "인증번호 확인 중 오류가 발생했습니다.",
       );
       alert(message);
     }
@@ -167,7 +167,7 @@ export function SignupForm() {
     } catch (error: unknown) {
       const message = getErrorMessage(
         error,
-        "회원가입 요청 중 오류가 발생했습니다."
+        "회원가입 요청 중 오류가 발생했습니다.",
       );
       alert(message);
     }
@@ -176,17 +176,17 @@ export function SignupForm() {
   const sendButtonLabel = isCodeVerified
     ? "인증완료"
     : isSendingCode
-    ? "발송중..."
-    : sendCooldown > 0
-    ? `${sendCooldown}초`
-    : "인증번호 발송";
+      ? "발송중..."
+      : sendCooldown > 0
+        ? `${sendCooldown}초`
+        : "인증번호 발송";
   const isSendButtonDisabled =
     isCodeVerified || isSendingCode || sendCooldown > 0 || !canSendCode;
   const verifyButtonLabel = isCodeVerified
     ? "완료"
     : isVerifyingCode
-    ? "확인중..."
-    : "인증확인";
+      ? "확인중..."
+      : "인증확인";
   const isVerifyButtonDisabled =
     isCodeVerified || isVerifyingCode || verificationCode.trim().length === 0;
 
@@ -482,9 +482,9 @@ export function SignupForm() {
           </div>
 
           <Button
-            // type="submit"
+            type="submit"
             // TEMP : 임시 비활성화 처리
-            disabled={true}
+            // disabled={true}
             className="mt-5 h-[42px] w-full rounded-md bg-brand text-lg font-semibold text-white hover:bg-[#151F65]"
           >
             회원가입

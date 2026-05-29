@@ -378,6 +378,7 @@ export function PropertyManagePage() {
   return (
     <SlidingSidebarLayout
       isOpen={isSidebarOpen}
+      sidebarWidth={500}
       onToggle={handleToggleSidebar}
       sidebarRef={sidebarRef}
       sidebar={

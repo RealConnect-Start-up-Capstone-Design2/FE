@@ -40,7 +40,11 @@ export function SlidingSidebarLayout({
 
       {/* 토글 버튼 */}
       {showToggleButton && onToggle && (
-        <SidebarToggleButton isOpen={isOpen} onClick={onToggle} />
+        <SidebarToggleButton
+          isOpen={isOpen}
+          onClick={onToggle}
+          sidebarWidth={sidebarWidth}
+        />
       )}
 
       {/* 사이드바 */}

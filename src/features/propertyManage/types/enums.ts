@@ -126,7 +126,24 @@ export const requestTypeOptions: DropdownOption[] = [
   { label: "없음", value: "NONE" },
   { label: "월세", value: "MONTHLY" },
   { label: "전세", value: "JEONSE" },
-  { label: "매매", value: "SALE" },
+  { label: "매도", value: "SALE" },
+  { label: "매/전", value: "SALE_JEONSE" },
+  { label: "매/월", value: "SALE_MONTHLY" },
+  { label: "전/월", value: "JEONSE_MONTHLY" },
+  { label: "매/전/월", value: "SALE_JEONSE_MONTHLY" },
+  { label: "보류", value: "HOLD" },
+];
+
+export const directionOptions: DropdownOption[] = [
+  { label: "없음", value: "NONE" },
+  { label: "동", value: "EAST" },
+  { label: "서", value: "WEST" },
+  { label: "남", value: "SOUTH" },
+  { label: "북", value: "NORTH" },
+  { label: "남동", value: "SOUTHEAST" },
+  { label: "남서", value: "SOUTHWEST" },
+  { label: "북동", value: "NORTHEAST" },
+  { label: "북서", value: "NORTHWEST" },
 ];
 
 export const manageTypeOptions: DropdownOption[] = [
