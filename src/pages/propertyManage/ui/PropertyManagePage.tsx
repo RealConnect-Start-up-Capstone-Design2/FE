@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import {
   PropertyManagerHeader,
   PropertyManageTable,
@@ -8,6 +13,7 @@ import { SlidingSidebarLayout } from "@/shared/components/detail-sidebar";
 
 // 사이드바 컴포넌트
 import { PropertySidebar } from "@/features/propertyManage/components/sidebar";
+import { MainComplexModal } from "@/shared/components/MainComplexModal";
 
 // 서버에서 가져오는 데이터
 import {
@@ -66,6 +72,8 @@ const parseEnumValue = <T extends string>(
  * 아파트 목록과 상세 정보(메모)를 관리
  */
 export function PropertyManagePage() {
+  const [searchParams] = useSearchParams();
+  const queryClient = useQueryClient();
   const [selectedApartmentComplexId, setSelectedApartmentComplexId] = useState<
     number | undefined
   >();
@@ -81,9 +89,32 @@ export function PropertyManagePage() {
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [dong, setDong] = useState<string>("");
   const [ho, setHo] = useState<string>("");
+  const [isMainComplexModalOpen, setIsMainComplexModalOpen] = useState(false);
   const tableContainerRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
+  const handledDetailSearchRef = useRef<string | null>(null);
   const [isSqmOrPyeong, setIsSqmOrPyeong] = useState<"sqm" | "pyeong">("sqm");
+
+  const detailSearch = useMemo(() => {
+    const rawComplexId = searchParams.get("complexId");
+    const rawApartmentId = searchParams.get("apartmentId");
+    const complexId = rawComplexId ? Number(rawComplexId) : undefined;
+    const apartmentId = rawApartmentId ? Number(rawApartmentId) : undefined;
+
+    return {
+      key: searchParams.toString(),
+      complexId:
+        complexId !== undefined && !Number.isNaN(complexId)
+          ? complexId
+          : undefined,
+      apartmentId:
+        apartmentId !== undefined && !Number.isNaN(apartmentId)
+          ? apartmentId
+          : undefined,
+      dong: searchParams.get("dong") ?? "",
+      ho: searchParams.get("ho") ?? "",
+    };
+  }, [searchParams]);
 
   const { data: preferredComplexes, isLoading: isPreferredComplexLoading } =
     useQuery({
@@ -258,6 +289,7 @@ export function PropertyManagePage() {
     handlePropertyClick,
     handleToggleSidebar,
     handleExternalClick,
+    selectProperty,
     resetSelection,
     closeSidebar,
   } = usePropertySidebar({ apartments: filteredAndSortedApartments });
@@ -265,6 +297,8 @@ export function PropertyManagePage() {
   const resetPropertySelection = useCallback(() => {
     resetSelection();
   }, [resetSelection]);
+
+  const isTableLoading = isPreferredComplexLoading || isPropertiesLoading;
 
   useEffect(() => {
     if (!preferredComplexes || preferredComplexes.length === 0) {
@@ -275,20 +309,79 @@ export function PropertyManagePage() {
       return;
     }
 
+    const detailComplexId = detailSearch.complexId;
+    const hasDetailComplex = preferredComplexes.some(
+      (complex) => complex.apartmentComplexId === detailComplexId,
+    );
     const hasSelectedComplex = preferredComplexes.some(
       (complex) => complex.apartmentComplexId === selectedApartmentComplexId,
     );
+    const nextComplexId =
+      hasDetailComplex && detailComplexId !== undefined
+        ? detailComplexId
+        : hasSelectedComplex
+          ? selectedApartmentComplexId
+          : preferredComplexes[0]?.apartmentComplexId;
 
-    if (hasSelectedComplex) {
+    if (nextComplexId === selectedApartmentComplexId) {
       return;
     }
 
-    const nextComplexId = preferredComplexes[0]?.apartmentComplexId;
     if (nextComplexId !== undefined) {
       setSelectedApartmentComplexId(nextComplexId);
       resetPropertySelection();
     }
-  }, [preferredComplexes, resetPropertySelection, selectedApartmentComplexId]);
+  }, [
+    detailSearch.complexId,
+    preferredComplexes,
+    resetPropertySelection,
+    selectedApartmentComplexId,
+  ]);
+
+  useEffect(() => {
+    if (handledDetailSearchRef.current === detailSearch.key) {
+      return;
+    }
+
+    if (detailSearch.dong) {
+      setDong(detailSearch.dong);
+    }
+
+    if (detailSearch.ho) {
+      setHo(detailSearch.ho);
+    }
+  }, [detailSearch]);
+
+  useEffect(() => {
+    if (
+      handledDetailSearchRef.current === detailSearch.key ||
+      detailSearch.apartmentId === undefined ||
+      isTableLoading
+    ) {
+      return;
+    }
+
+    const targetApartment = filteredAndSortedApartments.find(
+      (apt) => apt.apartmentId === detailSearch.apartmentId,
+    );
+
+    if (!targetApartment) {
+      if (!hasNextPage && !isFetchingNextPage) {
+        handledDetailSearchRef.current = detailSearch.key;
+      }
+      return;
+    }
+
+    selectProperty(detailSearch.apartmentId);
+    handledDetailSearchRef.current = detailSearch.key;
+  }, [
+    detailSearch,
+    filteredAndSortedApartments,
+    hasNextPage,
+    isFetchingNextPage,
+    isTableLoading,
+    selectProperty,
+  ]);
 
   const selectedApartment = filteredAndSortedApartments.find(
     (apt) => apt.apartmentId === displayedPropertyId,
@@ -358,6 +451,9 @@ export function PropertyManagePage() {
       }
 
       setSelectedApartmentComplexId(complexId);
+      setDong("");
+      setHo("");
+      setPhoneNumber("");
       resetPropertySelection();
     },
     [resetPropertySelection, selectedApartmentComplexId],
@@ -373,60 +469,80 @@ export function PropertyManagePage() {
     setIsSqmOrPyeong((prev) => (prev === "sqm" ? "pyeong" : "sqm"));
   }, []);
 
-  const isTableLoading = isPreferredComplexLoading || isPropertiesLoading;
+  const handleOpenMainComplexModal = useCallback(() => {
+    setIsMainComplexModalOpen(true);
+  }, []);
+
+  const handleCloseMainComplexModal = useCallback(() => {
+    setIsMainComplexModalOpen(false);
+  }, []);
+
+  const handleSaveMainComplexes = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ["preferredComplexes"] });
+  }, [queryClient]);
 
   return (
-    <SlidingSidebarLayout
-      isOpen={isSidebarOpen}
-      sidebarWidth={500}
-      onToggle={handleToggleSidebar}
-      sidebarRef={sidebarRef}
-      sidebar={
-        <PropertySidebar
-          apartment={selectedApartment}
-          onClose={() => closeSidebar(true)}
-          isOpen={isSidebarOpen}
-          onCancel={() => closeSidebar(true)}
-          onSave={() => {
-            // TODO: 저장 로직 구현
-            closeSidebar(true);
-          }}
-        />
-      }
-    >
-      <div className="flex flex-col gap-6 h-full">
-        <PropertyManagerHeader
-          complexOptions={preferredComplexOptions}
-          selectedComplexId={selectedApartmentComplexId}
-          onSelectComplex={handleSelectApartmentComplex}
-          isComplexLoading={isPreferredComplexLoading}
-          selectedRequestType={selectedRequestType}
-          onSelectRequestType={setSelectedRequestType}
-          phoneNumber={phoneNumber}
-          onPhoneNumberChange={setPhoneNumber}
-          dong={dong}
-          onDongChange={setDong}
-          ho={ho}
-          onHoChange={setHo}
-          isSqmOrPyeong={isSqmOrPyeong}
-          onSqmOrPyeongChange={handleSqmOrPyeongChange}
-        />
-        <div ref={tableContainerRef} className="flex-1 overflow-hidden">
-          <PropertyManageTable
-            totalApartmentCount={totalApartmentCount}
-            onPropertyClick={handlePropertyClick}
-            selectedApartmentId={selectedPropertyId}
-            apartments={filteredAndSortedApartments}
-            isLoading={isTableLoading}
-            isFetchingNextPage={isFetchingNextPage}
-            hasNextPage={hasNextPage ?? false}
-            onLoadMore={selectedApartmentComplexId ? fetchNextPage : undefined}
-            hasActiveFilters={hasActiveFilters}
-            selectedManageType={selectedManageType}
-            onSelectManageType={handleSelectManageTypeForTable}
+    <>
+      <SlidingSidebarLayout
+        isOpen={isSidebarOpen}
+        sidebarWidth={500}
+        onToggle={handleToggleSidebar}
+        sidebarRef={sidebarRef}
+        sidebar={
+          <PropertySidebar
+            apartment={selectedApartment}
+            onClose={() => closeSidebar(true)}
+            isOpen={isSidebarOpen}
+            onCancel={() => closeSidebar(true)}
+            onSave={() => {
+              // TODO: 저장 로직 구현
+              closeSidebar(true);
+            }}
           />
+        }
+      >
+        <div className="flex flex-col gap-6 h-full">
+          <PropertyManagerHeader
+            complexOptions={preferredComplexOptions}
+            selectedComplexId={selectedApartmentComplexId}
+            onSelectComplex={handleSelectApartmentComplex}
+            isComplexLoading={isPreferredComplexLoading}
+            selectedRequestType={selectedRequestType}
+            onSelectRequestType={setSelectedRequestType}
+            phoneNumber={phoneNumber}
+            onPhoneNumberChange={setPhoneNumber}
+            dong={dong}
+            onDongChange={setDong}
+            ho={ho}
+            onHoChange={setHo}
+            isSqmOrPyeong={isSqmOrPyeong}
+            onSqmOrPyeongChange={handleSqmOrPyeongChange}
+            onAddComplexClick={handleOpenMainComplexModal}
+          />
+          <div ref={tableContainerRef} className="flex-1 overflow-hidden">
+            <PropertyManageTable
+              totalApartmentCount={totalApartmentCount}
+              onPropertyClick={handlePropertyClick}
+              selectedApartmentId={selectedPropertyId}
+              apartments={filteredAndSortedApartments}
+              isLoading={isTableLoading}
+              isFetchingNextPage={isFetchingNextPage}
+              hasNextPage={hasNextPage ?? false}
+              onLoadMore={
+                selectedApartmentComplexId ? fetchNextPage : undefined
+              }
+              hasActiveFilters={hasActiveFilters}
+              selectedManageType={selectedManageType}
+              onSelectManageType={handleSelectManageTypeForTable}
+            />
+          </div>
         </div>
-      </div>
-    </SlidingSidebarLayout>
+      </SlidingSidebarLayout>
+      <MainComplexModal
+        isOpen={isMainComplexModalOpen}
+        onClose={handleCloseMainComplexModal}
+        onSave={handleSaveMainComplexes}
+      />
+    </>
   );
 }
