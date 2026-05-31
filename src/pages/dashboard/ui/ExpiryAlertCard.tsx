@@ -1,4 +1,5 @@
 import { Clock3 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import { ScrollArea } from "@/shared/ui";
 import { cn } from "@/shared/utils";
@@ -45,10 +46,25 @@ export function ExpiryAlertCard({ alerts }: ExpiryAlertCardProps) {
 }
 
 function ExpiryAlertItem({ alert }: { alert: ExpiryAlert }) {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    const searchParams = new URLSearchParams({
+      complexId: String(alert.apartmentComplexId),
+      apartmentId: String(alert.apartmentId),
+      dong: alert.dong,
+      ho: alert.ho,
+    });
+
+    navigate(`/property-manage?${searchParams.toString()}`);
+  };
+
   return (
-    <div
+    <button
+      type="button"
+      onClick={handleClick}
       className={cn(
-        "rounded-lg border border-[#DDE2F2] border-l-4 bg-white px-5 py-4",
+        "w-full rounded-lg border border-[#DDE2F2] border-l-4 bg-white px-5 py-4 text-left transition-colors hover:bg-[#F8FAFF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1499FF]",
         toneStyles[alert.tone].border,
       )}
     >
@@ -78,6 +94,6 @@ function ExpiryAlertItem({ alert }: { alert: ExpiryAlert }) {
           소유자 확인 필요
         </span>
       </div>
-    </div>
+    </button>
   );
 }

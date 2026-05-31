@@ -1,5 +1,9 @@
 export interface ExpiryAlert {
   id: number;
+  apartmentComplexId: number;
+  apartmentId: number;
+  dong: string;
+  ho: string;
   daysLeft: number;
   owner: string;
   dealType: string;
