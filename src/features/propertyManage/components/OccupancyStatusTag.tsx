@@ -5,7 +5,7 @@ type OccupancyStatusValue =
   | "SELF"
   | "JEONSE"
   | "MONTHLY_RENT"
-  | "EMPTY";
+  | "VACANT";
 
 interface OccupancyStatusTagProps {
   status: OccupancyStatusValue | string | null | undefined;
@@ -20,7 +20,7 @@ const STATUS_CONFIG: Record<
   SELF: { label: "입주", variant: "primary" },
   JEONSE: { label: "전세", variant: "primary" },
   MONTHLY_RENT: { label: "월세", variant: "primary" },
-  EMPTY: { label: "공실", variant: "secondary" },
+  VACANT: { label: "공실", variant: "secondary" },
 };
 
 /**

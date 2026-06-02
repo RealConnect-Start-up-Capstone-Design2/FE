@@ -9,7 +9,7 @@ export function LoginPage() {
 
   useEffect(() => {
     if (accessToken && !isLoading) {
-      navigate("/home");
+      navigate("/dashboard");
     }
   }, [accessToken, navigate, isLoading]);
   return (

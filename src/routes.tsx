@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import { UserLayout } from "@/shared/layouts/UserLayout";
 import { AdminLayout } from "@/shared/layouts/AdminLayout";
 import { ProtectedRoute } from "@/features/auth";
-import { HomePage } from "@/pages/home";
+import { DashboardPage } from "@/pages/dashboard";
 import { PropertyManagePage } from "@/pages/propertyManage";
 import { LoginPage, SignupPage, TermsDetailPage } from "@/pages/auth";
 import { MyPage } from "@/pages/myPage";
@@ -46,8 +46,8 @@ export const routes = createBrowserRouter([
     ),
     children: [
       {
-        path: "/home",
-        element: <HomePage />,
+        path: "/dashboard",
+        element: <DashboardPage />,
       },
       {
         path: "/property-manage",

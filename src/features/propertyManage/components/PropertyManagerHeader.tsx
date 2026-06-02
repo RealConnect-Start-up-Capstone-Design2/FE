@@ -33,6 +33,7 @@ interface PropertyManagerHeaderProps {
   onHoChange?: (ho: string) => void;
   isSqmOrPyeong?: "sqm" | "pyeong";
   onSqmOrPyeongChange?: () => void;
+  onAddComplexClick?: () => void;
 }
 
 export function PropertyManagerHeader({
@@ -48,6 +49,7 @@ export function PropertyManagerHeader({
   onHoChange,
   isSqmOrPyeong,
   onSqmOrPyeongChange,
+  onAddComplexClick,
 }: PropertyManagerHeaderProps) {
   const [localPhoneNumber, setLocalPhoneNumber] = useState(phoneNumber || "");
   const [localDong, setLocalDong] = useState(dong || "");
@@ -135,7 +137,15 @@ export function PropertyManagerHeader({
                     : undefined
                 }
                 onChange={handleSelectComplex}
-                disabled={isComplexLoading || complexOptions.length === 0}
+                disabled={isComplexLoading}
+                footerAction={
+                  onAddComplexClick
+                    ? {
+                        label: "+ 주거래단지 추가",
+                        onClick: onAddComplexClick,
+                      }
+                    : undefined
+                }
               />
               <InputGroup className="w-32 h-12">
                 <InputGroupAddon>

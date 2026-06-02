@@ -15,7 +15,82 @@ import type {
   PropertyStatus,
   RequestType,
   ManageType,
+  PropertyDetailInfo,
+  OccupancyStatus,
 } from "../types";
+
+export interface PropertyRequestInfo {
+  requestType: RequestType;
+  loanAmount: number;
+  loanState: string;
+  immediateMoveIn: boolean;
+  availableMoveInDate: string;
+  registeredAt: string;
+  salePrice: number;
+  existingJeonseDeposit: number;
+  existingMonthlyRent: number;
+  jeonsePrice: number;
+  monthlyDeposit: number;
+  monthlyRent: number;
+}
+
+export type ConsultationCustomerType = "OWNER" | "TENENT" | "ETC";
+
+export interface PropertyConsultationLog {
+  id: number;
+  customerType: ConsultationCustomerType;
+  content: string;
+  writerName: string;
+  createdAt: string;
+}
+
+export interface PropertyConsultationInfo {
+  id: number;
+  ownerName: string;
+  ownerPhone: string;
+  tenantName: string;
+  tenantPhone: string;
+  etcName: string;
+  etcPhone: string;
+  createdAt: string;
+  updatedAt: string;
+  logs: PropertyConsultationLog[];
+}
+
+export type PropertyConsultationUpdatePayload = Pick<
+  PropertyConsultationInfo,
+  | "ownerName"
+  | "ownerPhone"
+  | "tenantName"
+  | "tenantPhone"
+  | "etcName"
+  | "etcPhone"
+>;
+
+export interface PropertyConsultationLogPayload {
+  customerType: ConsultationCustomerType;
+  content: string;
+}
+
+export type ContractType =
+  | "MY_CONTRACT"
+  | "OTHER_CONTRACT"
+  | "CO_BROKERAGE"
+  | "INTRODUCTION";
+
+export interface PropertyContractInfo {
+  occupancyStatus: OccupancyStatus;
+  salePrice: number;
+  loanAmount: number;
+  jeonsePrice: number;
+  deposit: number;
+  monthlyRent: number;
+  maintenanceFee: number;
+  expireDate: string;
+  registrationDate: string;
+  contractOffice: string;
+  contractType: ContractType;
+}
 
 export interface PropertyMutationPayload {
   apartmentId: number;
@@ -93,24 +168,109 @@ export const fetchPropertiesByPhone = async (
  * GET /api/property/detail/:apartmentId
  */
 export const fetchApartmentById = async (
-  apartmentId: number,
-): Promise<ApartmentWithProperty> => {
-  const response = await apiClient.get<ApartmentWithProperty>(
-    `/api/property/detail/${apartmentId}`,
+  apartmentId: number
+): Promise<PropertyDetailInfo> => {
+  const response = await apiClient.get<PropertyDetailInfo>(
+    `/api/property/detail/${apartmentId}`
   );
   return response.data;
 };
 
 /**
- * 매물 상세 조회 API
- * GET /api/property/detail/:apartmentId
- * (방향, 층, 구조, 입구타입, 주용도 등 상세 필드)
+ * 의뢰 정보 조회 API
+ * GET /api/property/requestInfo/:apartmentId
  */
-export const fetchPropertyDetail = async (
+export const fetchPropertyRequestInfo = async (
+  apartmentId: number
+): Promise<PropertyRequestInfo> => {
+  const response = await apiClient.get<PropertyRequestInfo>(
+    `/api/property/requestInfo/${apartmentId}`
+  );
+  return response.data;
+};
+
+/**
+ * 의뢰 정보 수정 API
+ * PUT /api/property/requestInfo/:apartmentId
+ */
+export const updatePropertyRequestInfoAPI = async (
   apartmentId: number,
-): Promise<PropertyDetailResponse> => {
-  const response = await apiClient.get<PropertyDetailResponse>(
-    `/api/property/detail/${apartmentId}`,
+  data: PropertyRequestInfo
+): Promise<PropertyRequestInfo> => {
+  const response = await apiClient.put<PropertyRequestInfo>(
+    `/api/property/requestInfo/${apartmentId}`,
+    data
+  );
+  return response.data;
+};
+
+/**
+ * 고객 상담 조회 API
+ * GET /api/property/consultation/:apartmentId
+ */
+export const fetchPropertyConsultation = async (
+  apartmentId: number
+): Promise<PropertyConsultationInfo> => {
+  const response = await apiClient.get<PropertyConsultationInfo>(
+    `/api/property/consultation/${apartmentId}`
+  );
+  return response.data;
+};
+
+/**
+ * 고객 상담 연락처 수정 API
+ * PUT /api/property/consultation/:apartmentId
+ */
+export const updatePropertyConsultationAPI = async (
+  apartmentId: number,
+  data: PropertyConsultationUpdatePayload
+): Promise<PropertyConsultationInfo> => {
+  const response = await apiClient.put<PropertyConsultationInfo>(
+    `/api/property/consultation/${apartmentId}`,
+    data
+  );
+  return response.data;
+};
+
+/**
+ * 고객 상담 로그 등록 API
+ * POST /api/property/consultation/:apartmentId
+ */
+export const createPropertyConsultationLogAPI = async (
+  apartmentId: number,
+  data: PropertyConsultationLogPayload
+): Promise<PropertyConsultationLog> => {
+  const response = await apiClient.post<PropertyConsultationLog>(
+    `/api/property/consultation/${apartmentId}`,
+    data
+  );
+  return response.data;
+};
+
+/**
+ * 계약 정보 조회 API
+ * GET /api/properties/contractInfo/:apartmentId
+ */
+export const fetchPropertyContractInfo = async (
+  apartmentId: number
+): Promise<PropertyContractInfo> => {
+  const response = await apiClient.get<PropertyContractInfo>(
+    `/api/properties/contractInfo/${apartmentId}`
+  );
+  return response.data;
+};
+
+/**
+ * 계약 정보 수정 API
+ * PUT /api/properties/contractInfo/:apartmentId
+ */
+export const updatePropertyContractInfoAPI = async (
+  apartmentId: number,
+  data: PropertyContractInfo
+): Promise<PropertyContractInfo> => {
+  const response = await apiClient.put<PropertyContractInfo>(
+    `/api/properties/contractInfo/${apartmentId}`,
+    data
   );
   return response.data;
 };
@@ -119,135 +279,13 @@ export const fetchPropertyDetail = async (
  * 매물 상세 수정 API
  * PUT /api/property/detail/:apartmentId
  */
-export const updatePropertyDetail = async (
+export const updatePropertyDetailAPI = async (
   apartmentId: number,
-  data: PropertyDetailResponse,
-): Promise<PropertyDetailResponse> => {
-  const response = await apiClient.put<PropertyDetailResponse>(
+  data: PropertyDetailInfo
+): Promise<PropertyDetailInfo> => {
+  const response = await apiClient.put<PropertyDetailInfo>(
     `/api/property/detail/${apartmentId}`,
-    data,
-  );
-  return response.data;
-};
-
-/**
- * 의뢰정보 조회 API
- * GET /api/property/requestInfo/:apartmentId
- */
-export const fetchRequestInfo = async (
-  apartmentId: number,
-): Promise<PropertyRequestInfoResponse> => {
-  const response = await apiClient.get<PropertyRequestInfoResponse>(
-    `/api/property/requestInfo/${apartmentId}`,
-  );
-  return response.data;
-};
-
-/**
- * 의뢰정보 생성/수정 API
- * PUT /api/property/requestInfo/:apartmentId
- */
-export const updateRequestInfo = async (
-  apartmentId: number,
-  data: PropertyRequestInfoResponse,
-): Promise<PropertyRequestInfoResponse> => {
-  const response = await apiClient.put<PropertyRequestInfoResponse>(
-    `/api/property/requestInfo/${apartmentId}`,
-    data,
-  );
-  return response.data;
-};
-
-/**
- * 고객 상담 카드 조회 API
- * GET /api/property/consultation/:apartmentId
- */
-export const fetchConsultation = async (
-  apartmentId: number,
-): Promise<ConsultationResponse> => {
-  const response = await apiClient.get<ConsultationResponse>(
-    `/api/property/consultation/${apartmentId}`,
-  );
-  return response.data;
-};
-
-/**
- * 고객 상담 생성/수정 API
- * PUT /api/property/consultation/:apartmentId
- */
-export const updateConsultation = async (
-  apartmentId: number,
-  data: ConsultationPayload,
-): Promise<ConsultationResponse> => {
-  const response = await apiClient.put<ConsultationResponse>(
-    `/api/property/consultation/${apartmentId}`,
-    data,
-  );
-  return response.data;
-};
-
-/**
- * 상담 로그 추가 API
- * POST /api/property/consultation/:apartmentId
- */
-export const createConsultationLog = async (
-  apartmentId: number,
-  data: ConsultationLogPayload,
-): Promise<ConsultationResponse> => {
-  const response = await apiClient.post<ConsultationResponse>(
-    `/api/property/consultation/${apartmentId}`,
-    data,
-  );
-  return response.data;
-};
-
-/**
- * 매물 사진 조회 API
- * GET /api/property/image/:apartmentId
- * 이미지 없으면 빈 배열 반환
- */
-export const fetchPropertyImages = async (
-  apartmentId: number,
-): Promise<PropertyImageResponse[]> => {
-  const response = await apiClient.get<PropertyImageResponse[]>(
-    `/api/property/image/${apartmentId}`,
-  );
-  return response.data;
-};
-
-/**
- * 매물 사진 Presigned URL 발급 API
- * POST /api/property/image/:apartmentId
- * params: originalFileName, contentType (image/jpeg, image/png, image/webp 등, ; 앞부분만 사용)
- * 발급 후 S3에 form-data file 필드로 업로드, 완료 후 confirm 호출 필요
- */
-export const createPropertyImagePresign = async (
-  apartmentId: number,
-  data: PresignImageRequest,
-): Promise<PropertyImageResponse> => {
-  const response = await apiClient.post<PropertyImageResponse>(
-    `/api/property/image/${apartmentId}`,
-    undefined,
-    {
-      params: {
-        originalFileName: data.originalFileName,
-        contentType: data.contentType,
-      },
-    },
-  );
-  return response.data;
-};
-
-/**
- * 매물 사진 업로드 확정 API
- * POST /api/property/image/confirm/:imageId
- * S3 업로드 완료 후 호출해야 조회 시 이미지 포함됨
- */
-export const confirmPropertyImage = async (
-  imageId: number,
-): Promise<PropertyImageResponse> => {
-  const response = await apiClient.post<PropertyImageResponse>(
-    `/api/property/image/confirm/${imageId}`,
+    data
   );
   return response.data;
 };

@@ -70,6 +70,27 @@ interface SidebarProps {
   className?: string;
 }
 
+function MenuIcon({
+  icon,
+  label,
+  isActive,
+}: {
+  icon: MenuItem["icon"];
+  label: string;
+  isActive: boolean;
+}) {
+  return (
+    <img
+      src={icon}
+      alt={label}
+      className={cn(
+        "w-5 h-5",
+        isActive ? "brightness-0 invert" : "brightness-0 saturate-100",
+      )}
+    />
+  );
+}
+
 export function Sidebar({ className }: SidebarProps) {
   const location = useLocation();
   const { accessToken, logout: clearAuth } = useAuthStore();
@@ -91,15 +112,18 @@ export function Sidebar({ className }: SidebarProps) {
     <div
       className={cn(
         "fixed left-0 top-0 h-screen bg-white border-r border-[rgba(177,182,199,0.4)] shadow-[0px_0px_25px_-10px_rgba(177,182,199,1)] z-50",
-        isCollapsed ? "w-20" : "w-50",
-        className
+        isCollapsed ? "w-20" : "w-[220px]",
+        className,
       )}
     >
       {/* Header */}
-      <div
+      <Link
+        to="/dashboard"
+        aria-label="대시보드로 이동"
+        title="대시보드로 이동"
         className={cn(
-          "bg-[#1C2882] flex items-center justify-center py-9",
-          isCollapsed ? "px-2" : "p-auto"
+          "bg-[#1C2882] flex items-center justify-center py-9 transition-colors hover:bg-[#17226F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1C2882]",
+          isCollapsed ? "px-2" : "p-auto",
         )}
       >
         <div className="flex items-center gap-3">
@@ -110,7 +134,7 @@ export function Sidebar({ className }: SidebarProps) {
             </p>
           )}
         </div>
-      </div>
+      </Link>
       {/* Toggle Button */}
       <button
         type="button"
@@ -178,17 +202,14 @@ export function Sidebar({ className }: SidebarProps) {
                 isCollapsed && "justify-center",
                 isActive
                   ? "bg-[#1C2882] text-white"
-                  : "bg-white text-[#989898] hover:bg-gray-50"
+                  : "bg-white text-[#989898] hover:bg-gray-50",
               )}
               title={isCollapsed ? item.label : undefined}
             >
-              <img
-                src={item.icon}
-                alt={item.label}
-                className={cn(
-                  "w-5 h-5",
-                  isActive ? "brightness-0 invert" : "brightness-0 saturate-100"
-                )}
+              <MenuIcon
+                icon={item.icon}
+                label={item.label}
+                isActive={isActive}
               />
               {!isCollapsed && (
                 <span className="text-lg font-medium leading-[1.193] tracking-[-0.025em] font-pretendard whitespace-nowrap">
@@ -222,17 +243,14 @@ export function Sidebar({ className }: SidebarProps) {
                 isCollapsed && "justify-center",
                 isActive
                   ? "bg-[#1C2882] text-white"
-                  : "text-[#989898] hover:bg-gray-50"
+                  : "text-[#989898] hover:bg-gray-50",
               )}
               title={isCollapsed ? item.label : undefined}
             >
-              <img
-                src={item.icon}
-                alt={item.label}
-                className={cn(
-                  "w-5 h-5",
-                  isActive ? "brightness-0 invert" : "brightness-0 saturate-100"
-                )}
+              <MenuIcon
+                icon={item.icon}
+                label={item.label}
+                isActive={isActive}
               />
               {!isCollapsed && (
                 <span className="text-lg font-medium leading-[1.193] tracking-[-0.025em] font-pretendard whitespace-nowrap">
@@ -262,7 +280,7 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* Footer Links */}
       {!isCollapsed && (
-        <div className="absolute bottom-2 left-3 right-3 px-4">
+        <div className="absolute bottom-2 left-3 right-3">
           <div className="flex items-center justify-center gap-2 text-xs text-[#989898]">
             <Link
               to="/terms/privacy"

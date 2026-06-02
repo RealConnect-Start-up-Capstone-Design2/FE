@@ -64,9 +64,9 @@ export const PROPERTY_STATUS_LABELS: Record<PropertyStatus, string> = {
 
 export const REQUEST_TYPE = {
   NONE: "NONE",
-  MONTHLY: "MONTHLY",
-  JEONSE: "JEONSE",
   SALE: "SALE",
+  JEONSE: "JEONSE",
+  MONTHLY: "MONTHLY",
   SALE_JEONSE: "SALE_JEONSE",
   SALE_MONTHLY: "SALE_MONTHLY",
   JEONSE_MONTHLY: "JEONSE_MONTHLY",
@@ -78,9 +78,9 @@ export type RequestType = (typeof REQUEST_TYPE)[keyof typeof REQUEST_TYPE];
 
 export const REQUEST_TYPE_LABELS: Record<RequestType, string> = {
   NONE: "없음",
-  MONTHLY: "월세",
-  JEONSE: "전세",
-  SALE: "매도",
+  SALE: "매",
+  JEONSE: "전",
+  MONTHLY: "월",
   SALE_JEONSE: "매/전",
   SALE_MONTHLY: "매/월",
   JEONSE_MONTHLY: "전/월",
@@ -88,40 +88,16 @@ export const REQUEST_TYPE_LABELS: Record<RequestType, string> = {
   HOLD: "보류",
 };
 
-/** 의뢰정보 - 융자 상태 */
-export const LOAN_STATE = {
-  NONE: "NONE",
-  NOT_EXIST: "NOT_EXIST",
-  UNDER30: "UNDER30",
-  OVER30: "OVER30",
-} as const;
-
-export type LoanState = (typeof LOAN_STATE)[keyof typeof LOAN_STATE];
-
-export const LOAN_STATE_LABELS: Record<LoanState, string> = {
+export const REQUEST_TYPE_DROPDOWN_LABELS: Record<RequestType, string> = {
   NONE: "없음",
-  NOT_EXIST: "융자 없음",
-  UNDER30: "30% 미만",
-  OVER30: "30% 이상",
-};
-
-/** 고객 상담 로그 - 고객 구분 */
-export const CONSULTATION_CUSTOMER_TYPE = {
-  OWNER: "OWNER",
-  TENENT: "TENENT",
-  ETC: "ETC",
-} as const;
-
-export type ConsultationCustomerType =
-  (typeof CONSULTATION_CUSTOMER_TYPE)[keyof typeof CONSULTATION_CUSTOMER_TYPE];
-
-export const CONSULTATION_CUSTOMER_TYPE_LABELS: Record<
-  ConsultationCustomerType,
-  string
-> = {
-  OWNER: "소유자",
-  TENENT: "임차인",
-  ETC: "기타",
+  SALE: "매도",
+  JEONSE: "전세",
+  MONTHLY: "월세",
+  SALE_JEONSE: "매도/전세",
+  SALE_MONTHLY: "매도/월세",
+  JEONSE_MONTHLY: "전세/월세",
+  SALE_JEONSE_MONTHLY: "매도/전세/월세",
+  HOLD: "보류",
 };
 
 export const DIRECTION = {
@@ -260,10 +236,29 @@ export const propertyStatusOptions: DropdownOption[] = [
 ];
 
 export const requestTypeOptions: DropdownOption[] = [
+  { label: REQUEST_TYPE_DROPDOWN_LABELS.NONE, value: "NONE" },
+  { label: REQUEST_TYPE_DROPDOWN_LABELS.SALE, value: "SALE" },
+  { label: REQUEST_TYPE_DROPDOWN_LABELS.JEONSE, value: "JEONSE" },
+  { label: REQUEST_TYPE_DROPDOWN_LABELS.MONTHLY, value: "MONTHLY" },
+  { label: REQUEST_TYPE_DROPDOWN_LABELS.SALE_JEONSE, value: "SALE_JEONSE" },
+  { label: REQUEST_TYPE_DROPDOWN_LABELS.SALE_MONTHLY, value: "SALE_MONTHLY" },
+  { label: REQUEST_TYPE_DROPDOWN_LABELS.JEONSE_MONTHLY, value: "JEONSE_MONTHLY" },
+  {
+    label: REQUEST_TYPE_DROPDOWN_LABELS.SALE_JEONSE_MONTHLY,
+    value: "SALE_JEONSE_MONTHLY",
+  },
+];
+
+export const directionOptions: DropdownOption[] = [
   { label: "없음", value: "NONE" },
-  { label: "월세", value: "MONTHLY" },
-  { label: "전세", value: "JEONSE" },
-  { label: "매매", value: "SALE" },
+  { label: "동", value: "EAST" },
+  { label: "서", value: "WEST" },
+  { label: "남", value: "SOUTH" },
+  { label: "북", value: "NORTH" },
+  { label: "남동", value: "SOUTHEAST" },
+  { label: "남서", value: "SOUTHWEST" },
+  { label: "북동", value: "NORTHEAST" },
+  { label: "북서", value: "NORTHWEST" },
 ];
 
 export const manageTypeOptions: DropdownOption[] = [

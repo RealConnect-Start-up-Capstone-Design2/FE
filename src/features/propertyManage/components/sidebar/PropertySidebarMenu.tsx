@@ -1,16 +1,15 @@
 import { cn } from "@/shared/utils";
 
+export interface PropertySidebarMenuItem {
+  id: string;
+  label: string;
+}
+
 interface PropertySidebarMenuProps {
   activeSection: string;
   onSectionClick: (sectionId: string) => void;
+  items: PropertySidebarMenuItem[];
 }
-
-const menuItems = [
-  { id: "consultation", label: "고객 상담" },
-  { id: "contract", label: "계약 내역" },
-  { id: "inquiry", label: "의뢰 정보" },
-  { id: "detail", label: "매물 상세" },
-];
 
 /**
  * 매물장 사이드바 앵커 메뉴
@@ -20,20 +19,21 @@ const menuItems = [
 export function PropertySidebarMenu({
   activeSection,
   onSectionClick,
+  items,
 }: PropertySidebarMenuProps) {
   return (
-    <nav className="border-b border-gray-200 px-3">
-      <ul className="flex justify-between">
-        {menuItems.map((item) => (
-          <li key={item.id}>
+    <nav className="bg-[#F8F8F8] px-3 shadow-[0px_0px_10px_0px_rgba(31,43,87,0.15)]">
+      <ul className="grid h-[42px] grid-cols-4 gap-2">
+        {items.map((item) => (
+          <li key={item.id} className="min-w-0">
             <button
               type="button"
               onClick={() => onSectionClick(item.id)}
               className={cn(
-                "px-7 py-3 text-sm font-medium transition-colors relative",
+                "relative h-full w-full px-2 text-center text-[13px] font-medium tracking-[-0.025em] transition-colors",
                 activeSection === item.id
                   ? "text-[#1C2882]"
-                  : "text-gray-600 hover:text-gray-900"
+                  : "text-[#8D8D8D] hover:text-[#1B1B1B]",
               )}
             >
               {item.label}

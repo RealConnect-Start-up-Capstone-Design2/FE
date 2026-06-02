@@ -44,7 +44,7 @@ export function LoginForm() {
       );
 
       setAuth({ accessToken, username });
-      navigate("/home");
+      navigate("/dashboard");
     } catch (error: unknown) {
       if (error instanceof Error && "response" in error) {
         const axiosError = error as {

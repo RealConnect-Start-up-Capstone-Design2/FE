@@ -1,7 +1,22 @@
 import { useRef, useEffect, useState } from "react";
-import type { ApartmentWithProperty } from "../../types";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Button } from "@/shared/ui";
+import type { ApartmentWithProperty, PropertyDetailInfo } from "../../types";
+import {
+  fetchApartmentById,
+  updatePropertyConsultationAPI,
+  updatePropertyContractInfoAPI,
+  updatePropertyDetailAPI,
+  updatePropertyRequestInfoAPI,
+  type PropertyConsultationUpdatePayload,
+  type PropertyContractInfo,
+  type PropertyRequestInfo,
+} from "../../services/propertyService";
 import { PropertySidebarHeader } from "./PropertySidebarHeader";
-import { PropertySidebarMenu } from "./PropertySidebarMenu";
+import {
+  PropertySidebarMenu,
+  type PropertySidebarMenuItem,
+} from "./PropertySidebarMenu";
 import {
   CustomerConsultationBlock,
   ContractInfoBlock,
@@ -13,9 +28,16 @@ interface PropertySidebarProps {
   apartment?: ApartmentWithProperty;
   onClose?: () => void;
   isOpen: boolean;
-  onSave?: () => void;
+  onSave?: (apartment?: ApartmentWithProperty) => void;
   onCancel?: () => void;
 }
+
+const sidebarMenuItems: PropertySidebarMenuItem[] = [
+  { id: "detail", label: "매물 상세" },
+  { id: "consultation", label: "고객 상담" },
+  { id: "contract", label: "계약 내역" },
+  { id: "inquiry", label: "의뢰 정보" },
+];
 
 export function PropertySidebar({
   apartment,
@@ -24,13 +46,156 @@ export function PropertySidebar({
   onSave,
   onCancel,
 }: PropertySidebarProps) {
-  const [activeSection, setActiveSection] = useState<string>("consultation");
+  const [activeSection, setActiveSection] = useState<string>("detail");
+  const [isDirty, setIsDirty] = useState(false);
+  const [propertyDetail, setPropertyDetail] = useState<
+    PropertyDetailInfo | undefined
+  >();
+  const [propertyRequestInfo, setPropertyRequestInfo] = useState<
+    PropertyRequestInfo | undefined
+  >();
+  const [propertyConsultation, setPropertyConsultation] = useState<
+    PropertyConsultationUpdatePayload | undefined
+  >();
+  const [propertyContractInfo, setPropertyContractInfo] = useState<
+    PropertyContractInfo | undefined
+  >();
 
   const consultationRef = useRef<HTMLDivElement>(null);
   const contractRef = useRef<HTMLDivElement>(null);
   const inquiryRef = useRef<HTMLDivElement>(null);
   const detailRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  const { data: fetchedPropertyDetail } = useQuery({
+    queryKey: ["property-detail", apartment?.apartmentId],
+    queryFn: () => fetchApartmentById(apartment!.apartmentId),
+    enabled: Boolean(apartment?.apartmentId),
+  });
+
+  const updatePropertyDetailMutation = useMutation({
+    mutationFn: ({
+      apartmentId,
+      detail,
+    }: {
+      apartmentId: number;
+      detail: PropertyDetailInfo;
+    }) => updatePropertyDetailAPI(apartmentId, detail),
+    onSuccess: (updatedDetail) => {
+      setPropertyDetail(updatedDetail);
+    },
+  });
+
+  const updatePropertyRequestInfoMutation = useMutation({
+    mutationFn: ({
+      apartmentId,
+      requestInfo,
+    }: {
+      apartmentId: number;
+      requestInfo: PropertyRequestInfo;
+    }) => updatePropertyRequestInfoAPI(apartmentId, requestInfo),
+  });
+
+  const updatePropertyConsultationMutation = useMutation({
+    mutationFn: ({
+      apartmentId,
+      consultation,
+    }: {
+      apartmentId: number;
+      consultation: PropertyConsultationUpdatePayload;
+    }) => updatePropertyConsultationAPI(apartmentId, consultation),
+  });
+
+  const updatePropertyContractInfoMutation = useMutation({
+    mutationFn: ({
+      apartmentId,
+      contractInfo,
+    }: {
+      apartmentId: number;
+      contractInfo: PropertyContractInfo;
+    }) => updatePropertyContractInfoAPI(apartmentId, contractInfo),
+  });
+
+  const handleContentChange = () => {
+    setIsDirty(true);
+  };
+
+  const handleSave = async () => {
+    if (!apartment?.apartmentId) {
+      onSave?.();
+      setIsDirty(false);
+      return;
+    }
+
+    try {
+      await Promise.all([
+        propertyDetail
+          ? updatePropertyDetailMutation.mutateAsync({
+              apartmentId: apartment.apartmentId,
+              detail: propertyDetail,
+            })
+          : Promise.resolve(undefined),
+        propertyRequestInfo
+          ? updatePropertyRequestInfoMutation.mutateAsync({
+              apartmentId: apartment.apartmentId,
+              requestInfo: propertyRequestInfo,
+            })
+          : Promise.resolve(undefined),
+        propertyConsultation
+          ? updatePropertyConsultationMutation.mutateAsync({
+              apartmentId: apartment.apartmentId,
+              consultation: propertyConsultation,
+            })
+          : Promise.resolve(undefined),
+        propertyContractInfo
+          ? updatePropertyContractInfoMutation.mutateAsync({
+              apartmentId: apartment.apartmentId,
+              contractInfo: propertyContractInfo,
+            })
+          : Promise.resolve(undefined),
+      ]);
+
+      const updatedApartment: ApartmentWithProperty = {
+        ...apartment,
+        property: apartment.property
+          ? {
+              ...apartment.property,
+              ...(propertyRequestInfo
+                ? {
+                    requestType: propertyRequestInfo.requestType,
+                    salePrice: propertyRequestInfo.salePrice,
+                    jeonsePrice: propertyRequestInfo.jeonsePrice,
+                    deposit: propertyRequestInfo.monthlyDeposit,
+                    monthPrice: propertyRequestInfo.monthlyRent,
+                    requestRegistrationDate: propertyRequestInfo.registeredAt,
+                  }
+                : {}),
+              ...(propertyConsultation
+                ? {
+                    ownerName: propertyConsultation.ownerName,
+                    ownerPhone: propertyConsultation.ownerPhone,
+                  }
+                : {}),
+              ...(propertyContractInfo
+                ? {
+                    occupancyStatus: propertyContractInfo.occupancyStatus,
+                    contractSalePrice: propertyContractInfo.salePrice,
+                    contractJeonsePrice: propertyContractInfo.jeonsePrice,
+                    contractDeposit: propertyContractInfo.deposit,
+                    contractMonthlyRent: propertyContractInfo.monthlyRent,
+                    expireDate: propertyContractInfo.expireDate,
+                  }
+                : {}),
+            }
+          : apartment.property,
+      };
+
+      setIsDirty(false);
+      onSave?.(updatedApartment);
+    } catch {
+      alert("저장에 실패했습니다.");
+    }
+  };
 
   const handleSectionClick = (sectionId: string) => {
     const refs = {
@@ -70,10 +235,10 @@ export function PropertySidebar({
     );
 
     const sections = [
+      detailRef.current,
       consultationRef.current,
       contractRef.current,
       inquiryRef.current,
-      detailRef.current,
     ];
 
     sections.forEach((section) => {
@@ -87,59 +252,112 @@ export function PropertySidebar({
     };
   }, []);
 
+  useEffect(() => {
+    setIsDirty(false);
+    setPropertyRequestInfo(undefined);
+    setPropertyConsultation(undefined);
+    setPropertyContractInfo(undefined);
+  }, [apartment?.apartmentId]);
+
+  useEffect(() => {
+    setPropertyDetail(fetchedPropertyDetail);
+  }, [fetchedPropertyDetail]);
+
+  useEffect(() => {
+    window.addEventListener("property-sidebar-dirty", handleContentChange);
+
+    return () => {
+      window.removeEventListener("property-sidebar-dirty", handleContentChange);
+    };
+  }, []);
+
   return (
-    <div className="flex h-full w-full flex-col bg-white shadow-xl border-l border-gray-200">
+    <div className="flex h-full w-full flex-col border-l border-gray-200 bg-white shadow-xl">
       {apartment && (
         <PropertySidebarHeader apartment={apartment} onClose={onClose} />
       )}
 
       <PropertySidebarMenu
+        items={sidebarMenuItems}
         activeSection={activeSection}
         onSectionClick={handleSectionClick}
       />
 
       <div
         ref={contentRef}
-        className="flex-1 overflow-y-auto p-3 flex flex-col gap-3"
+        onChange={handleContentChange}
+        onInput={handleContentChange}
+        className="flex flex-1 flex-col gap-3 overflow-y-auto p-3"
       >
+        <div id="detail" ref={detailRef}>
+          <PropertyDetailBlock
+            apartment={apartment}
+            detail={propertyDetail}
+            isOpen={isOpen}
+            onDetailChange={setPropertyDetail}
+          />
+        </div>
+
         <div id="consultation" ref={consultationRef}>
-          <CustomerConsultationBlock apartment={apartment} isOpen={isOpen} />
+          <CustomerConsultationBlock
+            apartment={apartment}
+            isOpen={isOpen}
+            consultation={propertyConsultation}
+            onConsultationChange={setPropertyConsultation}
+          />
         </div>
 
         <div id="contract" ref={contractRef}>
-          <ContractInfoBlock apartment={apartment} isOpen={isOpen} />
+          <ContractInfoBlock
+            apartment={apartment}
+            isOpen={isOpen}
+            contractInfo={propertyContractInfo}
+            onContractInfoChange={setPropertyContractInfo}
+          />
         </div>
 
         <div id="inquiry" ref={inquiryRef}>
-          <InquiryInfoBlock apartment={apartment} isOpen={isOpen} />
-        </div>
-
-        <div id="detail" ref={detailRef}>
-          <PropertyDetailBlock apartment={apartment} isOpen={isOpen} />
+          <InquiryInfoBlock
+            apartment={apartment}
+            isOpen={isOpen}
+            requestInfo={propertyRequestInfo}
+            onRequestInfoChange={setPropertyRequestInfo}
+          />
         </div>
       </div>
 
-      {/* 하단 푸터 - 취소/저장 버튼 */}
-      <div className="flex-shrink-0 bg-[#F8F8F8] shadow-[0px_0px_10px_0px_rgba(31,43,87,0.15)] px-3 py-[14px]">
+      <div className="flex-shrink-0 bg-[#F8F8F8] px-3 py-[14px] shadow-[0px_0px_10px_0px_rgba(31,43,87,0.15)]">
         <div className="flex gap-4">
-          <button
+          <Button
             type="button"
             onClick={() => {
               if (window.confirm("수정 내용을 취소하시겠습니까?")) {
                 onCancel?.();
               }
             }}
-            className="flex-1 h-[42px] rounded-lg bg-[#1B1B1B] text-white text-[15px] font-semibold tracking-[-0.025em] transition-opacity hover:opacity-90"
+            className="h-[42px] flex-1 rounded-lg bg-[#1B1B1B] text-[15px] font-semibold tracking-[-0.025em] text-white shadow-none hover:bg-[#2A2A2A]"
           >
             취소
-          </button>
-          <button
-            type="button"
-            onClick={onSave}
-            className="flex-1 h-[42px] rounded-lg bg-[#1C2882] text-white text-[15px] font-semibold tracking-[-0.025em] transition-opacity hover:opacity-90"
-          >
-            저장하기
-          </button>
+          </Button>
+          <div className="relative flex-1">
+            <Button
+              type="button"
+              onClick={handleSave}
+              disabled={
+                updatePropertyDetailMutation.isPending ||
+                updatePropertyRequestInfoMutation.isPending ||
+                updatePropertyConsultationMutation.isPending ||
+                updatePropertyContractInfoMutation.isPending
+              }
+              className={
+                isDirty
+                  ? "h-[42px] w-full rounded-lg bg-[#1C2882] text-[15px] font-semibold tracking-[-0.025em] text-white shadow-none hover:bg-[#17216E]"
+                  : "h-[42px] w-full rounded-lg bg-[#B1B6C7] text-[15px] font-semibold tracking-[-0.025em] text-white shadow-none hover:bg-[#9FA5B8]"
+              }
+            >
+              저장하기
+            </Button>
+          </div>
         </div>
       </div>
     </div>

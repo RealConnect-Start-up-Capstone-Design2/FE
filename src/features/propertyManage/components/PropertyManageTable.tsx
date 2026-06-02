@@ -346,19 +346,19 @@ export function PropertyManageTable({
                       ) : property?.occupancyStatus === "MONTHLY_RENT" ? (
                         property?.contractDeposit != null ||
                         property?.contractMonthlyRent != null ? (
-                          <span className="flex flex-col">
+                          <div className="flex items-center justify-center gap-1 whitespace-nowrap leading-none">
                             <span>
                               {property?.contractDeposit != null
                                 ? formatNumber(property.contractDeposit)
-                                : "-"}{" "}
-                              /
+                                : "-"}
                             </span>
+                            <span>/</span>
                             <span>
                               {property?.contractMonthlyRent != null
                                 ? formatNumber(property.contractMonthlyRent)
                                 : "-"}
                             </span>
-                          </span>
+                          </div>
                         ) : (
                           "-"
                         )
@@ -410,13 +410,13 @@ export function PropertyManageTable({
                       className="cursor-pointer hover:bg-blue-50"
                     >
                       {property?.deposit || property?.monthPrice ? (
-                        <span className="flex flex-col">
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap">
                           <span>
                             {property?.deposit
                               ? formatNumber(property.deposit)
-                              : "-"}{" "}
-                            /
+                              : "-"}
                           </span>
+                          <span>/</span>
                           <span>
                             {property?.monthPrice
                               ? formatNumber(property.monthPrice)
