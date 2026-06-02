@@ -39,7 +39,6 @@ export interface UnsupportedFeatureStatus {
   title: string;
   eyebrow: string;
   description: string;
-  detail: string;
   // badges: {
   //   label: string;
   //   tone: "primary" | "warning" | "success";

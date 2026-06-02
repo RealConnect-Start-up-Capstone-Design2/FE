@@ -140,8 +140,6 @@ export const dashboardData: DashboardData = {
       title: "매물 공유 알림",
       eyebrow: "공동 중개 준비 중",
       description: "매물 공유 기능은 아직 지원하지 않습니다.",
-      detail:
-        "기능이 열리면 공유 요청, 승인 상태, 신규 알림을 이곳에서 확인할 수 있습니다.",
       // badges: [
       //   { label: "현재 비활성화", tone: "warning" },
       //   { label: "출시 예정", tone: "primary" },
@@ -152,8 +150,6 @@ export const dashboardData: DashboardData = {
       title: "문의 공유 알림",
       eyebrow: "문의 공유 준비 중",
       description: "문의 공유 기능은 아직 지원하지 않습니다.",
-      detail:
-        "기능이 열리면 공유 문의, 담당자 배정, 처리 상태를 이곳에서 확인할 수 있습니다.",
       // badges: [
       //   { label: "현재 비활성화", tone: "warning" },
       //   { label: "알림 준비 중", tone: "primary" },

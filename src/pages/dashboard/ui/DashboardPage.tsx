@@ -8,7 +8,7 @@ import { SystemNoticeCard } from "./SystemNoticeCard";
 
 export function DashboardPage() {
   return (
-    <main className="flex h-[calc(100vh-72px)] min-h-0 flex-col overflow-hidden bg-[#FDFEFE]">
+    <main className="w-full min-w-[1471px]">
       <header className="shrink-0">
         <h1 className="text-[32px] font-bold tracking-[-0.025em] text-[#1C2882]">
           대시보드
@@ -20,7 +20,7 @@ export function DashboardPage() {
 
       <DashboardKpiStrip kpis={dashboardData.kpis} />
 
-      <div className="mt-5 grid min-h-0 flex-1 grid-cols-[435px_496px_500px] grid-rows-[minmax(0,332px)_minmax(0,1fr)] gap-5 overflow-x-auto overflow-y-hidden pb-1">
+      <div className="mt-5 grid h-[640px] grid-cols-[minmax(435px,1fr)_minmax(496px,1.08fr)_minmax(500px,1.12fr)] grid-rows-[332px_288px] gap-5 pb-1">
         <OfficeProfileCard office={dashboardData.office} />
         <RequestSummaryCard summaries={dashboardData.requestSummaries} />
         <SystemNoticeCard notices={dashboardData.systemNotices} />

@@ -15,7 +15,7 @@ export function ShareAlertCard({ feature }: ShareAlertCardProps) {
       className="h-full"
       contentClassName="flex items-stretch"
     >
-      <div className="flex min-h-0 flex-1 flex-col justify-between rounded-lg border border-dashed border-[#C8D2FF] bg-[#F8FAFF] p-6">
+      <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-dashed border-[#C8D2FF] bg-[#F8FAFF] p-6">
         <div>
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white">
             <Clock3 className="h-6 w-6 text-[#1C2882]" />
@@ -25,9 +25,6 @@ export function ShareAlertCard({ feature }: ShareAlertCardProps) {
           </p>
           <p className="mt-2 text-[24px] font-bold leading-tight tracking-[-0.025em] text-[#1B1B1B]">
             {feature.description}
-          </p>
-          <p className="mt-4 text-[15px] font-medium leading-6 tracking-[-0.025em] text-[#8D8D8D]">
-            {feature.detail}
           </p>
         </div>
       </div>
