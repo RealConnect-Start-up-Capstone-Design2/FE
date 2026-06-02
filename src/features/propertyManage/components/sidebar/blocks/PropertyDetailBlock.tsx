@@ -1,12 +1,11 @@
 import { SidebarBlock } from "@/shared/components/detail-sidebar";
+import DefaultFloorPlanImage from "@/assets/48m2.png";
 import {
   EmptyBlockState,
   Field,
   FieldRow,
-  PhotoStrip,
   SidebarInput,
   SidebarSelect,
-  UploadDropzone,
 } from "./SidebarFormControls";
 import type {
   ApartmentWithProperty,
@@ -118,17 +117,11 @@ export function PropertyDetailBlock({
   return (
     <SidebarBlock title="매물 상세" contentClassName="mt-5">
       <div className="flex flex-col gap-[18px]">
-        {apartment.img ? (
-          <img
-            src={apartment.img}
-            alt={`${apartment.apartmentName} 평면도`}
-            className="h-[180px] w-full rounded-md bg-white object-cover"
-          />
-        ) : (
-          <div className="flex h-[180px] items-center justify-center rounded-md bg-white text-[13px] font-medium tracking-[-0.025em] text-[#8D8D8D]">
-            평면도 이미지
-          </div>
-        )}
+        <img
+          src={apartment.img || DefaultFloorPlanImage}
+          alt={`${apartment.apartmentName} 평면도`}
+          className="h-[180px] w-full rounded-md bg-white object-contain"
+        />
 
         <div className="flex flex-col gap-3">
           <h4 className="text-[15px] font-medium tracking-[-0.025em] text-[#1B1B1B]">
@@ -261,14 +254,6 @@ export function PropertyDetailBlock({
               }
             />
           </Field>
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <h4 className="text-[15px] font-medium tracking-[-0.025em] text-[#1B1B1B]">
-            매물 사진
-          </h4>
-          <UploadDropzone />
-          <PhotoStrip />
         </div>
       </div>
     </SidebarBlock>
