@@ -5,6 +5,13 @@ import type {
   ManageType,
   OccupancyStatus,
   ContractOccupancyStatus,
+  DirectionBase,
+  FloorLevel,
+  StructureType,
+  EntranceType,
+  MainUsage,
+  LoanState,
+  ConsultationCustomerType,
 } from "./enums";
 
 export type {
@@ -122,6 +129,115 @@ export interface ApartmentWithProperty {
   type: string;
   property: PropertyInfo | null;
   isFavorite?: boolean;
+}
+
+/**
+ * 매물 상세 API 응답
+ * GET /api/property/detail/{apartmentId}
+ * PUT /api/property/detail/{apartmentId} (수정 시 동일 바디)
+ */
+export interface PropertyDetailResponse {
+  direction: Direction;
+  directionBase: DirectionBase;
+  floorLevel: FloorLevel;
+  roomCount: number;
+  bathroomCount: number;
+  totalParking: number;
+  parkingPerHousehold: number;
+  structureType: StructureType;
+  entranceType: EntranceType;
+  mainUsage: MainUsage;
+}
+
+/**
+ * 의뢰정보 API 응답
+ * GET /api/property/requestInfo/{apartmentId}
+ * PUT /api/property/requestInfo/{apartmentId} (생성/수정 시 동일 바디)
+ */
+export interface PropertyRequestInfoResponse {
+  requestType: RequestType;
+  loanAmount: number;
+  loanState: LoanState;
+  immediateMoveIn: boolean;
+  availableMoveInDate: string;
+  registeredAt: string;
+  salePrice: number;
+  existingJeonseDeposit: number;
+  existingMonthlyRent: number;
+  jeonsePrice: number;
+  monthlyDeposit: number;
+  monthlyRent: number;
+}
+
+/**
+ * 고객 상담 로그 한 건
+ */
+export interface ConsultationLog {
+  id: number;
+  customerType: ConsultationCustomerType;
+  content: string;
+  writerName: string;
+  createdAt: string;
+}
+
+/**
+ * 고객 상담 카드 조회 API 응답
+ * GET /api/property/consultation/{apartmentId}
+ */
+export interface ConsultationResponse {
+  id: number;
+  ownerName: string;
+  ownerPhone: string;
+  tenantName: string;
+  tenantPhone: string;
+  etcName: string;
+  etcPhone: string;
+  createdAt: string;
+  updatedAt: string;
+  logs: ConsultationLog[];
+}
+
+/**
+ * 고객 상담 생성/수정 API 요청 바디
+ * PUT /api/property/consultation/{apartmentId}
+ */
+export interface ConsultationPayload {
+  ownerName: string;
+  ownerPhone: string;
+  tenantName: string;
+  tenantPhone: string;
+  etcName: string;
+  etcPhone: string;
+}
+
+/**
+ * 상담 로그 추가 API 요청 바디
+ * POST /api/property/consultation/{apartmentId}
+ */
+export interface ConsultationLogPayload {
+  customerType: ConsultationCustomerType;
+  content: string;
+}
+
+/**
+ * 매물 사진 한 건 (조회 / Presigned URL 발급 / 확정 응답 공통)
+ */
+export interface PropertyImageResponse {
+  imageId: number;
+  storageKey: string;
+  url: string;
+  fields: Record<string, string>;
+  expiresAt: string;
+  maxBytes: number;
+}
+
+/**
+ * 매물 사진 Presigned URL 발급 요청
+ * POST /api/property/image/{apartmentId} 파라미터
+ */
+export interface PresignImageRequest {
+  originalFileName: string;
+  contentType: string;
 }
 
 /**

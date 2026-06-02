@@ -22,6 +22,27 @@ export const OCCUPANCY_STATUS_LABELS: Record<OccupancyStatus, string> = {
   VACANT: "공실",
 };
 
+/** 계약 정보 - 계약 구분 (본인/타사/공동중개/소개) */
+export const CONTRACT_RELATION_TYPE = {
+  MY_CONTRACT: "MY_CONTRACT",
+  OTHER_CONTRACT: "OTHER_CONTRACT",
+  CO_BROKERAGE: "CO_BROKERAGE",
+  INTRODUCTION: "INTRODUCTION",
+} as const;
+
+export type ContractRelationType =
+  (typeof CONTRACT_RELATION_TYPE)[keyof typeof CONTRACT_RELATION_TYPE];
+
+export const CONTRACT_RELATION_TYPE_LABELS: Record<
+  ContractRelationType,
+  string
+> = {
+  MY_CONTRACT: "본인 계약",
+  OTHER_CONTRACT: "타사 계약",
+  CO_BROKERAGE: "공동 중개",
+  INTRODUCTION: "소개",
+};
+
 export const PROPERTY_STATUS = {
   NONE: "NONE",
   BEFORE: "BEFORE",
@@ -103,6 +124,83 @@ export const DIRECTION_LABELS: Record<Direction, string> = {
   SOUTHWEST: "남서",
   NORTHEAST: "북동",
   NORTHWEST: "북서",
+};
+
+/** 매물 상세 - 방향 기준 (거실/침실) */
+export const DIRECTION_BASE = {
+  LIVING_ROOM: "LIVING_ROOM",
+  BEDROOM: "BEDROOM",
+} as const;
+
+export type DirectionBase =
+  (typeof DIRECTION_BASE)[keyof typeof DIRECTION_BASE];
+
+export const DIRECTION_BASE_LABELS: Record<DirectionBase, string> = {
+  LIVING_ROOM: "거실",
+  BEDROOM: "침실",
+};
+
+/** 매물 상세 - 층 위치 */
+export const FLOOR_LEVEL = {
+  LOW: "LOW",
+  MIDDLE: "MIDDLE",
+  HIGH: "HIGH",
+} as const;
+
+export type FloorLevel = (typeof FLOOR_LEVEL)[keyof typeof FLOOR_LEVEL];
+
+export const FLOOR_LEVEL_LABELS: Record<FloorLevel, string> = {
+  LOW: "저층",
+  MIDDLE: "중층",
+  HIGH: "고층",
+};
+
+/** 매물 상세 - 구조 타입 */
+export const STRUCTURE_TYPE = {
+  SINGLE: "SINGLE",
+  DUPLEX: "DUPLEX",
+} as const;
+
+export type StructureType =
+  (typeof STRUCTURE_TYPE)[keyof typeof STRUCTURE_TYPE];
+
+export const STRUCTURE_TYPE_LABELS: Record<StructureType, string> = {
+  SINGLE: "단층",
+  DUPLEX: "복층",
+};
+
+/** 매물 상세 - 입구 타입 */
+export const ENTRANCE_TYPE = {
+  NONE: "NONE",
+  STAIR: "STAIR",
+  CORRIDOR: "CORRIDOR",
+  MIXED: "MIXED",
+} as const;
+
+export type EntranceType = (typeof ENTRANCE_TYPE)[keyof typeof ENTRANCE_TYPE];
+
+export const ENTRANCE_TYPE_LABELS: Record<EntranceType, string> = {
+  NONE: "없음",
+  STAIR: "계단식",
+  CORRIDOR: "복도식",
+  MIXED: "혼합",
+};
+
+/** 매물 상세 - 주용도 */
+export const MAIN_USAGE = {
+  NONE: "NONE",
+  RESIDENTIAL: "RESIDENTIAL",
+  ACCOMMODATION: "ACCOMMODATION",
+  OFFICE: "OFFICE",
+} as const;
+
+export type MainUsage = (typeof MAIN_USAGE)[keyof typeof MAIN_USAGE];
+
+export const MAIN_USAGE_LABELS: Record<MainUsage, string> = {
+  NONE: "없음",
+  RESIDENTIAL: "주거",
+  ACCOMMODATION: "숙박",
+  OFFICE: "사무",
 };
 
 export const MANAGE_TYPE = {
