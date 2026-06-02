@@ -23,6 +23,14 @@ const config = {
         brand: {
           DEFAULT: "hsl(var(--brand))",
           foreground: "hsl(var(--brand-foreground))",
+          50: "#eef6ff",
+          100: "#d8eaff",
+          300: "#93bdfb",
+          400: "#5a9bf8",
+          500: "#2f7df6",
+          600: "#1f63d6",
+          700: "#1b50ab",
+          800: "#163f86",
         },
         primary: {
           DEFAULT: "hsl(var(--primary))",

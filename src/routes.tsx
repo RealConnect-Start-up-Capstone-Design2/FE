@@ -8,6 +8,7 @@ import { LoginPage, SignupPage, TermsDetailPage } from "@/pages/auth";
 import { MyPage } from "@/pages/myPage";
 import { AdminPage } from "@/pages/admin";
 import { InquiryManagePage } from "@/pages/inquiryManage";
+import { WebsiteGeneratorPage } from "@/pages/websiteGenerate";
 
 export const routes = createBrowserRouter([
   // 루트 경로
@@ -64,6 +65,10 @@ export const routes = createBrowserRouter([
       {
         path: "/inquiry-share",
         element: <div className="p-6">문의 공유 페이지</div>,
+      },
+      {
+        path: "/website-generate",
+        element: <WebsiteGeneratorPage />,
       },
       {
         path: "/my-page",

@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/shared/ui";
 import type { DashboardData } from "../model/types";
@@ -9,6 +10,8 @@ interface OfficeProfileCardProps {
 }
 
 export function OfficeProfileCard({ office }: OfficeProfileCardProps) {
+  const navigate = useNavigate();
+
   return (
     <DashboardCard className="h-full" contentClassName="flex flex-col">
       <div className="shrink-0 border-b border-[#D4D8E5] pb-5">
@@ -16,7 +19,10 @@ export function OfficeProfileCard({ office }: OfficeProfileCardProps) {
           <h2 className="min-w-0 flex-1 text-[24px] font-semibold tracking-[-0.025em] text-[#1B1B1B]">
             {office.name}
           </h2>
-          <Button className="h-[35px] shrink-0 rounded-lg bg-[#1B1B1B] px-4 text-[16px] font-semibold tracking-[-0.025em] text-white shadow-none hover:bg-[#2A2A2A]">
+          <Button
+            onClick={() => navigate("/website-generate")}
+            className="h-[35px] shrink-0 rounded-lg bg-[#1B1B1B] px-4 text-[16px] font-semibold tracking-[-0.025em] text-white shadow-none hover:bg-[#2A2A2A]"
+          >
             <Plus className="h-[14px] w-[14px]" />
             홈페이지 생성
           </Button>
