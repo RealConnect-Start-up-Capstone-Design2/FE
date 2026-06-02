@@ -69,6 +69,44 @@ export interface PropertyInfo {
   requestRegistrationDate?: string;
 }
 
+export type PropertyDetailDirection =
+  | "NONE"
+  | "NORTH"
+  | "SOUTH"
+  | "EAST"
+  | "WEST"
+  | "NORTHEAST"
+  | "SOUTHEAST"
+  | "SOUTHWEST"
+  | "NORTHWEST";
+
+export type PropertyDetailDirectionBase = "LIVING_ROOM" | "BEDROOM";
+export type PropertyDetailFloorLevel = "LOW" | "MIDDLE" | "HIGH";
+export type PropertyDetailStructureType = "SINGLE" | "DUPLEX";
+export type PropertyDetailEntranceType =
+  | "NONE"
+  | "STAIR"
+  | "CORRIDOR"
+  | "MIXED";
+export type PropertyDetailMainUsage =
+  | "NONE"
+  | "RESIDENTIAL"
+  | "ACCOMMODATION"
+  | "OFFICE";
+
+export interface PropertyDetailInfo {
+  direction: PropertyDetailDirection;
+  directionBase: PropertyDetailDirectionBase;
+  floorLevel: PropertyDetailFloorLevel;
+  roomCount: number;
+  bathroomCount: number;
+  totalParking: number;
+  parkingPerHousehold: number;
+  structureType: PropertyDetailStructureType;
+  entranceType: PropertyDetailEntranceType;
+  mainUsage: PropertyDetailMainUsage;
+}
+
 /**
  * 아파트 정보 + 매물 정보
  * 목록 조회 시 반환되는 주요 데이터 타입

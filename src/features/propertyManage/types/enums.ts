@@ -41,9 +41,9 @@ export const PROPERTY_STATUS_LABELS: Record<PropertyStatus, string> = {
 
 export const REQUEST_TYPE = {
   NONE: "NONE",
-  MONTHLY: "MONTHLY",
-  JEONSE: "JEONSE",
   SALE: "SALE",
+  JEONSE: "JEONSE",
+  MONTHLY: "MONTHLY",
   SALE_JEONSE: "SALE_JEONSE",
   SALE_MONTHLY: "SALE_MONTHLY",
   JEONSE_MONTHLY: "JEONSE_MONTHLY",
@@ -55,13 +55,25 @@ export type RequestType = (typeof REQUEST_TYPE)[keyof typeof REQUEST_TYPE];
 
 export const REQUEST_TYPE_LABELS: Record<RequestType, string> = {
   NONE: "없음",
-  MONTHLY: "월세",
-  JEONSE: "전세",
-  SALE: "매도",
+  SALE: "매",
+  JEONSE: "전",
+  MONTHLY: "월",
   SALE_JEONSE: "매/전",
   SALE_MONTHLY: "매/월",
   JEONSE_MONTHLY: "전/월",
   SALE_JEONSE_MONTHLY: "매/전/월",
+  HOLD: "보류",
+};
+
+export const REQUEST_TYPE_DROPDOWN_LABELS: Record<RequestType, string> = {
+  NONE: "없음",
+  SALE: "매도",
+  JEONSE: "전세",
+  MONTHLY: "월세",
+  SALE_JEONSE: "매도/전세",
+  SALE_MONTHLY: "매도/월세",
+  JEONSE_MONTHLY: "전세/월세",
+  SALE_JEONSE_MONTHLY: "매도/전세/월세",
   HOLD: "보류",
 };
 
@@ -128,15 +140,17 @@ export const propertyStatusOptions: DropdownOption[] = [
 ];
 
 export const requestTypeOptions: DropdownOption[] = [
-  { label: "없음", value: "NONE" },
-  { label: "월세", value: "MONTHLY" },
-  { label: "전세", value: "JEONSE" },
-  { label: "매도", value: "SALE" },
-  { label: "매/전", value: "SALE_JEONSE" },
-  { label: "매/월", value: "SALE_MONTHLY" },
-  { label: "전/월", value: "JEONSE_MONTHLY" },
-  { label: "매/전/월", value: "SALE_JEONSE_MONTHLY" },
-  { label: "보류", value: "HOLD" },
+  { label: REQUEST_TYPE_DROPDOWN_LABELS.NONE, value: "NONE" },
+  { label: REQUEST_TYPE_DROPDOWN_LABELS.SALE, value: "SALE" },
+  { label: REQUEST_TYPE_DROPDOWN_LABELS.JEONSE, value: "JEONSE" },
+  { label: REQUEST_TYPE_DROPDOWN_LABELS.MONTHLY, value: "MONTHLY" },
+  { label: REQUEST_TYPE_DROPDOWN_LABELS.SALE_JEONSE, value: "SALE_JEONSE" },
+  { label: REQUEST_TYPE_DROPDOWN_LABELS.SALE_MONTHLY, value: "SALE_MONTHLY" },
+  { label: REQUEST_TYPE_DROPDOWN_LABELS.JEONSE_MONTHLY, value: "JEONSE_MONTHLY" },
+  {
+    label: REQUEST_TYPE_DROPDOWN_LABELS.SALE_JEONSE_MONTHLY,
+    value: "SALE_JEONSE_MONTHLY",
+  },
 ];
 
 export const directionOptions: DropdownOption[] = [

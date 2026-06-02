@@ -1,6 +1,13 @@
 import { useRef, useEffect, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui";
-import type { ApartmentWithProperty } from "../../types";
+import type { ApartmentWithProperty, PropertyDetailInfo } from "../../types";
+import {
+  fetchApartmentById,
+  updatePropertyDetailAPI,
+  updatePropertyRequestInfoAPI,
+  type PropertyRequestInfo,
+} from "../../services/propertyService";
 import { PropertySidebarHeader } from "./PropertySidebarHeader";
 import {
   PropertySidebarMenu,
@@ -37,6 +44,12 @@ export function PropertySidebar({
 }: PropertySidebarProps) {
   const [activeSection, setActiveSection] = useState<string>("detail");
   const [isDirty, setIsDirty] = useState(false);
+  const [propertyDetail, setPropertyDetail] = useState<
+    PropertyDetailInfo | undefined
+  >();
+  const [propertyRequestInfo, setPropertyRequestInfo] = useState<
+    PropertyRequestInfo | undefined
+  >();
 
   const consultationRef = useRef<HTMLDivElement>(null);
   const contractRef = useRef<HTMLDivElement>(null);
@@ -44,13 +57,67 @@ export function PropertySidebar({
   const detailRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  const { data: fetchedPropertyDetail } = useQuery({
+    queryKey: ["property-detail", apartment?.apartmentId],
+    queryFn: () => fetchApartmentById(apartment!.apartmentId),
+    enabled: Boolean(apartment?.apartmentId),
+  });
+
+  const updatePropertyDetailMutation = useMutation({
+    mutationFn: ({
+      apartmentId,
+      detail,
+    }: {
+      apartmentId: number;
+      detail: PropertyDetailInfo;
+    }) => updatePropertyDetailAPI(apartmentId, detail),
+    onSuccess: (updatedDetail) => {
+      setPropertyDetail(updatedDetail);
+    },
+  });
+
+  const updatePropertyRequestInfoMutation = useMutation({
+    mutationFn: ({
+      apartmentId,
+      requestInfo,
+    }: {
+      apartmentId: number;
+      requestInfo: PropertyRequestInfo;
+    }) => updatePropertyRequestInfoAPI(apartmentId, requestInfo),
+  });
+
   const handleContentChange = () => {
     setIsDirty(true);
   };
 
-  const handleSave = () => {
-    onSave?.();
-    setIsDirty(false);
+  const handleSave = async () => {
+    if (!apartment?.apartmentId) {
+      onSave?.();
+      setIsDirty(false);
+      return;
+    }
+
+    try {
+      await Promise.all([
+        propertyDetail
+          ? updatePropertyDetailMutation.mutateAsync({
+              apartmentId: apartment.apartmentId,
+              detail: propertyDetail,
+            })
+          : Promise.resolve(undefined),
+        propertyRequestInfo
+          ? updatePropertyRequestInfoMutation.mutateAsync({
+              apartmentId: apartment.apartmentId,
+              requestInfo: propertyRequestInfo,
+            })
+          : Promise.resolve(undefined),
+      ]);
+
+      setIsDirty(false);
+      onSave?.();
+    } catch {
+      alert("저장에 실패했습니다.");
+    }
   };
 
   const handleSectionClick = (sectionId: string) => {
@@ -110,7 +177,12 @@ export function PropertySidebar({
 
   useEffect(() => {
     setIsDirty(false);
+    setPropertyRequestInfo(undefined);
   }, [apartment?.apartmentId]);
+
+  useEffect(() => {
+    setPropertyDetail(fetchedPropertyDetail);
+  }, [fetchedPropertyDetail]);
 
   useEffect(() => {
     window.addEventListener("property-sidebar-dirty", handleContentChange);
@@ -139,7 +211,12 @@ export function PropertySidebar({
         className="flex flex-1 flex-col gap-3 overflow-y-auto p-3"
       >
         <div id="detail" ref={detailRef}>
-          <PropertyDetailBlock apartment={apartment} isOpen={isOpen} />
+          <PropertyDetailBlock
+            apartment={apartment}
+            detail={propertyDetail}
+            isOpen={isOpen}
+            onDetailChange={setPropertyDetail}
+          />
         </div>
 
         <div id="consultation" ref={consultationRef}>
@@ -151,7 +228,12 @@ export function PropertySidebar({
         </div>
 
         <div id="inquiry" ref={inquiryRef}>
-          <InquiryInfoBlock apartment={apartment} isOpen={isOpen} />
+          <InquiryInfoBlock
+            apartment={apartment}
+            isOpen={isOpen}
+            requestInfo={propertyRequestInfo}
+            onRequestInfoChange={setPropertyRequestInfo}
+          />
         </div>
       </div>
 
@@ -172,6 +254,10 @@ export function PropertySidebar({
             <Button
               type="button"
               onClick={handleSave}
+              disabled={
+                updatePropertyDetailMutation.isPending ||
+                updatePropertyRequestInfoMutation.isPending
+              }
               className={
                 isDirty
                   ? "h-[42px] w-full rounded-lg bg-[#1C2882] text-[15px] font-semibold tracking-[-0.025em] text-white shadow-none hover:bg-[#17216E]"
