@@ -8,6 +8,7 @@ export const OCCUPANCY_STATUS = {
   SELF: "SELF",
   JEONSE: "JEONSE",
   MONTHLY_RENT: "MONTHLY_RENT",
+  VACANT: "VACANT",
 } as const;
 
 export type OccupancyStatus =
@@ -18,6 +19,7 @@ export const OCCUPANCY_STATUS_LABELS: Record<OccupancyStatus, string> = {
   SELF: "자가",
   JEONSE: "전세",
   MONTHLY_RENT: "월세",
+  VACANT: "공실",
 };
 
 export const PROPERTY_STATUS = {
@@ -123,14 +125,10 @@ export const MANAGE_TYPE_LABELS: Record<ManageType, string> = {
 
 export const occupancyStatusOptions: DropdownOption[] = [
   { label: "없음", value: "NONE" },
-  { label: "매매", value: "SALE" },
+  { label: "자가", value: "SELF" },
   { label: "전세", value: "JEONSE" },
-  { label: "월세", value: "MONTHLY" },
-  { label: "기매", value: "PRE_SALE" },
-  { label: "기전", value: "PRE_JEONSE" },
-  { label: "기월", value: "PRE_MONTHLY" },
-  { label: "입주", value: "OCCUPIED" },
-  { label: "보류", value: "HOLD" },
+  { label: "월세", value: "MONTHLY_RENT" },
+  { label: "공실", value: "VACANT" },
 ];
 
 export const propertyStatusOptions: DropdownOption[] = [

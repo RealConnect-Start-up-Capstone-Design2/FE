@@ -4,8 +4,12 @@ import { Button } from "@/shared/ui";
 import type { ApartmentWithProperty, PropertyDetailInfo } from "../../types";
 import {
   fetchApartmentById,
+  updatePropertyConsultationAPI,
+  updatePropertyContractInfoAPI,
   updatePropertyDetailAPI,
   updatePropertyRequestInfoAPI,
+  type PropertyConsultationUpdatePayload,
+  type PropertyContractInfo,
   type PropertyRequestInfo,
 } from "../../services/propertyService";
 import { PropertySidebarHeader } from "./PropertySidebarHeader";
@@ -50,6 +54,12 @@ export function PropertySidebar({
   const [propertyRequestInfo, setPropertyRequestInfo] = useState<
     PropertyRequestInfo | undefined
   >();
+  const [propertyConsultation, setPropertyConsultation] = useState<
+    PropertyConsultationUpdatePayload | undefined
+  >();
+  const [propertyContractInfo, setPropertyContractInfo] = useState<
+    PropertyContractInfo | undefined
+  >();
 
   const consultationRef = useRef<HTMLDivElement>(null);
   const contractRef = useRef<HTMLDivElement>(null);
@@ -86,6 +96,26 @@ export function PropertySidebar({
     }) => updatePropertyRequestInfoAPI(apartmentId, requestInfo),
   });
 
+  const updatePropertyConsultationMutation = useMutation({
+    mutationFn: ({
+      apartmentId,
+      consultation,
+    }: {
+      apartmentId: number;
+      consultation: PropertyConsultationUpdatePayload;
+    }) => updatePropertyConsultationAPI(apartmentId, consultation),
+  });
+
+  const updatePropertyContractInfoMutation = useMutation({
+    mutationFn: ({
+      apartmentId,
+      contractInfo,
+    }: {
+      apartmentId: number;
+      contractInfo: PropertyContractInfo;
+    }) => updatePropertyContractInfoAPI(apartmentId, contractInfo),
+  });
+
   const handleContentChange = () => {
     setIsDirty(true);
   };
@@ -109,6 +139,18 @@ export function PropertySidebar({
           ? updatePropertyRequestInfoMutation.mutateAsync({
               apartmentId: apartment.apartmentId,
               requestInfo: propertyRequestInfo,
+            })
+          : Promise.resolve(undefined),
+        propertyConsultation
+          ? updatePropertyConsultationMutation.mutateAsync({
+              apartmentId: apartment.apartmentId,
+              consultation: propertyConsultation,
+            })
+          : Promise.resolve(undefined),
+        propertyContractInfo
+          ? updatePropertyContractInfoMutation.mutateAsync({
+              apartmentId: apartment.apartmentId,
+              contractInfo: propertyContractInfo,
             })
           : Promise.resolve(undefined),
       ]);
@@ -178,6 +220,8 @@ export function PropertySidebar({
   useEffect(() => {
     setIsDirty(false);
     setPropertyRequestInfo(undefined);
+    setPropertyConsultation(undefined);
+    setPropertyContractInfo(undefined);
   }, [apartment?.apartmentId]);
 
   useEffect(() => {
@@ -220,11 +264,21 @@ export function PropertySidebar({
         </div>
 
         <div id="consultation" ref={consultationRef}>
-          <CustomerConsultationBlock apartment={apartment} isOpen={isOpen} />
+          <CustomerConsultationBlock
+            apartment={apartment}
+            isOpen={isOpen}
+            consultation={propertyConsultation}
+            onConsultationChange={setPropertyConsultation}
+          />
         </div>
 
         <div id="contract" ref={contractRef}>
-          <ContractInfoBlock apartment={apartment} isOpen={isOpen} />
+          <ContractInfoBlock
+            apartment={apartment}
+            isOpen={isOpen}
+            contractInfo={propertyContractInfo}
+            onContractInfoChange={setPropertyContractInfo}
+          />
         </div>
 
         <div id="inquiry" ref={inquiryRef}>
@@ -256,7 +310,9 @@ export function PropertySidebar({
               onClick={handleSave}
               disabled={
                 updatePropertyDetailMutation.isPending ||
-                updatePropertyRequestInfoMutation.isPending
+                updatePropertyRequestInfoMutation.isPending ||
+                updatePropertyConsultationMutation.isPending ||
+                updatePropertyContractInfoMutation.isPending
               }
               className={
                 isDirty

@@ -9,6 +9,7 @@ import type {
   RequestType,
   ManageType,
   PropertyDetailInfo,
+  OccupancyStatus,
 } from "../types";
 
 export interface PropertyRequestInfo {
@@ -24,6 +25,64 @@ export interface PropertyRequestInfo {
   jeonsePrice: number;
   monthlyDeposit: number;
   monthlyRent: number;
+}
+
+export type ConsultationCustomerType = "OWNER" | "TENENT" | "ETC";
+
+export interface PropertyConsultationLog {
+  id: number;
+  customerType: ConsultationCustomerType;
+  content: string;
+  writerName: string;
+  createdAt: string;
+}
+
+export interface PropertyConsultationInfo {
+  id: number;
+  ownerName: string;
+  ownerPhone: string;
+  tenantName: string;
+  tenantPhone: string;
+  etcName: string;
+  etcPhone: string;
+  createdAt: string;
+  updatedAt: string;
+  logs: PropertyConsultationLog[];
+}
+
+export type PropertyConsultationUpdatePayload = Pick<
+  PropertyConsultationInfo,
+  | "ownerName"
+  | "ownerPhone"
+  | "tenantName"
+  | "tenantPhone"
+  | "etcName"
+  | "etcPhone"
+>;
+
+export interface PropertyConsultationLogPayload {
+  customerType: ConsultationCustomerType;
+  content: string;
+}
+
+export type ContractType =
+  | "MY_CONTRACT"
+  | "OTHER_CONTRACT"
+  | "CO_BROKERAGE"
+  | "INTRODUCTION";
+
+export interface PropertyContractInfo {
+  occupancyStatus: OccupancyStatus;
+  salePrice: number;
+  loanAmount: number;
+  jeonsePrice: number;
+  deposit: number;
+  monthlyRent: number;
+  maintenanceFee: number;
+  expireDate: string;
+  registrationDate: string;
+  contractOffice: string;
+  contractType: ContractType;
 }
 
 export interface PropertyMutationPayload {
@@ -133,6 +192,77 @@ export const updatePropertyRequestInfoAPI = async (
 ): Promise<PropertyRequestInfo> => {
   const response = await apiClient.put<PropertyRequestInfo>(
     `/api/property/requestInfo/${apartmentId}`,
+    data
+  );
+  return response.data;
+};
+
+/**
+ * 고객 상담 조회 API
+ * GET /api/property/consultation/:apartmentId
+ */
+export const fetchPropertyConsultation = async (
+  apartmentId: number
+): Promise<PropertyConsultationInfo> => {
+  const response = await apiClient.get<PropertyConsultationInfo>(
+    `/api/property/consultation/${apartmentId}`
+  );
+  return response.data;
+};
+
+/**
+ * 고객 상담 연락처 수정 API
+ * PUT /api/property/consultation/:apartmentId
+ */
+export const updatePropertyConsultationAPI = async (
+  apartmentId: number,
+  data: PropertyConsultationUpdatePayload
+): Promise<PropertyConsultationInfo> => {
+  const response = await apiClient.put<PropertyConsultationInfo>(
+    `/api/property/consultation/${apartmentId}`,
+    data
+  );
+  return response.data;
+};
+
+/**
+ * 고객 상담 로그 등록 API
+ * POST /api/property/consultation/:apartmentId
+ */
+export const createPropertyConsultationLogAPI = async (
+  apartmentId: number,
+  data: PropertyConsultationLogPayload
+): Promise<PropertyConsultationLog> => {
+  const response = await apiClient.post<PropertyConsultationLog>(
+    `/api/property/consultation/${apartmentId}`,
+    data
+  );
+  return response.data;
+};
+
+/**
+ * 계약 정보 조회 API
+ * GET /api/properties/contractInfo/:apartmentId
+ */
+export const fetchPropertyContractInfo = async (
+  apartmentId: number
+): Promise<PropertyContractInfo> => {
+  const response = await apiClient.get<PropertyContractInfo>(
+    `/api/properties/contractInfo/${apartmentId}`
+  );
+  return response.data;
+};
+
+/**
+ * 계약 정보 수정 API
+ * PUT /api/properties/contractInfo/:apartmentId
+ */
+export const updatePropertyContractInfoAPI = async (
+  apartmentId: number,
+  data: PropertyContractInfo
+): Promise<PropertyContractInfo> => {
+  const response = await apiClient.put<PropertyContractInfo>(
+    `/api/properties/contractInfo/${apartmentId}`,
     data
   );
   return response.data;
