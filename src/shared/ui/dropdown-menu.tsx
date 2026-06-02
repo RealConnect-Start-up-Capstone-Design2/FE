@@ -9,6 +9,12 @@ export interface DropdownOption {
   icon?: string;
 }
 
+interface DropdownFooterAction {
+  label: string;
+  onClick: () => void;
+  icon?: string;
+}
+
 export interface DropdownMenuProps {
   id?: string;
   placeholder?: string;
@@ -23,6 +29,7 @@ export interface DropdownMenuProps {
   selectedTextColor?: string; // 선택된 값의 텍스트 색상
   placeholderTextColor?: string; // placeholder 텍스트 색상
   iconPosition?: "left" | "right";
+  footerAction?: DropdownFooterAction;
 }
 
 export function DropdownMenu({
@@ -39,6 +46,7 @@ export function DropdownMenu({
   selectedTextColor = "text-primary-foreground",
   placeholderTextColor = "text-primary-foreground",
   iconPosition = "left",
+  footerAction,
 }: DropdownMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -133,6 +141,33 @@ export function DropdownMenu({
               </button>
             </li>
           ))}
+          {footerAction && (
+            <li
+              className={cn(
+                options.length > 0 && "border-t border-grayscale-300"
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  footerAction.onClick();
+                }}
+                className={cn(
+                  "flex w-full items-center justify-between gap-2 px-4 py-2 text-left text-primary-foreground",
+                  optionClassName
+                )}
+              >
+                {iconPosition === "left" && footerAction.icon && (
+                  <img src={footerAction.icon} alt="" className="h-4 w-4" />
+                )}
+                <span className="flex-1">{footerAction.label}</span>
+                {iconPosition === "right" && footerAction.icon && (
+                  <img src={footerAction.icon} alt="" className="h-4 w-4" />
+                )}
+              </button>
+            </li>
+          )}
         </ul>
       )}
     </div>

@@ -70,6 +70,27 @@ interface SidebarProps {
   className?: string;
 }
 
+function MenuIcon({
+  icon,
+  label,
+  isActive,
+}: {
+  icon: MenuItem["icon"];
+  label: string;
+  isActive: boolean;
+}) {
+  return (
+    <img
+      src={icon}
+      alt={label}
+      className={cn(
+        "w-5 h-5",
+        isActive ? "brightness-0 invert" : "brightness-0 saturate-100",
+      )}
+    />
+  );
+}
+
 export function Sidebar({ className }: SidebarProps) {
   const location = useLocation();
   const { accessToken, logout: clearAuth } = useAuthStore();
@@ -96,9 +117,12 @@ export function Sidebar({ className }: SidebarProps) {
       )}
     >
       {/* Header */}
-      <div
+      <Link
+        to="/dashboard"
+        aria-label="대시보드로 이동"
+        title="대시보드로 이동"
         className={cn(
-          "bg-[#1C2882] flex items-center justify-center py-9",
+          "bg-[#1C2882] flex items-center justify-center py-9 transition-colors hover:bg-[#17226F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1C2882]",
           isCollapsed ? "px-2" : "p-auto",
         )}
       >
@@ -110,7 +134,7 @@ export function Sidebar({ className }: SidebarProps) {
             </p>
           )}
         </div>
-      </div>
+      </Link>
       {/* Toggle Button */}
       <button
         type="button"
@@ -182,15 +206,10 @@ export function Sidebar({ className }: SidebarProps) {
               )}
               title={isCollapsed ? item.label : undefined}
             >
-              <img
-                src={item.icon}
-                alt={item.label}
-                className={cn(
-                  "w-5 h-5",
-                  isActive
-                    ? "brightness-0 invert"
-                    : "brightness-0 saturate-100",
-                )}
+              <MenuIcon
+                icon={item.icon}
+                label={item.label}
+                isActive={isActive}
               />
               {!isCollapsed && (
                 <span className="text-lg font-medium leading-[1.193] tracking-[-0.025em] font-pretendard whitespace-nowrap">
@@ -228,15 +247,10 @@ export function Sidebar({ className }: SidebarProps) {
               )}
               title={isCollapsed ? item.label : undefined}
             >
-              <img
-                src={item.icon}
-                alt={item.label}
-                className={cn(
-                  "w-5 h-5",
-                  isActive
-                    ? "brightness-0 invert"
-                    : "brightness-0 saturate-100",
-                )}
+              <MenuIcon
+                icon={item.icon}
+                label={item.label}
+                isActive={isActive}
               />
               {!isCollapsed && (
                 <span className="text-lg font-medium leading-[1.193] tracking-[-0.025em] font-pretendard whitespace-nowrap">
