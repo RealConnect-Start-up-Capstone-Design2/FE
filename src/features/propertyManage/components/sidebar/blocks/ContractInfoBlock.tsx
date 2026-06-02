@@ -1,10 +1,10 @@
 import { SidebarBlock } from "@/shared/components/detail-sidebar";
+import { OccupancyStatusTag } from "../../OccupancyStatusTag";
 import {
   EmptyBlockState,
   Field,
   FieldRow,
   DateInput,
-  SegmentedControl,
   SidebarActiveInput,
   SidebarInput,
   SidebarSelect,
@@ -36,79 +36,86 @@ export function ContractInfoBlock({ apartment }: ContractInfoBlockProps) {
   const property = apartment.property;
 
   return (
-    <SidebarBlock title="계약 정보">
+    <SidebarBlock
+      title="계약 정보"
+      headerAction={<OccupancyStatusTag status="NONE" />}
+    >
       <div className="flex flex-col gap-3">
-        <Field label="거래상태" className="max-w-[180px]">
+        <Field label="점유상태" className="max-w-[180px]">
           <SidebarSelect
             value={property?.occupancyStatus ?? "NONE"}
             options={occupancyStatusOptions}
           />
         </Field>
 
-        <SegmentedControl
-          value="sale"
-          options={[
-            { label: "매도", value: "sale" },
-            { label: "전세", value: "jeonse" },
-            { label: "월세", value: "monthly", disabled: true },
-            { label: "단기임대", value: "short", disabled: true },
-          ]}
-        />
-
-        <FieldRow className="grid-cols-[minmax(0,180px)_minmax(0,1fr)]">
-          <Field label="매도 희망가" suffix="만원">
-            <SidebarActiveInput
-              defaultValue={property?.salePrice ? String(property.salePrice) : ""}
-            />
-          </Field>
-          <Field label="세 끼고 매도">
-            <div className="grid grid-cols-[minmax(0,1fr)_14px_64px] items-center gap-2">
-              <SidebarInput
-                defaultValue={
-                  property?.jeonsePrice ? String(property.jeonsePrice) : ""
-                }
-              />
-              <span className="mx-auto h-[22px] rotate-[17deg] border-l-2 border-[#B1B6C7]" />
-              <SidebarInput
-                defaultValue={
-                  property?.monthPrice ? String(property.monthPrice) : ""
-                }
-              />
-            </div>
-          </Field>
-        </FieldRow>
-
-        <div className="grid grid-cols-[minmax(0,180px)_minmax(0,1fr)] items-end gap-4">
-          <Field label="융자여부" suffix="만원">
-            <SidebarActiveInput
-              defaultValue={property?.deposit ? String(property.deposit) : ""}
-            />
-          </Field>
-          <ToggleGroup
-            value="융자없음"
-            options={["미표시", "융자없음", "30% 미만", "30% 이상"]}
-            className="grid-cols-4"
-          />
-        </div>
-
-        <FieldRow className="grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-end">
-          <Field label="입주가능일">
-            <ToggleGroup
-              value="즉시 입주"
-              options={["즉시 입주", "입주일 지정"]}
-              className="grid-cols-2"
-            />
-          </Field>
-          <Field label=" ">
-            <DateInput defaultValue={property?.expireDate ?? "2025. 10. 12"} />
-          </Field>
-        </FieldRow>
-
-        <Field label="등록일(오늘)" className="max-w-[210px]">
-          <DateInput
-            defaultValue={property?.requestRegistrationDate ?? "2025. 10. 12"}
+        <Field label="기매입금" suffix="만원" className="max-w-[180px]">
+          <SidebarInput
+            defaultValue={
+              property?.contractSalePrice
+                ? String(property.contractSalePrice)
+                : property?.salePrice
+                  ? String(property.salePrice)
+                  : ""
+            }
           />
         </Field>
+
+        <FieldRow className="grid-cols-[minmax(0,180px)_minmax(0,180px)]">
+          <Field label="융자금" suffix="만원">
+            <SidebarActiveInput
+              defaultValue={
+                property?.contractDeposit
+                  ? String(property.contractDeposit)
+                  : property?.deposit
+                    ? String(property.deposit)
+                    : ""
+              }
+            />
+          </Field>
+          <Field label="관리비" suffix="만원">
+            <SidebarInput
+              defaultValue={
+                property?.contractMonthlyRent
+                  ? String(property.contractMonthlyRent)
+                  : ""
+              }
+            />
+          </Field>
+        </FieldRow>
+
+        <FieldRow className="grid-cols-[minmax(0,180px)_minmax(0,180px)]">
+          <Field label="만기일">
+            <DateInput
+              defaultValue={property?.expireDate}
+            />
+          </Field>
+          <Field label="등록일">
+            <DateInput
+              defaultValue={property?.requestRegistrationDate}
+            />
+          </Field>
+        </FieldRow>
+
+        <div className="flex flex-col gap-[5px]">
+          <span className="text-[13px] font-medium tracking-[-0.025em] text-[#8D8D8D]">
+            계약 부동산
+          </span>
+          <div className="grid grid-cols-[minmax(0,180px)_minmax(0,1fr)] items-end gap-4">
+            <div className="flex min-w-0 items-center gap-[6px]">
+              <SidebarInput
+                defaultValue="잠실대장래미안"
+              />
+              <span className="shrink-0 text-[13px] font-normal tracking-[-0.025em] text-[#8D8D8D]">
+                부동산
+              </span>
+            </div>
+            <ToggleGroup
+              value="내 계약"
+              options={["내 계약", "타 계약", "공동 중개", "소개 물건"]}
+              className="grid-cols-4"
+            />
+          </div>
+        </div>
       </div>
     </SidebarBlock>
   );

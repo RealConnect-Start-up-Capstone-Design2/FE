@@ -52,7 +52,7 @@ export function SidebarBlock({
       )}
     >
       {/* 제목 영역 */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
         <div className="flex items-center gap-3">
           <h3 className="text-[18px] font-semibold leading-[1.2] tracking-[-0.025em] text-[#1B1B1B]">
             {title}

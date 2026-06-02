@@ -36,12 +36,22 @@ export function PropertySidebar({
   onCancel,
 }: PropertySidebarProps) {
   const [activeSection, setActiveSection] = useState<string>("detail");
+  const [isDirty, setIsDirty] = useState(false);
 
   const consultationRef = useRef<HTMLDivElement>(null);
   const contractRef = useRef<HTMLDivElement>(null);
   const inquiryRef = useRef<HTMLDivElement>(null);
   const detailRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  const handleContentChange = () => {
+    setIsDirty(true);
+  };
+
+  const handleSave = () => {
+    onSave?.();
+    setIsDirty(false);
+  };
 
   const handleSectionClick = (sectionId: string) => {
     const refs = {
@@ -98,6 +108,18 @@ export function PropertySidebar({
     };
   }, []);
 
+  useEffect(() => {
+    setIsDirty(false);
+  }, [apartment?.apartmentId]);
+
+  useEffect(() => {
+    window.addEventListener("property-sidebar-dirty", handleContentChange);
+
+    return () => {
+      window.removeEventListener("property-sidebar-dirty", handleContentChange);
+    };
+  }, []);
+
   return (
     <div className="flex h-full w-full flex-col border-l border-gray-200 bg-white shadow-xl">
       {apartment && (
@@ -112,6 +134,8 @@ export function PropertySidebar({
 
       <div
         ref={contentRef}
+        onChange={handleContentChange}
+        onInput={handleContentChange}
         className="flex flex-1 flex-col gap-3 overflow-y-auto p-3"
       >
         <div id="detail" ref={detailRef}>
@@ -147,14 +171,15 @@ export function PropertySidebar({
           <div className="relative flex-1">
             <Button
               type="button"
-              onClick={onSave}
-              className="h-[42px] w-full rounded-lg bg-[#1C2882] text-[15px] font-semibold tracking-[-0.025em] text-white shadow-none hover:bg-[#17216E]"
+              onClick={handleSave}
+              className={
+                isDirty
+                  ? "h-[42px] w-full rounded-lg bg-[#1C2882] text-[15px] font-semibold tracking-[-0.025em] text-white shadow-none hover:bg-[#17216E]"
+                  : "h-[42px] w-full rounded-lg bg-[#B1B6C7] text-[15px] font-semibold tracking-[-0.025em] text-white shadow-none hover:bg-[#9FA5B8]"
+              }
             >
               저장하기
             </Button>
-            <span className="absolute -right-1 -top-2 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#EA3B3B] text-[12px] font-semibold tracking-[-0.025em] text-white">
-              2
-            </span>
           </div>
         </div>
       </div>

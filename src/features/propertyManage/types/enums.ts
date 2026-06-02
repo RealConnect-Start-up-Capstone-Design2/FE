@@ -111,9 +111,14 @@ export const MANAGE_TYPE_LABELS: Record<ManageType, string> = {
 
 export const occupancyStatusOptions: DropdownOption[] = [
   { label: "없음", value: "NONE" },
-  { label: "자가", value: "SELF" },
+  { label: "매매", value: "SALE" },
   { label: "전세", value: "JEONSE" },
-  { label: "월세", value: "MONTHLY_RENT" },
+  { label: "월세", value: "MONTHLY" },
+  { label: "기매", value: "PRE_SALE" },
+  { label: "기전", value: "PRE_JEONSE" },
+  { label: "기월", value: "PRE_MONTHLY" },
+  { label: "입주", value: "OCCUPIED" },
+  { label: "보류", value: "HOLD" },
 ];
 
 export const propertyStatusOptions: DropdownOption[] = [

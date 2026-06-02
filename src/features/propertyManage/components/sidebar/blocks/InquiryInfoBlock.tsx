@@ -107,13 +107,17 @@ export function InquiryInfoBlock({ apartment }: InquiryInfoBlockProps) {
             />
           </Field>
           <Field label=" ">
-            <DateInput defaultValue={property?.expireDate ?? "2025. 10. 12"} />
+            <DateInput
+              defaultValue={property?.expireDate}
+              popoverPlacement="top"
+            />
           </Field>
         </FieldRow>
 
         <Field label="등록일(오늘)" className="max-w-[210px]">
           <DateInput
-            defaultValue={property?.requestRegistrationDate ?? "2025. 10. 12"}
+            defaultValue={property?.requestRegistrationDate}
+            popoverPlacement="top"
           />
         </Field>
       </div>
