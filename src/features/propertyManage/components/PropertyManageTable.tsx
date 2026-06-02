@@ -346,7 +346,7 @@ export function PropertyManageTable({
                       ) : property?.occupancyStatus === "MONTHLY_RENT" ? (
                         property?.contractDeposit != null ||
                         property?.contractMonthlyRent != null ? (
-                          <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                          <div className="flex items-center justify-center gap-1 whitespace-nowrap leading-none">
                             <span>
                               {property?.contractDeposit != null
                                 ? formatNumber(property.contractDeposit)
@@ -358,7 +358,7 @@ export function PropertyManageTable({
                                 ? formatNumber(property.contractMonthlyRent)
                                 : "-"}
                             </span>
-                          </span>
+                          </div>
                         ) : (
                           "-"
                         )
