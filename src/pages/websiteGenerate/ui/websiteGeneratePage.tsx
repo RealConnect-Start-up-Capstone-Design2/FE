@@ -7,7 +7,7 @@ export default function WebsiteGeneratorPage() {
   const [open, setOpen] = useState(false);
 
   return (
-    <main className="flex min-h-[calc(100vh-72px)] flex-col bg-[#FDFEFE] text-slate-900">
+    <main className="flex min-h-full w-full flex-col text-slate-900">
       <header className="shrink-0">
         <h1 className="text-[32px] font-bold tracking-[-0.025em] text-[#1C2882]">
           홈페이지 생성
@@ -17,9 +17,9 @@ export default function WebsiteGeneratorPage() {
         </p>
       </header>
 
-      <section className="mt-8 max-w-5xl">
-        <div className="overflow-hidden rounded-xl border border-[#D4D8E5] bg-gradient-to-br from-[#F8FAFF] to-white p-10 shadow-[0px_0px_25px_-18px_rgba(177,182,199,1)]">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white">
+      <section className="mt-8 w-full flex-1">
+        <div className="flex min-h-[420px] flex-col justify-center overflow-hidden rounded-xl border border-[#D4D8E5] bg-gradient-to-br from-[#F8FAFF] to-white p-10 shadow-[0px_0px_25px_-18px_rgba(177,182,199,1)]">
+          <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white">
             <Sparkles className="h-3.5 w-3.5" />
             NEW
           </div>
@@ -34,7 +34,7 @@ export default function WebsiteGeneratorPage() {
           </p>
           <button
             onClick={() => setOpen(true)}
-            className="mt-7 inline-flex items-center gap-2 rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white shadow-lg shadow-brand-600/20 transition hover:bg-brand-700"
+            className="mt-7 inline-flex w-fit items-center gap-2 rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white shadow-lg shadow-brand-600/20 transition hover:bg-brand-700"
           >
             <Sparkles className="h-5 w-5" />
             AI 웹사이트 생성하기
