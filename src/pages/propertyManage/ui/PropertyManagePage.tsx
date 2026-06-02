@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  type InfiniteData,
   useInfiniteQuery,
   useQuery,
   useQueryClient,
@@ -33,6 +34,10 @@ import {
   usePropertyFilter,
   usePropertySidebar,
 } from "@/features/propertyManage/hooks";
+import {
+  isInfinitePropertiesData,
+  isPropertiesResponse,
+} from "@/features/propertyManage/utils/propertyCacheUtils";
 import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue";
 
 const manageTypeValues: readonly ManageType[] = [
@@ -481,6 +486,55 @@ export function PropertyManagePage() {
     await queryClient.invalidateQueries({ queryKey: ["preferredComplexes"] });
   }, [queryClient]);
 
+  const updateApartmentInCache = useCallback(
+    (updatedApartment?: ApartmentWithProperty) => {
+      if (!updatedApartment) {
+        return;
+      }
+
+      const updateCachedData = (
+        oldData:
+          | PropertiesResponse
+          | InfiniteData<PropertiesResponse>
+          | undefined,
+      ) => {
+        if (!oldData) return oldData;
+
+        const updateApartment = (apartment: ApartmentWithProperty) =>
+          apartment.apartmentId === updatedApartment.apartmentId
+            ? updatedApartment
+            : apartment;
+
+        if (isInfinitePropertiesData(oldData)) {
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page) => ({
+              ...page,
+              content: page.content.map(updateApartment),
+            })),
+          };
+        }
+
+        if (isPropertiesResponse(oldData)) {
+          return {
+            ...oldData,
+            content: oldData.content.map(updateApartment),
+          };
+        }
+
+        return oldData;
+      };
+
+      queryClient.setQueriesData<
+        PropertiesResponse | InfiniteData<PropertiesResponse>
+      >({ queryKey: ["apartments"] }, updateCachedData);
+      queryClient.setQueriesData<
+        PropertiesResponse | InfiniteData<PropertiesResponse>
+      >({ queryKey: ["apartments-phone"] }, updateCachedData);
+    },
+    [queryClient],
+  );
+
   return (
     <>
       <SlidingSidebarLayout
@@ -494,10 +548,7 @@ export function PropertyManagePage() {
             onClose={() => closeSidebar(true)}
             isOpen={isSidebarOpen}
             onCancel={() => closeSidebar(true)}
-            onSave={() => {
-              // TODO: 저장 로직 구현
-              closeSidebar(true);
-            }}
+            onSave={updateApartmentInCache}
           />
         }
       >

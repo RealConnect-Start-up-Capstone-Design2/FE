@@ -28,7 +28,7 @@ interface PropertySidebarProps {
   apartment?: ApartmentWithProperty;
   onClose?: () => void;
   isOpen: boolean;
-  onSave?: () => void;
+  onSave?: (apartment?: ApartmentWithProperty) => void;
   onCancel?: () => void;
 }
 
@@ -155,8 +155,43 @@ export function PropertySidebar({
           : Promise.resolve(undefined),
       ]);
 
+      const updatedApartment: ApartmentWithProperty = {
+        ...apartment,
+        property: apartment.property
+          ? {
+              ...apartment.property,
+              ...(propertyRequestInfo
+                ? {
+                    requestType: propertyRequestInfo.requestType,
+                    salePrice: propertyRequestInfo.salePrice,
+                    jeonsePrice: propertyRequestInfo.jeonsePrice,
+                    deposit: propertyRequestInfo.monthlyDeposit,
+                    monthPrice: propertyRequestInfo.monthlyRent,
+                    requestRegistrationDate: propertyRequestInfo.registeredAt,
+                  }
+                : {}),
+              ...(propertyConsultation
+                ? {
+                    ownerName: propertyConsultation.ownerName,
+                    ownerPhone: propertyConsultation.ownerPhone,
+                  }
+                : {}),
+              ...(propertyContractInfo
+                ? {
+                    occupancyStatus: propertyContractInfo.occupancyStatus,
+                    contractSalePrice: propertyContractInfo.salePrice,
+                    contractJeonsePrice: propertyContractInfo.jeonsePrice,
+                    contractDeposit: propertyContractInfo.deposit,
+                    contractMonthlyRent: propertyContractInfo.monthlyRent,
+                    expireDate: propertyContractInfo.expireDate,
+                  }
+                : {}),
+            }
+          : apartment.property,
+      };
+
       setIsDirty(false);
-      onSave?.();
+      onSave?.(updatedApartment);
     } catch {
       alert("저장에 실패했습니다.");
     }
