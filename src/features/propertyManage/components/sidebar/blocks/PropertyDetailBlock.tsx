@@ -7,10 +7,7 @@ import {
   SidebarInput,
   SidebarSelect,
 } from "./SidebarFormControls";
-import type {
-  ApartmentWithProperty,
-  PropertyDetailInfo,
-} from "../../../types";
+import type { ApartmentWithProperty, PropertyDetailInfo } from "../../../types";
 
 interface PropertyDetailBlockProps {
   apartment?: ApartmentWithProperty;
@@ -64,12 +61,12 @@ const entranceTypeOptions = [
   { label: "선택", value: "NONE" },
   { label: "계단식", value: "STAIR" },
   { label: "복도식", value: "CORRIDOR" },
-  { label: "혼합식", value: "MIXED" },
+  { label: "복합식", value: "MIXED" },
 ];
 
 const mainUsageOptions = [
   { label: "선택", value: "NONE" },
-  { label: "주거시설", value: "RESIDENTIAL" },
+  { label: "공동주택", value: "RESIDENTIAL" },
   { label: "숙박시설", value: "ACCOMMODATION" },
   { label: "업무시설", value: "OFFICE" },
 ];
@@ -103,11 +100,7 @@ export function PropertyDetailBlock({
   };
 
   const updateNumberDetail = (
-    key:
-      | "roomCount"
-      | "bathroomCount"
-      | "totalParking"
-      | "parkingPerHousehold",
+    key: "roomCount" | "bathroomCount" | "totalParking" | "parkingPerHousehold",
     value: string,
   ) => {
     const parsedValue = Number(value);
