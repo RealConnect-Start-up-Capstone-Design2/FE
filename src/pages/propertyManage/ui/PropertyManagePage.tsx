@@ -585,6 +585,7 @@ export function PropertyManagePage() {
               hasActiveFilters={hasActiveFilters}
               selectedManageType={selectedManageType}
               onSelectManageType={handleSelectManageTypeForTable}
+              isSqmOrPyeong={isSqmOrPyeong}
             />
           </div>
         </div>
