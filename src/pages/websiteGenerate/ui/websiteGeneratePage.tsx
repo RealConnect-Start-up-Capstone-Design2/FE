@@ -26,10 +26,10 @@ export default function WebsiteGeneratorPage() {
           <h1 className="mt-4 max-w-xl text-3xl font-black leading-snug">
             내 매물로 나만의 웹사이트를
             <br />
-            1분 만에 자동 생성
+            5분 만에 자동 생성
           </h1>
           <p className="mt-3 max-w-lg text-slate-500">
-            RealConnect에 등록된 매물 데이터를 분석해, 고객에게 보여줄 전용
+            APT note에 등록된 매물 데이터를 분석해, 고객에게 보여줄 전용
             웹사이트를 AI가 자동으로 만들어 드립니다.
           </p>
           <button

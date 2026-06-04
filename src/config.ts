@@ -1,4 +1,4 @@
-import type { PricingPlan } from "./components/website-generator/types";
+import type { PricingPlan } from "@/components/website-generator/types";
 
 /**
  * 배포 완료 화면에서 iframe / 새 탭으로 연결할 실제 홈페이지 주소.
@@ -19,7 +19,7 @@ export const PREPARING_MS = 3_000;
 export const PLANNING_MS = 4_000;
 
 /** 배포 버튼 클릭 후 "배포 중" 연출 시간(ms) */
-export const DEPLOYING_MS = 30_200;
+export const DEPLOYING_MS = 20_000;
 
 export const PRICING_PLANS: PricingPlan[] = [
   {

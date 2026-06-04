@@ -5,7 +5,7 @@ export const dashboardData: DashboardData = {
     name: "잠실공인중개사사무소",
     representative: "최정현 (대표)",
     plan: "Basic",
-    phone: "02-2222-2222",
+    phone: "010-3086-8805",
     businessNumber: "123-45-67890",
     registrationNumber: "123-45-67890",
     mainComplexes: ["파크리오", "잠실 래미안 아이파크"],

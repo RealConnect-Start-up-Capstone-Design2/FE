@@ -10,7 +10,7 @@ export function AuthHeader() {
 
       {/* Title */}
       <h1 className="mb-3 text-center text-[40px] font-bold text-[#222A3A]">
-        RealConnect
+        APT Note
       </h1>
 
       {/* Description */}
