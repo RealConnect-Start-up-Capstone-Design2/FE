@@ -289,6 +289,24 @@ export const requestTypeFilterOptions: DropdownOption[] = [
   { label: "매매", value: "SALE" },
 ];
 
+/** 대출 상태 */
+export const LOAN_STATE = {
+  NONE: "NONE",
+  EXIST: "EXIST",
+} as const;
+
+export type LoanState = (typeof LOAN_STATE)[keyof typeof LOAN_STATE];
+
+/** 상담 고객 유형 */
+export const CONSULTATION_CUSTOMER_TYPE = {
+  OWNER: "OWNER",
+  TENENT: "TENENT",
+  ETC: "ETC",
+} as const;
+
+export type ConsultationCustomerType =
+  (typeof CONSULTATION_CUSTOMER_TYPE)[keyof typeof CONSULTATION_CUSTOMER_TYPE];
+
 // ============================================
 // 하위 호환성 (deprecated)
 // ============================================
