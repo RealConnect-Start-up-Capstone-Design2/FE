@@ -1,16 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  PLANNING_MS,
-  PREPARING_MS,
-  TARGET_DURATION_MS,
-  DEPLOYING_MS,
-} from '../../config';
-import { MOCK_FILES, lastFileOfPhase, phaseOfFile } from './mockData';
+import { TARGET_DURATION_MS, DEPLOYING_MS } from '../../config';
+import { MOCK_FILES } from './mockData';
 import type { GenerationStep } from './types';
 
-const TICK_MS = 40;
+const TICK_MS = 16; // ~60fps
 
-/** 빌드 구간에서 각 파일이 차지하는 시작/종료 오프셋(ms)을 코드 길이 비례로 미리 계산 */
+/** 각 파일이 차지하는 시작/종료 오프셋(ms)을 코드 길이 비례로 계산 */
 function buildSchedule(buildMs: number) {
   const totalChars = MOCK_FILES.reduce((sum, f) => sum + f.content.length, 0);
   let acc = 0;
@@ -18,39 +13,99 @@ function buildSchedule(buildMs: number) {
     const slice = (file.content.length / totalChars) * buildMs;
     const start = acc;
     acc += slice;
-    return { start, end: acc, len: file.content.length };
+    return { start, end: acc };
   });
+}
+
+/**
+ * 파일별 "블록 비순차 작성" 메타.
+ * 코드를 위에서 아래로 쭉 쓰지 않고, 골격(짝수 블록)을 먼저 깔고
+ * 사이(홀수 블록)를 나중에 채우는 순서로 작성해 실제 AI 편집처럼 보이게 한다.
+ */
+interface FileMeta {
+  lines: string[];
+  blocks: number[][]; // 각 블록이 가진 라인 인덱스(원래 순서)
+  order: number[]; // 작성 순서 (블록 인덱스 순열)
+  totalLines: number;
+}
+
+function buildFileMeta(content: string): FileMeta {
+  const lines = content.split('\n');
+  const blocks: number[][] = [];
+  let cur: number[] = [];
+  lines.forEach((line, i) => {
+    cur.push(i);
+    if (line.trim() === '' || cur.length >= 6) {
+      blocks.push(cur);
+      cur = [];
+    }
+  });
+  if (cur.length) blocks.push(cur);
+
+  const idx = blocks.map((_, i) => i);
+  const evens = idx.filter((i) => i % 2 === 0);
+  const odds = idx.filter((i) => i % 2 === 1);
+  const order = [...evens, ...odds]; // 골격 먼저 → 사이 채우기
+
+  return { lines, blocks, order, totalLines: lines.length };
+}
+
+const FILE_METAS = MOCK_FILES.map((f) => buildFileMeta(f.content));
+
+/** 파일 진행도(0~1)에 따라 지금까지 작성된 텍스트와 현재 작성 줄 위치를 조립 */
+function assemble(meta: FileMeta, progress: number) {
+  const targetLines = Math.floor(progress * meta.totalLines);
+  let remaining = targetLines;
+  const done = new Set<number>();
+  let partialBlock = -1;
+  let partialCount = 0;
+
+  for (const b of meta.order) {
+    const len = meta.blocks[b].length;
+    if (remaining >= len) {
+      done.add(b);
+      remaining -= len;
+    } else {
+      partialBlock = b;
+      partialCount = remaining;
+      break;
+    }
+  }
+
+  const out: string[] = [];
+  let writeLine = out.length;
+  for (let bi = 0; bi < meta.blocks.length; bi++) {
+    if (done.has(bi)) {
+      for (const li of meta.blocks[bi]) out.push(meta.lines[li]);
+    } else if (bi === partialBlock) {
+      for (let k = 0; k < partialCount; k++) out.push(meta.lines[meta.blocks[bi][k]]);
+      writeLine = out.length - 1; // 지금 막 쓴 줄
+    }
+  }
+  return { text: out.join('\n'), writeLine: Math.max(0, writeLine) };
 }
 
 export interface GenerationEngine {
   step: GenerationStep;
-  planVisible: boolean;
-  /** 트리에 등장한 파일 수 */
-  revealedCount: number;
-  /** 현재 진행 중인 phase 인덱스 */
-  currentPhaseIndex: number;
-  /** 현재 타이핑 중인 파일 인덱스 (-1 = 없음) */
   currentFileIndex: number;
-  /** 완료된 파일 수 */
   builtCount: number;
   totalCount: number;
-  /** 현재 파일의 누적 타이핑 텍스트 */
   typedContent: string;
+  /** 현재 작성 중인 줄(표시 텍스트 기준 인덱스) — 에디터 스크롤용 */
+  currentWriteLine: number;
   selectedPlanId: string | null;
-  start: () => void;
   reset: () => void;
-  openPricing: () => void;
-  deploy: (planId: string) => void;
+  openPricingFresh: () => void;
+  selectPlanAndBuild: (planId: string) => void;
+  deploy: () => void;
 }
 
 export function useGenerationEngine(): GenerationEngine {
   const [step, setStep] = useState<GenerationStep>('idle');
-  const [planVisible, setPlanVisible] = useState(false);
-  const [revealedCount, setRevealedCount] = useState(0);
-  const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
   const [currentFileIndex, setCurrentFileIndex] = useState(-1);
   const [builtCount, setBuiltCount] = useState(0);
   const [typedContent, setTypedContent] = useState('');
+  const [currentWriteLine, setCurrentWriteLine] = useState(0);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -70,7 +125,7 @@ export function useGenerationEngine(): GenerationEngine {
   }, []);
 
   const startBuild = useCallback(() => {
-    const buildMs = Math.max(8_000, TARGET_DURATION_MS - PREPARING_MS - PLANNING_MS);
+    const buildMs = TARGET_DURATION_MS;
     const schedule = buildSchedule(buildMs);
     const buildStart = performance.now();
 
@@ -78,13 +133,11 @@ export function useGenerationEngine(): GenerationEngine {
       const elapsed = performance.now() - buildStart;
 
       if (elapsed >= buildMs) {
-        // 마지막 파일까지 완전히 채우고 종료
         const last = MOCK_FILES.length - 1;
         setCurrentFileIndex(last);
-        setCurrentPhaseIndex(phaseOfFile(last));
-        setRevealedCount(MOCK_FILES.length);
         setBuiltCount(MOCK_FILES.length);
         setTypedContent(MOCK_FILES[last].content);
+        setCurrentWriteLine(FILE_METAS[last].totalLines - 1);
         setStep('done');
         if (intervalRef.current !== null) {
           clearInterval(intervalRef.current);
@@ -93,7 +146,6 @@ export function useGenerationEngine(): GenerationEngine {
         return;
       }
 
-      // 현재 파일 = start <= elapsed 인 마지막 파일
       let idx = 0;
       for (let i = 0; i < schedule.length; i++) {
         if (schedule[i].start <= elapsed) idx = i;
@@ -101,78 +153,66 @@ export function useGenerationEngine(): GenerationEngine {
       }
       const seg = schedule[idx];
       const progress = Math.min(1, (elapsed - seg.start) / (seg.end - seg.start));
-      const chars = Math.floor(progress * seg.len);
+      const { text, writeLine } = assemble(FILE_METAS[idx], progress);
 
-      // phase 단위로 파일을 한꺼번에 등장시켜 "폴더 동시 작업" 느낌을 준다
-      const phase = phaseOfFile(idx);
       setCurrentFileIndex(idx);
-      setCurrentPhaseIndex(phase);
-      setRevealedCount(lastFileOfPhase(phase) + 1);
       setBuiltCount(schedule.filter((s) => s.end <= elapsed).length);
-      setTypedContent(MOCK_FILES[idx].content.slice(0, chars));
+      setTypedContent(text);
+      setCurrentWriteLine(writeLine);
     }, TICK_MS);
   }, []);
 
-  const start = useCallback(() => {
+  const openPricingFresh = useCallback(() => {
     clearAll();
-    setPlanVisible(false);
-    setRevealedCount(0);
-    setCurrentPhaseIndex(0);
     setCurrentFileIndex(-1);
     setBuiltCount(0);
     setTypedContent('');
+    setCurrentWriteLine(0);
     setSelectedPlanId(null);
-
-    setStep('preparing');
-    after(PREPARING_MS, () => {
-      setStep('planning');
-      setPlanVisible(true);
-    });
-    after(PREPARING_MS + PLANNING_MS, () => {
-      setStep('building');
-      startBuild();
-    });
-  }, [clearAll, after, startBuild]);
+    setStep('pricing');
+  }, [clearAll]);
 
   const reset = useCallback(() => {
     clearAll();
     setStep('idle');
-    setPlanVisible(false);
-    setRevealedCount(0);
-    setCurrentPhaseIndex(0);
     setCurrentFileIndex(-1);
     setBuiltCount(0);
     setTypedContent('');
+    setCurrentWriteLine(0);
     setSelectedPlanId(null);
   }, [clearAll]);
 
-  const openPricing = useCallback(() => setStep('pricing'), []);
-
-  const deploy = useCallback(
+  const selectPlanAndBuild = useCallback(
     (planId: string) => {
       setSelectedPlanId(planId);
-      setStep('deploying');
-      after(DEPLOYING_MS, () => setStep('deployed'));
+      setCurrentFileIndex(-1);
+      setBuiltCount(0);
+      setTypedContent('');
+      setCurrentWriteLine(0);
+      setStep('building');
+      startBuild();
     },
-    [after],
+    [startBuild],
   );
 
-  // 언마운트 시 타이머 정리
+  const deploy = useCallback(() => {
+    setStep('deploying');
+    after(DEPLOYING_MS, () => setStep('deployed'));
+  }, [after]);
+
   useEffect(() => clearAll, [clearAll]);
 
   return {
     step,
-    planVisible,
-    revealedCount,
-    currentPhaseIndex,
     currentFileIndex,
     builtCount,
     totalCount: MOCK_FILES.length,
     typedContent,
+    currentWriteLine,
     selectedPlanId,
-    start,
     reset,
-    openPricing,
+    openPricingFresh,
+    selectPlanAndBuild,
     deploy,
   };
 }

@@ -1,7 +1,5 @@
 export type GenerationStep =
   | 'idle'
-  | 'preparing'
-  | 'planning'
   | 'building'
   | 'done'
   | 'pricing'
@@ -17,11 +15,6 @@ export interface MockFile {
   linesAdded: number;
   /** 코드 에디터에 타이핑될 내용 */
   content: string;
-}
-
-export interface PlanItem {
-  title: string;
-  detail: string;
 }
 
 export interface PricingPlan {

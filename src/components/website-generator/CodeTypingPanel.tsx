@@ -1,14 +1,15 @@
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { FileCode2, Radio } from 'lucide-react';
-import { cn } from '../../lib/utils';
 import type { MockFile } from './types';
 
 interface Props {
   file: MockFile | undefined;
-  /** 표시할 코드 텍스트 (라이브면 타이핑 중인 부분, 과거 파일이면 전체) */
+  /** 표시할 코드 텍스트 (라이브면 작성 중인 부분, 과거 파일이면 전체) */
   content: string;
-  /** 타이핑 중 = 캐럿 + 자동 따라가기 */
+  /** 작성 중 = 캐럿 + 해당 줄로 스크롤 */
   typing: boolean;
+  /** 지금 막 작성 중인 줄 인덱스 (비순차 작성이라 마지막 줄이 아닐 수 있음) */
+  writeLine: number;
   /** 과거 파일을 열람 중 (라이브와 다른 파일) */
   isHistory: boolean;
   onBackToLive: () => void;
@@ -17,7 +18,6 @@ interface Props {
 const KEYWORDS =
   'import|from|export|default|const|let|var|function|return|if|else|for|while|switch|case|break|interface|type|extends|implements|new|class|enum|async|await|true|false|null|undefined|void';
 
-// 줄 단위 경량 토크나이저: 주석/문자열/키워드/타입(대문자)/숫자 색상화
 const TOKEN = new RegExp(
   '(\\/\\/[^\\n]*)' + // 1 comment
     "|('(?:[^'\\\\]|\\\\.)*'|\"(?:[^\"\\\\]|\\\\.)*\")" + // 2 string
@@ -52,30 +52,28 @@ function highlight(line: string): ReactNode[] {
   return out;
 }
 
-export function CodeTypingPanel({ file, content, typing, isHistory, onBackToLive }: Props) {
+export function CodeTypingPanel({
+  file,
+  content,
+  typing,
+  writeLine,
+  isHistory,
+  onBackToLive,
+}: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  // 사용자가 바닥 근처에 있을 때만 자동 따라가기 (위로 스크롤하면 멈춤 = 실제 에디터 동작)
-  const stickToBottom = useRef(true);
+  const activeLineRef = useRef<HTMLDivElement>(null);
 
-  function handleScroll() {
-    const el = scrollRef.current;
-    if (!el) return;
-    stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 48;
-  }
-
-  // 타이핑 중 + 바닥 고정 상태면 새 줄을 따라 스크롤
+  // 작성 중인 줄을 화면 중앙 근처로 따라가게 (비순차 작성이라 위·아래로 점프)
   useLayoutEffect(() => {
-    const el = scrollRef.current;
-    if (el && typing && stickToBottom.current) el.scrollTop = el.scrollHeight;
-  }, [content, typing]);
+    if (typing && activeLineRef.current) {
+      activeLineRef.current.scrollIntoView({ block: 'nearest' });
+    }
+  }, [content, typing, writeLine]);
 
-  // 파일이 바뀌면 맨 위로 (과거 파일 열람 시작 시 처음부터 보이게)
+  // 과거 파일 열람 시작 시 맨 위로
   useEffect(() => {
     const el = scrollRef.current;
-    if (el && !typing) {
-      el.scrollTop = 0;
-      stickToBottom.current = true;
-    }
+    if (el && !typing) el.scrollTop = 0;
   }, [file?.path, typing]);
 
   const lines = content.split('\n');
@@ -83,13 +81,15 @@ export function CodeTypingPanel({ file, content, typing, isHistory, onBackToLive
 
   return (
     <div className="flex h-full flex-col bg-slate-900">
-      {/* 탭 바 */}
+      {/* 에디터 탭 바 */}
       <div className="flex items-center gap-2 border-b border-slate-700/60 bg-slate-800/70 px-4 py-2">
         {file ? (
           <>
-            <FileCode2 className="h-4 w-4 text-slate-400" />
-            <span className="text-sm text-slate-200">{file.name}</span>
-            <span className="hidden text-xs text-slate-500 sm:inline">— {file.path}</span>
+            <span className="flex items-center gap-1.5 rounded-t-md bg-slate-900 px-3 py-1.5 text-sm text-slate-200">
+              <FileCode2 className="h-4 w-4 text-sky-400" />
+              {file.name}
+            </span>
+            <span className="hidden text-xs text-slate-500 md:inline">{file.path}</span>
             {isHistory ? (
               <button
                 onClick={onBackToLive}
@@ -108,29 +108,30 @@ export function CodeTypingPanel({ file, content, typing, isHistory, onBackToLive
       </div>
 
       {/* 코드 영역 */}
-      <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="code-scroll flex-1 overflow-auto font-mono text-[13px] leading-6"
-      >
+      <div ref={scrollRef} className="code-scroll flex-1 overflow-auto font-mono text-[13px] leading-6">
         {content ? (
           <div className="flex min-h-full">
-            {/* 라인 번호 거터 */}
             <div className="sticky left-0 select-none border-r border-slate-700/40 bg-slate-900 px-3 py-3 text-right text-slate-600">
               {lines.map((_, i) => (
                 <div key={i}>{i + 1}</div>
               ))}
             </div>
-            {/* 코드 본문 */}
-            <pre className={cn('flex-1 px-4 py-3 text-slate-200')}>
-              {lines.map((line, i) => (
-                <div key={i} className="whitespace-pre">
-                  {highlight(line)}
-                  {typing && i === lines.length - 1 && (
-                    <span className="caret-blink ml-px inline-block h-4 w-2 translate-y-0.5 bg-brand-400" />
-                  )}
-                </div>
-              ))}
+            <pre className="flex-1 px-4 py-3 text-slate-200">
+              {lines.map((line, i) => {
+                const isActive = typing && i === writeLine;
+                return (
+                  <div
+                    key={i}
+                    ref={isActive ? activeLineRef : undefined}
+                    className={isActive ? 'whitespace-pre bg-slate-700/30' : 'whitespace-pre'}
+                  >
+                    {highlight(line)}
+                    {isActive && (
+                      <span className="caret-blink ml-px inline-block h-4 w-2 translate-y-0.5 bg-brand-400" />
+                    )}
+                  </div>
+                );
+              })}
             </pre>
           </div>
         ) : (

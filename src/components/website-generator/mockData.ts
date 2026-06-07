@@ -1,13 +1,4 @@
-import type { MockFile, PlanItem } from './types';
-
-/** 왼쪽 패널 "구현 계획" 카드에 표시할 항목들 */
-export const PLAN_ITEMS: PlanItem[] = [
-  { title: '매물 데이터 모델 설계', detail: '거래유형 · 가격 · 면적 · 방향 · 층 · 옵션 정의' },
-  { title: '매물 목록 · 상세 페이지', detail: '카드 그리드, 필터, 상세 갤러리 구성' },
-  { title: '지도 · 위치 섹션', detail: '주변 시세 · 교통 · 학군 정보 표시' },
-  { title: '문의 · 방문 예약 폼', detail: '실시간 상담 연결 및 이메일 알림' },
-  { title: '반응형 · SEO 최적화', detail: '모바일 우선 레이아웃 + 검색 노출 메타태그' },
-];
+import type { MockFile } from './types';
 
 /**
  * 생성되는 것처럼 보일 파일 목록 + 하드코딩된 코드.
@@ -19,7 +10,7 @@ export const MOCK_FILES: MockFile[] = [
     path: 'package.json',
     linesAdded: 38,
     content: `{
-  "name": "haneul-realty-web",
+  "name": "jamsil-lael-realty-web",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -156,81 +147,108 @@ export function dealLabel(dealType: string): string {
 }`,
   },
   {
+    name: 'crm-config.ts',
+    path: 'src/lib/crm-config.ts',
+    linesAdded: 24,
+    content: `// RealConnect CRM 연동 설정 — 중개사 계정에서 자동 주입됩니다.
+// (build 시 RealConnect API 토큰으로 매물/지역 데이터를 동기화)
+export const CRM_CONFIG = {
+  agencyId: 'agency_jamsil_lael_8821',
+  agencyName: '잠실르엘공인중개사사무소',
+  agentName: '김잠실',
+  complex: '잠실르엘',
+  region: {
+    sido: '서울',
+    sigungu: '송파구',
+    dongs: ['신천동', '잠실동', '석촌동', '방이동'],
+    center: { lat: 37.5126, lng: 127.0826 },
+  },
+  contact: {
+    phone: '02-2147-5000',
+    kakao: '@jamsil-lael',
+    email: 'jamsil-lael@realconnect.app',
+  },
+  // 매물은 CRM에서 실시간 동기화 (mock-data.ts 는 빌드 시점 스냅샷)
+  syncEndpoint: 'https://api.realconnect.app/v1/listings',
+} as const;
+
+export type CrmRegion = typeof CRM_CONFIG.region;`,
+  },
+  {
     name: 'mock-data.ts',
     path: 'src/lib/mock-data.ts',
     linesAdded: 96,
     content: `import type { Property } from '../types/property';
-
+// CRM 동기화 스냅샷 — agency_jamsil_lael_8821 (서울 송파구 잠실르엘), 매물 18건 중 대표 4건
 export const PROPERTIES: Property[] = [
   {
     id: 'p-1024',
-    title: '래미안 강변 59㎡ 남향 로열층',
+    title: '잠실르엘 84㎡ 남향 한강 조망',
     kind: 'apartment',
     dealType: 'sale',
-    deposit: 92000,
-    areaM2: 59.8,
-    floor: 12,
-    totalFloor: 25,
+    deposit: 290000,
+    areaM2: 84.9,
+    floor: 27,
+    totalFloor: 35,
     rooms: 3,
     baths: 2,
     direction: '남향',
-    address: '서울 성동구 행당동',
-    description: '한강 조망이 가능한 로열층 매물입니다. 올수리 완료, 즉시 입주 가능합니다.',
-    options: ['엘리베이터', '주차 2대', '올수리', '시스템에어컨'],
+    address: '서울 송파구 신천동 잠실르엘',
+    description: '한강 조망 로열층 신축 매물입니다. 잠실역 도보권, 즉시 입주 가능합니다.',
+    options: ['한강뷰', '지하주차', '커뮤니티시설', '시스템에어컨'],
     thumbnailColor: 'from-sky-400 to-blue-600',
     isNew: true,
   },
   {
     id: 'p-1025',
-    title: '역세권 신축 오피스텔 전세',
-    kind: 'officetel',
+    title: '잠실르엘 59㎡ 전세 고층',
+    kind: 'apartment',
     dealType: 'jeonse',
-    deposit: 28000,
-    areaM2: 33.1,
-    floor: 8,
-    totalFloor: 15,
-    rooms: 1,
+    deposit: 130000,
+    areaM2: 59.9,
+    floor: 18,
+    totalFloor: 35,
+    rooms: 3,
     baths: 1,
     direction: '남동향',
-    address: '서울 광진구 자양동',
-    description: '2호선 도보 3분, 풀옵션 신축 오피스텔. 보안 철저, 1인 가구 추천.',
-    options: ['풀옵션', '무인택배', 'CCTV', '엘리베이터'],
+    address: '서울 송파구 신천동 잠실르엘',
+    description: '신축 입주 컨디션 그대로. 잠실 학군·생활 인프라 도보권, 즉시 입주 가능.',
+    options: ['신축', '지하주차', '무인택배', '커뮤니티시설'],
     thumbnailColor: 'from-emerald-400 to-teal-600',
   },
   {
     id: 'p-1026',
-    title: '조용한 주택가 빌라 월세',
-    kind: 'villa',
-    dealType: 'monthly',
-    deposit: 2000,
-    monthly: 75,
-    areaM2: 46.2,
-    floor: 2,
-    totalFloor: 4,
-    rooms: 2,
-    baths: 1,
-    direction: '남서향',
-    address: '서울 중랑구 면목동',
-    description: '채광 좋은 2층 빌라. 반려동물 협의 가능, 주차 가능합니다.',
-    options: ['주차 가능', '반려동물', '베란다'],
+    title: '잠실르엘 110㎡ 남향 펜트뷰',
+    kind: 'apartment',
+    dealType: 'sale',
+    deposit: 385000,
+    areaM2: 110.5,
+    floor: 32,
+    totalFloor: 35,
+    rooms: 4,
+    baths: 2,
+    direction: '남향',
+    address: '서울 송파구 신천동 잠실르엘',
+    description: '고층 대형 평형, 석촌호수·한강 파노라마 조망. 프리미엄 마감재 적용.',
+    options: ['한강뷰', '호수뷰', '대형평형', '복층창고'],
     thumbnailColor: 'from-amber-400 to-orange-600',
   },
   {
     id: 'p-1027',
-    title: '대로변 1층 상가 임대',
-    kind: 'commercial',
+    title: '잠실르엘 84㎡ 반전세',
+    kind: 'apartment',
     dealType: 'monthly',
-    deposit: 5000,
-    monthly: 220,
-    areaM2: 82.6,
-    floor: 1,
-    totalFloor: 6,
-    rooms: 0,
-    baths: 1,
-    direction: '북향',
-    address: '서울 동대문구 장안동',
-    description: '유동인구 많은 대로변 1층. 카페, 음식점 업종 추천합니다.',
-    options: ['대로변', '코너', '화장실 별도'],
+    deposit: 150000,
+    monthly: 180,
+    areaM2: 84.9,
+    floor: 9,
+    totalFloor: 35,
+    rooms: 3,
+    baths: 2,
+    direction: '남서향',
+    address: '서울 송파구 신천동 잠실르엘',
+    description: '보증금 조정 가능한 반전세. 단지 내 커뮤니티·조경 우수, 가족 단위 추천.',
+    options: ['지하주차', '커뮤니티시설', '조경우수', '반려동물'],
     thumbnailColor: 'from-violet-400 to-purple-600',
   },
 ];
@@ -342,9 +360,9 @@ export function Header() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
         <Link to="/" className="flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-600 font-black text-white">
-            H
+            르
           </span>
-          <span className="text-lg font-bold text-slate-900">하늘공인중개사사무소</span>
+          <span className="text-lg font-bold text-slate-900">잠실르엘공인중개사사무소</span>
         </Link>
         <nav className="hidden gap-6 text-sm font-medium text-slate-600 md:flex">
           <Link to="/listing" className="hover:text-brand-600">매물 검색</Link>
@@ -352,10 +370,10 @@ export function Header() {
           <a href="#contact" className="hover:text-brand-600">상담 문의</a>
         </nav>
         <a
-          href="tel:0212345678"
+          href="tel:0221475000"
           className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
         >
-          02-1234-5678
+          02-2147-5000
         </a>
       </div>
     </header>
@@ -429,35 +447,31 @@ export function ContactForm() {
     name: 'HomePage.tsx',
     path: 'src/pages/HomePage.tsx',
     linesAdded: 72,
-    content: `import { useMemo, useState } from 'react';
-import { PROPERTIES } from '../lib/mock-data';
+    content: `import { useState } from 'react';
+import { useCrmListings } from '../hooks/useCrmListings';
+import { useFilteredListings } from '../hooks/useFilteredListings';
 import { PropertyCard } from '../components/PropertyCard';
 import { PropertyFilter } from '../components/PropertyFilter';
 import { ContactForm } from '../components/ContactForm';
+import { RegionMap } from '../components/RegionMap';
+import { CRM_CONFIG } from '../lib/crm-config';
 import type { PropertyFilterState } from '../types/property';
 
 const INITIAL: PropertyFilterState = { dealType: 'all', kind: 'all', keyword: '' };
 
 export function HomePage() {
+  const { listings } = useCrmListings();
   const [filter, setFilter] = useState<PropertyFilterState>(INITIAL);
-
-  const filtered = useMemo(() => {
-    return PROPERTIES.filter((p) => {
-      if (filter.dealType !== 'all' && p.dealType !== filter.dealType) return false;
-      if (filter.keyword && !p.address.includes(filter.keyword) && !p.title.includes(filter.keyword))
-        return false;
-      return true;
-    });
-  }, [filter]);
+  const filtered = useFilteredListings(listings, filter);
 
   return (
     <main>
       <section className="bg-gradient-to-b from-brand-50 to-white">
         <div className="mx-auto max-w-6xl px-5 py-16 text-center">
           <h1 className="text-4xl font-black leading-tight text-slate-900">
-            성동구 한강변 매물,
+            {CRM_CONFIG.complex} 매물,
             <br />
-            하늘공인중개사가 직접 찾아드립니다
+            {CRM_CONFIG.agencyName}가 직접 찾아드립니다
           </h1>
           <p className="mt-4 text-lg text-slate-500">
             검증된 매물만 골라 소개합니다. 지금 바로 둘러보세요.
@@ -473,6 +487,8 @@ export function HomePage() {
           ))}
         </div>
       </section>
+
+      <RegionMap />
 
       <section id="contact" className="mx-auto max-w-2xl px-5 py-16">
         <h2 className="mb-6 text-center text-2xl font-bold text-slate-900">상담 문의</h2>
@@ -568,6 +584,8 @@ function Spec({ label, value }: { label: string; value: string }) {
     linesAdded: 31,
     content: `import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Header } from './components/Header';
+import { Footer } from './components/Footer';
+import { KakaoChat } from './components/KakaoChat';
 import { HomePage } from './pages/HomePage';
 import { PropertyDetailPage } from './pages/PropertyDetailPage';
 
@@ -580,9 +598,8 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/property/:id" element={<PropertyDetailPage />} />
         </Routes>
-        <footer className="border-t border-slate-200 py-10 text-center text-sm text-slate-400">
-          하늘공인중개사사무소 · 서울 성동구 행당로 00 · 등록번호 11200-2024-00000
-        </footer>
+        <Footer />
+        <KakaoChat />
       </div>
     </BrowserRouter>
   );
@@ -603,37 +620,289 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 );`,
   },
-];
+  {
+    name: 'api-client.ts',
+    path: 'src/lib/api-client.ts',
+    linesAdded: 47,
+    content: `import { CRM_CONFIG } from './crm-config';
+import type { Property } from '../types/property';
 
-/**
- * 빌드 단계(Phase) 정의 — 왼쪽 패널 체크리스트 + 파일트리 "폴더 단위 동시 등장"에 사용.
- * 각 phase의 files 개수 합은 MOCK_FILES 길이(순서)와 일치해야 합니다.
- */
-export const BUILD_PHASES: { title: string; count: number }[] = [
-  { title: '개발 환경 설정', count: 3 }, // package.json, tailwind, eslint
-  { title: '데이터 모델 · 유틸', count: 3 }, // property, format, mock-data
-  { title: '공통 컴포넌트', count: 4 }, // Card, Filter, Header, ContactForm
-  { title: '페이지 · 라우팅', count: 4 }, // Home, Detail, App, main
-];
+// RealConnect CRM 연동 클라이언트
+// 빌드 시 스냅샷을 쓰고, 런타임에는 최신 매물을 폴링해 동기화한다.
+const BASE = CRM_CONFIG.syncEndpoint;
 
-/** 파일 인덱스가 속한 phase 인덱스 */
-export function phaseOfFile(fileIndex: number): number {
-  let acc = 0;
-  for (let i = 0; i < BUILD_PHASES.length; i++) {
-    acc += BUILD_PHASES[i].count;
-    if (fileIndex < acc) return i;
-  }
-  return BUILD_PHASES.length - 1;
+async function request<T>(path: string): Promise<T> {
+  const res = await fetch(BASE + path, {
+    headers: { 'X-Agency-Id': CRM_CONFIG.agencyId },
+  });
+  if (!res.ok) throw new Error('CRM sync failed: ' + res.status);
+  return res.json() as Promise<T>;
 }
 
-/** phase의 첫 파일 인덱스(전역) */
-export function firstFileOfPhase(phaseIndex: number): number {
-  let acc = 0;
-  for (let i = 0; i < phaseIndex; i++) acc += BUILD_PHASES[i].count;
-  return acc;
+export async function fetchListings(): Promise<Property[]> {
+  return request<Property[]>('/listings?status=active');
 }
 
-/** phase의 마지막 파일 인덱스(전역) */
-export function lastFileOfPhase(phaseIndex: number): number {
-  return firstFileOfPhase(phaseIndex) + BUILD_PHASES[phaseIndex].count - 1;
+export async function fetchListing(id: string): Promise<Property> {
+  return request<Property>('/listings/' + id);
+}
+
+export async function submitInquiry(payload: {
+  propertyId: string;
+  name: string;
+  phone: string;
+  message: string;
+}): Promise<{ ok: boolean }> {
+  const res = await fetch(BASE + '/inquiries', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Agency-Id': CRM_CONFIG.agencyId,
+    },
+    body: JSON.stringify(payload),
+  });
+  return { ok: res.ok };
+}`,
+  },
+  {
+    name: 'useCrmListings.ts',
+    path: 'src/hooks/useCrmListings.ts',
+    linesAdded: 39,
+    content: `import { useEffect, useState } from 'react';
+import { PROPERTIES } from '../lib/mock-data';
+import { fetchListings } from '../lib/api-client';
+import type { Property } from '../types/property';
+
+// CRM 매물을 불러오는 훅. 초기엔 빌드 스냅샷, 이후 실시간 동기화.
+export function useCrmListings() {
+  const [listings, setListings] = useState<Property[]>(PROPERTIES);
+  const [synced, setSynced] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    fetchListings()
+      .then((data) => {
+        if (alive) {
+          setListings(data);
+          setSynced(true);
+        }
+      })
+      .catch(() => {
+        // 동기화 실패 시 스냅샷 유지
+        if (alive) setSynced(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  return { listings, synced };
+}`,
+  },
+  {
+    name: 'useFilteredListings.ts',
+    path: 'src/hooks/useFilteredListings.ts',
+    linesAdded: 33,
+    content: `import { useMemo } from 'react';
+import type { Property, PropertyFilterState } from '../types/property';
+
+export function useFilteredListings(
+  listings: Property[],
+  filter: PropertyFilterState,
+) {
+  return useMemo(() => {
+    return listings.filter((p) => {
+      if (filter.dealType !== 'all' && p.dealType !== filter.dealType) return false;
+      if (filter.kind !== 'all' && p.kind !== filter.kind) return false;
+      if (filter.maxDeposit && p.deposit > filter.maxDeposit) return false;
+      if (filter.keyword) {
+        const k = filter.keyword;
+        if (!p.address.includes(k) && !p.title.includes(k)) return false;
+      }
+      return true;
+    });
+  }, [listings, filter]);
+}`,
+  },
+  {
+    name: 'RegionMap.tsx',
+    path: 'src/components/RegionMap.tsx',
+    linesAdded: 52,
+    content: `import { CRM_CONFIG } from '../lib/crm-config';
+
+// 중개사 지역(송파구 잠실르엘)을 중심으로 한 지도 섹션.
+// 실제로는 네이버/카카오 지도 SDK를 붙이며, 여기선 정적 마커로 표현.
+export function RegionMap() {
+  const { sigungu, dongs } = CRM_CONFIG.region;
+
+  return (
+    <section id="map" className="mx-auto max-w-6xl px-5 py-16">
+      <h2 className="text-2xl font-bold text-slate-900">{sigungu} 매물 안내</h2>
+      <p className="mt-2 text-slate-500">
+        {CRM_CONFIG.agencyName}가 직접 관리하는 {sigungu} 일대 매물입니다.
+      </p>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px]">
+        <div className="relative h-80 overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-100 to-sky-100">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <span className="grid h-12 w-12 place-items-center rounded-full bg-brand-600 text-white shadow-lg">
+              ●
+            </span>
+            <p className="mt-2 text-center text-sm font-semibold text-slate-700">
+              {sigungu}
+            </p>
+          </div>
+        </div>
+
+        <ul className="space-y-2">
+          {dongs.map((dong) => (
+            <li
+              key={dong}
+              className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3"
+            >
+              <span className="font-medium text-slate-700">{dong}</span>
+              <span className="text-sm text-brand-600">매물 보기</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}`,
+  },
+  {
+    name: 'Footer.tsx',
+    path: 'src/components/Footer.tsx',
+    linesAdded: 29,
+    content: `import { CRM_CONFIG } from '../lib/crm-config';
+
+export function Footer() {
+  const { agencyName, contact, region } = CRM_CONFIG;
+  return (
+    <footer className="border-t border-slate-200 bg-slate-50">
+      <div className="mx-auto max-w-6xl px-5 py-10 text-sm text-slate-500">
+        <p className="font-semibold text-slate-700">{agencyName}</p>
+        <p className="mt-2">
+          {region.sido} {region.sigungu} · 대표 {CRM_CONFIG.agentName}
+        </p>
+        <p className="mt-1">전화 {contact.phone} · 카카오 {contact.kakao}</p>
+        <p className="mt-4 text-xs text-slate-400">
+          Powered by RealConnect · 등록번호 11200-2024-00000
+        </p>
+      </div>
+    </footer>
+  );
+}`,
+  },
+  {
+    name: 'KakaoChat.tsx',
+    path: 'src/components/KakaoChat.tsx',
+    linesAdded: 26,
+    content: `import { CRM_CONFIG } from '../lib/crm-config';
+
+// 우측 하단 카카오 상담 플로팅 버튼
+export function KakaoChat() {
+  return (
+    <a
+      href={'https://pf.kakao.com/' + CRM_CONFIG.contact.kakao}
+      target="_blank"
+      rel="noreferrer"
+      className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-yellow-400 px-5 py-3 font-bold text-slate-900 shadow-lg transition hover:scale-105"
+    >
+      <span>💬</span>
+      카카오 상담
+    </a>
+  );
+}`,
+  },
+  {
+    name: 'seo.ts',
+    path: 'src/lib/seo.ts',
+    linesAdded: 31,
+    content: `import { CRM_CONFIG } from './crm-config';
+
+// 지역 키워드 기반 SEO 메타 생성
+export function buildMeta(title: string, description?: string) {
+  const region = CRM_CONFIG.region.sigungu;
+  return {
+    title: title + ' | ' + CRM_CONFIG.agencyName,
+    description:
+      description ??
+      region + ' 매물 전문 ' + CRM_CONFIG.agencyName + ' - 매매, 전세, 월세 매물 안내',
+    keywords: [
+      region + ' 부동산',
+      region + ' 아파트',
+      region + ' 매물',
+      ...CRM_CONFIG.region.dongs.map((d) => d + ' 부동산'),
+    ].join(', '),
+    ogTitle: title,
+    ogType: 'website',
+  };
+}`,
+  },
+  {
+    name: 'vite.config.ts',
+    path: 'vite.config.ts',
+    linesAdded: 14,
+    content: `import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+import tailwindcss from '@tailwindcss/vite';
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  server: { port: 5173 },
+  build: { outDir: 'dist', sourcemap: false },
+});`,
+  },
+  {
+    name: 'index.css',
+    path: 'src/index.css',
+    linesAdded: 18,
+    content: `@import 'tailwindcss';
+
+:root {
+  --brand: #1f63d6;
+  font-family: 'Pretendard', system-ui, sans-serif;
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}`,
+  },
+];
+
+/** 파일 경로 → 진행상황 패널에 표시할 작업 설명 */
+const FILE_TASKS: Record<string, string> = {
+  'package.json': '프로젝트 의존성 설정 중',
+  'tailwind.config.js': '디자인 시스템(색상·폰트) 구성 중',
+  'eslint.config.js': '코드 품질 규칙 설정 중',
+  'vite.config.ts': '빌드 환경 설정 중',
+  'src/index.css': '전역 스타일 적용 중',
+  'src/main.tsx': '앱 진입점 연결 중',
+  'src/App.tsx': '페이지 라우팅 구성 중',
+  'src/lib/crm-config.ts': 'CRM 계정·지역 정보 연동 중',
+  'src/lib/api-client.ts': '매물 동기화 API 연결 중',
+  'src/lib/mock-data.ts': '매물 데이터 불러오는 중',
+  'src/lib/format.ts': '가격·면적 표기 유틸 작성 중',
+  'src/lib/seo.ts': '지역 키워드 SEO 설정 중',
+  'src/types/property.ts': '매물 데이터 모델 정의 중',
+  'src/hooks/useCrmListings.ts': '매물 실시간 연동 훅 작성 중',
+  'src/hooks/useFilteredListings.ts': '매물 검색·필터 로직 작성 중',
+  'src/components/Header.tsx': '상단 내비게이션 만드는 중',
+  'src/components/Footer.tsx': '하단 정보 영역 만드는 중',
+  'src/components/PropertyCard.tsx': '매물 카드 컴포넌트 만드는 중',
+  'src/components/PropertyFilter.tsx': '매물 필터 UI 만드는 중',
+  'src/components/ContactForm.tsx': '상담 문의 폼 만드는 중',
+  'src/components/RegionMap.tsx': '잠실르엘 지역 지도 섹션 만드는 중',
+  'src/components/KakaoChat.tsx': '카카오 상담 버튼 추가 중',
+  'src/pages/HomePage.tsx': '메인 페이지 조립 중',
+  'src/pages/PropertyDetailPage.tsx': '매물 상세 페이지 만드는 중',
+};
+
+export function taskForFile(path: string): string {
+  return FILE_TASKS[path] ?? '코드 작성 중';
 }
