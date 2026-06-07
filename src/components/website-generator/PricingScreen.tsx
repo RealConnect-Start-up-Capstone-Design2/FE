@@ -1,6 +1,6 @@
-import { Check, Sparkles } from 'lucide-react';
+import { Check, MapPin } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { PRICING_PLANS } from '../../config';
+import { CRM_CONTEXT, PRICING_PLANS } from '../../config';
 
 interface Props {
   onSelect: (planId: string) => void;
@@ -17,12 +17,15 @@ export function PricingScreen({ onSelect }: Props) {
       <div className="mx-auto w-full max-w-5xl px-6 py-10">
         <div className="mb-8 text-center">
           <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-700">
-            <Sparkles className="h-3.5 w-3.5" />
-            생성 완료 · 배포 단계
+            <MapPin className="h-3.5 w-3.5" />
+            {CRM_CONTEXT.region} · 매물 {CRM_CONTEXT.listingCount}건 연동 준비됨
           </div>
-          <h2 className="text-2xl font-bold text-slate-900">웹사이트를 배포할 준비가 됐어요</h2>
+          <h2 className="text-2xl font-bold text-slate-900">
+            플랜을 선택하면 웹사이트 생성이 시작됩니다
+          </h2>
           <p className="mt-2 text-slate-500">
-            먼저 무료로 배포해 결과를 확인하고, 필요하면 실제 배포로 업그레이드하세요.
+            {CRM_CONTEXT.agencyName}의 매물 데이터를 기반으로 AI가 전용 웹사이트를 만들어 드려요.
+            먼저 무료로 시작해 결과를 확인할 수 있습니다.
           </p>
         </div>
 
