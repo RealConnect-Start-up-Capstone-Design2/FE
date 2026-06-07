@@ -15,7 +15,12 @@ import type {
   ManageType,
 } from "../types";
 import { useVirtualInfiniteScroll } from "@/shared/hooks";
-import { formatNumber, formatPhoneNumber } from "@/shared/utils";
+import {
+  formatArea,
+  formatNumber,
+  formatPhoneNumber,
+  sqmToPyeong,
+} from "@/shared/utils";
 import { updatePropertyManage } from "../services/propertyService";
 import { manageTypeFilterOptions, ESTIMATED_ROW_HEIGHT } from "../types";
 import {
@@ -46,6 +51,7 @@ interface PropertyManageTableProps {
   totalApartmentCount?: number;
   selectedManageType?: string;
   onSelectManageType?: (value: string) => void;
+  isSqmOrPyeong?: "sqm" | "pyeong";
 }
 
 export function PropertyManageTable({
@@ -61,6 +67,7 @@ export function PropertyManageTable({
   totalApartmentCount,
   selectedManageType,
   onSelectManageType,
+  isSqmOrPyeong = "sqm",
 }: PropertyManageTableProps) {
   // 외부에서 받은 데이터 사용
   const apartments = useMemo(
@@ -154,6 +161,21 @@ export function PropertyManageTable({
 
   const hasApartments = apartments.length > 0;
 
+  const formatAreaDisplay = useCallback(
+    (area?: number, fallback?: string) => {
+      if (area === undefined || area === null || area === 0) {
+        return fallback || "-";
+      }
+
+      if (isSqmOrPyeong === "sqm") {
+        return formatArea(area, "sqm");
+      }
+
+      return formatArea(sqmToPyeong(area), "pyeong");
+    },
+    [isSqmOrPyeong],
+  );
+
   if (isLoading) {
     return (
       <section className="w-full rounded-lg border border-[#DDE2F2] bg-white shadow-sm p-8 text-center">
@@ -180,7 +202,9 @@ export function PropertyManageTable({
             />
             <TableHead>동</TableHead>
             <TableHead>호수</TableHead>
-            <TableHead>타입</TableHead>
+            <TableHead>
+              {isSqmOrPyeong === "sqm" ? "면적(㎡)" : "면적(평)"}
+            </TableHead>
             <TableHead>점유 상태</TableHead>
             <TableHead>기매입금</TableHead>
             <TableHead>현임차</TableHead>
@@ -320,8 +344,10 @@ export function PropertyManageTable({
                     {/* 호수 */}
                     <TableCell>{apartment.ho}호</TableCell>
 
-                    {/* 타입 */}
-                    <TableCell>{apartment.type}</TableCell>
+                    {/* 면적 */}
+                    <TableCell>
+                      {formatAreaDisplay(apartment.area, apartment.type)}
+                    </TableCell>
 
                     {/* 점유 상태 */}
                     <TableCell>
