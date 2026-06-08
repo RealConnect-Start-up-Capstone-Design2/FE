@@ -315,15 +315,21 @@ export function PropertyManagePage() {
     }
 
     const detailComplexId = detailSearch.complexId;
-    const hasDetailComplex = preferredComplexes.some(
-      (complex) => complex.apartmentComplexId === detailComplexId,
-    );
+    const hasDetailComplexParam = detailComplexId !== undefined;
+    const hasDetailComplex =
+      hasDetailComplexParam &&
+      preferredComplexes.some(
+        (complex) => complex.apartmentComplexId === detailComplexId,
+      );
     const hasSelectedComplex = preferredComplexes.some(
       (complex) => complex.apartmentComplexId === selectedApartmentComplexId,
     );
-    const nextComplexId =
-      hasDetailComplex && detailComplexId !== undefined
-        ? detailComplexId
+    const nextComplexId = hasDetailComplex
+      ? detailComplexId
+      : hasDetailComplexParam
+        ? hasSelectedComplex
+          ? selectedApartmentComplexId
+          : undefined
         : hasSelectedComplex
           ? selectedApartmentComplexId
           : preferredComplexes[0]?.apartmentComplexId;
@@ -332,9 +338,12 @@ export function PropertyManagePage() {
       return;
     }
 
-    if (nextComplexId !== undefined) {
-      setSelectedApartmentComplexId(nextComplexId);
-      resetPropertySelection();
+    setSelectedApartmentComplexId(nextComplexId);
+    resetPropertySelection();
+
+    if (nextComplexId === undefined) {
+      setDong("");
+      setHo("");
     }
   }, [
     detailSearch.complexId,
@@ -348,6 +357,13 @@ export function PropertyManagePage() {
       return;
     }
 
+    if (
+      detailSearch.complexId !== undefined &&
+      detailSearch.complexId !== selectedApartmentComplexId
+    ) {
+      return;
+    }
+
     if (detailSearch.dong) {
       setDong(detailSearch.dong);
     }
@@ -355,13 +371,15 @@ export function PropertyManagePage() {
     if (detailSearch.ho) {
       setHo(detailSearch.ho);
     }
-  }, [detailSearch]);
+  }, [detailSearch, selectedApartmentComplexId]);
 
   useEffect(() => {
     if (
       handledDetailSearchRef.current === detailSearch.key ||
       detailSearch.apartmentId === undefined ||
-      isTableLoading
+      isTableLoading ||
+      (detailSearch.complexId !== undefined &&
+        detailSearch.complexId !== selectedApartmentComplexId)
     ) {
       return;
     }
@@ -386,6 +404,7 @@ export function PropertyManagePage() {
     isFetchingNextPage,
     isTableLoading,
     selectProperty,
+    selectedApartmentComplexId,
   ]);
 
   const selectedApartment = filteredAndSortedApartments.find(

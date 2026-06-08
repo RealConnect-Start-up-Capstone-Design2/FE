@@ -18,7 +18,7 @@ import { fetchPreferredComplexList } from "@/shared/api/region";
 
 const getProfileDetailSections = (
   profile: ProfileData | null,
-  preferredComplexNames: string[]
+  preferredComplexNames: string[],
 ) => {
   if (!profile) {
     return [];
@@ -75,7 +75,7 @@ const getProfileDetailSections = (
 
 const getOfficeInfoSection = (
   profile: ProfileData | null,
-  onEmployeeManage: () => void
+  onEmployeeManage: () => void,
 ) => (
   <div className="flex flex-col gap-4">
     <div className="flex flex-col gap-2">
@@ -132,7 +132,7 @@ export function ProfileSummaryCard({ className }: ProfileSummaryCardProps) {
   const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [preferredComplexNames, setPreferredComplexNames] = useState<string[]>(
-    []
+    [],
   );
   const [certificationStatus, setCertificationStatus] =
     useState<CertificationStatus | null>(null);
@@ -145,7 +145,7 @@ export function ProfileSummaryCard({ className }: ProfileSummaryCardProps) {
       ]);
       setProfile(profileData);
       setPreferredComplexNames(
-        preferredComplexes.map((complex) => complex.apartmentName)
+        preferredComplexes.map((complex) => complex.apartmentName),
       );
 
       try {
@@ -163,9 +163,9 @@ export function ProfileSummaryCard({ className }: ProfileSummaryCardProps) {
     loadProfileData();
   }, []);
 
-  const handleComingSoon = () => {
-    alert("추후 추가 예정입니다.");
-  };
+  // const handleComingSoon = () => {
+  //   alert("추후 추가 예정입니다.");
+  // };
 
   const handleEmployeeManage = () => {
     setIsEmployeeModalOpen(true);
@@ -263,11 +263,11 @@ export function ProfileSummaryCard({ className }: ProfileSummaryCardProps) {
         detailLabel="개인 및 사무실 정보"
         detailSections={getProfileDetailSections(
           profile,
-          preferredComplexNames
+          preferredComplexNames,
         )}
         className={cn(
           "min-w-[300px] max-w-[435px] flex-1 flex-shrink",
-          className
+          className,
         )}
         action={
           <Button
@@ -282,27 +282,27 @@ export function ProfileSummaryCard({ className }: ProfileSummaryCardProps) {
         dividerContent={getOfficeInfoSection(profile, handleEmployeeManage)}
         footerDividerContent={businessInfoSection}
         showBottomDivider
-        bottomContent={
-          <div className="flex flex-col items-center gap-3">
-            <div className="flex items-center gap-4 text-[15px] font-medium text-[#8D8D8D]">
-              <button
-                type="button"
-                onClick={handleComingSoon}
-                className="cursor-pointer transition-colors hover:text-[#1C2882] hover:underline"
-              >
-                개인정보 처리 방침
-              </button>
-              <span className="h-[12px] w-px bg-[#8D8D8D]" />
-              <button
-                type="button"
-                onClick={handleComingSoon}
-                className="cursor-pointer transition-colors hover:text-[#1C2882] hover:underline"
-              >
-                서비스 이용약관
-              </button>
-            </div>
-          </div>
-        }
+        // bottomContent={
+        //   <div className="flex flex-col items-center gap-3">
+        //     <div className="flex items-center gap-4 text-[15px] font-medium text-[#8D8D8D]">
+        //       <button
+        //         type="button"
+        //         onClick={handleComingSoon}
+        //         className="cursor-pointer transition-colors hover:text-[#1C2882] hover:underline"
+        //       >
+        //         개인정보 처리 방침
+        //       </button>
+        //       <span className="h-[12px] w-px bg-[#8D8D8D]" />
+        //       <button
+        //         type="button"
+        //         onClick={handleComingSoon}
+        //         className="cursor-pointer transition-colors hover:text-[#1C2882] hover:underline"
+        //       >
+        //         서비스 이용약관
+        //       </button>
+        //     </div>
+        //   </div>
+        // }
       />
       <ProfileEditModal
         isOpen={isModalOpen}
