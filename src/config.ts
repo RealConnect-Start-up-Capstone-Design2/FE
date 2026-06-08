@@ -2,27 +2,73 @@ import type { PricingPlan } from './components/website-generator/types';
 
 /**
  * CRM 사용자 컨텍스트 (목업).
- * 실제로는 로그인한 중개사 계정에서 가져오는 값 — 대시보드와 "생성되는 코드"가
- * 같은 데이터를 참조하는 것처럼 보이게 한 곳에 정의한다.
+ * 로그인한 중개사 계정(username)에 따라 사무소 정보가 달라진다.
+ * 대시보드 · 웹사이트 스튜디오 · 생성되는 코드가 모두 같은 값을 참조하게 해서
+ * "내 CRM 데이터로 내 사이트를 만든다"는 흐름이 한 계정으로 일관되게 보이도록 한다.
  */
-export const CRM_CONTEXT = {
-  agencyName: '잠실르엘공인중개사사무소',
-  agentName: '김잠실',
-  region: '서울 송파구',
-  regionShort: '송파구',
-  complex: '잠실르엘',
-  phone: '02-2147-5000',
-  listingCount: 18,
-  activeCustomers: 52,
-  monthlyVisitors: 2340,
-} as const;
+export interface CrmContext {
+  agencyName: string;
+  agentName: string;
+  region: string;
+  regionShort: string;
+  complex: string;
+  phone: string;
+  address: string;
+  listingCount: number;
+  activeCustomers: number;
+  monthlyVisitors: number;
+  /** 배포 완료 화면에서 iframe / 새 탭으로 연결할 실제 홈페이지 주소 */
+  deployedSiteUrl: string;
+}
 
 /**
- * 배포 완료 화면에서 iframe / 새 탭으로 연결할 실제 홈페이지 주소.
- * 나중에 본인 홈페이지 주소로 한 줄만 바꾸면 됩니다.
- * (지금은 테스트용 실제 부동산 홈페이지)
+ * 로그인 username → 사무소(목업) 매핑.
+ * 새 계정을 추가하려면 여기 한 줄만 넣으면 대시보드·스튜디오에 같이 반영된다.
  */
-export const DEPLOYED_SITE_URL = 'https://xn--h49ap64b0ub1zf.com/';
+export const CRM_ACCOUNTS: Record<string, CrmContext> = {
+  // 계정 1 — 실제 로그인 아이디
+  asd10203: {
+    agencyName: '잠실공인중개사사무소',
+    agentName: '최정현',
+    region: '서울 송파구',
+    regionShort: '송파구',
+    complex: '잠실르엘',
+    phone: '02-422-4545',
+    address: '서울 송파구 올림픽로 435 파크리오B 상가1층',
+    listingCount: 18,
+    activeCustomers: 52,
+    monthlyVisitors: 2340,
+    deployedSiteUrl: 'https://jamsil-leel.vercel.app',
+  },
+  // 계정 2 — 실제 로그인 아이디. 아래 ⚠️ 값들은 임시이니 실제 정보로 교체할 것.
+  qwe10203: {
+    agencyName: '잠실르엘공인중개사사무소',
+    agentName: '김잠실',
+    region: '서울 송파구',
+    regionShort: '송파구',
+    complex: '래미안아이파크',
+    phone: '02-2147-5000', // ⚠️ 임시
+    address: '서울 송파구 올림픽로 326 래미안아이파크 상가 2층', // ⚠️ 임시
+    listingCount: 12, // ⚠️ 임시
+    activeCustomers: 39, // ⚠️ 임시
+    monthlyVisitors: 1680, // ⚠️ 임시
+    deployedSiteUrl: 'https://jamsil-raemian-ipark.vercel.app',
+  },
+};
+
+/** 매칭되는 계정이 없을 때(로그아웃·미지정) 보여줄 기본 계정 */
+export const DEFAULT_USERNAME = 'asd10203';
+
+/** username으로 사무소 컨텍스트를 찾는다. 없으면 기본 계정. */
+export function getCrmContext(username?: string | null): CrmContext {
+  return (username && CRM_ACCOUNTS[username]) || CRM_ACCOUNTS[DEFAULT_USERNAME];
+}
+
+/**
+ * 모듈 로드 시점에 쓰는 기본 컨텍스트(예: 아래 PRICING_PLANS, MOCK_FILES 기본값).
+ * 런타임 화면들은 useCrmContext()로 로그인 계정 값을 읽는다.
+ */
+export const CRM_CONTEXT = CRM_ACCOUNTS[DEFAULT_USERNAME];
 
 /**
  * 코드 생성 연출 전체 목표 시간(ms). 빠르게 파일들을 넘나들며 작성하는 느낌.

@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle2, ExternalLink, RotateCw } from 'lucide-react';
-import { DEPLOYED_SITE_URL } from '../../config';
 
 interface Props {
+  /** 로그인 계정의 배포 미리보기 주소 */
+  siteUrl: string;
   onReset: () => void;
 }
 
-export function DeployedScreen({ onReset }: Props) {
+export function DeployedScreen({ siteUrl, onReset }: Props) {
   const [iframeBlocked, setIframeBlocked] = useState(false);
-  const displayUrl = DEPLOYED_SITE_URL.replace(/^https?:\/\//, '');
+  const displayUrl = siteUrl.replace(/^https?:\/\//, '');
 
   return (
     <div className="flex h-full flex-col bg-slate-100">
@@ -21,7 +22,7 @@ export function DeployedScreen({ onReset }: Props) {
         </div>
         <div className="flex items-center gap-2">
           <a
-            href={DEPLOYED_SITE_URL}
+            href={siteUrl}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-700"
@@ -60,7 +61,7 @@ export function DeployedScreen({ onReset }: Props) {
 
           <div className="relative flex-1 bg-white">
             <iframe
-              src={DEPLOYED_SITE_URL}
+              src={siteUrl}
               title="배포된 웹사이트"
               className="h-full w-full"
               onError={() => setIframeBlocked(true)}
@@ -72,7 +73,7 @@ export function DeployedScreen({ onReset }: Props) {
                     이 사이트는 보안 정책(X-Frame-Options)으로 미리보기 임베드를 차단합니다.
                   </p>
                   <a
-                    href={DEPLOYED_SITE_URL}
+                    href={siteUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"

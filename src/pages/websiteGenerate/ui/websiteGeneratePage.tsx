@@ -8,11 +8,13 @@ import {
   Users,
 } from "lucide-react";
 import { WebsiteStudioPanel } from "../../../components/website-generator/WebsiteStudioPanel";
-import { CRM_CONTEXT } from "../../../config";
+import { useCrmContext } from "../../../components/website-generator/useCrmContext";
 import { cn } from "../../../lib/utils";
 
 export default function App() {
   const [studioOpen, setStudioOpen] = useState(false);
+  // 로그인 계정의 사무소(목업). 기존 CRM_CONTEXT.x 참조를 그대로 쓰도록 같은 이름으로 받는다.
+  const CRM_CONTEXT = useCrmContext();
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-900">

@@ -1,15 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TARGET_DURATION_MS, DEPLOYING_MS } from '../../config';
 import { MOCK_FILES } from './mockData';
-import type { GenerationStep } from './types';
+import type { GenerationStep, MockFile } from './types';
 
 const TICK_MS = 16; // ~60fps
 
 /** 각 파일이 차지하는 시작/종료 오프셋(ms)을 코드 길이 비례로 계산 */
-function buildSchedule(buildMs: number) {
-  const totalChars = MOCK_FILES.reduce((sum, f) => sum + f.content.length, 0);
+function buildSchedule(files: MockFile[], buildMs: number) {
+  const totalChars = files.reduce((sum, f) => sum + f.content.length, 0);
   let acc = 0;
-  return MOCK_FILES.map((file) => {
+  return files.map((file) => {
     const slice = (file.content.length / totalChars) * buildMs;
     const start = acc;
     acc += slice;
@@ -18,19 +18,31 @@ function buildSchedule(buildMs: number) {
 }
 
 /**
- * 파일별 "블록 비순차 작성" 메타.
- * 코드를 위에서 아래로 쭉 쓰지 않고, 골격(짝수 블록)을 먼저 깔고
- * 사이(홀수 블록)를 나중에 채우는 순서로 작성해 실제 AI 편집처럼 보이게 한다.
+ * 파일마다 작성 "방식"을 다르게 줘서 실제 AI 코딩처럼 다양하게 보이게 한다.
+ * - sequential: 위에서 아래로 한 줄씩 (작은 유틸·설정 파일)
+ * - skeleton:   골격 블록 먼저 깔고 사이를 채움 (컴포넌트·페이지)
+ * - template:   틀이 먼저 깔리고 식별자·값만 ░로 있다가 실제 코드로 치환 (데이터·설정 — "변수 갈아끼우기")
  */
-interface FileMeta {
-  lines: string[];
-  blocks: number[][]; // 각 블록이 가진 라인 인덱스(원래 순서)
-  order: number[]; // 작성 순서 (블록 인덱스 순열)
-  totalLines: number;
+type Strategy = 'sequential' | 'skeleton' | 'template';
+
+function pickStrategy(path: string): Strategy {
+  if (path.endsWith('.tsx')) return 'skeleton';
+  if (/crm-config|mock-data|seo\.ts|types\/property|package\.json|tailwind\.config/.test(path)) {
+    return 'template';
+  }
+  return 'sequential';
 }
 
-function buildFileMeta(content: string): FileMeta {
-  const lines = content.split('\n');
+interface FileMeta {
+  lines: string[];
+  blocks: number[][]; // skeleton용: 각 블록이 가진 라인 인덱스(원래 순서)
+  order: number[]; // skeleton용: 작성 순서(블록 인덱스 순열)
+  totalLines: number;
+  strategy: Strategy;
+}
+
+function buildFileMeta(file: MockFile): FileMeta {
+  const lines = file.content.split('\n');
   const blocks: number[][] = [];
   let cur: number[] = [];
   lines.forEach((line, i) => {
@@ -47,13 +59,32 @@ function buildFileMeta(content: string): FileMeta {
   const odds = idx.filter((i) => i % 2 === 1);
   const order = [...evens, ...odds]; // 골격 먼저 → 사이 채우기
 
-  return { lines, blocks, order, totalLines: lines.length };
+  return { lines, blocks, order, totalLines: lines.length, strategy: pickStrategy(file.path) };
 }
 
-const FILE_METAS = MOCK_FILES.map((f) => buildFileMeta(f.content));
+/** template 전략: 식별자·문자열·숫자만 ░로 가리고 들여쓰기·괄호 같은 골격은 남긴다 */
+function ghostLine(line: string): string {
+  return line.replace(/[^\s(){}[\];:,.<>/=]+/g, (m) => '░'.repeat(m.length));
+}
 
-/** 파일 진행도(0~1)에 따라 지금까지 작성된 텍스트와 현재 작성 줄 위치를 조립 */
-function assemble(meta: FileMeta, progress: number) {
+/** 위에서 아래로 한 줄씩 */
+function assembleSequential(meta: FileMeta, progress: number) {
+  const filled = Math.floor(progress * meta.totalLines);
+  return {
+    text: meta.lines.slice(0, filled).join('\n'),
+    writeLine: Math.max(0, filled - 1),
+  };
+}
+
+/** 틀(ghost)을 먼저 다 깔고 위에서부터 실제 코드로 치환 */
+function assembleTemplate(meta: FileMeta, progress: number) {
+  const filled = Math.floor(progress * meta.totalLines);
+  const out = meta.lines.map((l, i) => (i < filled ? l : ghostLine(l)));
+  return { text: out.join('\n'), writeLine: Math.max(0, filled - 1) };
+}
+
+/** 골격 블록 먼저 깔고 사이 블록을 채움 */
+function assembleSkeleton(meta: FileMeta, progress: number) {
   const targetLines = Math.floor(progress * meta.totalLines);
   let remaining = targetLines;
   const done = new Set<number>();
@@ -85,6 +116,18 @@ function assemble(meta: FileMeta, progress: number) {
   return { text: out.join('\n'), writeLine: Math.max(0, writeLine) };
 }
 
+/** 파일 진행도(0~1)에 따라 지금까지 작성된 텍스트와 현재 작성 줄 위치를 조립 */
+function assemble(meta: FileMeta, progress: number) {
+  switch (meta.strategy) {
+    case 'sequential':
+      return assembleSequential(meta, progress);
+    case 'template':
+      return assembleTemplate(meta, progress);
+    default:
+      return assembleSkeleton(meta, progress);
+  }
+}
+
 export interface GenerationEngine {
   step: GenerationStep;
   currentFileIndex: number;
@@ -100,7 +143,9 @@ export interface GenerationEngine {
   deploy: () => void;
 }
 
-export function useGenerationEngine(): GenerationEngine {
+export function useGenerationEngine(files: MockFile[] = MOCK_FILES): GenerationEngine {
+  const fileMetas = useMemo(() => files.map(buildFileMeta), [files]);
+
   const [step, setStep] = useState<GenerationStep>('idle');
   const [currentFileIndex, setCurrentFileIndex] = useState(-1);
   const [builtCount, setBuiltCount] = useState(0);
@@ -126,18 +171,18 @@ export function useGenerationEngine(): GenerationEngine {
 
   const startBuild = useCallback(() => {
     const buildMs = TARGET_DURATION_MS;
-    const schedule = buildSchedule(buildMs);
+    const schedule = buildSchedule(files, buildMs);
     const buildStart = performance.now();
 
     intervalRef.current = setInterval(() => {
       const elapsed = performance.now() - buildStart;
 
       if (elapsed >= buildMs) {
-        const last = MOCK_FILES.length - 1;
+        const last = files.length - 1;
         setCurrentFileIndex(last);
-        setBuiltCount(MOCK_FILES.length);
-        setTypedContent(MOCK_FILES[last].content);
-        setCurrentWriteLine(FILE_METAS[last].totalLines - 1);
+        setBuiltCount(files.length);
+        setTypedContent(files[last].content);
+        setCurrentWriteLine(fileMetas[last].totalLines - 1);
         setStep('done');
         if (intervalRef.current !== null) {
           clearInterval(intervalRef.current);
@@ -153,14 +198,14 @@ export function useGenerationEngine(): GenerationEngine {
       }
       const seg = schedule[idx];
       const progress = Math.min(1, (elapsed - seg.start) / (seg.end - seg.start));
-      const { text, writeLine } = assemble(FILE_METAS[idx], progress);
+      const { text, writeLine } = assemble(fileMetas[idx], progress);
 
       setCurrentFileIndex(idx);
       setBuiltCount(schedule.filter((s) => s.end <= elapsed).length);
       setTypedContent(text);
       setCurrentWriteLine(writeLine);
     }, TICK_MS);
-  }, []);
+  }, [files, fileMetas]);
 
   const openPricingFresh = useCallback(() => {
     clearAll();
@@ -206,7 +251,7 @@ export function useGenerationEngine(): GenerationEngine {
     step,
     currentFileIndex,
     builtCount,
-    totalCount: MOCK_FILES.length,
+    totalCount: files.length,
     typedContent,
     currentWriteLine,
     selectedPlanId,
