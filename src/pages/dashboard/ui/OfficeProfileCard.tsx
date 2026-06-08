@@ -94,12 +94,14 @@ function InfoList({
   values: string[];
   className?: string;
 }) {
+  const displayValues = values.length > 0 ? values : ["-"];
+
   return (
     <div className={`flex min-w-0 flex-col gap-[7px] ${className ?? ""}`}>
       <p className="text-[18px] font-medium tracking-[-0.025em] text-[#8D8D8D]">
         {label}
       </p>
-      {values.map((value) => (
+      {displayValues.map((value) => (
         <p
           key={value}
           className="truncate text-[15px] font-medium tracking-[-0.025em] text-[#1B1B1B]"
