@@ -17,16 +17,16 @@ const STATUS_CONFIG: Record<
   { label: string; variant: "primary" | "secondary" }
 > = {
   NONE: { label: "없음", variant: "secondary" },
-  SELF: { label: "입주", variant: "primary" },
+  SELF: { label: "자가", variant: "primary" },
   JEONSE: { label: "전세", variant: "primary" },
   MONTHLY_RENT: { label: "월세", variant: "primary" },
-  VACANT: { label: "공실", variant: "secondary" },
+  VACANT: { label: "공실", variant: "primary" },
 };
 
 /**
  * 점유상태 태그 컴포넌트
- * - 입주/전세/월세: 파란색 배경
- * - 없음/공실: 회색 배경
+ * - 자가/전세/월세/공실: 파란색 배경
+ * - 없음: 회색 배경
  */
 export function OccupancyStatusTag({
   status,
