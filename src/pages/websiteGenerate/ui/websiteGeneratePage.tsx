@@ -3,9 +3,11 @@ import {
   Building2,
   Globe,
   MapPin,
+  Phone,
   Sparkles,
-  TrendingUp,
-  Users,
+  Store,
+  Tag,
+  User,
 } from "lucide-react";
 import { WebsiteStudioPanel } from "../../../components/website-generator/WebsiteStudioPanel";
 import { useCrmContext } from "../../../components/website-generator/useCrmContext";
@@ -74,21 +76,39 @@ export default function App() {
           >
             <StatCard
               icon={<Building2 className="h-5 w-5" />}
-              label="등록 매물"
+              label="연동 매물"
               value={CRM_CONTEXT.listingCount + "건"}
-              sub={CRM_CONTEXT.regionShort + " 일대"}
+              sub="사이트에 자동 게시"
             />
             <StatCard
-              icon={<Users className="h-5 w-5" />}
-              label="관리 고객"
-              value={CRM_CONTEXT.activeCustomers + "명"}
-              sub="이번 달 활성"
+              icon={<MapPin className="h-5 w-5" />}
+              label="지역 · 단지"
+              value={CRM_CONTEXT.complex}
+              sub={CRM_CONTEXT.region}
             />
             <StatCard
-              icon={<TrendingUp className="h-5 w-5" />}
-              label="월 방문자"
-              value={CRM_CONTEXT.monthlyVisitors.toLocaleString("ko-KR")}
-              sub="전월 대비 +18%"
+              icon={<Phone className="h-5 w-5" />}
+              label="대표 연락처"
+              value={CRM_CONTEXT.phone}
+              sub="상담 버튼으로 연결"
+            />
+            <StatCard
+              icon={<Store className="h-5 w-5" />}
+              label="사무소"
+              value={CRM_CONTEXT.agencyName}
+              sub="사이트 상호 · 푸터"
+            />
+            <StatCard
+              icon={<User className="h-5 w-5" />}
+              label="대표 중개사"
+              value={CRM_CONTEXT.agentName}
+              sub="소개 · 상담 담당"
+            />
+            <StatCard
+              icon={<Tag className="h-5 w-5" />}
+              label="거래 유형"
+              value="매매 · 전세 · 월세"
+              sub="매물 필터 자동 구성"
             />
           </div>
 

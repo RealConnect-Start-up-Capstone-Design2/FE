@@ -49,6 +49,12 @@ export function DashboardPage() {
         : [crm.complex],
   };
 
+  // 만기 알림 목업이 단지명("파크리오")으로 고정돼 있어, 로그인 계정 단지로 맞춘다.
+  const expiryAlerts = dashboardData.expiryAlerts.map((alert) => ({
+    ...alert,
+    propertyTitle: `${crm.complex} 아파트 ${alert.dong}동 ${alert.ho}호`,
+  }));
+
   return (
     <main className="w-full min-w-[1471px]">
       <header className="shrink-0">
@@ -66,7 +72,7 @@ export function DashboardPage() {
         <OfficeProfileCard office={office} />
         <RequestSummaryCard summaries={dashboardData.requestSummaries} />
         <SystemNoticeCard notices={dashboardData.systemNotices} />
-        <ExpiryAlertCard alerts={dashboardData.expiryAlerts} />
+        <ExpiryAlertCard alerts={expiryAlerts} />
         {dashboardData.unsupportedFeatures.map((feature) => (
           <ShareAlertCard key={feature.id} feature={feature} />
         ))}

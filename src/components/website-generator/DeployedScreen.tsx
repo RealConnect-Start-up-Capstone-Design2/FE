@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, ExternalLink, RotateCw } from 'lucide-react';
+import { CheckCircle2, ExternalLink } from 'lucide-react';
 
 interface Props {
   /** 로그인 계정의 배포 미리보기 주소 */
@@ -43,16 +43,6 @@ export function DeployedScreen({ siteUrl, onReset }: Props) {
       <div className="flex flex-1 flex-col p-4">
         <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-slate-300 bg-white shadow-lg">
           <div className="flex items-center gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2">
-            <div className="flex gap-1.5">
-              <span className="h-3 w-3 rounded-full bg-red-400" />
-              <span className="h-3 w-3 rounded-full bg-amber-400" />
-              <span className="h-3 w-3 rounded-full bg-emerald-400" />
-            </div>
-            <div className="flex items-center gap-1 text-slate-400">
-              <ArrowLeft className="h-4 w-4" />
-              <ArrowRight className="h-4 w-4" />
-              <RotateCw className="h-3.5 w-3.5" />
-            </div>
             <div className="flex flex-1 items-center gap-2 rounded-md bg-white px-3 py-1 text-sm text-slate-500 ring-1 ring-slate-200">
               <span className="text-emerald-600">🔒</span>
               {displayUrl}

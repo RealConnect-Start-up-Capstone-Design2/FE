@@ -3,7 +3,7 @@ import { CRM_CONTEXT, type CrmContext } from '../../config';
 
 /**
  * 생성되는 것처럼 보일 파일 목록 + 하드코딩된 코드.
- * 사무소 식별 정보(부동산명·대표·전화)는 로그인 계정(ctx)에서 ${}로 끼워넣어
+ * 사무소 식별 정보(부동산명·대표·전화·단지)는 로그인 계정(ctx)에서 ${}로 끼워넣어
  * 대시보드·스튜디오와 항상 같은 값을 쓴다. 그 외 content엔 백틱/${}를 쓰지 않는다.
  */
 export function buildMockFiles(ctx: CrmContext): MockFile[] {
@@ -13,7 +13,7 @@ export function buildMockFiles(ctx: CrmContext): MockFile[] {
       path: 'package.json',
       linesAdded: 38,
       content: `{
-  "name": "jamsil-lael-realty-web",
+  "name": "realconnect-realty-web",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -156,7 +156,7 @@ export function dealLabel(dealType: string): string {
       content: `// RealConnect CRM 연동 설정 — 중개사 계정에서 자동 주입됩니다.
 // (build 시 RealConnect API 토큰으로 매물/지역 데이터를 동기화)
 export const CRM_CONFIG = {
-  agencyId: 'agency_jamsil_lael_8821',
+  agencyId: 'agency_realconnect_8821',
   agencyName: '${ctx.agencyName}',
   agentName: '${ctx.agentName}',
   complex: '${ctx.complex}',
@@ -168,8 +168,8 @@ export const CRM_CONFIG = {
   },
   contact: {
     phone: '${ctx.phone}',
-    kakao: '@jamsil-lael',
-    email: 'jamsil-lael@realconnect.app',
+    kakao: '@realconnect',
+    email: 'contact@realconnect.app',
   },
   // 매물은 CRM에서 실시간 동기화 (mock-data.ts 는 빌드 시점 스냅샷)
   syncEndpoint: 'https://api.realconnect.app/v1/listings',
@@ -182,11 +182,11 @@ export type CrmRegion = typeof CRM_CONFIG.region;`,
       path: 'src/lib/mock-data.ts',
       linesAdded: 96,
       content: `import type { Property } from '../types/property';
-// CRM 동기화 스냅샷 — agency_jamsil_lael_8821 (서울 송파구 잠실르엘), 매물 18건 중 대표 4건
+// CRM 동기화 스냅샷 — ${ctx.region} ${ctx.complex}, 매물 ${ctx.listingCount}건 중 대표 4건
 export const PROPERTIES: Property[] = [
   {
     id: 'p-1024',
-    title: '잠실르엘 84㎡ 남향 한강 조망',
+    title: '${ctx.complex} 84㎡ 남향 한강 조망',
     kind: 'apartment',
     dealType: 'sale',
     deposit: 290000,
@@ -196,7 +196,7 @@ export const PROPERTIES: Property[] = [
     rooms: 3,
     baths: 2,
     direction: '남향',
-    address: '서울 송파구 신천동 잠실르엘',
+    address: '${ctx.region} ${ctx.complex}',
     description: '한강 조망 로열층 신축 매물입니다. 잠실역 도보권, 즉시 입주 가능합니다.',
     options: ['한강뷰', '지하주차', '커뮤니티시설', '시스템에어컨'],
     thumbnailColor: 'from-sky-400 to-blue-600',
@@ -204,7 +204,7 @@ export const PROPERTIES: Property[] = [
   },
   {
     id: 'p-1025',
-    title: '잠실르엘 59㎡ 전세 고층',
+    title: '${ctx.complex} 59㎡ 전세 고층',
     kind: 'apartment',
     dealType: 'jeonse',
     deposit: 130000,
@@ -214,14 +214,14 @@ export const PROPERTIES: Property[] = [
     rooms: 3,
     baths: 1,
     direction: '남동향',
-    address: '서울 송파구 신천동 잠실르엘',
+    address: '${ctx.region} ${ctx.complex}',
     description: '신축 입주 컨디션 그대로. 잠실 학군·생활 인프라 도보권, 즉시 입주 가능.',
     options: ['신축', '지하주차', '무인택배', '커뮤니티시설'],
     thumbnailColor: 'from-emerald-400 to-teal-600',
   },
   {
     id: 'p-1026',
-    title: '잠실르엘 110㎡ 남향 펜트뷰',
+    title: '${ctx.complex} 110㎡ 남향 펜트뷰',
     kind: 'apartment',
     dealType: 'sale',
     deposit: 385000,
@@ -231,14 +231,14 @@ export const PROPERTIES: Property[] = [
     rooms: 4,
     baths: 2,
     direction: '남향',
-    address: '서울 송파구 신천동 잠실르엘',
+    address: '${ctx.region} ${ctx.complex}',
     description: '고층 대형 평형, 석촌호수·한강 파노라마 조망. 프리미엄 마감재 적용.',
     options: ['한강뷰', '호수뷰', '대형평형', '복층창고'],
     thumbnailColor: 'from-amber-400 to-orange-600',
   },
   {
     id: 'p-1027',
-    title: '잠실르엘 84㎡ 반전세',
+    title: '${ctx.complex} 84㎡ 반전세',
     kind: 'apartment',
     dealType: 'monthly',
     deposit: 150000,
@@ -249,7 +249,7 @@ export const PROPERTIES: Property[] = [
     rooms: 3,
     baths: 2,
     direction: '남서향',
-    address: '서울 송파구 신천동 잠실르엘',
+    address: '${ctx.region} ${ctx.complex}',
     description: '보증금 조정 가능한 반전세. 단지 내 커뮤니티·조경 우수, 가족 단위 추천.',
     options: ['지하주차', '커뮤니티시설', '조경우수', '반려동물'],
     thumbnailColor: 'from-violet-400 to-purple-600',
@@ -363,7 +363,7 @@ export function Header() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
         <Link to="/" className="flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-600 font-black text-white">
-            르
+            ${ctx.complex.charAt(0)}
           </span>
           <span className="text-lg font-bold text-slate-900">${ctx.agencyName}</span>
         </Link>
@@ -733,7 +733,7 @@ export function useFilteredListings(
       linesAdded: 52,
       content: `import { CRM_CONFIG } from '../lib/crm-config';
 
-// 중개사 지역(송파구 잠실르엘)을 중심으로 한 지도 섹션.
+// 중개사 지역(${ctx.regionShort} ${ctx.complex})을 중심으로 한 지도 섹션.
 // 실제로는 네이버/카카오 지도 SDK를 붙이며, 여기선 정적 마커로 표현.
 export function RegionMap() {
   const { sigungu, dongs } = CRM_CONFIG.region;
@@ -904,7 +904,7 @@ const FILE_TASKS: Record<string, string> = {
   'src/components/PropertyCard.tsx': '매물 카드 컴포넌트 만드는 중',
   'src/components/PropertyFilter.tsx': '매물 필터 UI 만드는 중',
   'src/components/ContactForm.tsx': '상담 문의 폼 만드는 중',
-  'src/components/RegionMap.tsx': '잠실르엘 지역 지도 섹션 만드는 중',
+  'src/components/RegionMap.tsx': '지역 지도 섹션 만드는 중',
   'src/components/KakaoChat.tsx': '카카오 상담 버튼 추가 중',
   'src/pages/HomePage.tsx': '메인 페이지 조립 중',
   'src/pages/PropertyDetailPage.tsx': '매물 상세 페이지 만드는 중',

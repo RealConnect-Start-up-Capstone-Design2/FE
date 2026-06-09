@@ -27,9 +27,6 @@ type Strategy = 'sequential' | 'skeleton' | 'template';
 
 function pickStrategy(path: string): Strategy {
   if (path.endsWith('.tsx')) return 'skeleton';
-  if (/crm-config|mock-data|seo\.ts|types\/property|package\.json|tailwind\.config/.test(path)) {
-    return 'template';
-  }
   return 'sequential';
 }
 

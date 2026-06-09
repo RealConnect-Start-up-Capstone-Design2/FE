@@ -20,14 +20,14 @@ export const dashboardData: DashboardData = {
     {
       id: "properties",
       label: "전체 매물",
-      value: "128",
-      helper: "활성 96건",
+      value: "20",
+      helper: "활성 18건",
       tone: "primary",
     },
     {
       id: "expiry",
       label: "만기 임박",
-      value: "12",
+      value: "3",
       helper: "30일 이내",
       tone: "danger",
     },

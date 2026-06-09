@@ -35,23 +35,23 @@ export const CRM_ACCOUNTS: Record<string, CrmContext> = {
     complex: '잠실르엘',
     phone: '02-422-4545',
     address: '서울 송파구 올림픽로 435 파크리오B 상가1층',
-    listingCount: 18,
+    listingCount: 20,
     activeCustomers: 52,
     monthlyVisitors: 2340,
     deployedSiteUrl: 'https://jamsil-leel.vercel.app',
   },
   // 계정 2 — 실제 로그인 아이디. 아래 ⚠️ 값들은 임시이니 실제 정보로 교체할 것.
   qwe10203: {
-    agencyName: '잠실르엘공인중개사사무소',
+    agencyName: '잠래아부동산',
     agentName: '김잠실',
     region: '서울 송파구',
     regionShort: '송파구',
-    complex: '래미안아이파크',
-    phone: '02-2147-5000', // ⚠️ 임시
-    address: '서울 송파구 올림픽로 326 래미안아이파크 상가 2층', // ⚠️ 임시
-    listingCount: 12, // ⚠️ 임시
-    activeCustomers: 39, // ⚠️ 임시
-    monthlyVisitors: 1680, // ⚠️ 임시
+    complex: '잠실래미안아이파크',
+    phone: '010-3086-8805',
+    address: '서울 송파구 올림픽로 326 잠실래미안아이파크 상가 2층', // ⚠️ 임시 주소
+    listingCount: 20,
+    activeCustomers: 39, // 미사용(랜딩 카드에서 제거됨)
+    monthlyVisitors: 1680, // 미사용(랜딩 카드에서 제거됨)
     deployedSiteUrl: 'https://jamsil-raemian-ipark.vercel.app',
   },
 };
