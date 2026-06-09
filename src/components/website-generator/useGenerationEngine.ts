@@ -1,128 +1,159 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { TARGET_DURATION_MS, DEPLOYING_MS } from '../../config';
+import { TARGET_DURATION_MS, DEPLOYING_MS, PREPARE_MS } from '../../config';
 import { MOCK_FILES } from './mockData';
 import type { GenerationStep, MockFile } from './types';
 
 const TICK_MS = 16; // ~60fps
 
-/** 각 파일이 차지하는 시작/종료 오프셋(ms)을 코드 길이 비례로 계산 */
-function buildSchedule(files: MockFile[], buildMs: number) {
-  const totalChars = files.reduce((sum, f) => sum + f.content.length, 0);
-  let acc = 0;
-  return files.map((file) => {
-    const slice = (file.content.length / totalChars) * buildMs;
-    const start = acc;
-    acc += slice;
-    return { start, end: acc };
-  });
-}
-
 /**
- * 파일마다 작성 "방식"을 다르게 줘서 실제 AI 코딩처럼 다양하게 보이게 한다.
- * - sequential: 위에서 아래로 한 줄씩 (작은 유틸·설정 파일)
- * - skeleton:   골격 블록 먼저 깔고 사이를 채움 (컴포넌트·페이지)
- * - template:   틀이 먼저 깔리고 식별자·값만 ░로 있다가 실제 코드로 치환 (데이터·설정 — "변수 갈아끼우기")
+ * 파일별 "생각하는 멈춤" 가중치 — 타이핑량 대비 비율 + 인덱스로 변주(랜덤 금지).
+ * 파일을 다 쓴 뒤 잠깐 멈춰 다음 파일로 넘어가게 해서 완급을 준다.
  */
-type Strategy = 'sequential' | 'skeleton' | 'template';
-
-function pickStrategy(path: string): Strategy {
-  if (path.endsWith('.tsx')) return 'skeleton';
-  return 'sequential';
+function pauseWeight(content: string, i: number) {
+  const wobble = 0.6 + (0.8 * ((i * 7) % 5)) / 4; // 0.6~1.4 사이로 파일마다 다르게
+  return content.length * 0.22 * wobble;
 }
 
-interface FileMeta {
-  lines: string[];
-  blocks: number[][]; // skeleton용: 각 블록이 가진 라인 인덱스(원래 순서)
-  order: number[]; // skeleton용: 작성 순서(블록 인덱스 순열)
-  totalLines: number;
-  strategy: Strategy;
-}
-
-function buildFileMeta(file: MockFile): FileMeta {
-  const lines = file.content.split('\n');
-  const blocks: number[][] = [];
-  let cur: number[] = [];
-  lines.forEach((line, i) => {
-    cur.push(i);
-    if (line.trim() === '' || cur.length >= 6) {
-      blocks.push(cur);
-      cur = [];
+/** 토큰 단위로 쪼개기 — 실제 LLM 스트리밍처럼 단어·기호·공백을 토큰으로, 긴 식별자는 더 잘게 */
+function tokenize(content: string): string[] {
+  const raw = content.match(/\n|[ \t]+|[A-Za-z0-9_$]+|[^\sA-Za-z0-9_$]/g) ?? [];
+  const out: string[] = [];
+  for (const t of raw) {
+    if (t.length > 6 && /^[A-Za-z0-9_$]+$/.test(t)) {
+      for (let i = 0; i < t.length; i += 4) out.push(t.slice(i, i + 4));
+    } else {
+      out.push(t);
     }
-  });
-  if (cur.length) blocks.push(cur);
-
-  const idx = blocks.map((_, i) => i);
-  const evens = idx.filter((i) => i % 2 === 0);
-  const odds = idx.filter((i) => i % 2 === 1);
-  const order = [...evens, ...odds]; // 골격 먼저 → 사이 채우기
-
-  return { lines, blocks, order, totalLines: lines.length, strategy: pickStrategy(file.path) };
+  }
+  return out;
 }
 
-/** template 전략: 식별자·문자열·숫자만 ░로 가리고 들여쓰기·괄호 같은 골격은 남긴다 */
-function ghostLine(line: string): string {
-  return line.replace(/[^\s(){}[\];:,.<>/=]+/g, (m) => '░'.repeat(m.length));
-}
-
-/** 위에서 아래로 한 줄씩 */
-function assembleSequential(meta: FileMeta, progress: number) {
-  const filled = Math.floor(progress * meta.totalLines);
-  return {
-    text: meta.lines.slice(0, filled).join('\n'),
-    writeLine: Math.max(0, filled - 1),
+/** 결정적 의사난수 — 파일마다 같은 리듬을 재현해 리렌더에도 안 흔들리게 */
+function mulberry32(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 
-/** 틀(ghost)을 먼저 다 깔고 위에서부터 실제 코드로 치환 */
-function assembleTemplate(meta: FileMeta, progress: number) {
-  const filled = Math.floor(progress * meta.totalLines);
-  const out = meta.lines.map((l, i) => (i < filled ? l : ghostLine(l)));
-  return { text: out.join('\n'), writeLine: Math.max(0, filled - 1) };
+interface TypingPlan {
+  /** 토큰 i까지의 누적 글자 수 */
+  cumChars: number[];
+  /** 토큰 i가 화면에 나타나는 시점 (0~1, 파일 타이핑 구간 기준) */
+  cumTimeNorm: number[];
 }
 
-/** 골격 블록 먼저 깔고 사이 블록을 채움 */
-function assembleSkeleton(meta: FileMeta, progress: number) {
-  const targetLines = Math.floor(progress * meta.totalLines);
-  let remaining = targetLines;
-  const done = new Set<number>();
-  let partialBlock = -1;
-  let partialCount = 0;
+/**
+ * 실제 AI가 코드를 스트리밍하듯, 파일마다 "불규칙한" 토큰 타이밍 계획을 만든다.
+ * - 큰 흐름: 빠르게 쓰는 구간 ↔ 천천히 쓰는 구간 (tempo)
+ * - 토큰별 미세한 빠름/느림 (지터)
+ * - 줄바꿈·괄호·세미콜론 같은 구조 경계에서의 짧은 정지
+ * - 가끔 길게 멈췄다가 다시 시작 (생각하는 척)
+ */
+function buildTypingPlan(content: string, seed: number): TypingPlan {
+  const tokens = tokenize(content);
+  const rnd = mulberry32(seed + 1);
+  const tempoPhase = rnd() * Math.PI * 2;
+  const tempoCycles = 2 + Math.floor(rnd() * 3); // 파일 안에서 빠름↔느림 큰 흐름 2~4회
+  const cumChars: number[] = [];
+  const cumTime: number[] = [];
+  let chars = 0;
+  let time = 0;
+  let sincePause = 0;
+  const n = tokens.length;
+  for (let i = 0; i < n; i++) {
+    const tok = tokens[i];
+    chars += tok.length;
+    let gap = 16 + tok.length * 11; // 기본 입력 시간(글자 수 비례)
+    const tempo = 1 + 0.7 * Math.sin(tempoPhase + (i / n) * Math.PI * 2 * tempoCycles);
+    gap *= tempo; // 빠른 구간/느린 구간
+    gap *= 0.5 + rnd() * 1.1; // 토큰별 지터
+    if (tok === '\n') gap += 25 + rnd() * 80;
+    else if (tok === '{' || tok === '(' || tok === '[') gap += 50 + rnd() * 120;
+    else if (tok === ';' || tok === '}') gap += 35 + rnd() * 120;
+    sincePause++;
+    if (sincePause > 6 && rnd() < 0.13) {
+      gap += 350 + rnd() * 700; // 가끔 멈췄다가 다시 시작
+      sincePause = 0;
+    }
+    time += gap;
+    cumChars.push(chars);
+    cumTime.push(time);
+  }
+  const total = time || 1;
+  return { cumChars, cumTimeNorm: cumTime.map((t) => t / total) };
+}
 
-  for (const b of meta.order) {
-    const len = meta.blocks[b].length;
-    if (remaining >= len) {
-      done.add(b);
-      remaining -= len;
+/**
+ * 각 파일의 타이핑 구간[start, typeEnd]과 그 뒤 멈춤까지 포함한 종료[end]를 계산.
+ * 타이핑은 코드 길이 비례, 멈춤은 pauseWeight 비례 — 전체 합이 buildMs가 되도록 정규화.
+ */
+function buildSchedule(files: MockFile[], buildMs: number) {
+  const typeW = files.map((f) => f.content.length);
+  const pauseW = files.map((f, i) => pauseWeight(f.content, i));
+  const total = typeW.reduce((a, b) => a + b, 0) + pauseW.reduce((a, b) => a + b, 0);
+  let acc = 0;
+  return files.map((_, i) => {
+    const start = acc;
+    acc += (typeW[i] / total) * buildMs;
+    const typeEnd = acc;
+    acc += (pauseW[i] / total) * buildMs;
+    return { start, typeEnd, end: acc };
+  });
+}
+
+interface FileMeta {
+  content: string;
+  totalLines: number;
+  plan: TypingPlan;
+}
+
+function buildFileMeta(file: MockFile, index: number): FileMeta {
+  return {
+    content: file.content,
+    totalLines: file.content.split('\n').length,
+    plan: buildTypingPlan(file.content, (index + 1) * 0x9e3779b1),
+  };
+}
+
+/** 표시 텍스트 기준 현재 작성 중인 줄(에디터 스크롤·캐럿용) */
+function lineAt(text: string): number {
+  let n = 0;
+  for (let i = 0; i < text.length; i++) if (text.charCodeAt(i) === 10) n++;
+  return n;
+}
+
+/** 파일 타이핑 구간 진행(frac 0~1)에서 지금까지 나타난 글자 수 (토큰 계획 기준, 이진탐색) */
+function revealedChars(plan: TypingPlan, frac: number): number {
+  const { cumTimeNorm, cumChars } = plan;
+  const n = cumTimeNorm.length;
+  if (n === 0 || frac <= 0) return 0;
+  if (frac >= 1) return cumChars[n - 1];
+  let lo = 0;
+  let hi = n - 1;
+  let ans = -1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (cumTimeNorm[mid] <= frac) {
+      ans = mid;
+      lo = mid + 1;
     } else {
-      partialBlock = b;
-      partialCount = remaining;
-      break;
+      hi = mid - 1;
     }
   }
-
-  const out: string[] = [];
-  let writeLine = out.length;
-  for (let bi = 0; bi < meta.blocks.length; bi++) {
-    if (done.has(bi)) {
-      for (const li of meta.blocks[bi]) out.push(meta.lines[li]);
-    } else if (bi === partialBlock) {
-      for (let k = 0; k < partialCount; k++) out.push(meta.lines[meta.blocks[bi][k]]);
-      writeLine = out.length - 1; // 지금 막 쓴 줄
-    }
-  }
-  return { text: out.join('\n'), writeLine: Math.max(0, writeLine) };
+  return ans >= 0 ? cumChars[ans] : 0;
 }
 
-/** 파일 진행도(0~1)에 따라 지금까지 작성된 텍스트와 현재 작성 줄 위치를 조립 */
-function assemble(meta: FileMeta, progress: number) {
-  switch (meta.strategy) {
-    case 'sequential':
-      return assembleSequential(meta, progress);
-    case 'template':
-      return assembleTemplate(meta, progress);
-    default:
-      return assembleSkeleton(meta, progress);
-  }
+/**
+ * 파일 진행도(0~1)에 따라 지금까지 작성된 텍스트와 현재 작성 줄 위치를 조립.
+ * 토큰 단위로 나타나서 "AI가 코드를 스트리밍하듯" 보이게 한다(버스트·멈춤 포함).
+ */
+function assemble(meta: FileMeta, frac: number) {
+  const c = revealedChars(meta.plan, frac);
+  return { text: meta.content.slice(0, c), writeLine: lineAt(meta.content.slice(0, c)) };
 }
 
 export interface GenerationEngine {
@@ -137,7 +168,11 @@ export interface GenerationEngine {
   reset: () => void;
   openPricingFresh: () => void;
   selectPlanAndBuild: (planId: string) => void;
+  /** (테스트용) 코드 생성 연출을 즉시 끝내고 배포 준비 상태로 점프 */
+  skipToEnd: () => void;
   deploy: () => void;
+  /** (테스트용) 배포 연출을 즉시 끝내고 배포 완료로 점프 */
+  skipDeploy: () => void;
 }
 
 export function useGenerationEngine(files: MockFile[] = MOCK_FILES): GenerationEngine {
@@ -194,11 +229,12 @@ export function useGenerationEngine(files: MockFile[] = MOCK_FILES): GenerationE
         else break;
       }
       const seg = schedule[idx];
-      const progress = Math.min(1, (elapsed - seg.start) / (seg.end - seg.start));
-      const { text, writeLine } = assemble(fileMetas[idx], progress);
+      // 타이핑 구간이면 가감속 적용, 멈춤 구간이면 100%로 완성된 채 대기
+      const frac = Math.min(1, Math.max(0, (elapsed - seg.start) / (seg.typeEnd - seg.start)));
+      const { text, writeLine } = assemble(fileMetas[idx], frac);
 
       setCurrentFileIndex(idx);
-      setBuiltCount(schedule.filter((s) => s.end <= elapsed).length);
+      setBuiltCount(schedule.filter((s) => s.typeEnd <= elapsed).length);
       setTypedContent(text);
       setCurrentWriteLine(writeLine);
     }, TICK_MS);
@@ -231,16 +267,36 @@ export function useGenerationEngine(files: MockFile[] = MOCK_FILES): GenerationE
       setBuiltCount(0);
       setTypedContent('');
       setCurrentWriteLine(0);
-      setStep('building');
-      startBuild();
+      // 선택/결제 후 "AI가 매물을 분석하는" 로딩을 잠깐 보여주고 코드 생성 시작
+      setStep('preparing');
+      after(PREPARE_MS, () => {
+        setStep('building');
+        startBuild();
+      });
     },
-    [startBuild],
+    [after, startBuild],
   );
+
+  const skipToEnd = useCallback(() => {
+    clearAll();
+    const last = files.length - 1;
+    if (last < 0) return;
+    setCurrentFileIndex(last);
+    setBuiltCount(files.length);
+    setTypedContent(files[last].content);
+    setCurrentWriteLine(fileMetas[last].totalLines - 1);
+    setStep('done');
+  }, [clearAll, files, fileMetas]);
 
   const deploy = useCallback(() => {
     setStep('deploying');
     after(DEPLOYING_MS, () => setStep('deployed'));
   }, [after]);
+
+  const skipDeploy = useCallback(() => {
+    clearAll();
+    setStep('deployed');
+  }, [clearAll]);
 
   useEffect(() => clearAll, [clearAll]);
 
@@ -255,6 +311,8 @@ export function useGenerationEngine(files: MockFile[] = MOCK_FILES): GenerationE
     reset,
     openPricingFresh,
     selectPlanAndBuild,
+    skipToEnd,
     deploy,
+    skipDeploy,
   };
 }

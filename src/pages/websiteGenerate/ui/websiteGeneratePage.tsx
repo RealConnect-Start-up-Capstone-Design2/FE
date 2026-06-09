@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   Building2,
   Globe,
+  Loader2,
   MapPin,
   Phone,
   Sparkles,
@@ -15,8 +16,18 @@ import { cn } from "../../../lib/utils";
 
 export default function App() {
   const [studioOpen, setStudioOpen] = useState(false);
+  // 스튜디오 진입 직전 짧은 로딩 — 즉시 떠서 목업 티가 나던 걸 1.5초 연출로 완화
+  const [opening, setOpening] = useState(false);
   // 로그인 계정의 사무소(목업). 기존 CRM_CONTEXT.x 참조를 그대로 쓰도록 같은 이름으로 받는다.
   const CRM_CONTEXT = useCrmContext();
+
+  function openStudio() {
+    setOpening(true);
+    setTimeout(() => {
+      setStudioOpen(true);
+      setOpening(false);
+    }, 3000);
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-900">
@@ -129,12 +140,21 @@ export default function App() {
               드립니다.
             </p>
             <button
-              onClick={() => setStudioOpen(true)}
-              disabled={studioOpen}
+              onClick={openStudio}
+              disabled={studioOpen || opening}
               className="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand-600 px-6 py-3 font-semibold text-white shadow-lg shadow-brand-600/20 transition hover:bg-brand-700 disabled:opacity-50"
             >
-              <Globe className="h-5 w-5" />
-              {studioOpen ? "스튜디오 작업 중…" : "내 웹사이트 만들기"}
+              {opening ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  스튜디오 준비 중…
+                </>
+              ) : (
+                <>
+                  <Globe className="h-5 w-5" />
+                  {studioOpen ? "스튜디오 작업 중…" : "내 웹사이트 만들기"}
+                </>
+              )}
             </button>
           </div>
         </main>

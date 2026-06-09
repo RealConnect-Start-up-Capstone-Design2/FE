@@ -1,8 +1,9 @@
 export type GenerationStep =
   | 'idle'
+  | 'pricing'
+  | 'preparing'
   | 'building'
   | 'done'
-  | 'pricing'
   | 'deploying'
   | 'deployed';
 

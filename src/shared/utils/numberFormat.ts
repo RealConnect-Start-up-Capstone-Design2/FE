@@ -84,6 +84,10 @@ export const formatPhoneNumber = (
   if (digits.length === 10) {
     return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
   }
+  // 서울 지역번호(02) 유선번호는 9자리 → 02-XXX-XXXX
+  if (digits.length === 9 && digits.startsWith("02")) {
+    return `${digits.slice(0, 2)}-${digits.slice(2, 5)}-${digits.slice(5)}`;
+  }
 
   // 그 외 자리수는 원본 숫자만 반환
   return digits;

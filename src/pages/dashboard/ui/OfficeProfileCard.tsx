@@ -1,4 +1,5 @@
-import { Plus } from "lucide-react";
+import { useState } from "react";
+import { Loader2, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/shared/ui";
@@ -11,6 +12,13 @@ interface OfficeProfileCardProps {
 
 export function OfficeProfileCard({ office }: OfficeProfileCardProps) {
   const navigate = useNavigate();
+  // 즉시 이동하면 목업 티가 나서, 1.5초 준비 연출 후 스튜디오로 이동
+  const [generating, setGenerating] = useState(false);
+
+  function handleGenerate() {
+    setGenerating(true);
+    setTimeout(() => navigate("/website-generate"), 1500);
+  }
 
   return (
     <DashboardCard className="h-full" contentClassName="flex flex-col">
@@ -20,11 +28,16 @@ export function OfficeProfileCard({ office }: OfficeProfileCardProps) {
             {office.name}
           </h2>
           <Button
-            onClick={() => navigate("/website-generate")}
-            className="h-[35px] shrink-0 rounded-lg bg-[#1B1B1B] px-4 text-[16px] font-semibold tracking-[-0.025em] text-white shadow-none hover:bg-[#2A2A2A]"
+            onClick={handleGenerate}
+            disabled={generating}
+            className="h-[35px] shrink-0 rounded-lg bg-[#1B1B1B] px-4 text-[16px] font-semibold tracking-[-0.025em] text-white shadow-none hover:bg-[#2A2A2A] disabled:opacity-60"
           >
-            <Plus className="h-[14px] w-[14px]" />
-            홈페이지 생성
+            {generating ? (
+              <Loader2 className="h-[14px] w-[14px] animate-spin" />
+            ) : (
+              <Plus className="h-[14px] w-[14px]" />
+            )}
+            {generating ? "준비 중…" : "홈페이지 생성"}
           </Button>
         </div>
         <div className="mt-5 flex items-end gap-2">

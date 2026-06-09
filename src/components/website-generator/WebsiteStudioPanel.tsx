@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Loader2, Rocket, X } from 'lucide-react';
+import { Check, Loader2, Rocket, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { DEPLOYING_MS } from '../../config';
 import { ProgressPanel } from './ProgressPanel';
 import { FileTreePanel } from './FileTreePanel';
 import { CodeTypingPanel } from './CodeTypingPanel';
@@ -87,18 +88,22 @@ export function WebsiteStudioPanel({ onClose }: Props) {
           </div>
         )}
 
+        {/* (테스트용) 숨겨진 스킵 — 우하단 모서리 투명 버튼, 코드 생성 중에만 */}
+        {step === 'building' && (
+          <button
+            onClick={engine.skipToEnd}
+            aria-label="건너뛰기"
+            title="건너뛰기"
+            className="absolute bottom-0 right-0 z-30 h-8 w-8 cursor-default opacity-0"
+          />
+        )}
+
         {step === 'pricing' && <PricingScreen onSelect={engine.selectPlanAndBuild} />}
 
+        {step === 'preparing' && <AnalyzingScreen />}
+
         {step === 'deploying' && (
-          <div className="grid h-full place-items-center bg-white">
-            <div className="text-center">
-              <Loader2 className="mx-auto h-10 w-10 animate-spin text-brand-600" />
-              <p className="mt-4 font-semibold text-slate-800">배포 중입니다…</p>
-              <p className="mt-1 text-sm text-slate-500">
-                도메인 연결 · 빌드 · CDN 업로드를 진행하고 있어요.
-              </p>
-            </div>
-          </div>
+          <DeployingScreen durationMs={DEPLOYING_MS} onSkip={engine.skipDeploy} />
         )}
 
         {step === 'deployed' && (
@@ -136,6 +141,151 @@ export function WebsiteStudioPanel({ onClose }: Props) {
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+/** 배포 연출 — 빌드·CDN 업로드·도메인 연결을 진행률 + 단계 로그로 (약 3분). 우하단 숨김 스킵. */
+function DeployingScreen({
+  durationMs,
+  onSkip,
+}: {
+  durationMs: number;
+  onSkip: () => void;
+}) {
+  const steps = [
+    '프로젝트 빌드 (vite build)',
+    '정적 자산 번들 · 최적화',
+    '이미지 · 폰트 압축',
+    'CDN 엣지 서버에 업로드',
+    '도메인 연결 · SSL 인증서 발급',
+    '캐시 무효화 · 헬스 체크',
+    '배포 마무리',
+  ];
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    const t0 = performance.now();
+    const id = setInterval(() => {
+      const p = Math.min(1, (performance.now() - t0) / durationMs);
+      setProgress(p);
+      if (p >= 1) clearInterval(id);
+    }, 100);
+    return () => clearInterval(id);
+  }, [durationMs]);
+
+  const pct = Math.round(progress * 100);
+  const active = Math.min(steps.length - 1, Math.floor(progress * steps.length));
+
+  return (
+    <div className="relative grid h-full place-items-center bg-white">
+      <div className="w-full max-w-md px-8">
+        <div className="flex items-center gap-2 text-slate-800">
+          <Loader2 className="h-5 w-5 animate-spin text-brand-600" />
+          <p className="text-base font-semibold">웹사이트를 배포하고 있습니다</p>
+        </div>
+        <p className="mt-1 text-sm text-slate-500">
+          빌드 · CDN 업로드 · 도메인 연결을 실제 서비스처럼 진행합니다.
+        </p>
+
+        <div className="mt-5">
+          <div className="mb-1.5 flex items-center justify-between text-xs">
+            <span className="font-medium text-slate-500">배포 진행률</span>
+            <span className="font-semibold text-brand-600">{pct}%</span>
+          </div>
+          <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+            <div
+              className="h-full rounded-full bg-brand-600 transition-all duration-200"
+              style={{ width: pct + '%' }}
+            />
+          </div>
+        </div>
+
+        <div className="mt-5 space-y-2">
+          {steps.map((s, idx) => (
+            <div
+              key={s}
+              className={cn(
+                'flex items-center gap-2 text-sm transition-colors',
+                idx < active
+                  ? 'text-slate-400'
+                  : idx === active
+                    ? 'font-medium text-slate-800'
+                    : 'text-slate-300',
+              )}
+            >
+              {idx < active ? (
+                <Check className="h-4 w-4 shrink-0 text-emerald-500" />
+              ) : idx === active ? (
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-brand-600" />
+              ) : (
+                <span className="h-4 w-4 shrink-0" />
+              )}
+              <span>{s}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* (테스트용) 숨겨진 스킵 — 우하단 모서리 투명 */}
+      <button
+        onClick={onSkip}
+        aria-label="배포 건너뛰기"
+        title="배포 건너뛰기"
+        className="absolute bottom-0 right-0 z-30 h-8 w-8 cursor-default opacity-0"
+      />
+    </div>
+  );
+}
+
+/** 플랜 선택/결제 후 코드 생성 직전 — "AI가 매물을 분석하는" 로딩 화면 */
+function AnalyzingScreen() {
+  const steps = [
+    '매물 데이터를 분석하고 있어요',
+    '지역·단지 정보를 정리하고 있어요',
+    '디자인 시스템을 고르고 있어요',
+    '페이지 구조를 설계하고 있어요',
+  ];
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const id = setInterval(
+      () => setI((p) => (p < steps.length - 1 ? p + 1 : p)),
+      2400,
+    );
+    return () => clearInterval(id);
+  }, [steps.length]);
+
+  return (
+    <div className="grid h-full place-items-center bg-slate-900">
+      <div className="w-full max-w-sm px-8">
+        <div className="flex items-center justify-center gap-2 text-slate-100">
+          <Loader2 className="h-5 w-5 animate-spin text-brand-400" />
+          <p className="text-base font-semibold">AI가 웹사이트를 준비하고 있습니다</p>
+        </div>
+        <div className="mt-6 space-y-2.5">
+          {steps.map((s, idx) => (
+            <div
+              key={s}
+              className={cn(
+                'flex items-center gap-2 text-sm transition-colors',
+                idx < i
+                  ? 'text-emerald-400'
+                  : idx === i
+                    ? 'text-slate-200'
+                    : 'text-slate-600',
+              )}
+            >
+              {idx < i ? (
+                <Check className="h-4 w-4 shrink-0" />
+              ) : idx === i ? (
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-brand-400" />
+              ) : (
+                <span className="h-4 w-4 shrink-0" />
+              )}
+              <span>{s}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

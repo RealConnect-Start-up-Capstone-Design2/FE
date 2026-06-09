@@ -14,11 +14,20 @@ function priceLabel(price: number) {
   return '₩' + price.toLocaleString('ko-KR');
 }
 
+/** 카드 번호 입력을 4자리씩 띄워 보기 좋게 — 최대 16자리 */
+function formatCardNumber(value: string) {
+  const digits = value.replace(/\D/g, '').slice(0, 16);
+  return digits.replace(/(.{4})(?=.)/g, '$1 ');
+}
+
 export function PricingScreen({ onSelect }: Props) {
   const ctx = useCrmContext();
   // 유료 플랜 선택 시 뜨는 결제창 대상 플랜 (null = 결제창 닫힘)
   const [payPlan, setPayPlan] = useState<PricingPlan | null>(null);
   const [paying, setPaying] = useState(false);
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvc, setCardCvc] = useState('');
 
   function handlePlan(plan: PricingPlan) {
     if (plan.price === 0) {
@@ -149,23 +158,31 @@ export function PricingScreen({ onSelect }: Props) {
               <div className="space-y-3">
                 <Field label="카드 번호">
                   <input
-                    defaultValue="4242 4242 4242 4242"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
                     inputMode="numeric"
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-brand-500"
+                    placeholder="1234 5678 9012 3456"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm tracking-wide outline-none placeholder:text-slate-300 focus:border-brand-500"
                   />
                 </Field>
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="유효기간">
                     <input
-                      defaultValue="12 / 28"
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-brand-500"
+                      value={cardExpiry}
+                      onChange={(e) => setCardExpiry(e.target.value)}
+                      placeholder="MM / YY"
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none placeholder:text-slate-300 focus:border-brand-500"
                     />
                   </Field>
                   <Field label="CVC">
                     <input
-                      defaultValue="123"
+                      value={cardCvc}
+                      onChange={(e) =>
+                        setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 3))
+                      }
                       inputMode="numeric"
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-brand-500"
+                      placeholder="•••"
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none placeholder:text-slate-300 focus:border-brand-500"
                     />
                   </Field>
                 </div>

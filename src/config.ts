@@ -71,13 +71,16 @@ export function getCrmContext(username?: string | null): CrmContext {
 export const CRM_CONTEXT = CRM_ACCOUNTS[DEFAULT_USERNAME];
 
 /**
- * 코드 생성 연출 전체 목표 시간(ms). 빠르게 파일들을 넘나들며 작성하는 느낌.
- * 코드량에 맞춰 타이핑 속도가 자동 페이싱됩니다. 더 빠르게/느리게는 이 값만 조절.
+ * 코드 생성 연출 전체 목표 시간(ms) — 타이핑 + 파일 사이 "생각하는 멈춤" 합산 ≈ 5분.
+ * 코드량에 맞춰 타이핑 속도가 자동 페이싱되고, 파일마다 완급이 들어갑니다. 시간 조절은 이 값만.
  */
-export const TARGET_DURATION_MS = 45 * 1000;
+export const TARGET_DURATION_MS = 5 * 60 * 1000;
 
-/** 배포 버튼 클릭 후 "배포 중" 연출 시간(ms) */
-export const DEPLOYING_MS = 3_200;
+/** 배포 버튼 클릭 후 "배포 중" 연출 시간(ms) — 빌드·CDN 업로드처럼 보이게 약 3분 */
+export const DEPLOYING_MS = 3 * 60 * 1000;
+
+/** 플랜 선택/결제 후 코드 생성 전 "AI가 매물 분석 중" 로딩 시간(ms) */
+export const PREPARE_MS = 10_000;
 
 export const PRICING_PLANS: PricingPlan[] = [
   {
