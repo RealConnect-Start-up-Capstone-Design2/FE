@@ -49,6 +49,17 @@ export function DashboardPage() {
         : [crm.complex],
   };
 
+  // 전체 매물 KPI가 정적값(20)으로 고정돼 있어, 로그인 계정 매물 수로 맞춘다.
+  const kpis = dashboardData.kpis.map((kpi) =>
+    kpi.id === "properties"
+      ? {
+          ...kpi,
+          value: String(crm.listingCount),
+          helper: `활성 ${crm.listingCount - 2}건`,
+        }
+      : kpi,
+  );
+
   // 만기 알림 목업이 단지명("파크리오")으로 고정돼 있어, 로그인 계정 단지로 맞춘다.
   const expiryAlerts = dashboardData.expiryAlerts.map((alert) => ({
     ...alert,
@@ -66,7 +77,7 @@ export function DashboardPage() {
         </p>
       </header>
 
-      <DashboardKpiStrip kpis={dashboardData.kpis} />
+      <DashboardKpiStrip kpis={kpis} />
 
       <div className="mt-5 grid h-[640px] grid-cols-[minmax(435px,1fr)_minmax(496px,1.08fr)_minmax(500px,1.12fr)] grid-rows-[332px_288px] gap-5 pb-1">
         <OfficeProfileCard office={office} />
