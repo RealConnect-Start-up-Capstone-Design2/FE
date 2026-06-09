@@ -148,7 +148,7 @@ export function PropertyManagePage() {
   const debouncedDong = useDebouncedValue(dong, 300);
   const debouncedHo = useDebouncedValue(ho, 300);
   const debouncedPhone = useDebouncedValue(phoneNumber, 300);
-  const normalizedPhone = debouncedPhone?.trim() ?? "";
+  const normalizedPhone = debouncedPhone?.replace(/[^0-9]/g, "") ?? "";
   const isPhoneSearch = normalizedPhone.length > 0;
 
   const serverFilterParams = useMemo<{

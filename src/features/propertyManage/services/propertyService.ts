@@ -142,7 +142,7 @@ interface PropertiesPhoneQueryParams {
 export const fetchPropertiesByPhone = async (
   params: PropertiesPhoneQueryParams,
 ): Promise<PropertiesResponse> => {
-  const response = await apiClient.get<PropertiesResponse>(
+  const response = await apiClient.get<PropertiesApiResponse>(
     "/api/properties/phone",
     {
       params: {
@@ -153,7 +153,14 @@ export const fetchPropertiesByPhone = async (
       },
     },
   );
-  return response.data;
+
+  return {
+    content: response.data.content.map((item) =>
+      mapApiResponseToApartment(item),
+    ),
+    nextCursor: response.data.nextCursor,
+    hasNext: response.data.hasNext,
+  };
 };
 
 /**
