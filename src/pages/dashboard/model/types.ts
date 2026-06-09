@@ -1,6 +1,7 @@
 export interface ExpiryAlert {
   id: number;
   apartmentComplexId: number;
+  apartmentComplexName: string;
   apartmentId: number;
   dong: string;
   ho: string;

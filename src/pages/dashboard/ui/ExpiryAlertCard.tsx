@@ -51,6 +51,7 @@ function ExpiryAlertItem({ alert }: { alert: ExpiryAlert }) {
   const handleClick = () => {
     const searchParams = new URLSearchParams({
       complexId: String(alert.apartmentComplexId),
+      complexName: alert.apartmentComplexName,
       apartmentId: String(alert.apartmentId),
       dong: alert.dong,
       ho: alert.ho,
