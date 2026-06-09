@@ -49,25 +49,6 @@ export function DashboardPage() {
         ? preferredComplexes.map((complex) => complex.apartmentName)
         : [crm.complex],
   };
-  const expiryAlerts = useMemo(
-    () =>
-      dashboardData.expiryAlerts.map((alert) => {
-        const preferredComplex = preferredComplexes?.find(
-          (complex) =>
-            complex.apartmentName.trim() ===
-            alert.apartmentComplexName.trim(),
-        );
-
-        return preferredComplex
-          ? {
-              ...alert,
-              apartmentComplexId: preferredComplex.apartmentComplexId,
-            }
-          : alert;
-      }),
-    [preferredComplexes],
-  );
-
   // 전체 매물 KPI가 정적값(20)으로 고정돼 있어, 로그인 계정 매물 수로 맞춘다.
   const kpis = dashboardData.kpis.map((kpi) =>
     kpi.id === "properties"
@@ -80,10 +61,31 @@ export function DashboardPage() {
   );
 
   // 만기 알림 목업이 단지명("파크리오")으로 고정돼 있어, 로그인 계정 단지로 맞춘다.
-  const expiryAlerts = dashboardData.expiryAlerts.map((alert) => ({
-    ...alert,
-    propertyTitle: `${crm.complex} 아파트 ${alert.dong}동 ${alert.ho}호`,
-  }));
+  const expiryAlerts = useMemo(
+    () =>
+      dashboardData.expiryAlerts.map((alert) => {
+        const targetComplexName = crm.complex || alert.apartmentComplexName;
+        const preferredComplex =
+          preferredComplexes?.find(
+            (complex) =>
+              complex.apartmentName.trim() === targetComplexName.trim(),
+          ) ??
+          preferredComplexes?.find(
+            (complex) =>
+              complex.apartmentName.trim() ===
+              alert.apartmentComplexName.trim(),
+          );
+
+        return {
+          ...alert,
+          apartmentComplexId:
+            preferredComplex?.apartmentComplexId ?? alert.apartmentComplexId,
+          apartmentComplexName: targetComplexName,
+          propertyTitle: `${targetComplexName} 아파트 ${alert.dong}동 ${alert.ho}호`,
+        };
+      }),
+    [crm.complex, preferredComplexes],
+  );
 
   return (
     <main className="w-full min-w-[1471px]">
