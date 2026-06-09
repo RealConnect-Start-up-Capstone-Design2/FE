@@ -35,7 +35,7 @@ export const CRM_ACCOUNTS: Record<string, CrmContext> = {
     complex: '잠실르엘',
     phone: '02-422-4545',
     address: '서울 송파구 올림픽로 435 파크리오B 상가1층',
-    listingCount: 20,
+    listingCount: 12,
     activeCustomers: 52,
     monthlyVisitors: 2340,
     deployedSiteUrl: 'https://jamsil-leel.vercel.app',
