@@ -116,6 +116,7 @@ export function PropertyManagePage() {
         apartmentId !== undefined && !Number.isNaN(apartmentId)
           ? apartmentId
           : undefined,
+      complexName: searchParams.get("complexName") ?? "",
       dong: searchParams.get("dong") ?? "",
       ho: searchParams.get("ho") ?? "",
     };
@@ -305,6 +306,37 @@ export function PropertyManagePage() {
 
   const isTableLoading = isPreferredComplexLoading || isPropertiesLoading;
 
+  const detailTargetComplexId = useMemo(() => {
+    if (!preferredComplexes || preferredComplexes.length === 0) {
+      return undefined;
+    }
+
+    const complexById =
+      detailSearch.complexId !== undefined
+        ? preferredComplexes.find(
+            (complex) =>
+              complex.apartmentComplexId === detailSearch.complexId,
+          )
+        : undefined;
+
+    if (complexById) {
+      return complexById.apartmentComplexId;
+    }
+
+    const normalizedComplexName = detailSearch.complexName.trim();
+    if (!normalizedComplexName) {
+      return undefined;
+    }
+
+    return preferredComplexes.find(
+      (complex) => complex.apartmentName.trim() === normalizedComplexName,
+    )?.apartmentComplexId;
+  }, [detailSearch.complexId, detailSearch.complexName, preferredComplexes]);
+
+  const detailNeedsComplexResolution = Boolean(
+    detailSearch.complexId !== undefined || detailSearch.complexName.trim(),
+  );
+
   useEffect(() => {
     if (!preferredComplexes || preferredComplexes.length === 0) {
       if (selectedApartmentComplexId !== undefined) {
@@ -314,18 +346,12 @@ export function PropertyManagePage() {
       return;
     }
 
-    const detailComplexId = detailSearch.complexId;
-    const hasDetailComplexParam = detailComplexId !== undefined;
-    const hasDetailComplex =
-      hasDetailComplexParam &&
-      preferredComplexes.some(
-        (complex) => complex.apartmentComplexId === detailComplexId,
-      );
+    const hasDetailComplexParam = detailNeedsComplexResolution;
     const hasSelectedComplex = preferredComplexes.some(
       (complex) => complex.apartmentComplexId === selectedApartmentComplexId,
     );
-    const nextComplexId = hasDetailComplex
-      ? detailComplexId
+    const nextComplexId = detailTargetComplexId
+      ? detailTargetComplexId
       : hasDetailComplexParam
         ? hasSelectedComplex
           ? selectedApartmentComplexId
@@ -346,7 +372,8 @@ export function PropertyManagePage() {
       setHo("");
     }
   }, [
-    detailSearch.complexId,
+    detailNeedsComplexResolution,
+    detailTargetComplexId,
     preferredComplexes,
     resetPropertySelection,
     selectedApartmentComplexId,
@@ -358,8 +385,8 @@ export function PropertyManagePage() {
     }
 
     if (
-      detailSearch.complexId !== undefined &&
-      detailSearch.complexId !== selectedApartmentComplexId
+      detailNeedsComplexResolution &&
+      detailTargetComplexId !== selectedApartmentComplexId
     ) {
       return;
     }
@@ -371,15 +398,20 @@ export function PropertyManagePage() {
     if (detailSearch.ho) {
       setHo(detailSearch.ho);
     }
-  }, [detailSearch, selectedApartmentComplexId]);
+  }, [
+    detailNeedsComplexResolution,
+    detailSearch,
+    detailTargetComplexId,
+    selectedApartmentComplexId,
+  ]);
 
   useEffect(() => {
     if (
       handledDetailSearchRef.current === detailSearch.key ||
       detailSearch.apartmentId === undefined ||
       isTableLoading ||
-      (detailSearch.complexId !== undefined &&
-        detailSearch.complexId !== selectedApartmentComplexId)
+      (detailNeedsComplexResolution &&
+        detailTargetComplexId !== selectedApartmentComplexId)
     ) {
       return;
     }
@@ -404,6 +436,8 @@ export function PropertyManagePage() {
     isFetchingNextPage,
     isTableLoading,
     selectProperty,
+    detailNeedsComplexResolution,
+    detailTargetComplexId,
     selectedApartmentComplexId,
   ]);
 

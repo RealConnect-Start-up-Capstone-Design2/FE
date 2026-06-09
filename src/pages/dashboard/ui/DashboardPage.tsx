@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchProfile } from "@/shared/api/mypage";
@@ -48,6 +49,24 @@ export function DashboardPage() {
         ? preferredComplexes.map((complex) => complex.apartmentName)
         : [crm.complex],
   };
+  const expiryAlerts = useMemo(
+    () =>
+      dashboardData.expiryAlerts.map((alert) => {
+        const preferredComplex = preferredComplexes?.find(
+          (complex) =>
+            complex.apartmentName.trim() ===
+            alert.apartmentComplexName.trim(),
+        );
+
+        return preferredComplex
+          ? {
+              ...alert,
+              apartmentComplexId: preferredComplex.apartmentComplexId,
+            }
+          : alert;
+      }),
+    [preferredComplexes],
+  );
 
   // 전체 매물 KPI가 정적값(20)으로 고정돼 있어, 로그인 계정 매물 수로 맞춘다.
   const kpis = dashboardData.kpis.map((kpi) =>

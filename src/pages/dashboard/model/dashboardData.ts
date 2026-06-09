@@ -97,6 +97,7 @@ export const dashboardData: DashboardData = {
     {
       id: 1,
       apartmentComplexId: 1,
+      apartmentComplexName: "파크리오",
       apartmentId: 101107,
       dong: "101",
       ho: "107",
@@ -110,6 +111,7 @@ export const dashboardData: DashboardData = {
     {
       id: 2,
       apartmentComplexId: 1,
+      apartmentComplexName: "파크리오",
       apartmentId: 1031302,
       dong: "103",
       ho: "1302",
@@ -123,6 +125,7 @@ export const dashboardData: DashboardData = {
     {
       id: 3,
       apartmentComplexId: 1,
+      apartmentComplexName: "파크리오",
       apartmentId: 1062601,
       dong: "106",
       ho: "2601",
