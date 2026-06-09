@@ -107,7 +107,11 @@ export const fetchPreferredComplexList = async (): Promise<
   const response = await apiClient.get<PreferredComplex[]>(
     "/api/user/preferred-complex"
   );
-  return response.data;
+  // BE가 단지 목록을 비결정적 순서로 반환 → 단지ID 기준 정렬로 고정.
+  // (새로고침마다 매물장 기본 단지·대시보드 주거래 단지 순서가 바뀌는 문제 방지)
+  return [...response.data].sort(
+    (a, b) => a.apartmentComplexId - b.apartmentComplexId
+  );
 };
 
 // 아파트 단지 면적 목록 조회

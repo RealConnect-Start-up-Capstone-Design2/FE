@@ -135,9 +135,7 @@ export function CodeTypingPanel({
             </pre>
           </div>
         ) : (
-          <div className="grid h-full place-items-center text-sm text-slate-600">
-            곧 코드 생성이 시작됩니다…
-          </div>
+          <div className="h-full bg-slate-900" />
         )}
       </div>
     </div>
