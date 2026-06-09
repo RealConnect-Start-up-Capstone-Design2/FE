@@ -36,11 +36,11 @@ function highlight(line: string): ReactNode[] {
   while ((m = TOKEN.exec(line)) !== null) {
     if (m.index > last) out.push(line.slice(last, m.index));
     let cls = '';
-    if (m[1]) cls = 'text-slate-500 italic';
-    else if (m[2]) cls = 'text-orange-400';
-    else if (m[3]) cls = 'text-blue-400';
-    else if (m[4]) cls = 'text-emerald-400';
-    else if (m[5]) cls = 'text-fuchsia-400';
+    if (m[1]) cls = 'text-slate-600 italic'; // comment
+    else if (m[2]) cls = 'text-slate-400'; // string
+    else if (m[3]) cls = 'text-sky-300'; // keyword
+    else if (m[4]) cls = 'text-slate-300'; // type / component
+    else if (m[5]) cls = 'text-slate-400'; // number
     out.push(
       <span key={key++} className={cls}>
         {m[0]}

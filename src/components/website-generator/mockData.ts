@@ -1,16 +1,19 @@
 import type { MockFile } from './types';
+import { CRM_CONTEXT, type CrmContext } from '../../config';
 
 /**
  * 생성되는 것처럼 보일 파일 목록 + 하드코딩된 코드.
- * content 안에는 백틱/${}를 쓰지 않습니다(이 파일이 백틱 문자열이라 충돌 방지).
+ * 사무소 식별 정보(부동산명·대표·전화·단지)는 로그인 계정(ctx)에서 ${}로 끼워넣어
+ * 대시보드·스튜디오와 항상 같은 값을 쓴다. 그 외 content엔 백틱/${}를 쓰지 않는다.
  */
-export const MOCK_FILES: MockFile[] = [
-  {
-    name: 'package.json',
-    path: 'package.json',
-    linesAdded: 38,
-    content: `{
-  "name": "jamsil-lael-realty-web",
+export function buildMockFiles(ctx: CrmContext): MockFile[] {
+  return [
+    {
+      name: 'package.json',
+      path: 'package.json',
+      linesAdded: 38,
+      content: `{
+  "name": "realconnect-realty-web",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -31,12 +34,12 @@ export const MOCK_FILES: MockFile[] = [
     "vite": "^7.1.11"
   }
 }`,
-  },
-  {
-    name: 'tailwind.config.js',
-    path: 'tailwind.config.js',
-    linesAdded: 27,
-    content: `/** @type {import('tailwindcss').Config} */
+    },
+    {
+      name: 'tailwind.config.js',
+      path: 'tailwind.config.js',
+      linesAdded: 27,
+      content: `/** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
@@ -56,12 +59,12 @@ export default {
   },
   plugins: [],
 };`,
-  },
-  {
-    name: 'eslint.config.js',
-    path: 'eslint.config.js',
-    linesAdded: 21,
-    content: `import js from '@eslint/js';
+    },
+    {
+      name: 'eslint.config.js',
+      path: 'eslint.config.js',
+      linesAdded: 21,
+      content: `import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 
@@ -77,12 +80,12 @@ export default [
     rules: reactHooks.configs.recommended.rules,
   },
 ];`,
-  },
-  {
-    name: 'property.ts',
-    path: 'src/types/property.ts',
-    linesAdded: 44,
-    content: `export type DealType = 'sale' | 'jeonse' | 'monthly';
+    },
+    {
+      name: 'property.ts',
+      path: 'src/types/property.ts',
+      linesAdded: 44,
+      content: `export type DealType = 'sale' | 'jeonse' | 'monthly';
 
 export type PropertyKind = 'apartment' | 'officetel' | 'villa' | 'house' | 'commercial';
 
@@ -117,12 +120,12 @@ export interface PropertyFilterState {
   maxDeposit?: number;
   keyword: string;
 }`,
-  },
-  {
-    name: 'format.ts',
-    path: 'src/lib/format.ts',
-    linesAdded: 33,
-    content: `// 만원 단위 금액을 "3억 2,500만원" 형태로 변환
+    },
+    {
+      name: 'format.ts',
+      path: 'src/lib/format.ts',
+      linesAdded: 33,
+      content: `// 만원 단위 금액을 "3억 2,500만원" 형태로 변환
 export function formatKRW(manwon: number): string {
   if (manwon <= 0) return '0원';
   const eok = Math.floor(manwon / 10000);
@@ -145,18 +148,18 @@ export function dealLabel(dealType: string): string {
   if (dealType === 'jeonse') return '전세';
   return '월세';
 }`,
-  },
-  {
-    name: 'crm-config.ts',
-    path: 'src/lib/crm-config.ts',
-    linesAdded: 24,
-    content: `// RealConnect CRM 연동 설정 — 중개사 계정에서 자동 주입됩니다.
+    },
+    {
+      name: 'crm-config.ts',
+      path: 'src/lib/crm-config.ts',
+      linesAdded: 24,
+      content: `// RealConnect CRM 연동 설정 — 중개사 계정에서 자동 주입됩니다.
 // (build 시 RealConnect API 토큰으로 매물/지역 데이터를 동기화)
 export const CRM_CONFIG = {
-  agencyId: 'agency_jamsil_lael_8821',
-  agencyName: '잠실르엘공인중개사사무소',
-  agentName: '김잠실',
-  complex: '잠실르엘',
+  agencyId: 'agency_realconnect_8821',
+  agencyName: '${ctx.agencyName}',
+  agentName: '${ctx.agentName}',
+  complex: '${ctx.complex}',
   region: {
     sido: '서울',
     sigungu: '송파구',
@@ -164,26 +167,26 @@ export const CRM_CONFIG = {
     center: { lat: 37.5126, lng: 127.0826 },
   },
   contact: {
-    phone: '02-2147-5000',
-    kakao: '@jamsil-lael',
-    email: 'jamsil-lael@realconnect.app',
+    phone: '${ctx.phone}',
+    kakao: '@realconnect',
+    email: 'contact@realconnect.app',
   },
   // 매물은 CRM에서 실시간 동기화 (mock-data.ts 는 빌드 시점 스냅샷)
   syncEndpoint: 'https://api.realconnect.app/v1/listings',
 } as const;
 
 export type CrmRegion = typeof CRM_CONFIG.region;`,
-  },
-  {
-    name: 'mock-data.ts',
-    path: 'src/lib/mock-data.ts',
-    linesAdded: 96,
-    content: `import type { Property } from '../types/property';
-// CRM 동기화 스냅샷 — agency_jamsil_lael_8821 (서울 송파구 잠실르엘), 매물 18건 중 대표 4건
+    },
+    {
+      name: 'mock-data.ts',
+      path: 'src/lib/mock-data.ts',
+      linesAdded: 96,
+      content: `import type { Property } from '../types/property';
+// CRM 동기화 스냅샷 — ${ctx.region} ${ctx.complex}, 매물 ${ctx.listingCount}건 중 대표 4건
 export const PROPERTIES: Property[] = [
   {
     id: 'p-1024',
-    title: '잠실르엘 84㎡ 남향 한강 조망',
+    title: '${ctx.complex} 84㎡ 남향 한강 조망',
     kind: 'apartment',
     dealType: 'sale',
     deposit: 290000,
@@ -193,7 +196,7 @@ export const PROPERTIES: Property[] = [
     rooms: 3,
     baths: 2,
     direction: '남향',
-    address: '서울 송파구 신천동 잠실르엘',
+    address: '${ctx.region} ${ctx.complex}',
     description: '한강 조망 로열층 신축 매물입니다. 잠실역 도보권, 즉시 입주 가능합니다.',
     options: ['한강뷰', '지하주차', '커뮤니티시설', '시스템에어컨'],
     thumbnailColor: 'from-sky-400 to-blue-600',
@@ -201,7 +204,7 @@ export const PROPERTIES: Property[] = [
   },
   {
     id: 'p-1025',
-    title: '잠실르엘 59㎡ 전세 고층',
+    title: '${ctx.complex} 59㎡ 전세 고층',
     kind: 'apartment',
     dealType: 'jeonse',
     deposit: 130000,
@@ -211,14 +214,14 @@ export const PROPERTIES: Property[] = [
     rooms: 3,
     baths: 1,
     direction: '남동향',
-    address: '서울 송파구 신천동 잠실르엘',
+    address: '${ctx.region} ${ctx.complex}',
     description: '신축 입주 컨디션 그대로. 잠실 학군·생활 인프라 도보권, 즉시 입주 가능.',
     options: ['신축', '지하주차', '무인택배', '커뮤니티시설'],
     thumbnailColor: 'from-emerald-400 to-teal-600',
   },
   {
     id: 'p-1026',
-    title: '잠실르엘 110㎡ 남향 펜트뷰',
+    title: '${ctx.complex} 110㎡ 남향 펜트뷰',
     kind: 'apartment',
     dealType: 'sale',
     deposit: 385000,
@@ -228,14 +231,14 @@ export const PROPERTIES: Property[] = [
     rooms: 4,
     baths: 2,
     direction: '남향',
-    address: '서울 송파구 신천동 잠실르엘',
+    address: '${ctx.region} ${ctx.complex}',
     description: '고층 대형 평형, 석촌호수·한강 파노라마 조망. 프리미엄 마감재 적용.',
     options: ['한강뷰', '호수뷰', '대형평형', '복층창고'],
     thumbnailColor: 'from-amber-400 to-orange-600',
   },
   {
     id: 'p-1027',
-    title: '잠실르엘 84㎡ 반전세',
+    title: '${ctx.complex} 84㎡ 반전세',
     kind: 'apartment',
     dealType: 'monthly',
     deposit: 150000,
@@ -246,7 +249,7 @@ export const PROPERTIES: Property[] = [
     rooms: 3,
     baths: 2,
     direction: '남서향',
-    address: '서울 송파구 신천동 잠실르엘',
+    address: '${ctx.region} ${ctx.complex}',
     description: '보증금 조정 가능한 반전세. 단지 내 커뮤니티·조경 우수, 가족 단위 추천.',
     options: ['지하주차', '커뮤니티시설', '조경우수', '반려동물'],
     thumbnailColor: 'from-violet-400 to-purple-600',
@@ -256,12 +259,12 @@ export const PROPERTIES: Property[] = [
 export function getProperty(id: string): Property | undefined {
   return PROPERTIES.find((p) => p.id === id);
 }`,
-  },
-  {
-    name: 'PropertyCard.tsx',
-    path: 'src/components/PropertyCard.tsx',
-    linesAdded: 61,
-    content: `import { Link } from 'react-router-dom';
+    },
+    {
+      name: 'PropertyCard.tsx',
+      path: 'src/components/PropertyCard.tsx',
+      linesAdded: 61,
+      content: `import { Link } from 'react-router-dom';
 import type { Property } from '../types/property';
 import { formatKRW, toPyeong, dealLabel } from '../lib/format';
 
@@ -300,12 +303,12 @@ export function PropertyCard({ property }: Props) {
     </Link>
   );
 }`,
-  },
-  {
-    name: 'PropertyFilter.tsx',
-    path: 'src/components/PropertyFilter.tsx',
-    linesAdded: 54,
-    content: `import type { DealType, PropertyFilterState } from '../types/property';
+    },
+    {
+      name: 'PropertyFilter.tsx',
+      path: 'src/components/PropertyFilter.tsx',
+      linesAdded: 54,
+      content: `import type { DealType, PropertyFilterState } from '../types/property';
 
 interface Props {
   value: PropertyFilterState;
@@ -347,12 +350,12 @@ export function PropertyFilter({ value, onChange }: Props) {
     </div>
   );
 }`,
-  },
-  {
-    name: 'Header.tsx',
-    path: 'src/components/Header.tsx',
-    linesAdded: 40,
-    content: `import { Link } from 'react-router-dom';
+    },
+    {
+      name: 'Header.tsx',
+      path: 'src/components/Header.tsx',
+      linesAdded: 40,
+      content: `import { Link } from 'react-router-dom';
 
 export function Header() {
   return (
@@ -360,9 +363,9 @@ export function Header() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
         <Link to="/" className="flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-600 font-black text-white">
-            르
+            ${ctx.complex.charAt(0)}
           </span>
-          <span className="text-lg font-bold text-slate-900">잠실르엘공인중개사사무소</span>
+          <span className="text-lg font-bold text-slate-900">${ctx.agencyName}</span>
         </Link>
         <nav className="hidden gap-6 text-sm font-medium text-slate-600 md:flex">
           <Link to="/listing" className="hover:text-brand-600">매물 검색</Link>
@@ -370,21 +373,21 @@ export function Header() {
           <a href="#contact" className="hover:text-brand-600">상담 문의</a>
         </nav>
         <a
-          href="tel:0221475000"
+          href="tel:${ctx.phone.replace(/-/g, '')}"
           className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
         >
-          02-2147-5000
+          ${ctx.phone}
         </a>
       </div>
     </header>
   );
 }`,
-  },
-  {
-    name: 'ContactForm.tsx',
-    path: 'src/components/ContactForm.tsx',
-    linesAdded: 58,
-    content: `import { useState } from 'react';
+    },
+    {
+      name: 'ContactForm.tsx',
+      path: 'src/components/ContactForm.tsx',
+      linesAdded: 58,
+      content: `import { useState } from 'react';
 
 interface FormState {
   name: string;
@@ -442,12 +445,12 @@ export function ContactForm() {
     </form>
   );
 }`,
-  },
-  {
-    name: 'HomePage.tsx',
-    path: 'src/pages/HomePage.tsx',
-    linesAdded: 72,
-    content: `import { useState } from 'react';
+    },
+    {
+      name: 'HomePage.tsx',
+      path: 'src/pages/HomePage.tsx',
+      linesAdded: 72,
+      content: `import { useState } from 'react';
 import { useCrmListings } from '../hooks/useCrmListings';
 import { useFilteredListings } from '../hooks/useFilteredListings';
 import { PropertyCard } from '../components/PropertyCard';
@@ -497,12 +500,12 @@ export function HomePage() {
     </main>
   );
 }`,
-  },
-  {
-    name: 'PropertyDetailPage.tsx',
-    path: 'src/pages/PropertyDetailPage.tsx',
-    linesAdded: 88,
-    content: `import { useParams, Link } from 'react-router-dom';
+    },
+    {
+      name: 'PropertyDetailPage.tsx',
+      path: 'src/pages/PropertyDetailPage.tsx',
+      linesAdded: 88,
+      content: `import { useParams, Link } from 'react-router-dom';
 import { getProperty } from '../lib/mock-data';
 import { formatKRW, toPyeong, dealLabel } from '../lib/format';
 import { ContactForm } from '../components/ContactForm';
@@ -577,12 +580,12 @@ function Spec({ label, value }: { label: string; value: string }) {
     </div>
   );
 }`,
-  },
-  {
-    name: 'App.tsx',
-    path: 'src/App.tsx',
-    linesAdded: 31,
-    content: `import { BrowserRouter, Routes, Route } from 'react-router-dom';
+    },
+    {
+      name: 'App.tsx',
+      path: 'src/App.tsx',
+      linesAdded: 31,
+      content: `import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { KakaoChat } from './components/KakaoChat';
@@ -604,12 +607,12 @@ export default function App() {
     </BrowserRouter>
   );
 }`,
-  },
-  {
-    name: 'main.tsx',
-    path: 'src/main.tsx',
-    linesAdded: 12,
-    content: `import { StrictMode } from 'react';
+    },
+    {
+      name: 'main.tsx',
+      path: 'src/main.tsx',
+      linesAdded: 12,
+      content: `import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App';
@@ -619,12 +622,12 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 );`,
-  },
-  {
-    name: 'api-client.ts',
-    path: 'src/lib/api-client.ts',
-    linesAdded: 47,
-    content: `import { CRM_CONFIG } from './crm-config';
+    },
+    {
+      name: 'api-client.ts',
+      path: 'src/lib/api-client.ts',
+      linesAdded: 47,
+      content: `import { CRM_CONFIG } from './crm-config';
 import type { Property } from '../types/property';
 
 // RealConnect CRM 연동 클라이언트
@@ -663,12 +666,12 @@ export async function submitInquiry(payload: {
   });
   return { ok: res.ok };
 }`,
-  },
-  {
-    name: 'useCrmListings.ts',
-    path: 'src/hooks/useCrmListings.ts',
-    linesAdded: 39,
-    content: `import { useEffect, useState } from 'react';
+    },
+    {
+      name: 'useCrmListings.ts',
+      path: 'src/hooks/useCrmListings.ts',
+      linesAdded: 39,
+      content: `import { useEffect, useState } from 'react';
 import { PROPERTIES } from '../lib/mock-data';
 import { fetchListings } from '../lib/api-client';
 import type { Property } from '../types/property';
@@ -698,12 +701,12 @@ export function useCrmListings() {
 
   return { listings, synced };
 }`,
-  },
-  {
-    name: 'useFilteredListings.ts',
-    path: 'src/hooks/useFilteredListings.ts',
-    linesAdded: 33,
-    content: `import { useMemo } from 'react';
+    },
+    {
+      name: 'useFilteredListings.ts',
+      path: 'src/hooks/useFilteredListings.ts',
+      linesAdded: 33,
+      content: `import { useMemo } from 'react';
 import type { Property, PropertyFilterState } from '../types/property';
 
 export function useFilteredListings(
@@ -723,14 +726,14 @@ export function useFilteredListings(
     });
   }, [listings, filter]);
 }`,
-  },
-  {
-    name: 'RegionMap.tsx',
-    path: 'src/components/RegionMap.tsx',
-    linesAdded: 52,
-    content: `import { CRM_CONFIG } from '../lib/crm-config';
+    },
+    {
+      name: 'RegionMap.tsx',
+      path: 'src/components/RegionMap.tsx',
+      linesAdded: 52,
+      content: `import { CRM_CONFIG } from '../lib/crm-config';
 
-// 중개사 지역(송파구 잠실르엘)을 중심으로 한 지도 섹션.
+// 중개사 지역(${ctx.regionShort} ${ctx.complex})을 중심으로 한 지도 섹션.
 // 실제로는 네이버/카카오 지도 SDK를 붙이며, 여기선 정적 마커로 표현.
 export function RegionMap() {
   const { sigungu, dongs } = CRM_CONFIG.region;
@@ -769,12 +772,12 @@ export function RegionMap() {
     </section>
   );
 }`,
-  },
-  {
-    name: 'Footer.tsx',
-    path: 'src/components/Footer.tsx',
-    linesAdded: 29,
-    content: `import { CRM_CONFIG } from '../lib/crm-config';
+    },
+    {
+      name: 'Footer.tsx',
+      path: 'src/components/Footer.tsx',
+      linesAdded: 29,
+      content: `import { CRM_CONFIG } from '../lib/crm-config';
 
 export function Footer() {
   const { agencyName, contact, region } = CRM_CONFIG;
@@ -793,12 +796,12 @@ export function Footer() {
     </footer>
   );
 }`,
-  },
-  {
-    name: 'KakaoChat.tsx',
-    path: 'src/components/KakaoChat.tsx',
-    linesAdded: 26,
-    content: `import { CRM_CONFIG } from '../lib/crm-config';
+    },
+    {
+      name: 'KakaoChat.tsx',
+      path: 'src/components/KakaoChat.tsx',
+      linesAdded: 26,
+      content: `import { CRM_CONFIG } from '../lib/crm-config';
 
 // 우측 하단 카카오 상담 플로팅 버튼
 export function KakaoChat() {
@@ -814,12 +817,12 @@ export function KakaoChat() {
     </a>
   );
 }`,
-  },
-  {
-    name: 'seo.ts',
-    path: 'src/lib/seo.ts',
-    linesAdded: 31,
-    content: `import { CRM_CONFIG } from './crm-config';
+    },
+    {
+      name: 'seo.ts',
+      path: 'src/lib/seo.ts',
+      linesAdded: 31,
+      content: `import { CRM_CONFIG } from './crm-config';
 
 // 지역 키워드 기반 SEO 메타 생성
 export function buildMeta(title: string, description?: string) {
@@ -839,12 +842,12 @@ export function buildMeta(title: string, description?: string) {
     ogType: 'website',
   };
 }`,
-  },
-  {
-    name: 'vite.config.ts',
-    path: 'vite.config.ts',
-    linesAdded: 14,
-    content: `import { defineConfig } from 'vite';
+    },
+    {
+      name: 'vite.config.ts',
+      path: 'vite.config.ts',
+      linesAdded: 14,
+      content: `import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import tailwindcss from '@tailwindcss/vite';
 
@@ -853,12 +856,12 @@ export default defineConfig({
   server: { port: 5173 },
   build: { outDir: 'dist', sourcemap: false },
 });`,
-  },
-  {
-    name: 'index.css',
-    path: 'src/index.css',
-    linesAdded: 18,
-    content: `@import 'tailwindcss';
+    },
+    {
+      name: 'index.css',
+      path: 'src/index.css',
+      linesAdded: 18,
+      content: `@import 'tailwindcss';
 
 :root {
   --brand: #1f63d6;
@@ -872,8 +875,12 @@ body,
   margin: 0;
   min-height: 100%;
 }`,
-  },
-];
+    },
+  ];
+}
+
+/** 기본 계정 기준 스냅샷. 런타임 컴포넌트는 buildMockFiles(ctx)로 계정별 파일을 만든다. */
+export const MOCK_FILES: MockFile[] = buildMockFiles(CRM_CONTEXT);
 
 /** 파일 경로 → 진행상황 패널에 표시할 작업 설명 */
 const FILE_TASKS: Record<string, string> = {
@@ -897,7 +904,7 @@ const FILE_TASKS: Record<string, string> = {
   'src/components/PropertyCard.tsx': '매물 카드 컴포넌트 만드는 중',
   'src/components/PropertyFilter.tsx': '매물 필터 UI 만드는 중',
   'src/components/ContactForm.tsx': '상담 문의 폼 만드는 중',
-  'src/components/RegionMap.tsx': '잠실르엘 지역 지도 섹션 만드는 중',
+  'src/components/RegionMap.tsx': '지역 지도 섹션 만드는 중',
   'src/components/KakaoChat.tsx': '카카오 상담 버튼 추가 중',
   'src/pages/HomePage.tsx': '메인 페이지 조립 중',
   'src/pages/PropertyDetailPage.tsx': '매물 상세 페이지 만드는 중',

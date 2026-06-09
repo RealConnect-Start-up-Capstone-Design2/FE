@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Loader2, Lock, Rocket, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Loader2, Rocket, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { ProgressPanel } from './ProgressPanel';
 import { FileTreePanel } from './FileTreePanel';
@@ -7,14 +7,18 @@ import { CodeTypingPanel } from './CodeTypingPanel';
 import { PricingScreen } from './PricingScreen';
 import { DeployedScreen } from './DeployedScreen';
 import { useGenerationEngine } from './useGenerationEngine';
-import { MOCK_FILES } from './mockData';
+import { buildMockFiles } from './mockData';
+import { useCrmContext } from './useCrmContext';
 
 interface Props {
   onClose: () => void;
 }
 
 export function WebsiteStudioPanel({ onClose }: Props) {
-  const engine = useGenerationEngine();
+  const ctx = useCrmContext();
+  // 로그인 계정 기준으로 "생성되는 파일"을 만든다 (식별 정보가 계정 따라 들어감)
+  const files = useMemo(() => buildMockFiles(ctx), [ctx]);
+  const engine = useGenerationEngine(files);
   const { step, openPricingFresh, reset } = engine;
   // 사용자가 탐색기에서 직접 고른 파일. null = 라이브(현재 작성 파일 따라감)
   const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(null);
@@ -28,7 +32,7 @@ export function WebsiteStudioPanel({ onClose }: Props) {
   const canDeploy = step === 'done';
 
   const viewIndex = selectedFileIndex ?? engine.currentFileIndex;
-  const viewFile = viewIndex >= 0 ? MOCK_FILES[viewIndex] : undefined;
+  const viewFile = viewIndex >= 0 ? files[viewIndex] : undefined;
   const isLiveView = step === 'building' && viewIndex === engine.currentFileIndex;
   const viewContent = isLiveView ? engine.typedContent : viewFile ? viewFile.content : '';
   const isHistory =
@@ -44,35 +48,18 @@ export function WebsiteStudioPanel({ onClose }: Props) {
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden rounded-xl border border-slate-700 bg-slate-800 shadow-2xl">
-      {/* 브라우저 크롬바 */}
-      <div className="flex items-center gap-3 border-b border-slate-700 bg-slate-800 px-4 py-2.5">
-        <div className="flex gap-1.5">
-          <span className="h-3 w-3 rounded-full bg-red-400" />
-          <span className="h-3 w-3 rounded-full bg-amber-400" />
-          <span className="h-3 w-3 rounded-full bg-emerald-400" />
-        </div>
-        <div className="flex flex-1 items-center gap-2 rounded-md bg-slate-900/70 px-3 py-1 text-xs text-slate-400">
-          <Lock className="h-3 w-3 text-emerald-500" />
-          realconnect.app/studio
-        </div>
-        {step === 'building' && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-700 px-2.5 py-1 text-xs text-slate-300">
-            <Loader2 className="h-3 w-3 animate-spin text-sky-400" />
-            생성 중
-          </span>
-        )}
+      {/* 본문 */}
+      <div className="relative flex-1 overflow-hidden">
+        {/* 닫기 — 툴바 없이 우상단에 떠 있게 */}
         <button
           onClick={handleClose}
-          className="rounded-md p-1 text-slate-400 hover:bg-slate-700 hover:text-slate-100"
+          className="absolute right-3 top-3 z-20 rounded-md bg-slate-900/60 p-1 text-slate-400 backdrop-blur transition hover:bg-slate-900 hover:text-slate-100"
         >
           <X className="h-4 w-4" />
         </button>
-      </div>
 
-      {/* 본문 */}
-      <div className="relative flex-1 overflow-hidden">
         {inWorkbench && (
-          <div className="grid h-full grid-cols-[260px_200px_1fr] divide-x divide-slate-700">
+          <div className="grid h-full grid-cols-[260px_200px_minmax(0,1fr)] divide-x divide-slate-700">
             {/* 진행상황 */}
             <ProgressPanel
               currentFileIndex={engine.currentFileIndex}
@@ -114,7 +101,9 @@ export function WebsiteStudioPanel({ onClose }: Props) {
           </div>
         )}
 
-        {step === 'deployed' && <DeployedScreen onReset={engine.reset} />}
+        {step === 'deployed' && (
+          <DeployedScreen siteUrl={ctx.deployedSiteUrl} onReset={engine.reset} />
+        )}
       </div>
 
       {/* 하단 상태바 (작업대 화면에서만) */}

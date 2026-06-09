@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchProfile } from "@/shared/api/mypage";
 import { fetchPreferredComplexList } from "@/shared/api/region";
 import { formatPhoneNumber } from "@/shared/utils";
+import { useAuthStore } from "@/features/auth/stores";
+import { getCrmContext } from "@/config";
 import { dashboardData } from "../model/dashboardData";
 import { DashboardKpiStrip } from "./DashboardKpiStrip";
 import { ExpiryAlertCard } from "./ExpiryAlertCard";
@@ -21,10 +23,16 @@ export function DashboardPage() {
     queryFn: fetchPreferredComplexList,
   });
 
+  // 로그인 계정 기준 사무소(목업). BE 응답이 없을 때 "-" 대신 이 값으로 폴백한다.
+  const username = useAuthStore((s) => s.username);
+  const crm = getCrmContext(username);
+
   const office = {
     ...dashboardData.office,
-    name: profile?.officeName || "-",
-    representative: profile?.name ? `${profile.name} (대표)` : "-",
+    name: profile?.officeName || crm.agencyName,
+    representative: profile?.name
+      ? `${profile.name} (대표)`
+      : `${crm.agentName} (대표)`,
     plan:
       profile?.membershipType && profile.membershipType !== "대표"
         ? profile.membershipType
@@ -32,12 +40,20 @@ export function DashboardPage() {
     phone:
       formatPhoneNumber(
         profile?.officePhone || profile?.phone || profile?.contact,
-      ) || "-",
+      ) || crm.phone,
     businessNumber: "-",
     registrationNumber: "-",
     mainComplexes:
-      preferredComplexes?.map((complex) => complex.apartmentName) ?? [],
+      Array.isArray(preferredComplexes) && preferredComplexes.length > 0
+        ? preferredComplexes.map((complex) => complex.apartmentName)
+        : [crm.complex],
   };
+
+  // 만기 알림 목업이 단지명("파크리오")으로 고정돼 있어, 로그인 계정 단지로 맞춘다.
+  const expiryAlerts = dashboardData.expiryAlerts.map((alert) => ({
+    ...alert,
+    propertyTitle: `${crm.complex} 아파트 ${alert.dong}동 ${alert.ho}호`,
+  }));
 
   return (
     <main className="w-full min-w-[1471px]">
@@ -56,7 +72,7 @@ export function DashboardPage() {
         <OfficeProfileCard office={office} />
         <RequestSummaryCard summaries={dashboardData.requestSummaries} />
         <SystemNoticeCard notices={dashboardData.systemNotices} />
-        <ExpiryAlertCard alerts={dashboardData.expiryAlerts} />
+        <ExpiryAlertCard alerts={expiryAlerts} />
         {dashboardData.unsupportedFeatures.map((feature) => (
           <ShareAlertCard key={feature.id} feature={feature} />
         ))}

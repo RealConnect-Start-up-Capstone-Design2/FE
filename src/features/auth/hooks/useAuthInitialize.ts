@@ -30,10 +30,10 @@ export function useAuthInitialize() {
         // 쿠키에 저장된 refresh token으로 access token 복구 시도
         const newAccessToken = await refreshAccessToken();
 
-        // 성공하면 인증 정보 설정
+        // 성공하면 인증 정보 설정 (persist에 저장된 username 유지 — 새로고침 시 계정 식별 보존)
         setAuth({
           accessToken: newAccessToken,
-          username: "", // 필요시 별도 API로 사용자 정보 가져오기
+          username: useAuthStore.getState().username ?? "",
         });
       } catch {
         // 토큰 갱신 실패 시 액세스 토큰 블랙리스트 처리를 위해 로그아웃 API 호출

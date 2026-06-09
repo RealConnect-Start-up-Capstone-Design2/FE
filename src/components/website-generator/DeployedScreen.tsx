@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, ExternalLink, RotateCw } from 'lucide-react';
-import { DEPLOYED_SITE_URL } from '../../config';
+import { CheckCircle2, ExternalLink } from 'lucide-react';
 
 interface Props {
+  /** 로그인 계정의 배포 미리보기 주소 */
+  siteUrl: string;
   onReset: () => void;
 }
 
-export function DeployedScreen({ onReset }: Props) {
+export function DeployedScreen({ siteUrl, onReset }: Props) {
   const [iframeBlocked, setIframeBlocked] = useState(false);
-  const displayUrl = DEPLOYED_SITE_URL.replace(/^https?:\/\//, '');
+  const displayUrl = siteUrl.replace(/^https?:\/\//, '');
 
   return (
     <div className="flex h-full flex-col bg-slate-100">
@@ -21,7 +22,7 @@ export function DeployedScreen({ onReset }: Props) {
         </div>
         <div className="flex items-center gap-2">
           <a
-            href={DEPLOYED_SITE_URL}
+            href={siteUrl}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-700"
@@ -42,16 +43,6 @@ export function DeployedScreen({ onReset }: Props) {
       <div className="flex flex-1 flex-col p-4">
         <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-slate-300 bg-white shadow-lg">
           <div className="flex items-center gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2">
-            <div className="flex gap-1.5">
-              <span className="h-3 w-3 rounded-full bg-red-400" />
-              <span className="h-3 w-3 rounded-full bg-amber-400" />
-              <span className="h-3 w-3 rounded-full bg-emerald-400" />
-            </div>
-            <div className="flex items-center gap-1 text-slate-400">
-              <ArrowLeft className="h-4 w-4" />
-              <ArrowRight className="h-4 w-4" />
-              <RotateCw className="h-3.5 w-3.5" />
-            </div>
             <div className="flex flex-1 items-center gap-2 rounded-md bg-white px-3 py-1 text-sm text-slate-500 ring-1 ring-slate-200">
               <span className="text-emerald-600">🔒</span>
               {displayUrl}
@@ -60,7 +51,7 @@ export function DeployedScreen({ onReset }: Props) {
 
           <div className="relative flex-1 bg-white">
             <iframe
-              src={DEPLOYED_SITE_URL}
+              src={siteUrl}
               title="배포된 웹사이트"
               className="h-full w-full"
               onError={() => setIframeBlocked(true)}
@@ -72,7 +63,7 @@ export function DeployedScreen({ onReset }: Props) {
                     이 사이트는 보안 정책(X-Frame-Options)으로 미리보기 임베드를 차단합니다.
                   </p>
                   <a
-                    href={DEPLOYED_SITE_URL}
+                    href={siteUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"

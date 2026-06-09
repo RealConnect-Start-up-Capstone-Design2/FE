@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Check, Loader2, Sparkles } from 'lucide-react';
-import { CRM_CONTEXT } from '../../config';
 import { MOCK_FILES, taskForFile } from './mockData';
+import { useCrmContext } from './useCrmContext';
 
 interface Props {
   currentFileIndex: number;
@@ -11,6 +11,7 @@ interface Props {
 }
 
 export function ProgressPanel({ currentFileIndex, builtCount, totalCount, done }: Props) {
+  const ctx = useCrmContext();
   const listRef = useRef<HTMLDivElement>(null);
 
   // 완료된 작업 목록 (현재 작업 직전까지)
@@ -34,7 +35,7 @@ export function ProgressPanel({ currentFileIndex, builtCount, totalCount, done }
           </span>
           <div>
             <p className="text-sm font-bold text-slate-900">RealConnect AI</p>
-            <p className="text-xs text-slate-500">{CRM_CONTEXT.agencyName} 웹사이트 생성</p>
+            <p className="text-xs text-slate-500">{ctx.agencyName} 웹사이트 생성</p>
           </div>
         </div>
 
