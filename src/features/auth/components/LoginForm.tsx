@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../stores";
 import { login } from "../services";
 import { AuthHeader } from "./AuthHeader";
@@ -20,6 +21,7 @@ export function LoginForm() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const queryClient = useQueryClient();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -43,7 +45,10 @@ export function LoginForm() {
         form.stayIn
       );
 
+      // 계정 전환 시 이전 계정의 프로필·선호단지 캐시(staleTime 5분)가 남아
+      // 다른 계정 데이터가 보이는 누수를 막는다. 로그인 = 계정 경계 → 캐시 초기화.
       setAuth({ accessToken, username });
+      queryClient.clear();
       navigate("/dashboard");
     } catch (error: unknown) {
       if (error instanceof Error && "response" in error) {

@@ -16,7 +16,7 @@ export const login = async (
   password: string,
   stayIn: boolean
 ): Promise<AuthResponse> => {
-  const response = await apiClient.post<{ username:string }>("/login", {
+  const response = await apiClient.post("/login", {
     username,
     password,
     stayIn,
@@ -26,15 +26,15 @@ export const login = async (
 
   // 액세스 토큰은 Authorization 헤더에서 추출
   const accessToken = response.headers["authorization"]?.replace("Bearer ", "");
-  // 사용자 이름은 응답 데이터에서 추출
-  const responseUsername = response.data.username;
 
   if (!accessToken) {
     throw new Error("액세스 토큰이 없습니다.");
   }
 
-  // 성공 시 토큰과 사용자 정보를 반환
-  return { accessToken, username: responseUsername };
+  // username은 응답 body에 없고(빈 body), JWT의 username 클레임도 UUID라
+  // 로그인 ID로 쓸 수 없다. 사용자가 입력한 로그인 ID를 그대로 보존해야
+  // CRM 컨텍스트(CRM_ACCOUNTS 키 = asd10203/qwe10203)가 계정별로 매칭된다.
+  return { accessToken, username };
 };
 
 /**
