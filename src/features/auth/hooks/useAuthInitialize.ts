@@ -55,7 +55,8 @@ export function useAuthInitialize() {
           currentPath !== "/login" &&
           currentPath !== "/signup" &&
           currentPath !== "/admin" &&
-          currentPath !== "/demo" // [시연 임시] 백엔드 다운 중 웹빌딩 데모는 토큰 복구 실패해도 유지
+          currentPath !== "/demo" && // [시연 임시] 백엔드 다운 중 웹빌딩 데모는 토큰 복구 실패해도 유지
+          currentPath !== "/" // [시연 임시] 루트 접속은 라우터가 /demo로 보냄 — /login으로 가로채지 않기
         ) {
           window.location.href = "/login";
         }
