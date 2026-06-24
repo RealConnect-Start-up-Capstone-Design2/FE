@@ -12,9 +12,15 @@ import { WebsiteGeneratorPage } from "@/pages/websiteGenerate";
 
 export const routes = createBrowserRouter([
   // 루트 경로
+  // [시연 임시] 백엔드 다운 중 로그인 없이 웹빌딩 스튜디오만 시연. 복구 시 "/login"으로 되돌릴 것.
   {
     path: "/",
-    element: <Navigate to="/login" replace />,
+    element: <Navigate to="/demo" replace />,
+  },
+  // [시연 임시] 가드/대시보드 레이아웃 없이 웹빌딩 스튜디오 단독. 시연 종료 후 이 라우트 삭제.
+  {
+    path: "/demo",
+    element: <WebsiteGeneratorPage />,
   },
   {
     path: "/login",

@@ -54,7 +54,8 @@ export function useAuthInitialize() {
         if (
           currentPath !== "/login" &&
           currentPath !== "/signup" &&
-          currentPath !== "/admin"
+          currentPath !== "/admin" &&
+          currentPath !== "/demo" // [시연 임시] 백엔드 다운 중 웹빌딩 데모는 토큰 복구 실패해도 유지
         ) {
           window.location.href = "/login";
         }
