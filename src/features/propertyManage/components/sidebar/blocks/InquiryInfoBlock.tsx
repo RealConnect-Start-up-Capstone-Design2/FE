@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SidebarBlock } from "@/shared/components/detail-sidebar";
 import {
@@ -92,12 +91,6 @@ export function InquiryInfoBlock({
     enabled: Boolean(apartment?.apartmentId),
   });
 
-  useEffect(() => {
-    if (fetchedRequestInfo) {
-      onRequestInfoChange?.(fetchedRequestInfo);
-    }
-  }, [fetchedRequestInfo, onRequestInfoChange]);
-
   if (!apartment) {
     return (
       <SidebarBlock title="의뢰 정보">
@@ -108,7 +101,8 @@ export function InquiryInfoBlock({
 
   const property = apartment.property;
   const requestInfo = savedRequestInfo ?? fetchedRequestInfo;
-  const requestType = requestInfo?.requestType ?? property?.requestType ?? "NONE";
+  const requestType =
+    requestInfo?.requestType ?? property?.requestType ?? "NONE";
   const headerLabel = REQUEST_TYPE_LABELS[requestType] ?? requestType;
   const loanStateLabel =
     loanStateLabelMap[requestInfo?.loanState ?? "NONE"] ?? "미표시";
@@ -118,7 +112,9 @@ export function InquiryInfoBlock({
       : "입주일 지정"
     : "즉시 입주";
   const resetKey = `${apartment.apartmentId}-${requestInfo ? "request-info" : "property"}`;
-  const updateRequestInfo = (partialRequestInfo: Partial<PropertyRequestInfo>) => {
+  const updateRequestInfo = (
+    partialRequestInfo: Partial<PropertyRequestInfo>,
+  ) => {
     onRequestInfoChange?.({
       requestType,
       loanAmount: requestInfo?.loanAmount ?? 0,
@@ -160,16 +156,16 @@ export function InquiryInfoBlock({
           />
         </Field>
 
-        <div className="flex h-[34px] w-[223px] max-w-full items-center gap-[3px] rounded-full bg-[#DDE2F2] p-1">
+        <div
+          aria-hidden="true"
+          className="flex h-[34px] w-[223px] max-w-full items-center gap-[3px] rounded-full bg-[#DDE2F2] p-1"
+        >
           {requestTypeSegments.map((segment) => {
             const isActive = requestType.includes(segment.value);
 
             return (
-              <button
+              <span
                 key={segment.value}
-                type="button"
-                aria-pressed={isActive}
-                tabIndex={-1}
                 className={
                   isActive
                     ? "h-[26px] min-w-0 flex-1 cursor-default whitespace-nowrap rounded-full bg-white px-1 text-[12px] font-medium leading-[26px] tracking-[-0.025em] text-[#1B1B1B]"
@@ -177,7 +173,7 @@ export function InquiryInfoBlock({
                 }
               >
                 {segment.label}
-              </button>
+              </span>
             );
           })}
         </div>
@@ -189,7 +185,9 @@ export function InquiryInfoBlock({
                 requestInfo?.salePrice ?? property?.salePrice,
               )}
               onChange={(event) =>
-                updateRequestInfo({ salePrice: toNumberValue(event.target.value) })
+                updateRequestInfo({
+                  salePrice: toNumberValue(event.target.value),
+                })
               }
             />
           </Field>
@@ -227,7 +225,9 @@ export function InquiryInfoBlock({
                 requestInfo?.jeonsePrice ?? property?.jeonsePrice,
               )}
               onChange={(event) =>
-                updateRequestInfo({ jeonsePrice: toNumberValue(event.target.value) })
+                updateRequestInfo({
+                  jeonsePrice: toNumberValue(event.target.value),
+                })
               }
             />
           </Field>
@@ -263,7 +263,9 @@ export function InquiryInfoBlock({
             <SidebarActiveInput
               defaultValue={toInputValue(requestInfo?.loanAmount)}
               onChange={(event) =>
-                updateRequestInfo({ loanAmount: toNumberValue(event.target.value) })
+                updateRequestInfo({
+                  loanAmount: toNumberValue(event.target.value),
+                })
               }
             />
           </Field>
@@ -272,7 +274,9 @@ export function InquiryInfoBlock({
             options={["미표시", "융자없음", "30% 미만", "30% 이상"]}
             className="grid-cols-4"
             onChange={(value) =>
-              updateRequestInfo({ loanState: loanStateValueMap[value] ?? "NONE" })
+              updateRequestInfo({
+                loanState: loanStateValueMap[value] ?? "NONE",
+              })
             }
           />
         </div>
@@ -290,7 +294,9 @@ export function InquiryInfoBlock({
           </Field>
           <Field label=" ">
             <DateInput
-              defaultValue={requestInfo?.availableMoveInDate ?? property?.expireDate}
+              defaultValue={
+                requestInfo?.availableMoveInDate ?? property?.expireDate
+              }
               popoverPlacement="top"
               onChange={(event) =>
                 updateRequestInfo({
@@ -308,7 +314,9 @@ export function InquiryInfoBlock({
             }
             popoverPlacement="top"
             onChange={(event) =>
-              updateRequestInfo({ registeredAt: formatApiDate(event.target.value) })
+              updateRequestInfo({
+                registeredAt: formatApiDate(event.target.value),
+              })
             }
           />
         </Field>

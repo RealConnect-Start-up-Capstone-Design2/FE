@@ -89,6 +89,7 @@ export interface CreateInquiryPayload {
   maxDeposit: number;
   minMonthlyPrice: number;
   maxMonthlyPrice: number;
+  moveInBy?: string;
   title: string;
   publicDescription: string;
   privateNote: string;

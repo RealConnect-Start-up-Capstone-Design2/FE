@@ -28,6 +28,7 @@ export interface DropdownMenuCellProps {
   showCheckmark?: boolean; // 선택된 항목에 체크 표시 (기본: true)
   iconPosition?: "left" | "right"; // 드롭다운 리스트에서 아이콘 위치 (기본: left)
   showValue?: boolean; // label과 함께 value도 표시 (기본: false)
+  ariaLabel?: string;
 }
 
 export function DropdownMenuCell({
@@ -46,6 +47,7 @@ export function DropdownMenuCell({
   showCheckmark = true,
   iconPosition = "left",
   showValue = false,
+  ariaLabel,
 }: DropdownMenuCellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [listPosition, setListPosition] = useState({ top: 0, left: 0 });
@@ -163,6 +165,14 @@ export function DropdownMenuCell({
         id={id}
         type="button"
         disabled={disabled}
+        aria-label={
+          ariaLabel ??
+          (hideLabel
+            ? `${selectedOption?.label ?? placeholder} 값 변경`
+            : undefined)
+        }
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
         onClick={(e) => {
           e.stopPropagation(); // Row 클릭 이벤트 전파 방지
           if (!disabled) {
@@ -200,6 +210,8 @@ export function DropdownMenuCell({
       {isOpen && !disabled && (
         <ul
           ref={listRef}
+          role="listbox"
+          aria-label={ariaLabel}
           className={cn(
             "fixed z-[90] max-h-48 overflow-y-auto rounded-xl bg-[#FFFFFF] shadow-[0px_0px_25px_-10px_rgba(177,182,199,1)]",
             listClassName
@@ -213,6 +225,8 @@ export function DropdownMenuCell({
             <li key={option.value} className="flex">
               <button
                 type="button"
+                role="option"
+                aria-selected={value === option.value}
                 onClick={(e) => {
                   e.stopPropagation(); // Row 클릭 이벤트 전파 방지
                   onChange?.(option.value);

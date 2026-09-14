@@ -68,10 +68,10 @@ export function FieldRow({ children, className }: FieldRowProps) {
   );
 }
 
-export const sidebarInputClassName =
+const sidebarInputClassName =
   "h-[34px] rounded-md border-[rgba(177,182,199,0.4)] bg-white px-2 text-[15px] font-medium tracking-[-0.025em] text-[#8D8D8D] shadow-none placeholder:text-[#B1B6C7] focus-visible:ring-1 focus-visible:ring-[#1C2882]";
 
-export const sidebarActiveInputClassName =
+const sidebarActiveInputClassName =
   sidebarInputClassName;
 
 export function SidebarInput(props: ComponentProps<typeof Input>) {

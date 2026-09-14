@@ -278,7 +278,7 @@ export function EmployeeManagementModal({
                           onChange={(e) =>
                             handleInputChange("phone", e.target.value)
                           }
-                          placeholder="010-1234-2334"
+                          placeholder="010-0000-0000"
                           className={`flex-1 ${INPUT_STYLE}`}
                         />
                         <VerificationButton

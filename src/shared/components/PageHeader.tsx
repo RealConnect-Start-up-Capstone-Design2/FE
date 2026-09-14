@@ -16,14 +16,14 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <div onClick={(e) => e.stopPropagation()}>
-      <p
+      <h1
         className={cn(
           "text-[28px] text-brand-foreground font-bold pb-2 text-[#1C2882]",
-          className
+          className,
         )}
       >
         {title}
-      </p>
+      </h1>
       <p className="text-lg font-medium text-[#989898]">{description}</p>
       {children}
     </div>

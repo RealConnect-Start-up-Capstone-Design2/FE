@@ -1,5 +1,5 @@
 import { SidebarBlock } from "@/shared/components/detail-sidebar";
-import DefaultFloorPlanImage from "@/assets/48m2.png";
+import DefaultFloorPlanImage from "@/assets/48m2-preview.jpg";
 import {
   EmptyBlockState,
   Field,
@@ -71,6 +71,12 @@ const mainUsageOptions = [
   { label: "업무시설", value: "OFFICE" },
 ];
 
+function floorLabelFromUnit(unit: string): string {
+  const numericUnit = Number(unit.replace(/\D/g, ""));
+  if (!Number.isFinite(numericUnit) || numericUnit < 100) return "확인 필요";
+  return `${Math.floor(numericUnit / 100)}층`;
+}
+
 /**
  * 매물 상세 블록
  */
@@ -88,6 +94,7 @@ export function PropertyDetailBlock({
   }
 
   const propertyDetail = detail ?? defaultPropertyDetail;
+  const isExampleFloorPlan = !apartment.img;
 
   const updateDetail = <Key extends keyof PropertyDetailInfo>(
     key: Key,
@@ -110,11 +117,22 @@ export function PropertyDetailBlock({
   return (
     <SidebarBlock title="매물 상세" contentClassName="mt-5">
       <div className="flex flex-col gap-[18px]">
-        <img
-          src={apartment.img || DefaultFloorPlanImage}
-          alt={`${apartment.apartmentName} 평면도`}
-          className="h-[180px] w-full rounded-md bg-white object-contain"
-        />
+        <figure>
+          <img
+            src={apartment.img || DefaultFloorPlanImage}
+            alt={
+              isExampleFloorPlan
+                ? "데모용 예시 평면도"
+                : `${apartment.apartmentName} 평면도`
+            }
+            className="h-[180px] w-full rounded-md bg-white object-contain"
+          />
+          {isExampleFloorPlan && (
+            <figcaption className="mt-1.5 text-center text-[11px] text-[#7B8190]">
+              데모용 예시 이미지 · 실제 구조와 무관
+            </figcaption>
+          )}
+        </figure>
 
         <div className="flex flex-col gap-3">
           <h4 className="text-[15px] font-medium tracking-[-0.025em] text-[#1B1B1B]">
@@ -123,7 +141,12 @@ export function PropertyDetailBlock({
 
           <FieldRow>
             <Field label="층">
-              <SidebarInput defaultValue="3층" />
+              <SidebarInput
+                aria-label="층 (호수 기준)"
+                value={floorLabelFromUnit(apartment.ho)}
+                readOnly
+                className="cursor-default bg-[#F7F8FB]"
+              />
             </Field>
             <Field label="고/중/저">
               <SidebarSelect

@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from "react";
+import { isDemoRuntime } from "@/demo/session";
 import { useAuthInitialize } from "../hooks/useAuthInitialize";
 
 /**
@@ -9,7 +10,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const { isLoading } = useAuthInitialize();
 
   // 토큰 복구 중이면 로딩 화면 표시
-  if (isLoading) {
+  if (isLoading && !isDemoRuntime()) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-lg text-muted-foreground">로딩 중...</div>
@@ -19,4 +20,3 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   return <>{children}</>;
 }
-

@@ -26,7 +26,7 @@ const generateMockData = (): RealtorMember[] => {
       id: `member-${i + 1}`,
       registrationDate: "2025. 10. 31 06:12",
       ownerName: "여지훈",
-      ownerPhone: "010-1234-2334",
+      ownerPhone: "010-0000-0000",
       businessName: hasCertification ? "리얼커넥트 부동산" : null,
       businessPhone: hasCertification ? "031-111-1234" : null,
       approvalRequestDate: hasCertification ? "2025. 11. 27 11:24" : null,

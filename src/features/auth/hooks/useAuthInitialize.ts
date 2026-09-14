@@ -1,4 +1,10 @@
 import { useEffect, useRef } from "react";
+import {
+  DEMO_ACCESS_TOKEN,
+  DEMO_USERNAME,
+  isDemoAccessToken,
+  isDemoRuntime,
+} from "@/demo/session";
 import { useAuthStore } from "../stores";
 import { refreshAccessToken, logout } from "../services";
 
@@ -23,8 +29,22 @@ export function useAuthInitialize() {
     const initializeAuth = async () => {
       hasInitialized.current = true;
 
-      // 초기화 시점의 accessToken 저장 (토큰 갱신 실패 시 로그아웃 API에 사용)
       const currentAccessToken = useAuthStore.getState().accessToken;
+
+      // Demo mode is local-first: never contact the unavailable authentication API.
+      if (isDemoRuntime()) {
+        if (isDemoAccessToken(currentAccessToken)) {
+          setAuth({
+            accessToken: DEMO_ACCESS_TOKEN,
+            username: DEMO_USERNAME,
+          });
+        } else {
+          // Remove stale production tokens when entering a portfolio build.
+          logoutStore();
+        }
+        setLoading(false);
+        return;
+      }
 
       try {
         // 쿠키에 저장된 refresh token으로 access token 복구 시도
@@ -49,13 +69,8 @@ export function useAuthInitialize() {
         // 로컬 상태 클리어
         logoutStore();
 
-        // 로그인 화면으로 리다이렉트
         const currentPath = window.location.pathname;
-        if (
-          currentPath !== "/login" &&
-          currentPath !== "/signup" &&
-          currentPath !== "/admin"
-        ) {
+        if (currentPath !== "/login") {
           window.location.href = "/login";
         }
       } finally {

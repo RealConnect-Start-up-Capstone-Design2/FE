@@ -1,44 +1,55 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { UserLayout } from "@/shared/layouts/UserLayout";
-import { AdminLayout } from "@/shared/layouts/AdminLayout";
-import { ProtectedRoute } from "@/features/auth";
-import { DashboardPage } from "@/pages/dashboard";
-import { PropertyManagePage } from "@/pages/propertyManage";
-import { LoginPage, SignupPage, TermsDetailPage } from "@/pages/auth";
-import { MyPage } from "@/pages/myPage";
-import { AdminPage } from "@/pages/admin";
-import { InquiryManagePage } from "@/pages/inquiryManage";
-import { WebsiteGeneratorPage } from "@/pages/websiteGenerate";
+import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
+
+const LoginPage = lazy(() =>
+  import("@/pages/auth/ui/LoginPage").then((module) => ({
+    default: module.LoginPage,
+  })),
+);
+const DashboardPage = lazy(() =>
+  import("@/pages/dashboard/ui/DashboardPage").then((module) => ({
+    default: module.DashboardPage,
+  })),
+);
+const PropertyManagePage = lazy(() =>
+  import("@/pages/propertyManage/ui/PropertyManagePage").then((module) => ({
+    default: module.PropertyManagePage,
+  })),
+);
+const InquiryManagePage = lazy(() =>
+  import("@/pages/inquiryManage/ui/InquiryManagePage").then((module) => ({
+    default: module.InquiryManagePage,
+  })),
+);
+
+const routeFallback = (
+  <div
+    role="status"
+    aria-live="polite"
+    className="flex min-h-[240px] w-full items-center justify-center"
+  >
+    <div className="flex items-center gap-3 text-sm font-medium text-[#6F7789]">
+      <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#D8DDF1] border-t-[#1C2882]" />
+      화면을 불러오는 중입니다
+    </div>
+  </div>
+);
 
 export const routes = createBrowserRouter([
-  // 루트 경로
   {
     path: "/",
     element: <Navigate to="/login" replace />,
   },
   {
     path: "/login",
-    element: <LoginPage />,
+    element: (
+      <Suspense fallback={routeFallback}>
+        <LoginPage />
+      </Suspense>
+    ),
   },
-  {
-    path: "/signup",
-    element: <SignupPage />,
-  },
-  {
-    path: "/terms/:type", // 개인정보처리방침, 마케팅정보수신동의, 서비스이용약관
-    element: <TermsDetailPage />,
-  },
-  // 관리자 영역
-  {
-    element: <AdminLayout />,
-    children: [
-      {
-        path: "/admin",
-        element: <AdminPage />,
-      },
-    ],
-  },
-  // 일반 사용자 영역
   {
     element: (
       <ProtectedRoute>
@@ -48,32 +59,32 @@ export const routes = createBrowserRouter([
     children: [
       {
         path: "/dashboard",
-        element: <DashboardPage />,
+        element: (
+          <Suspense fallback={routeFallback}>
+            <DashboardPage />
+          </Suspense>
+        ),
       },
       {
         path: "/property-manage",
-        element: <PropertyManagePage />,
+        element: (
+          <Suspense fallback={routeFallback}>
+            <PropertyManagePage />
+          </Suspense>
+        ),
       },
       {
         path: "/inquiry-manage",
-        element: <InquiryManagePage />,
-      },
-      {
-        path: "/contract-manage",
-        element: <div className="p-6">계약 관리 페이지</div>,
-      },
-      {
-        path: "/inquiry-share",
-        element: <div className="p-6">문의 공유 페이지</div>,
-      },
-      {
-        path: "/website-generate",
-        element: <WebsiteGeneratorPage />,
-      },
-      {
-        path: "/my-page",
-        element: <MyPage />,
+        element: (
+          <Suspense fallback={routeFallback}>
+            <InquiryManagePage />
+          </Suspense>
+        ),
       },
     ],
+  },
+  {
+    path: "*",
+    element: <Navigate to="/login" replace />,
   },
 ]);

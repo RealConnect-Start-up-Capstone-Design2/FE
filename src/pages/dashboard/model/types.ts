@@ -1,78 +1,38 @@
-export interface ExpiryAlert {
-  id: number;
-  apartmentComplexId: number;
-  apartmentComplexName: string;
-  apartmentId: number;
-  dong: string;
-  ho: string;
-  daysLeft: number;
-  owner: string;
-  dealType: string;
-  expiryDate: string;
-  propertyTitle: string;
-  tone: "danger" | "warning" | "success";
-}
+import type { DemoInquiryStatus, DemoTransactionType } from "@/demo/types";
+import type { DashboardTone } from "../ui/dashboardToneStyles";
 
 export interface DashboardKpi {
-  id: string;
+  id: "properties" | "inquiries" | "visits" | "contracts";
   label: string;
-  value: string;
+  value: number;
   helper: string;
-  tone: "primary" | "danger" | "warning" | "success";
+  tone: DashboardTone;
 }
 
-export interface RequestSummaryItem {
+export interface PipelineStage {
+  status: DemoInquiryStatus;
   label: string;
-  value: string;
-  tone: "primary" | "danger" | "warning" | "success";
+  count: number;
+  tone: DashboardTone;
 }
 
-export interface RequestSummary {
-  title: string;
-  count: string;
-  description: string;
-  // items: RequestSummaryItem[];
-  delta: string;
-}
-
-export interface UnsupportedFeatureStatus {
-  id: "property-share" | "inquiry-share";
-  title: string;
-  eyebrow: string;
-  description: string;
-  // badges: {
-  //   label: string;
-  //   tone: "primary" | "warning" | "success";
-  // }[];
-}
-
-export interface SystemNotice {
-  id: number;
-  title: string;
-  description: string;
+export interface DashboardScheduleItem {
+  id: string;
+  source: "CONTRACT" | "INQUIRY";
   date: string;
-  tone: "primary" | "warning" | "success";
+  dateCaption: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  tone: DashboardTone;
+  href: "/property-manage" | "/inquiry-manage";
 }
 
-export interface DashboardData {
-  office: {
-    name: string;
-    representative: string;
-    plan: string;
-    phone: string;
-    businessNumber: string;
-    registrationNumber: string;
-    mainComplexes: string[];
-    shareGroups: string[];
-    todayTasks: {
-      label: string;
-      value: string;
-      tone: "primary" | "danger" | "warning" | "success";
-    }[];
-  };
-  kpis: DashboardKpi[];
-  requestSummaries: RequestSummary[];
-  systemNotices: SystemNotice[];
-  expiryAlerts: ExpiryAlert[];
-  unsupportedFeatures: UnsupportedFeatureStatus[];
+export interface RecentInquiryItem {
+  id: string;
+  title: string;
+  customerName: string;
+  transactionType: DemoTransactionType;
+  status: DemoInquiryStatus;
+  updatedAt: string;
 }

@@ -10,77 +10,55 @@ export function usePropertySidebar({ apartments }: UsePropertySidebarParams) {
     string | number | undefined
   >();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isManuallyClosedByButton, setIsManuallyClosedByButton] =
-    useState(false);
   const [lastViewedPropertyId, setLastViewedPropertyId] = useState<
     string | number | undefined
   >();
 
-  const closeSidebar = useCallback((isManualClose = false) => {
+  const closeSidebar = useCallback(() => {
     setIsSidebarOpen(false);
-    if (isManualClose) {
-      setIsManuallyClosedByButton(true);
-    }
   }, []);
 
-  const selectProperty = useCallback(
-    (propertyId: string | number) => {
-      setSelectedPropertyId(propertyId);
-      setLastViewedPropertyId(propertyId);
-      setIsSidebarOpen(true);
-      setIsManuallyClosedByButton(false);
-    },
-    []
-  );
+  const selectProperty = useCallback((propertyId: string | number) => {
+    setSelectedPropertyId(propertyId);
+    setLastViewedPropertyId(propertyId);
+    setIsSidebarOpen(true);
+  }, []);
 
   const resetSelection = useCallback(() => {
     setSelectedPropertyId(undefined);
     setIsSidebarOpen(false);
-    setIsManuallyClosedByButton(false);
     setLastViewedPropertyId(undefined);
   }, []);
 
   const clearSelection = useCallback(() => {
     setSelectedPropertyId(undefined);
     closeSidebar();
-    setIsManuallyClosedByButton(false);
   }, [closeSidebar]);
 
   const handlePropertyClick = useCallback(
     (propertyId: string | number) => {
-      if (selectedPropertyId === propertyId) {
+      if (selectedPropertyId === propertyId && isSidebarOpen) {
         clearSelection();
         return;
       }
 
-      if (isManuallyClosedByButton) {
-        setSelectedPropertyId(propertyId);
-        setLastViewedPropertyId(propertyId);
-      } else {
-        selectProperty(propertyId);
-      }
+      selectProperty(propertyId);
     },
-    [
-      clearSelection,
-      isManuallyClosedByButton,
-      selectProperty,
-      selectedPropertyId,
-    ]
+    [clearSelection, isSidebarOpen, selectProperty, selectedPropertyId],
   );
 
   const handleToggleSidebar = useCallback(() => {
     if (isSidebarOpen) {
-      closeSidebar(true);
+      closeSidebar();
       return;
     }
 
-    setIsManuallyClosedByButton(false);
     const firstApartmentId = apartments[0]?.apartmentId;
     const preferredTarget =
       selectedPropertyId ?? lastViewedPropertyId ?? firstApartmentId;
 
     const resolvedTarget = apartments.some(
-      (apt) => apt.apartmentId === preferredTarget
+      (apt) => apt.apartmentId === preferredTarget,
     )
       ? preferredTarget
       : firstApartmentId;

@@ -1,8 +1,8 @@
 import {
-  AlertTriangle,
   Building2,
   CalendarCheck2,
-  MessageSquareText,
+  FileSignature,
+  MessagesSquare,
 } from "lucide-react";
 
 import type { DashboardKpi } from "../model/types";
@@ -11,9 +11,9 @@ import { toneStyles } from "./dashboardToneStyles";
 
 const kpiIcons = {
   properties: Building2,
-  expiry: AlertTriangle,
-  consultations: CalendarCheck2,
-  requests: MessageSquareText,
+  inquiries: MessagesSquare,
+  visits: CalendarCheck2,
+  contracts: FileSignature,
 } as const;
 
 interface DashboardKpiStripProps {
@@ -22,32 +22,38 @@ interface DashboardKpiStripProps {
 
 export function DashboardKpiStrip({ kpis }: DashboardKpiStripProps) {
   return (
-    <section className="mt-5 grid h-[96px] shrink-0 grid-cols-4 gap-5 overflow-hidden">
+    <section
+      aria-label="핵심 업무 지표"
+      className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-4"
+    >
       {kpis.map((kpi) => {
         const Icon = kpiIcons[kpi.id as keyof typeof kpiIcons] ?? Building2;
 
         return (
           <article
             key={kpi.id}
-            className="flex min-w-0 items-center justify-between rounded-lg border border-[#DDE2F2] bg-white px-6 shadow-[0px_0px_25px_-16px_#B1B6C7]"
+            className="flex min-h-28 min-w-0 items-center justify-between rounded-2xl border border-[#E2E6F1] bg-white px-5 shadow-[0_12px_36px_-24px_rgba(28,40,130,0.42)] sm:px-6"
           >
             <div className="min-w-0">
-              <p className="truncate text-[15px] font-semibold tracking-[-0.025em] text-[#8D8D8D]">
+              <p className="truncate text-sm font-semibold tracking-[-0.02em] text-[#737A8C]">
                 {kpi.label}
               </p>
               <div className="mt-2 flex items-end gap-2">
-                <strong className="text-[32px] font-bold leading-none tracking-[-0.025em] text-[#1B1B1B]">
+                <strong className="text-3xl font-bold leading-none tracking-[-0.03em] text-[#182037]">
                   {kpi.value}
                 </strong>
-                <StatusBadge tone={kpi.tone} className="mb-0.5 h-6 px-2 text-[12px]">
+                <StatusBadge tone={kpi.tone} className="mb-0.5 px-2">
                   {kpi.helper}
                 </StatusBadge>
               </div>
             </div>
             <div
-              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${toneStyles[kpi.tone].bg}`}
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${toneStyles[kpi.tone].bg}`}
             >
-              <Icon className={`h-6 w-6 ${toneStyles[kpi.tone].text}`} />
+              <Icon
+                aria-hidden="true"
+                className={`h-5 w-5 ${toneStyles[kpi.tone].text}`}
+              />
             </div>
           </article>
         );

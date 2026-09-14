@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SidebarBlock } from "@/shared/components/detail-sidebar";
 import { OccupancyStatusTag } from "../../OccupancyStatusTag";
@@ -37,14 +36,20 @@ const contractTypeOptions = [
   "소개 물건",
 ] as const;
 
-const contractTypeLabelMap: Record<ContractType, (typeof contractTypeOptions)[number]> = {
+const contractTypeLabelMap: Record<
+  ContractType,
+  (typeof contractTypeOptions)[number]
+> = {
   MY_CONTRACT: "내 계약",
   OTHER_CONTRACT: "타 계약",
   CO_BROKERAGE: "공동 중개",
   INTRODUCTION: "소개 물건",
 };
 
-const contractTypeValueMap: Record<(typeof contractTypeOptions)[number], ContractType> = {
+const contractTypeValueMap: Record<
+  (typeof contractTypeOptions)[number],
+  ContractType
+> = {
   "내 계약": "MY_CONTRACT",
   "타 계약": "OTHER_CONTRACT",
   "공동 중개": "CO_BROKERAGE",
@@ -89,26 +94,23 @@ const getContractPayload = (
       contractInfo?.salePrice ??
       fetchedContractInfo?.salePrice ??
       property?.contractSalePrice ??
-      property?.salePrice ??
       0,
-    loanAmount: contractInfo?.loanAmount ?? fetchedContractInfo?.loanAmount ?? 0,
+    loanAmount:
+      contractInfo?.loanAmount ?? fetchedContractInfo?.loanAmount ?? 0,
     jeonsePrice:
       contractInfo?.jeonsePrice ??
       fetchedContractInfo?.jeonsePrice ??
       property?.contractJeonsePrice ??
-      property?.jeonsePrice ??
       0,
     deposit:
       contractInfo?.deposit ??
       fetchedContractInfo?.deposit ??
       property?.contractDeposit ??
-      property?.deposit ??
       0,
     monthlyRent:
       contractInfo?.monthlyRent ??
       fetchedContractInfo?.monthlyRent ??
       property?.contractMonthlyRent ??
-      property?.monthPrice ??
       0,
     maintenanceFee:
       contractInfo?.maintenanceFee ?? fetchedContractInfo?.maintenanceFee ?? 0,
@@ -120,7 +122,6 @@ const getContractPayload = (
     registrationDate:
       contractInfo?.registrationDate ??
       fetchedContractInfo?.registrationDate ??
-      property?.requestRegistrationDate ??
       "",
     contractOffice:
       contractInfo?.contractOffice ?? fetchedContractInfo?.contractOffice ?? "",
@@ -145,12 +146,6 @@ export function ContractInfoBlock({
     enabled: Boolean(apartment?.apartmentId),
   });
 
-  useEffect(() => {
-    if (fetchedContractInfo) {
-      onContractInfoChange?.(getContractPayload(undefined, fetchedContractInfo));
-    }
-  }, [fetchedContractInfo, onContractInfoChange]);
-
   if (!apartment) {
     return (
       <SidebarBlock title="계약 정보">
@@ -165,7 +160,9 @@ export function ContractInfoBlock({
     apartment,
   );
   const resetKey = `${apartment.apartmentId}-${fetchedContractInfo ? "contract-info" : "property"}`;
-  const updateContractInfo = (partialContractInfo: Partial<PropertyContractInfo>) => {
+  const updateContractInfo = (
+    partialContractInfo: Partial<PropertyContractInfo>,
+  ) => {
     onContractInfoChange?.({
       ...contractInfo,
       ...partialContractInfo,
@@ -175,7 +172,9 @@ export function ContractInfoBlock({
   return (
     <SidebarBlock
       title="계약 정보"
-      headerAction={<OccupancyStatusTag status={contractInfo.occupancyStatus} />}
+      headerAction={
+        <OccupancyStatusTag status={contractInfo.occupancyStatus} />
+      }
     >
       <div key={resetKey} className="flex flex-col gap-3">
         <Field label="점유상태" className="max-w-[180px]">
@@ -192,7 +191,9 @@ export function ContractInfoBlock({
           <SidebarInput
             defaultValue={toInputValue(contractInfo.salePrice)}
             onChange={(event) =>
-              updateContractInfo({ salePrice: toNumberValue(event.target.value) })
+              updateContractInfo({
+                salePrice: toNumberValue(event.target.value),
+              })
             }
           />
         </Field>
@@ -259,7 +260,9 @@ export function ContractInfoBlock({
             <DateInput
               defaultValue={contractInfo.expireDate}
               onChange={(event) =>
-                updateContractInfo({ expireDate: formatApiDate(event.target.value) })
+                updateContractInfo({
+                  expireDate: formatApiDate(event.target.value),
+                })
               }
             />
           </Field>
@@ -297,9 +300,10 @@ export function ContractInfoBlock({
               className="grid-cols-4"
               onChange={(value) =>
                 updateContractInfo({
-                  contractType: contractTypeValueMap[
-                    value as (typeof contractTypeOptions)[number]
-                  ],
+                  contractType:
+                    contractTypeValueMap[
+                      value as (typeof contractTypeOptions)[number]
+                    ],
                 })
               }
             />

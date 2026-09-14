@@ -1,8 +1,30 @@
 import axios from "axios";
+import { useAuthStore } from "@/features/auth/stores/authStore";
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
+
+/**
+ * Refreshes the access token through the endpoint excluded from the retry branch.
+ * Keeping this primitive next to the client avoids a client ↔ authService cycle.
+ */
+export const refreshAccessToken = async (): Promise<string> => {
+  const response = await apiClient.post("/api/refresh-token", undefined, {
+    withCredentials: true,
+  });
+  const accessToken = response.headers["authorization"]?.replace(
+    "Bearer ",
+    "",
+  );
+
+  if (!accessToken) {
+    throw new Error("새로운 액세스 토큰이 없습니다.");
+  }
+
+  useAuthStore.setState({ accessToken });
+  return accessToken;
+};
 
 // 토큰 재발급 중임을 표시하는 플래그
 let isRefreshing = false;
@@ -90,10 +112,6 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // 동적 import를 사용하여 순환 의존성 방지
-        const { refreshAccessToken } = await import(
-          "@/features/auth/services/authService"
-        );
         const newAccessToken = await refreshAccessToken();
 
         // 대기 중인 모든 요청들에게 새 토큰 전달

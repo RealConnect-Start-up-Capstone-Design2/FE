@@ -1,5 +1,13 @@
 import { cn } from "@/shared/utils";
-import type { PropsWithChildren, ReactNode, RefObject } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  type CSSProperties,
+  type PropsWithChildren,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import { SidebarToggleButton } from "./SidebarToggleButton";
 
 interface SlidingSidebarLayoutProps extends PropsWithChildren {
@@ -24,16 +32,41 @@ export function SlidingSidebarLayout({
   sidebarRef,
   children,
 }: SlidingSidebarLayoutProps) {
+  const internalSidebarRef = useRef<HTMLElement | null>(null);
+  const setSidebarRef = useCallback(
+    (node: HTMLElement | null) => {
+      internalSidebarRef.current = node;
+      if (sidebarRef) sidebarRef.current = node;
+    },
+    [sidebarRef],
+  );
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    internalSidebarRef.current?.focus({ preventScroll: true });
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onToggle?.();
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onToggle]);
+
+  const sidebarVariable = {
+    "--detail-sidebar-width": `${sidebarWidth}px`,
+  } as CSSProperties;
+
   return (
-    <div className={cn("relative w-full h-full", className)}>
+    <div
+      className={cn("relative h-full w-full", className)}
+      style={sidebarVariable}
+    >
       <div
         className={cn(
-          "w-full h-full box-border transition-[padding-right] duration-300 ease-in-out",
-          contentClassName
+          "box-border h-full w-full transition-[padding-right] duration-300 ease-in-out",
+          isOpen && "2xl:pr-[var(--detail-sidebar-width)]",
+          contentClassName,
         )}
-        style={{
-          paddingRight: isOpen ? sidebarWidth : 0,
-        }}
       >
         {children}
       </div>
@@ -49,17 +82,19 @@ export function SlidingSidebarLayout({
 
       {/* 사이드바 */}
       <aside
-        ref={sidebarRef}
+        ref={setSidebarRef}
+        tabIndex={-1}
         className={cn(
-          "fixed inset-y-0 right-0 z-40",
-          "transform transition-transform duration-300 ease-in-out"
+          "fixed inset-y-0 right-0 z-[60] w-full max-w-[var(--detail-sidebar-width)] outline-none",
+          "transform transition-transform duration-300 ease-in-out",
         )}
         style={{
-          width: sidebarWidth,
-          transform: `translateX(${isOpen ? 0 : sidebarWidth}px)`,
+          transform: `translateX(${isOpen ? 0 : 100}%)`,
           pointerEvents: isOpen ? "auto" : "none",
         }}
         aria-hidden={!isOpen}
+        inert={!isOpen}
+        aria-label="상세 카드"
       >
         {sidebar}
       </aside>

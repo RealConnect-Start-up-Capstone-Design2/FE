@@ -27,9 +27,7 @@ import {
   isInfinitePropertiesData,
   isPropertiesResponse,
 } from "../utils/propertyCacheUtils";
-import type { PropertyFieldKey } from "../types/property";
 import { TableHeaderFilter } from "@/shared/ui";
-import type { CellClickHandler } from "@/shared/types";
 import { OccupancyStatusTag } from "./OccupancyStatusTag";
 import { RequestTypeTag } from "./RequestTypeTag";
 
@@ -40,7 +38,6 @@ import Caution from "@/assets/Caution.svg";
 
 interface PropertyManageTableProps {
   onPropertyClick?: (apartmentId: string | number) => void;
-  onCellClick?: CellClickHandler<PropertyFieldKey>;
   selectedApartmentId?: string | number;
   apartments?: ApartmentWithProperty[];
   isLoading?: boolean;
@@ -56,7 +53,6 @@ interface PropertyManageTableProps {
 
 export function PropertyManageTable({
   onPropertyClick,
-  onCellClick,
   selectedApartmentId,
   apartments: externalApartments,
   isLoading: externalIsLoading,
@@ -84,10 +80,10 @@ export function PropertyManageTable({
     async (apartmentId: number, value: ManageType) => {
       try {
         await updatePropertyManage(apartmentId, value);
-        // 캐시 업데이트
-        queryClient.setQueriesData<
-          PropertiesResponse | InfiniteData<PropertiesResponse>
-        >({ queryKey: ["apartments"] }, (oldData) => {
+        const updateCachedProperties = (
+          oldData:
+            PropertiesResponse | InfiniteData<PropertiesResponse> | undefined,
+        ) => {
           if (!oldData) return oldData;
 
           const updateApartment = (apt: ApartmentWithProperty) => {
@@ -121,30 +117,20 @@ export function PropertyManageTable({
           }
 
           return oldData;
-        });
+        };
+
+        queryClient.setQueriesData<
+          PropertiesResponse | InfiniteData<PropertiesResponse>
+        >({ queryKey: ["apartments"] }, updateCachedProperties);
+        queryClient.setQueriesData<
+          PropertiesResponse | InfiniteData<PropertiesResponse>
+        >({ queryKey: ["apartments-phone"] }, updateCachedProperties);
       } catch (error) {
         console.error("즐겨찾기 업데이트 실패:", error);
         alert("즐겨찾기 업데이트에 실패했습니다.");
       }
     },
     [queryClient],
-  );
-
-  // 셀 클릭 핸들러
-  const handleCellClick = useCallback(
-    (apartmentId: number, fieldKey: PropertyFieldKey) => {
-      const apartment = apartments.find(
-        (apt) => apt.apartmentId === apartmentId,
-      );
-      const currentValue = apartment?.property?.[fieldKey];
-
-      onCellClick?.({
-        rowId: apartmentId,
-        fieldKey,
-        currentValue,
-      });
-    },
-    [apartments, onCellClick],
   );
 
   // 가상 스크롤 + 무한 스크롤
@@ -222,7 +208,7 @@ export function PropertyManageTable({
           {!hasApartments ? (
             <TableRow>
               <TableCell
-                colSpan={14}
+                colSpan={15}
                 className="py-10 text-center text-sm text-gray-400"
               >
                 조건에 해당하는 매물이 없습니다.
@@ -233,7 +219,7 @@ export function PropertyManageTable({
               {virtualItems.length > 0 && virtualItems[0].start > 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={14}
+                    colSpan={15}
                     style={{ height: virtualItems[0].start }}
                   />
                 </TableRow>
@@ -251,7 +237,7 @@ export function PropertyManageTable({
                         data-index={virtualRow.index}
                       >
                         <TableCell
-                          colSpan={14}
+                          colSpan={15}
                           className="text-center text-sm text-gray-400"
                         >
                           데이터를 불러오는 중입니다...
@@ -271,7 +257,7 @@ export function PropertyManageTable({
                       data-index={virtualRow.index}
                     >
                       <TableCell
-                        colSpan={14}
+                        colSpan={15}
                         className="text-center text-sm text-gray-400"
                       >
                         데이터를 불러오는 중입니다...
@@ -295,12 +281,21 @@ export function PropertyManageTable({
                     key={apartment.apartmentId}
                     ref={rowVirtualizer.measureElement}
                     data-index={virtualRow.index}
+                    tabIndex={0}
+                    aria-selected={isSelected}
                     className={`cursor-pointer transition-colors hover:bg-gray-50 ${
                       isSelected
                         ? "bg-[#EEF6FF] ring-2 ring-inset ring-[#1499FF]"
                         : ""
                     }`}
                     onClick={() => onPropertyClick?.(apartment.apartmentId)}
+                    onKeyDown={(event) => {
+                      if (event.target !== event.currentTarget) return;
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        onPropertyClick?.(apartment.apartmentId);
+                      }
+                    }}
                   >
                     {/* 즐겨찾기 */}
                     <TableCell className="px-2">
@@ -323,6 +318,7 @@ export function PropertyManageTable({
                             { label: "주의", value: "CAUTION", icon: Caution },
                           ]}
                           value={property?.manageType ?? "NONE"}
+                          ariaLabel={`${apartment.apartmentName} ${apartment.dong}동 ${apartment.ho}호 중요도 변경`}
                           onChange={(value) => {
                             handleManageTypeChange(
                               apartment.apartmentId,
@@ -370,17 +366,17 @@ export function PropertyManageTable({
                           "-"
                         )
                       ) : property?.occupancyStatus === "MONTHLY_RENT" ? (
-                        property?.contractDeposit != null ||
-                        property?.contractMonthlyRent != null ? (
+                        (property?.contractDeposit ?? 0) > 0 ||
+                        (property?.contractMonthlyRent ?? 0) > 0 ? (
                           <div className="flex items-center justify-center gap-1 whitespace-nowrap leading-none">
                             <span>
-                              {property?.contractDeposit != null
+                              {(property?.contractDeposit ?? 0) > 0
                                 ? formatNumber(property.contractDeposit)
                                 : "-"}
                             </span>
                             <span>/</span>
                             <span>
-                              {property?.contractMonthlyRent != null
+                              {(property?.contractMonthlyRent ?? 0) > 0
                                 ? formatNumber(property.contractMonthlyRent)
                                 : "-"}
                             </span>
@@ -402,39 +398,21 @@ export function PropertyManageTable({
                     </TableCell>
 
                     {/* 매도가 */}
-                    <TableCell
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCellClick(apartment.apartmentId, "salePrice");
-                      }}
-                      className="cursor-pointer hover:bg-blue-50"
-                    >
+                    <TableCell>
                       {property?.salePrice
                         ? formatNumber(property.salePrice)
                         : "-"}
                     </TableCell>
 
                     {/* 전세가 */}
-                    <TableCell
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCellClick(apartment.apartmentId, "jeonsePrice");
-                      }}
-                      className="cursor-pointer hover:bg-blue-50"
-                    >
+                    <TableCell>
                       {property?.jeonsePrice
                         ? formatNumber(property.jeonsePrice)
                         : "-"}
                     </TableCell>
 
                     {/* 보증금/월세가 */}
-                    <TableCell
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCellClick(apartment.apartmentId, "deposit");
-                      }}
-                      className="cursor-pointer hover:bg-blue-50"
-                    >
+                    <TableCell>
                       {property?.deposit || property?.monthPrice ? (
                         <span className="inline-flex items-center gap-1 whitespace-nowrap">
                           <span>
@@ -460,24 +438,10 @@ export function PropertyManageTable({
                     </TableCell>
 
                     {/* 소유자 */}
-                    <TableCell
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCellClick(apartment.apartmentId, "ownerName");
-                      }}
-                      className="cursor-pointer hover:bg-blue-50"
-                    >
-                      {property?.ownerName || "-"}
-                    </TableCell>
+                    <TableCell>{property?.ownerName || "-"}</TableCell>
 
                     {/* 연락처 */}
-                    <TableCell
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCellClick(apartment.apartmentId, "ownerPhone");
-                      }}
-                      className="cursor-pointer hover:bg-blue-50"
-                    >
+                    <TableCell>
                       {property?.ownerPhone
                         ? formatPhoneNumber(property.ownerPhone) ||
                           property.ownerPhone
@@ -492,7 +456,7 @@ export function PropertyManageTable({
                   0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={14}
+                      colSpan={15}
                       style={{
                         height:
                           rowVirtualizer.getTotalSize() -

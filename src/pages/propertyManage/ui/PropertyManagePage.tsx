@@ -39,6 +39,7 @@ import {
   isPropertiesResponse,
 } from "@/features/propertyManage/utils/propertyCacheUtils";
 import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue";
+import { isDemoRuntime } from "@/demo/session";
 
 const manageTypeValues: readonly ManageType[] = [
   "NONE",
@@ -77,6 +78,7 @@ const parseEnumValue = <T extends string>(
  * 아파트 목록과 상세 정보(메모)를 관리
  */
 export function PropertyManagePage() {
+  const demoRuntime = isDemoRuntime();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const [selectedApartmentComplexId, setSelectedApartmentComplexId] = useState<
@@ -95,6 +97,7 @@ export function PropertyManagePage() {
   const [dong, setDong] = useState<string>("");
   const [ho, setHo] = useState<string>("");
   const [isMainComplexModalOpen, setIsMainComplexModalOpen] = useState(false);
+  const [isPropertySidebarDirty, setIsPropertySidebarDirty] = useState(false);
   const tableContainerRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
   const handledDetailSearchRef = useRef<string | null>(null);
@@ -300,6 +303,45 @@ export function PropertyManagePage() {
     closeSidebar,
   } = usePropertySidebar({ apartments: filteredAndSortedApartments });
 
+  const confirmDiscardPropertyDraft = useCallback(() => {
+    return (
+      !isPropertySidebarDirty ||
+      window.confirm("저장하지 않은 수정 내용을 버릴까요?")
+    );
+  }, [isPropertySidebarDirty]);
+
+  const closePropertySidebar = useCallback(() => {
+    if (!confirmDiscardPropertyDraft()) return;
+    closeSidebar();
+  }, [closeSidebar, confirmDiscardPropertyDraft]);
+
+  const prepareForPropertyFilterChange = useCallback(() => {
+    if (!confirmDiscardPropertyDraft()) return false;
+    if (isPropertySidebarDirty) {
+      closeSidebar();
+      setIsPropertySidebarDirty(false);
+    }
+    return true;
+  }, [closeSidebar, confirmDiscardPropertyDraft, isPropertySidebarDirty]);
+
+  const handleGuardedPropertyClick = useCallback(
+    (propertyId: string | number) => {
+      if (!confirmDiscardPropertyDraft()) return;
+      handlePropertyClick(propertyId);
+    },
+    [confirmDiscardPropertyDraft, handlePropertyClick],
+  );
+
+  const handleGuardedSidebarToggle = useCallback(() => {
+    if (isSidebarOpen && !confirmDiscardPropertyDraft()) return;
+    handleToggleSidebar();
+  }, [confirmDiscardPropertyDraft, handleToggleSidebar, isSidebarOpen]);
+
+  const handleGuardedExternalClick = useCallback(() => {
+    if (!confirmDiscardPropertyDraft()) return;
+    handleExternalClick();
+  }, [confirmDiscardPropertyDraft, handleExternalClick]);
+
   const resetPropertySelection = useCallback(() => {
     resetSelection();
   }, [resetSelection]);
@@ -314,8 +356,7 @@ export function PropertyManagePage() {
     const complexById =
       detailSearch.complexId !== undefined
         ? preferredComplexes.find(
-            (complex) =>
-              complex.apartmentComplexId === detailSearch.complexId,
+            (complex) => complex.apartmentComplexId === detailSearch.complexId,
           )
         : undefined;
 
@@ -472,7 +513,7 @@ export function PropertyManagePage() {
       }
 
       setTimeout(() => {
-        handleExternalClick();
+        handleGuardedExternalClick();
       }, 0);
     };
 
@@ -480,7 +521,7 @@ export function PropertyManagePage() {
     return () => {
       document.removeEventListener("mousedown", handleDocumentMouseDown);
     };
-  }, [handleExternalClick, isSidebarOpen, selectedPropertyId]);
+  }, [handleGuardedExternalClick, isSidebarOpen, selectedPropertyId]);
 
   useEffect(() => {
     if (!selectedApartmentComplexId) {
@@ -504,6 +545,7 @@ export function PropertyManagePage() {
 
   const handleSelectApartmentComplex = useCallback(
     (complexId: number) => {
+      if (!prepareForPropertyFilterChange()) return;
       if (complexId === selectedApartmentComplexId) {
         return;
       }
@@ -514,13 +556,42 @@ export function PropertyManagePage() {
       setPhoneNumber("");
       resetPropertySelection();
     },
-    [resetPropertySelection, selectedApartmentComplexId],
+    [
+      prepareForPropertyFilterChange,
+      resetPropertySelection,
+      selectedApartmentComplexId,
+    ],
   );
 
   // 테이블 헤더 필터용 핸들러 (ALL 선택 시 undefined로 변환)
   const handleSelectManageTypeForTable = useCallback((value: string) => {
+    if (!prepareForPropertyFilterChange()) return;
     setSelectedManageType(value === "ALL" ? undefined : value);
-  }, []);
+  }, [prepareForPropertyFilterChange]);
+
+  const handlePhoneFilterChange = useCallback(
+    (value: string) => {
+      if (!prepareForPropertyFilterChange()) return;
+      setPhoneNumber(value);
+    },
+    [prepareForPropertyFilterChange],
+  );
+
+  const handleDongFilterChange = useCallback(
+    (value: string) => {
+      if (!prepareForPropertyFilterChange()) return;
+      setDong(value);
+    },
+    [prepareForPropertyFilterChange],
+  );
+
+  const handleHoFilterChange = useCallback(
+    (value: string) => {
+      if (!prepareForPropertyFilterChange()) return;
+      setHo(value);
+    },
+    [prepareForPropertyFilterChange],
+  );
 
   // ㎡ 형식과 평 형식 변환 핸들러
   const handleSqmOrPyeongChange = useCallback(() => {
@@ -547,9 +618,7 @@ export function PropertyManagePage() {
 
       const updateCachedData = (
         oldData:
-          | PropertiesResponse
-          | InfiniteData<PropertiesResponse>
-          | undefined,
+          PropertiesResponse | InfiniteData<PropertiesResponse> | undefined,
       ) => {
         if (!oldData) return oldData;
 
@@ -593,15 +662,17 @@ export function PropertyManagePage() {
       <SlidingSidebarLayout
         isOpen={isSidebarOpen}
         sidebarWidth={500}
-        onToggle={handleToggleSidebar}
+        onToggle={handleGuardedSidebarToggle}
         sidebarRef={sidebarRef}
         sidebar={
           <PropertySidebar
+            key={`${selectedPropertyId ?? "none"}:${isSidebarOpen ? "open" : "closed"}`}
             apartment={selectedApartment}
-            onClose={() => closeSidebar(true)}
+            onClose={closePropertySidebar}
             isOpen={isSidebarOpen}
-            onCancel={() => closeSidebar(true)}
+            onCancel={closePropertySidebar}
             onSave={updateApartmentInCache}
+            onDirtyChange={setIsPropertySidebarDirty}
           />
         }
       >
@@ -614,19 +685,21 @@ export function PropertyManagePage() {
             selectedRequestType={selectedRequestType}
             onSelectRequestType={setSelectedRequestType}
             phoneNumber={phoneNumber}
-            onPhoneNumberChange={setPhoneNumber}
+            onPhoneNumberChange={handlePhoneFilterChange}
             dong={dong}
-            onDongChange={setDong}
+            onDongChange={handleDongFilterChange}
             ho={ho}
-            onHoChange={setHo}
+            onHoChange={handleHoFilterChange}
             isSqmOrPyeong={isSqmOrPyeong}
             onSqmOrPyeongChange={handleSqmOrPyeongChange}
-            onAddComplexClick={handleOpenMainComplexModal}
+            onAddComplexClick={
+              demoRuntime ? undefined : handleOpenMainComplexModal
+            }
           />
           <div ref={tableContainerRef} className="flex-1 overflow-hidden">
             <PropertyManageTable
               totalApartmentCount={totalApartmentCount}
-              onPropertyClick={handlePropertyClick}
+              onPropertyClick={handleGuardedPropertyClick}
               selectedApartmentId={selectedPropertyId}
               apartments={filteredAndSortedApartments}
               isLoading={isTableLoading}
@@ -643,11 +716,13 @@ export function PropertyManagePage() {
           </div>
         </div>
       </SlidingSidebarLayout>
-      <MainComplexModal
-        isOpen={isMainComplexModalOpen}
-        onClose={handleCloseMainComplexModal}
-        onSave={handleSaveMainComplexes}
-      />
+      {!demoRuntime ? (
+        <MainComplexModal
+          isOpen={isMainComplexModalOpen}
+          onClose={handleCloseMainComplexModal}
+          onSave={handleSaveMainComplexes}
+        />
+      ) : null}
     </>
   );
 }

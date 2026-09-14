@@ -190,7 +190,7 @@ export function PasswordChangeSection() {
                 const value = e.target.value.replace(/[^0-9]/g, "");
                 setPhone(value);
               }}
-              placeholder="010-1234-5678"
+              placeholder="010-0000-0000"
               className={`w-[199px] ${INPUT_STYLE}`}
             />
             <VerificationButton

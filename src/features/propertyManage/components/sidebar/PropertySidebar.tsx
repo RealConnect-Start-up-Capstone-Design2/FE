@@ -30,6 +30,7 @@ interface PropertySidebarProps {
   isOpen: boolean;
   onSave?: (apartment?: ApartmentWithProperty) => void;
   onCancel?: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 const sidebarMenuItems: PropertySidebarMenuItem[] = [
@@ -45,6 +46,7 @@ export function PropertySidebar({
   isOpen,
   onSave,
   onCancel,
+  onDirtyChange,
 }: PropertySidebarProps) {
   const [activeSection, setActiveSection] = useState<string>("detail");
   const [isDirty, setIsDirty] = useState(false);
@@ -271,6 +273,10 @@ export function PropertySidebar({
     };
   }, []);
 
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
   return (
     <div className="flex h-full w-full flex-col border-l border-gray-200 bg-white shadow-xl">
       {apartment && (
@@ -330,11 +336,7 @@ export function PropertySidebar({
         <div className="flex gap-4">
           <Button
             type="button"
-            onClick={() => {
-              if (window.confirm("수정 내용을 취소하시겠습니까?")) {
-                onCancel?.();
-              }
-            }}
+            onClick={onCancel}
             className="h-[42px] flex-1 rounded-lg bg-[#1B1B1B] text-[15px] font-semibold tracking-[-0.025em] text-white shadow-none hover:bg-[#2A2A2A]"
           >
             취소

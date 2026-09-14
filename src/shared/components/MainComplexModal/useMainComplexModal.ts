@@ -96,7 +96,8 @@ export function useMainComplexModal({
         return prev;
       }
 
-      const { [id]: _removed, ...rest } = prev;
+      const rest = { ...prev };
+      delete rest[id];
       return rest;
     });
 
