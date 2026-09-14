@@ -4,7 +4,7 @@ import FilledStar from "@/assets/FilledStar.svg";
 import Caution from "@/assets/Caution.svg";
 
 export const createDropdownOptions = <T extends Record<string, string>>(
-  labels: T
+  labels: T,
 ): DropdownOption[] => {
   return Object.entries(labels).map(([value, label]) => ({ value, label }));
 };
@@ -13,8 +13,6 @@ export const REQUEST_TYPE = {
   MONTHLY: "MONTHLY",
   JEONSE: "JEONSE",
   SALE: "SALE",
-  THINKING: "THINKING",
-  DEPOSIT: "DEPOSIT",
 } as const;
 
 export type RequestType = (typeof REQUEST_TYPE)[keyof typeof REQUEST_TYPE];
@@ -23,8 +21,6 @@ export const REQUEST_TYPE_LABELS: Record<RequestType, string> = {
   MONTHLY: "월세",
   JEONSE: "전세",
   SALE: "매매",
-  THINKING: "고민중",
-  DEPOSIT: "보증금",
 };
 
 // ============================================
@@ -48,30 +44,36 @@ export const PROPERTY_TYPE_LABELS: Record<PropertyType, string> = {
 };
 
 export const INQUIRY_STATUS = {
-  GENERAL: "GENERAL",
-  ANOTHER: "ANOTHER",
-  SHARED: "SHARED",
+  NEW: "NEW",
+  CONTACTED: "CONTACTED",
+  VISIT_SCHEDULED: "VISIT_SCHEDULED",
+  NEGOTIATING: "NEGOTIATING",
   COMPLETED: "COMPLETED",
+  ON_HOLD: "ON_HOLD",
 } as const;
 
 export type InquiryStatus =
   (typeof INQUIRY_STATUS)[keyof typeof INQUIRY_STATUS];
 
 export const INQUIRY_STATUS_LABELS: Record<InquiryStatus, string> = {
-  GENERAL: "일반",
-  ANOTHER: "타중개사",
-  SHARED: "공유",
+  NEW: "신규",
+  CONTACTED: "연락 완료",
+  VISIT_SCHEDULED: "방문 예정",
+  NEGOTIATING: "협의 중",
   COMPLETED: "완료",
+  ON_HOLD: "보류",
 };
 
 export const INQUIRY_STATUS_STYLES: Record<
   InquiryStatus,
   { bg: string; text: string }
 > = {
-  GENERAL: { bg: "bg-[#EDEDED]", text: "text-[#1B1B1B]" },
-  ANOTHER: { bg: "bg-[#E8EDFF]", text: "text-[#1C2882]" },
-  SHARED: { bg: "bg-[#E8EDFF]", text: "text-[#1C2882]" },
-  COMPLETED: { bg: "bg-[#E8EDFF]", text: "text-[#1C2882]" },
+  NEW: { bg: "bg-[#E8EDFF]", text: "text-[#1C2882]" },
+  CONTACTED: { bg: "bg-[#E7F8EF]", text: "text-[#197B50]" },
+  VISIT_SCHEDULED: { bg: "bg-[#FFF4D6]", text: "text-[#8A5A00]" },
+  NEGOTIATING: { bg: "bg-[#F1EAFE]", text: "text-[#6842A6]" },
+  COMPLETED: { bg: "bg-[#EDEDED]", text: "text-[#5F6573]" },
+  ON_HOLD: { bg: "bg-[#FFEAEA]", text: "text-[#B22A2A]" },
 };
 
 export const MANAGE_TYPE = {
@@ -120,13 +122,18 @@ export const REQUEST_TYPE_FILTER_OPTIONS: DropdownOption[] = [
   { label: "월세", value: "MONTHLY" },
   { label: "전세", value: "JEONSE" },
   { label: "매매", value: "SALE" },
-  { label: "고민중", value: "THINKING" },
-  { label: "보증금", value: "DEPOSIT" },
 ];
 
 export const INQUIRY_STATUS_OPTIONS: DropdownOption[] = [
-  { label: "일반", value: "GENERAL" },
-  { label: "타중개사", value: "ANOTHER" },
-  { label: "공유", value: "SHARED" },
+  { label: "신규", value: "NEW" },
+  { label: "연락 완료", value: "CONTACTED" },
+  { label: "방문 예정", value: "VISIT_SCHEDULED" },
+  { label: "협의 중", value: "NEGOTIATING" },
   { label: "완료", value: "COMPLETED" },
+  { label: "보류", value: "ON_HOLD" },
+];
+
+export const INQUIRY_STATUS_FILTER_OPTIONS: DropdownOption[] = [
+  { label: "전체", value: "" },
+  ...INQUIRY_STATUS_OPTIONS,
 ];

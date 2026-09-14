@@ -44,7 +44,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
             className="mb-3 mt-6 text-xl font-semibold text-[#222A3A]"
           >
             {line.substring(4)}
-          </h3>
+          </h3>,
         );
         return;
       }
@@ -56,7 +56,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
             className="mb-4 mt-8 text-2xl font-bold text-[#222A3A]"
           >
             {line.substring(3)}
-          </h2>
+          </h2>,
         );
         return;
       }
@@ -68,7 +68,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
             className="mb-6 mt-8 text-3xl font-bold text-[#222A3A]"
           >
             {line.substring(2)}
-          </h1>
+          </h1>,
         );
         return;
       }
@@ -85,7 +85,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           <p key={index} className="mb-2 pl-12 text-gray-700">
             <span className="mr-2">◦</span>
             {parseBoldText(trimmed.substring(2))}
-          </p>
+          </p>,
         );
         return;
       }
@@ -95,7 +95,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
         elements.push(
           <p key={index} className="mb-2 pl-12 text-gray-700">
             {parseBoldText(trimmed)}
-          </p>
+          </p>,
         );
         return;
       }
@@ -106,7 +106,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           <p key={index} className="mb-2 pl-6 text-gray-700">
             <span className="mr-2">•</span>
             {parseBoldText(trimmed.replace(/^\d+\.\s/, ""))}
-          </p>
+          </p>,
         );
         return;
       }
@@ -117,7 +117,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           <p key={index} className="mb-2 pl-6 text-gray-700">
             <span className="mr-2">•</span>
             {parseBoldText(trimmed.substring(2))}
-          </p>
+          </p>,
         );
         return;
       }
@@ -126,7 +126,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
       elements.push(
         <p key={index} className="mb-4 leading-relaxed text-gray-700">
           {parseBoldText(line)}
-        </p>
+        </p>,
       );
     });
 

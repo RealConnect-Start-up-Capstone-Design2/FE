@@ -28,9 +28,8 @@ export function VerificationButton({
       {disabled && !isCodeSent
         ? "발송 중..."
         : isCodeSent
-        ? countdown || "01:00"
-        : "인증하기"}
+          ? countdown || "01:00"
+          : "인증하기"}
     </Button>
   );
 }
-

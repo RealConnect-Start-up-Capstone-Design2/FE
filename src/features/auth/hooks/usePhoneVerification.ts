@@ -98,12 +98,7 @@ export const usePhoneVerification = ({
     } finally {
       setIsVerifyingCode(false);
     }
-  }, [
-    isCodeSent,
-    onVerified,
-    sanitizedPhone,
-    verificationCode,
-  ]);
+  }, [isCodeSent, onVerified, sanitizedPhone, verificationCode]);
 
   return {
     verificationCode,

@@ -20,5 +20,5 @@ export type RowClickHandler = (rowId: number | string) => void;
  * 테이블 셀 클릭 핸들러
  */
 export type CellClickHandler<TFieldKey extends string = string> = (
-  event: CellClickEvent<TFieldKey>
+  event: CellClickEvent<TFieldKey>,
 ) => void;

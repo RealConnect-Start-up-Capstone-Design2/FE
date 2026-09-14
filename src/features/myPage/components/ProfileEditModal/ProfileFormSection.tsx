@@ -144,7 +144,7 @@ export function ProfileFormSection({
               const value = e.target.value.replace(/[^0-9]/g, "");
               onInputChange("contact", value);
             }}
-            placeholder="010-1234-5678"
+            placeholder="010-0000-0000"
             className={`flex-1 ${INPUT_STYLE}`}
           />
           {!isPhoneVerified && (

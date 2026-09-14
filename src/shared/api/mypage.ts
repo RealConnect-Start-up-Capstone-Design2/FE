@@ -1,10 +1,9 @@
 import apiClient from "./client";
+import { getDemoOffice } from "@/demo/repository";
+import { isDemoRuntime } from "@/demo/session";
 
 export type CertificationStatus =
-  | "BEFORE"
-  | "PENDING"
-  | "REJECTED"
-  | "APPROVED";
+  "BEFORE" | "PENDING" | "REJECTED" | "APPROVED";
 
 export interface ProfileData {
   name: string;
@@ -24,6 +23,22 @@ export interface ProfileData {
 }
 
 export const fetchProfile = async (): Promise<ProfileData> => {
+  if (isDemoRuntime()) {
+    const office = getDemoOffice();
+    return {
+      name: office.representativeName,
+      contact: office.phone,
+      phone: office.phone,
+      email: office.email,
+      officeName: office.name,
+      officeAddress: office.address,
+      officePhone: office.phone,
+      employeeCount: 1,
+      membershipType: "Portfolio",
+      certificationStatus: "APPROVED",
+    };
+  }
+
   const response = await apiClient.get<ProfileData>("/api/mypage/profile");
   const data = response.data;
   if (data.phone && !data.contact) {
@@ -46,30 +61,30 @@ export interface UpdateOwnerProfileRequest {
 }
 
 export const updateOwnerProfile = async (
-  data: UpdateOwnerProfileRequest
+  data: UpdateOwnerProfileRequest,
 ): Promise<ProfileData> => {
   const response = await apiClient.patch<ProfileData>(
     "/api/mypage/profile/owner",
     data,
-    { withCredentials: true }
+    { withCredentials: true },
   );
   return response.data;
 };
 
 export const sendPhoneVerificationCode = async (
-  phone: string
+  phone: string,
 ): Promise<{ success: boolean; message: string }> => {
   const response = await apiClient.post<{ success: boolean; message: string }>(
     "/api/verify/sendCode/changePhone",
     { phone },
-    { withCredentials: true }
+    { withCredentials: true },
   );
   return response.data;
 };
 
 export const verifyPhoneCode = async (
   phone: string,
-  authCode: string
+  authCode: string,
 ): Promise<void> => {
   await apiClient.post(
     "/api/verify/verifyCode/changePhone",
@@ -77,24 +92,24 @@ export const verifyPhoneCode = async (
       phone,
       authCode,
     },
-    { withCredentials: true }
+    { withCredentials: true },
   );
 };
 
 export const sendPasswordChangeVerificationCode = async (
-  phone: string
+  phone: string,
 ): Promise<{ success: boolean; message: string }> => {
   const response = await apiClient.post<{ success: boolean; message: string }>(
     "/api/verify/sendCode/changePassword",
     { phone },
-    { withCredentials: true }
+    { withCredentials: true },
   );
   return response.data;
 };
 
 export const verifyPasswordChangeCode = async (
   phone: string,
-  authCode: string
+  authCode: string,
 ): Promise<void> => {
   await apiClient.post(
     "/api/verify/verifyCode/changePassword",
@@ -102,14 +117,14 @@ export const verifyPasswordChangeCode = async (
       phone,
       authCode,
     },
-    { withCredentials: true }
+    { withCredentials: true },
   );
 };
 
 export const changePassword = async (
   oldPassword: string,
   newPassword: string,
-  confirmPassword: string
+  confirmPassword: string,
 ): Promise<void> => {
   await apiClient.patch(
     "/api/mypage/changePassword",
@@ -118,24 +133,24 @@ export const changePassword = async (
       newPassword,
       confirmPassword,
     },
-    { withCredentials: true }
+    { withCredentials: true },
   );
 };
 
 export const sendStaffVerificationCode = async (
-  phone: string
+  phone: string,
 ): Promise<{ success: boolean; message: string }> => {
   const response = await apiClient.post<{ success: boolean; message: string }>(
     "/api/verify/sendCode/staff",
     { phone },
-    { withCredentials: true }
+    { withCredentials: true },
   );
   return response.data;
 };
 
 export const verifyStaffCode = async (
   phone: string,
-  authCode: string
+  authCode: string,
 ): Promise<void> => {
   await apiClient.post(
     "/api/verify/verifyCode/staff",
@@ -143,7 +158,7 @@ export const verifyStaffCode = async (
       phone,
       authCode,
     },
-    { withCredentials: true }
+    { withCredentials: true },
   );
 };
 
@@ -152,7 +167,7 @@ export const addStaff = async (
   password: string,
   passwordVerify: string,
   name: string,
-  phone: string
+  phone: string,
 ): Promise<void> => {
   await apiClient.post(
     "/api/mypage/staff-manage",
@@ -163,7 +178,7 @@ export const addStaff = async (
       name,
       phone,
     },
-    { withCredentials: true }
+    { withCredentials: true },
   );
 };
 
@@ -180,7 +195,7 @@ export interface SubmitOfficeFormRequest {
 }
 
 export const submitOfficeForm = async (
-  data: SubmitOfficeFormRequest
+  data: SubmitOfficeFormRequest,
 ): Promise<void> => {
   await apiClient.post("/api/mypage/submitOfficeForm", data, {
     withCredentials: true,

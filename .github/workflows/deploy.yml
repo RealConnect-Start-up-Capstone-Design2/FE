@@ -1,52 +1,52 @@
-name: Vercel Deployment
+name: Quality Gate
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
+  workflow_dispatch:
 
-env:
-  VERCEL_ORG_ID: ${{ secrets.ORGID }}
-  VERCEL_PROJECT_ID: ${{ secrets.PROJECTID }}
-  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-  VITE_API_URL: ${{ secrets.VITE_API_URL }}
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  deploy:
+  quality:
+    name: Lint, test and build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v7
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - name: Install pnpm 9.15.9
+        uses: pnpm/action-setup@v6
         with:
-          version: 9
+          version: 9.15.9
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Node.js 24.21.0
+        uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version-file: ".nvmrc"
           cache: "pnpm"
 
-      - name: Install Vercel CLI
-        run: npm install --global vercel
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=$VERCEL_TOKEN
+      - name: Check formatting
+        run: pnpm format:check
 
-      - name: Build Project Artifacts
-        run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            vercel build --prod --token=$VERCEL_TOKEN
-          else
-            vercel build --token=$VERCEL_TOKEN
-          fi
+      - name: Lint
+        run: pnpm lint
 
-      - name: Deploy Project Artifacts to Vercel
-        run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
-          else
-            vercel deploy --prebuilt --token=$VERCEL_TOKEN
-          fi
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build

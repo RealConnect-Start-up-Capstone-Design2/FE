@@ -1,11 +1,7 @@
 import { cn } from "@/shared/utils";
 
 type OccupancyStatusValue =
-  | "NONE"
-  | "SELF"
-  | "JEONSE"
-  | "MONTHLY_RENT"
-  | "VACANT";
+  "NONE" | "SELF" | "JEONSE" | "MONTHLY_RENT" | "VACANT";
 
 interface OccupancyStatusTagProps {
   status: OccupancyStatusValue | string | null | undefined;

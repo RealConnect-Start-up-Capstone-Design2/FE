@@ -17,13 +17,15 @@ export function SidebarToggleButton({
     <button
       type="button"
       onClick={onClick}
-      className="group fixed z-50 transition-all duration-300 ease-in-out"
+      className={`group fixed z-50 transition-all duration-300 ease-in-out ${
+        isOpen ? "hidden 2xl:block" : "block"
+      }`}
       data-sidebar-toggle="true"
       style={{
         width: "28px",
         height: "127px",
         top: "50px", // Layout padding(52px) + PageHeader(72px) + gap(12px) + 1.5rem(24px)
-        right: isOpen ? `${sidebarWidth}px` : "0",
+        right: isOpen ? `min(100vw, ${sidebarWidth}px)` : "0",
         transform: isOpen ? "translateX(0)" : "translateX(0)",
       }}
       aria-label={isOpen ? "카드 닫기" : "카드 열기"}

@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback } from "react";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { Button } from "@/shared/ui/button";
 import { DropdownMenu } from "@/shared/ui/dropdown-menu";
@@ -51,58 +51,30 @@ export function PropertyManagerHeader({
   onSqmOrPyeongChange,
   onAddComplexClick,
 }: PropertyManagerHeaderProps) {
-  const [localPhoneNumber, setLocalPhoneNumber] = useState(phoneNumber || "");
-  const [localDong, setLocalDong] = useState(dong || "");
-  const [localHo, setLocalHo] = useState(ho || "");
-
-  // phoneNumber prop이 변경되면 localPhoneNumber 동기화
-  useEffect(() => {
-    setLocalPhoneNumber(phoneNumber || "");
-  }, [phoneNumber]);
-
-  // dong prop이 변경되면 localDong 동기화
-  useEffect(() => {
-    setLocalDong(dong || "");
-  }, [dong]);
-
-  // ho prop이 변경되면 localHo 동기화
-  useEffect(() => {
-    setLocalHo(ho || "");
-  }, [ho]);
-
   const handlePhoneNumberChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       // 숫자만 입력 가능하도록 필터링
       const numericValue = value.replace(/[^0-9]/g, "");
-      setLocalPhoneNumber(numericValue);
-      if (onPhoneNumberChange) {
-        onPhoneNumberChange(numericValue);
-      }
+      onPhoneNumberChange?.(numericValue);
     },
-    [onPhoneNumberChange]
+    [onPhoneNumberChange],
   );
 
   const handleDongChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      setLocalDong(value);
-      if (onDongChange) {
-        onDongChange(value);
-      }
+      onDongChange?.(value);
     },
-    [onDongChange]
+    [onDongChange],
   );
 
   const handleHoChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      setLocalHo(value);
-      if (onHoChange) {
-        onHoChange(value);
-      }
+      onHoChange?.(value);
     },
-    [onHoChange]
+    [onHoChange],
   );
 
   const handleSelectComplex = useCallback(
@@ -112,90 +84,86 @@ export function PropertyManagerHeader({
         onSelectComplex(parsedValue);
       }
     },
-    [onSelectComplex]
+    [onSelectComplex],
   );
 
   return (
-    <>
-      <PageHeader className="pb-11" title="매물장">
-        <div className="flex w-full flex-col gap-2.5">
-          <div className="flex justify-between gap-3">
-            <div className="flex flex-row gap-3">
-              <DropdownMenu
-                className="w-67 font-semibold"
-                placeholder={
-                  isComplexLoading
-                    ? "단지 불러오는 중..."
-                    : complexOptions.length > 0
-                    ? "단지 선택"
-                    : "등록된 단지가 없습니다"
+    <PageHeader className="pb-0" title="매물장">
+      <div className="mt-5 grid w-full grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(220px,268px)_128px_128px_minmax(240px,1fr)_auto]">
+        <DropdownMenu
+          className="w-full font-semibold"
+          placeholder={
+            isComplexLoading
+              ? "단지 불러오는 중..."
+              : complexOptions.length > 0
+                ? "단지 선택"
+                : "등록된 단지가 없습니다"
+          }
+          options={complexOptions}
+          value={
+            selectedComplexId !== undefined
+              ? String(selectedComplexId)
+              : undefined
+          }
+          onChange={handleSelectComplex}
+          disabled={isComplexLoading}
+          footerAction={
+            onAddComplexClick
+              ? {
+                  label: "+ 주거래단지 추가",
+                  onClick: onAddComplexClick,
                 }
-                options={complexOptions}
-                value={
-                  selectedComplexId !== undefined
-                    ? String(selectedComplexId)
-                    : undefined
-                }
-                onChange={handleSelectComplex}
-                disabled={isComplexLoading}
-                footerAction={
-                  onAddComplexClick
-                    ? {
-                        label: "+ 주거래단지 추가",
-                        onClick: onAddComplexClick,
-                      }
-                    : undefined
-                }
-              />
-              <InputGroup className="w-32 h-12">
-                <InputGroupAddon>
-                  <InputGroupInput
-                    placeholder="동 검색"
-                    value={localDong}
-                    onChange={handleDongChange}
-                    className="text-black"
-                  />
-                  <Search />
-                </InputGroupAddon>
-              </InputGroup>
-              <InputGroup className="w-32">
-                <InputGroupAddon>
-                  <InputGroupInput
-                    placeholder="호 검색"
-                    value={localHo}
-                    onChange={handleHoChange}
-                    className="text-black"
-                  />
-                  <Search />
-                </InputGroupAddon>
-              </InputGroup>
-              <div className="w-98">
-                <InputGroup>
-                  <InputGroupInput
-                    placeholder="전화번호 검색"
-                    value={localPhoneNumber}
-                    onChange={handlePhoneNumberChange}
-                    type="text"
-                    inputMode="numeric"
-                    className="text-black"
-                  />
-                  <InputGroupAddon>
-                    <Search />
-                  </InputGroupAddon>
-                </InputGroup>
-              </div>
-            </div>
-            <div>
-              <Button className="bg-[#ffffff]" onClick={onSqmOrPyeongChange}>
-                <span className="text-black font-semibold shadow-drop">
-                  {isSqmOrPyeong === "sqm" ? "㎡ 변환" : "평 변환"}
-                </span>
-                <img src={RefreshIcon} alt="refresh" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </PageHeader>
-    </>
+              : undefined
+          }
+        />
+        <InputGroup className="h-12 w-full">
+          <InputGroupAddon>
+            <InputGroupInput
+              aria-label="동 검색"
+              placeholder="동 검색"
+              value={dong ?? ""}
+              onChange={handleDongChange}
+              className="text-black"
+            />
+            <Search aria-hidden="true" />
+          </InputGroupAddon>
+        </InputGroup>
+        <InputGroup className="w-full">
+          <InputGroupAddon>
+            <InputGroupInput
+              aria-label="호 검색"
+              placeholder="호 검색"
+              value={ho ?? ""}
+              onChange={handleHoChange}
+              className="text-black"
+            />
+            <Search aria-hidden="true" />
+          </InputGroupAddon>
+        </InputGroup>
+        <InputGroup className="w-full">
+          <InputGroupInput
+            aria-label="전화번호 검색"
+            placeholder="전화번호 검색"
+            value={phoneNumber ?? ""}
+            onChange={handlePhoneNumberChange}
+            type="text"
+            inputMode="numeric"
+            className="text-black"
+          />
+          <InputGroupAddon>
+            <Search aria-hidden="true" />
+          </InputGroupAddon>
+        </InputGroup>
+        <Button
+          className="w-full bg-white sm:w-auto"
+          onClick={onSqmOrPyeongChange}
+        >
+          <span className="font-semibold text-black shadow-drop">
+            {isSqmOrPyeong === "sqm" ? "평으로 보기" : "㎡로 보기"}
+          </span>
+          <img src={RefreshIcon} alt="" aria-hidden="true" />
+        </Button>
+      </div>
+    </PageHeader>
   );
 }

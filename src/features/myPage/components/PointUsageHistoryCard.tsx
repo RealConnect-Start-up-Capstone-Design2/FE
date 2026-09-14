@@ -24,7 +24,7 @@ export function PointUsageHistoryCard({
     <div
       className={cn(
         "w-full rounded-lg border border-[#DDE2F2] bg-white shadow-[0_12px_24px_-12px_rgba(15,23,42,0.25)]",
-        className
+        className,
       )}
     >
       <div className="flex flex-col p-[30px]">
@@ -42,7 +42,7 @@ export function PointUsageHistoryCard({
                 "rounded-md border px-[14px] py-[10px] text-[15px] font-medium",
                 selectedPeriod === period
                   ? "border-[rgba(177,182,199,0.4)] bg-[#1C2882] text-white"
-                  : "border-[rgba(177,182,199,0.4)] bg-transparent text-[#8D8D8D]"
+                  : "border-[rgba(177,182,199,0.4)] bg-transparent text-[#8D8D8D]",
               )}
             >
               {period}

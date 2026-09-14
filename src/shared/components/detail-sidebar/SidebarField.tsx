@@ -90,25 +90,3 @@ export function SidebarField({
     </div>
   );
 }
-
-/**
- * 사이드바 필드용 기본 Input 스타일
- */
-export const sidebarInputClassName = cn(
-  "w-full h-[34px] px-2 rounded-md",
-  "bg-[#FFFFFF] border border-[rgba(177,182,199,0.4)]",
-  "text-[13px] font-medium tracking-[-0.025em] text-[#1C2882]",
-  "placeholder:text-[#B1B6C7]",
-  "focus:outline-none focus:ring-1 focus:ring-[#8D8D8D]",
-);
-
-/**
- * 사이드바 필드용 기본 Select 스타일
- */
-export const sidebarSelectClassName = cn(
-  "w-full h-[34px] px-2 rounded-md",
-  "bg-white border border-[rgba(177,182,199,0.4)]",
-  "text-[15px] font-medium tracking-[-0.025em] text-[#8D8D8D]",
-  "focus:outline-none focus:ring-1 focus:ring-[#8D8D8D]",
-  "appearance-none cursor-pointer",
-);

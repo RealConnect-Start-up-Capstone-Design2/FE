@@ -59,7 +59,7 @@ export function useRegionOptions({
 
         setSidoData(data);
         setSidoOptions(
-          data.map((sido) => ({ label: sido.name_kr, value: sido.name_kr }))
+          data.map((sido) => ({ label: sido.name_kr, value: sido.name_kr })),
         );
       } catch (error) {
         console.error("시/도 목록 조회 실패:", error);
@@ -98,7 +98,7 @@ export function useRegionOptions({
           data.map((sigungu) => ({
             label: sigungu.name_kr,
             value: sigungu.name_kr,
-          }))
+          })),
         );
       } catch (error) {
         console.error("시/군/구 목록 조회 실패:", error);
@@ -132,7 +132,7 @@ export function useRegionOptions({
         if (!isMounted) return;
 
         setEmdOptions(
-          data.map((emd) => ({ label: emd.name_kr, value: emd.name_kr }))
+          data.map((emd) => ({ label: emd.name_kr, value: emd.name_kr })),
         );
       } catch (error) {
         console.error("읍/면/동 목록 조회 실패:", error);

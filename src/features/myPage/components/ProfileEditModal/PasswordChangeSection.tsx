@@ -163,7 +163,7 @@ export function PasswordChangeSection() {
         setCurrentPasswordError("기존 비밀번호와 일치하지 않습니다.");
       } else {
         alert(
-          errorMessage || "비밀번호 변경에 실패했습니다. 다시 시도해주세요."
+          errorMessage || "비밀번호 변경에 실패했습니다. 다시 시도해주세요.",
         );
       }
     } finally {
@@ -190,7 +190,7 @@ export function PasswordChangeSection() {
                 const value = e.target.value.replace(/[^0-9]/g, "");
                 setPhone(value);
               }}
-              placeholder="010-1234-5678"
+              placeholder="010-0000-0000"
               className={`w-[199px] ${INPUT_STYLE}`}
             />
             <VerificationButton

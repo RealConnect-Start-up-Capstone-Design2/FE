@@ -38,7 +38,7 @@ export const openNaverAddressSearch = (
     roadNameAddressCode?: string;
     sido?: string;
     sigungu?: string;
-  }) => void
+  }) => void,
 ) => {
   // 모달을 먼저 생성하여 화면 중앙에 즉시 표시
   const modal = document.createElement("div");

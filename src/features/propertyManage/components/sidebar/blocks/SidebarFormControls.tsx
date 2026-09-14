@@ -62,25 +62,34 @@ interface FieldRowProps {
 
 export function FieldRow({ children, className }: FieldRowProps) {
   return (
-    <div className={cn("grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4", className)}>
+    <div
+      className={cn(
+        "grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4",
+        className,
+      )}
+    >
       {children}
     </div>
   );
 }
 
-export const sidebarInputClassName =
+const sidebarInputClassName =
   "h-[34px] rounded-md border-[rgba(177,182,199,0.4)] bg-white px-2 text-[15px] font-medium tracking-[-0.025em] text-[#8D8D8D] shadow-none placeholder:text-[#B1B6C7] focus-visible:ring-1 focus-visible:ring-[#1C2882]";
 
-export const sidebarActiveInputClassName =
-  sidebarInputClassName;
+const sidebarActiveInputClassName = sidebarInputClassName;
 
 export function SidebarInput(props: ComponentProps<typeof Input>) {
-  return <Input {...props} className={cn(sidebarInputClassName, props.className)} />;
+  return (
+    <Input {...props} className={cn(sidebarInputClassName, props.className)} />
+  );
 }
 
 export function SidebarActiveInput(props: ComponentProps<typeof Input>) {
   return (
-    <Input {...props} className={cn(sidebarActiveInputClassName, props.className)} />
+    <Input
+      {...props}
+      className={cn(sidebarActiveInputClassName, props.className)}
+    />
   );
 }
 
@@ -197,7 +206,9 @@ export function DateInput({
 }: DateInputProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const initialDate = parseSidebarDate(value ?? defaultValue) ?? new Date();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialDate);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    initialDate,
+  );
   const [viewDate, setViewDate] = useState<Date>(initialDate ?? new Date());
   const [isOpen, setIsOpen] = useState(false);
   const calendarDates = useMemo(() => getCalendarDates(viewDate), [viewDate]);
@@ -314,7 +325,8 @@ export function DateInput({
                   onClick={() => handleSelectDate(date)}
                   className={cn(
                     "h-7 rounded-md text-[12px] font-medium text-[#1B1B1B] hover:bg-[#EEF6FF] hover:text-[#1C2882]",
-                    isSelected && "bg-[#1C2882] text-white hover:bg-[#1C2882] hover:text-white",
+                    isSelected &&
+                      "bg-[#1C2882] text-white hover:bg-[#1C2882] hover:text-white",
                   )}
                 >
                   {date.getDate()}
@@ -436,7 +448,8 @@ export function UploadDropzone() {
     <div className="flex h-[90px] flex-col items-center justify-center rounded-md border border-dashed border-[#B1B6C7] bg-[#EBEBEB] px-4 text-center">
       <Upload className="mb-2 h-6 w-6 text-[#8D8D8D]" />
       <p className="text-[13px] font-medium tracking-[-0.025em] text-[#8D8D8D]">
-        클릭하여 파일 업로드 <span className="font-normal">또는</span> 드래그 앤 드롭
+        클릭하여 파일 업로드 <span className="font-normal">또는</span> 드래그 앤
+        드롭
       </p>
       <p className="mt-1 text-[10px] font-normal tracking-[-0.025em] text-[#8D8D8D]">
         JPG, JPEG, PNG, GIF 등 (가로 400px 이상 / 용량 최대 512KB)

@@ -34,7 +34,10 @@ export function MemberDetailModal({
     { label: "중개사무소 주소", value: "서울시 강남구 테헤란로 131" }, // 임시 데이터
     { label: "사업자등록번호", value: member.approvalRequestDate }, // 임시로 날짜 표시
     { label: "중개사무소 개설등록번호", value: "서울강남중개소-112233-001" }, // 임시 데이터
-    { label: "중개사 인증 상태", value: getStatusLabel(member.certificationStatus) },
+    {
+      label: "중개사 인증 상태",
+      value: getStatusLabel(member.certificationStatus),
+    },
   ];
 
   // API 결과 (검증된 데이터)
@@ -45,7 +48,10 @@ export function MemberDetailModal({
     { label: "중개사무소 주소", value: "서울시 강남구 테헤란로 131" }, // 임시 데이터
     { label: "사업자등록번호", value: member.approvalRequestDate }, // 임시로 날짜 표시
     { label: "중개사무소 개설등록번호", value: "서울강남중개소-112233-001" }, // 임시 데이터
-    { label: "중개사 인증 상태", value: getStatusLabel(member.certificationStatus) },
+    {
+      label: "중개사 인증 상태",
+      value: getStatusLabel(member.certificationStatus),
+    },
   ];
 
   const handleApprove = () => {
@@ -195,4 +201,3 @@ function getStatusLabel(status: string): string {
   };
   return labels[status] || status;
 }
-

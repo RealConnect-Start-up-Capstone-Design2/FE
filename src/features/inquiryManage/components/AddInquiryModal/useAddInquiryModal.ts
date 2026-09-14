@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import type { AddInquiryFormData } from "./types";
+import { convertAreaValue, getInquiryFormValidationError } from "./formUtils";
 import { useRegionOptions } from "./useRegionOptions";
 
 interface UseAddInquiryModalParams {
@@ -21,6 +22,7 @@ const initialFormData: AddInquiryFormData = {
   sigungu: "",
   eupmyeondong: "",
   complexName: "",
+  moveInBy: "",
   inquirerAddress: "",
   area1: "",
   area2: "",
@@ -69,7 +71,7 @@ export function useAddInquiryModal({
   const handleFieldChange = useCallback(
     <K extends keyof AddInquiryFormData>(
       field: K,
-      value: AddInquiryFormData[K]
+      value: AddInquiryFormData[K],
     ) => {
       setFormData((prev) => {
         const updated = { ...prev, [field]: value };
@@ -85,33 +87,24 @@ export function useAddInquiryModal({
         return updated;
       });
     },
-    []
+    [],
   );
 
   // 면적 단위 토글
   const toggleAreaUnit = useCallback(() => {
     setFormData((prev) => ({
       ...prev,
+      area1: convertAreaValue(prev.area1, prev.isAreaInPyeong),
+      area2: convertAreaValue(prev.area2, prev.isAreaInPyeong),
       isAreaInPyeong: !prev.isAreaInPyeong,
-      // 값은 유지하고 단위만 변경
     }));
   }, []);
 
   // 저장 핸들러
   const handleSave = useCallback(async () => {
-    // 기본 유효성 검사
-    if (!formData.requestType) {
-      alert("유형을 선택해주세요.");
-      return;
-    }
-
-    if (!formData.title.trim()) {
-      alert("문의 제목을 입력해주세요.");
-      return;
-    }
-
-    if (formData.title.length > 40) {
-      alert("문의 제목은 40자 이하로 입력해주세요.");
+    const validationError = getInquiryFormValidationError(formData);
+    if (validationError) {
+      alert(validationError);
       return;
     }
 

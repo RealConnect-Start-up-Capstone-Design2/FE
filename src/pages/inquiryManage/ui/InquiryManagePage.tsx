@@ -1,122 +1,102 @@
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { InquiryManageHeader } from "@/features/inquiryManage/components/InquiryManageHeader";
-import { InquiryManageTable } from "@/features/inquiryManage/components/InquiryManageTable";
+
 import { AddInquiryModal } from "@/features/inquiryManage/components/AddInquiryModal";
 import type { AddInquiryFormData } from "@/features/inquiryManage/components/AddInquiryModal";
+import { InquiryManageHeader } from "@/features/inquiryManage/components/InquiryManageHeader";
+import { InquiryManageTable } from "@/features/inquiryManage/components/InquiryManageTable";
+import { InquiryMatchSidebar } from "@/features/inquiryManage/components/InquiryMatchSidebar";
 import { useInquirySidebar } from "@/features/inquiryManage/hooks";
 import {
-  DetailSidebar,
-  SlidingSidebarLayout,
-} from "@/shared/components/detail-sidebar";
+  createInquiry,
+  deleteInquiry,
+  fetchInquiries,
+  updateInquiryManageType,
+  updateInquiryStatus,
+} from "@/features/inquiryManage/services/inquiryService";
 import type {
-  InquiryStatus,
-  RequestType,
-  ManageType,
-  InquiriesQueryParams,
   CreateInquiryPayload,
   InquirerInfo,
+  InquiriesQueryParams,
+  InquiryStatus,
+  ManageType,
+  RequestType,
 } from "@/features/inquiryManage/types/inquiry";
-import {
-  fetchInquiries,
-  createInquiry,
-} from "@/features/inquiryManage/services/inquiryService";
-import { pyeongToSqm } from "@/shared/utils";
+import { SlidingSidebarLayout } from "@/shared/components/detail-sidebar";
+import { pyeongToSqm, sqmToPyeong } from "@/shared/utils";
 
-// 헬퍼 함수: 문의자 정보 생성
-const createInquirerInfo = (
-  name: string,
-  relation: string,
-  phone: string
-): InquirerInfo | null =>
-  name || phone
-    ? { inquirerName: name, inquirerRelation: relation, contractPhone: phone }
-    : null;
-
-// 헬퍼 함수: 문자열을 숫자로 변환 (빈 값은 0)
-const toNumber = (value: string): number => (value ? parseFloat(value) : 0);
+const PAGE_SIZE = 8;
 
 export function InquiryManagePage() {
-  // 검색 및 필터 상태
+  const queryClient = useQueryClient();
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedRequestType, setSelectedRequestType] = useState<
     RequestType | ""
   >("");
+  const [selectedStatus, setSelectedStatus] = useState<InquiryStatus | "">("");
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [areaMin, setAreaMin] = useState("");
   const [areaMax, setAreaMax] = useState("");
-  const [isSqmOrPyeong, setIsSqmOrPyeong] = useState<"sqm" | "pyeong">("sqm");
-
-  // 테이블 필터 상태 (서버 쿼리에 사용)
-  const [selectedStatus, setSelectedStatus] = useState<InquiryStatus | "">();
-
-  // 페이지네이션 상태
-  const [page] = useState(0);
-  const [size] = useState(10);
-
-  // 모달 상태
+  const [areaUnit, setAreaUnit] = useState<"sqm" | "pyeong">("sqm");
+  const [page, setPage] = useState(0);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-
-  // Refs
+  const [mutationError, setMutationError] = useState("");
   const tableContainerRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
 
-  // API 쿼리 파라미터 생성
-  const queryParams: InquiriesQueryParams = useMemo(() => {
-    const params: InquiriesQueryParams = {
+  const queryParams = useMemo<InquiriesQueryParams>(() => {
+    const minArea = areaMin ? Number(areaMin) : undefined;
+    const maxArea = areaMax ? Number(areaMax) : undefined;
+    return {
       page,
-      size,
+      size: PAGE_SIZE,
+      keyword: searchKeyword.trim() || undefined,
+      requestType: selectedRequestType || undefined,
+      inquiryStatus: selectedStatus || undefined,
+      minPrice: priceMin ? Number(priceMin) : undefined,
+      maxPrice: priceMax ? Number(priceMax) : undefined,
+      minArea:
+        minArea === undefined
+          ? undefined
+          : areaUnit === "pyeong"
+            ? pyeongToSqm(minArea)
+            : minArea,
+      maxArea:
+        maxArea === undefined
+          ? undefined
+          : areaUnit === "pyeong"
+            ? pyeongToSqm(maxArea)
+            : maxArea,
     };
-
-    if (searchKeyword) params.keyword = searchKeyword;
-    if (selectedRequestType) params.requestType = selectedRequestType;
-    if (selectedStatus) params.inquiryStatus = selectedStatus;
-    if (priceMin) params.minPrice = parseInt(priceMin, 10);
-    if (priceMax) params.maxPrice = parseInt(priceMax, 10);
-
-    // 면적 변환 (평 -> ㎡)
-    if (areaMin) {
-      const areaMinValue = parseFloat(areaMin);
-      params.minArea =
-        isSqmOrPyeong === "pyeong" ? pyeongToSqm(areaMinValue) : areaMinValue;
-    }
-    if (areaMax) {
-      const areaMaxValue = parseFloat(areaMax);
-      params.maxArea =
-        isSqmOrPyeong === "pyeong" ? pyeongToSqm(areaMaxValue) : areaMaxValue;
-    }
-
-    return params;
   }, [
+    areaMax,
+    areaMin,
+    areaUnit,
     page,
-    size,
+    priceMax,
+    priceMin,
     searchKeyword,
     selectedRequestType,
     selectedStatus,
-    priceMin,
-    priceMax,
-    areaMin,
-    areaMax,
-    isSqmOrPyeong,
   ]);
 
-  // 문의 목록 조회
   const {
     data: inquiriesResponse,
     isLoading,
-    refetch,
+    isError,
   } = useQuery({
     queryKey: ["inquiries", queryParams],
     queryFn: () => fetchInquiries(queryParams),
+    placeholderData: keepPreviousData,
   });
+  const inquiries = inquiriesResponse?.content ?? [];
 
-  const inquiries = useMemo(
-    () => inquiriesResponse?.content ?? [],
-    [inquiriesResponse?.content]
-  );
-
-  // 사이드바 훅
   const {
     selectedInquiryId,
     displayedInquiryId,
@@ -127,58 +107,40 @@ export function InquiryManagePage() {
     closeSidebar,
   } = useInquirySidebar({ inquiries });
 
-  // 선택된 문의
-  const selectedInquiry = useMemo(() => {
-    return inquiries.find((inq) => inq.inquiryId === displayedInquiryId);
-  }, [inquiries, displayedInquiryId]);
+  const selectedInquiry = inquiries.find(
+    (inquiry) => inquiry.inquiryId === displayedInquiryId,
+  );
+  const hasActiveFilters = Boolean(
+    searchKeyword ||
+    selectedRequestType ||
+    selectedStatus ||
+    priceMin ||
+    priceMax ||
+    areaMin ||
+    areaMax,
+  );
 
-  // 사이드바 타이틀
-  const detailSidebarTitle = useMemo(() => {
-    if (!selectedInquiry) {
-      return "문의 상세 정보";
-    }
-    return `${selectedInquiry.dong || ""} - ${selectedInquiry.title}`;
-  }, [selectedInquiry]);
+  const refreshInquiries = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ["inquiries"] });
+  }, [queryClient]);
 
-  // 면적 단위 변환
-  const handleSqmOrPyeongChange = useCallback(() => {
-    setIsSqmOrPyeong((prev) => (prev === "sqm" ? "pyeong" : "sqm"));
-  }, []);
-
-  // 문의 추가 모달 열기
-  const handleAddInquiry = useCallback(() => {
-    setIsAddModalOpen(true);
-  }, []);
-
-  // 문의 추가 모달 닫기
-  const handleCloseAddModal = useCallback(() => {
-    setIsAddModalOpen(false);
-  }, []);
-
-  // 문의 저장 핸들러
   const handleSaveInquiry = useCallback(
     async (formData: AddInquiryFormData) => {
-      // 문의자 정보 배열 생성
+      setMutationError("");
       const inquirerInfo = [
         createInquirerInfo(
           formData.inquirer1Name,
           formData.inquirer1Relation,
-          formData.inquirer1Phone
+          formData.inquirer1Phone,
         ),
         createInquirerInfo(
           formData.inquirer2Name,
           formData.inquirer2Relation,
-          formData.inquirer2Phone
+          formData.inquirer2Phone,
         ),
       ].filter((info): info is InquirerInfo => info !== null);
-
-      // 면적 변환 (평 → ㎡)
       const area1 = toNumber(formData.area1);
       const area2 = toNumber(formData.area2);
-      const minArea = formData.isAreaInPyeong ? pyeongToSqm(area1) : area1;
-      const maxArea = formData.isAreaInPyeong ? pyeongToSqm(area2) : area2;
-
-      // 백엔드 요청 payload 생성
       const payload: CreateInquiryPayload = {
         requestType: formData.requestType as RequestType,
         propertyType: formData.propertyType,
@@ -188,81 +150,128 @@ export function InquiryManagePage() {
         sigungu: formData.sigungu,
         dong: formData.eupmyeondong,
         complexName: formData.complexName,
-        minArea,
-        maxArea,
+        minArea: formData.isAreaInPyeong ? pyeongToSqm(area1) : area1,
+        maxArea: formData.isAreaInPyeong ? pyeongToSqm(area2) : area2,
         minSalePrice: toNumber(formData.purchasePrice1),
         maxSalePrice: toNumber(formData.purchasePrice2),
         minDeposit: toNumber(formData.deposit1),
         maxDeposit: toNumber(formData.deposit2),
         minMonthlyPrice: toNumber(formData.monthlyRent1),
         maxMonthlyPrice: toNumber(formData.monthlyRent2),
+        moveInBy: formData.moveInBy,
         title: formData.title,
         publicDescription: formData.publicDescription,
         privateNote: formData.privateNote,
       };
 
-      // API 호출
-      await createInquiry(payload);
-
-      // 목록 새로고침
-      await refetch();
-      setIsAddModalOpen(false);
-    },
-    [refetch]
-  );
-
-  // 문의 삭제
-  const handleDeleteInquiry = useCallback(
-    async (inquiryId: number) => {
-      if (confirm("정말로 이 문의를 삭제하시겠습니까?")) {
-        // TODO: 실제 삭제 API 연동
-        console.log("Delete inquiry:", inquiryId);
-        await refetch();
+      try {
+        await createInquiry(payload);
+        setPage(0);
+        await refreshInquiries();
+        setIsAddModalOpen(false);
+      } catch (error) {
+        setMutationError("문의 저장에 실패했습니다. 입력값을 확인해 주세요.");
+        throw error;
       }
     },
-    [refetch]
+    [refreshInquiries],
   );
 
-  // 관리 타입 변경
+  const handleDeleteInquiry = useCallback(
+    async (inquiryId: number) => {
+      if (!window.confirm("이 문의를 샘플 원장에서 삭제할까요?")) return;
+      setMutationError("");
+      try {
+        await deleteInquiry(inquiryId);
+        if (selectedInquiryId === inquiryId) closeSidebar(true);
+        await refreshInquiries();
+      } catch {
+        setMutationError("문의 삭제에 실패했습니다.");
+      }
+    },
+    [closeSidebar, refreshInquiries, selectedInquiryId],
+  );
+
   const handleManageTypeChange = useCallback(
     async (inquiryId: number, manageType: ManageType) => {
-      // TODO: 실제 관리 타입 변경 API 연동
-      console.log("Change manageType:", inquiryId, manageType);
-      await refetch();
+      setMutationError("");
+      try {
+        await updateInquiryManageType(inquiryId, manageType);
+        await Promise.all([
+          refreshInquiries(),
+          queryClient.invalidateQueries({
+            queryKey: ["inquiry-detail", inquiryId],
+          }),
+        ]);
+      } catch {
+        setMutationError("중요도 변경에 실패했습니다.");
+      }
     },
-    [refetch]
+    [queryClient, refreshInquiries],
   );
 
-  // 의뢰 상태 변경
   const handleStatusChange = useCallback(
-    async (inquiryId: number, value: InquiryStatus) => {
-      // TODO: 실제 상태 변경 API 연동
-      console.log("Change status:", inquiryId, value);
-      await refetch();
+    async (inquiryId: number, status: InquiryStatus) => {
+      setMutationError("");
+      try {
+        await updateInquiryStatus(inquiryId, status);
+        await Promise.all([
+          refreshInquiries(),
+          queryClient.invalidateQueries({
+            queryKey: ["inquiry-detail", inquiryId],
+          }),
+        ]);
+      } catch {
+        setMutationError("진행 상태 변경에 실패했습니다.");
+      }
     },
-    [refetch]
+    [queryClient, refreshInquiries],
   );
 
-  // 외부 클릭 핸들러
+  const resetFilters = useCallback(() => {
+    setSearchKeyword("");
+    setSelectedRequestType("");
+    setSelectedStatus("");
+    setPriceMin("");
+    setPriceMax("");
+    setAreaMin("");
+    setAreaMax("");
+    setPage(0);
+  }, []);
+
+  const convertAreaUnit = useCallback(() => {
+    const toConvertedValue = (value: string) => {
+      if (!value) return "";
+      const numericValue = Number(value);
+      if (!Number.isFinite(numericValue)) return "";
+      const converted =
+        areaUnit === "sqm"
+          ? sqmToPyeong(numericValue)
+          : pyeongToSqm(numericValue);
+      return String(Number(converted.toFixed(2)));
+    };
+
+    setAreaMin(toConvertedValue);
+    setAreaMax(toConvertedValue);
+    setAreaUnit((current) => (current === "sqm" ? "pyeong" : "sqm"));
+    setPage(0);
+  }, [areaUnit]);
+
   useEffect(() => {
     if (!isSidebarOpen && selectedInquiryId === undefined) return;
-
     const handleDocumentMouseDown = (event: MouseEvent) => {
       const target = event.target as Node | null;
       if (!target) return;
-
-      // 사이드바, 테이블, 토글 버튼 내부 클릭은 무시
       if (sidebarRef.current?.contains(target)) return;
       if (tableContainerRef.current?.contains(target)) return;
       if (
         target instanceof HTMLElement &&
         target.closest("[data-sidebar-toggle='true']")
-      )
+      ) {
         return;
-
+      }
       handleExternalClick();
     };
-
     document.addEventListener("mousedown", handleDocumentMouseDown);
     return () =>
       document.removeEventListener("mousedown", handleDocumentMouseDown);
@@ -271,63 +280,60 @@ export function InquiryManagePage() {
   return (
     <SlidingSidebarLayout
       isOpen={isSidebarOpen}
+      sidebarWidth={540}
       onToggle={handleToggleSidebar}
       sidebarRef={sidebarRef}
       sidebar={
-        <DetailSidebar
-          header={
-            // TODO: InquirySidebarHeader 컴포넌트로 교체 예정
-            <div className="flex items-center justify-between gap-4 border-b border-gray-200 px-6 py-4">
-              <h2 className="truncate text-xl font-semibold text-gray-900">
-                {detailSidebarTitle}
-              </h2>
-              <button
-                type="button"
-                onClick={() => closeSidebar(true)}
-                className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
-                aria-label="사이드바 닫기"
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-          }
-        >
-          {/* 사이드바 내부 blocks는 추후 구현 예정 */}
-          <div className="flex items-center justify-center h-full text-gray-400">
-            <p>문의 상세 정보가 여기에 표시됩니다.</p>
-          </div>
-        </DetailSidebar>
+        <InquiryMatchSidebar
+          inquiry={selectedInquiry}
+          onClose={() => closeSidebar(true)}
+        />
       }
     >
-      <div className="flex flex-col gap-6 h-full">
+      <div className="flex h-full min-h-[720px] flex-col gap-5">
         <InquiryManageHeader
-          onAddInquiry={handleAddInquiry}
+          onAddInquiry={() => setIsAddModalOpen(true)}
           searchKeyword={searchKeyword}
-          onSearchKeywordChange={setSearchKeyword}
+          onSearchKeywordChange={(value) => {
+            setSearchKeyword(value);
+            setPage(0);
+          }}
           priceMin={priceMin}
-          onPriceMinChange={setPriceMin}
+          onPriceMinChange={(value) => {
+            setPriceMin(value);
+            setPage(0);
+          }}
           priceMax={priceMax}
-          onPriceMaxChange={setPriceMax}
+          onPriceMaxChange={(value) => {
+            setPriceMax(value);
+            setPage(0);
+          }}
           areaMin={areaMin}
-          onAreaMinChange={setAreaMin}
+          onAreaMinChange={(value) => {
+            setAreaMin(value);
+            setPage(0);
+          }}
           areaMax={areaMax}
-          onAreaMaxChange={setAreaMax}
-          isSqmOrPyeong={isSqmOrPyeong}
-          onSqmOrPyeongChange={handleSqmOrPyeongChange}
+          onAreaMaxChange={(value) => {
+            setAreaMax(value);
+            setPage(0);
+          }}
+          isSqmOrPyeong={areaUnit}
+          onSqmOrPyeongChange={convertAreaUnit}
+          hasActiveFilters={hasActiveFilters}
+          onResetFilters={resetFilters}
         />
-        <div ref={tableContainerRef} className="flex-1 overflow-hidden">
+
+        {mutationError || isError ? (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+          >
+            {mutationError || "문의 목록을 불러오지 못했습니다."}
+          </div>
+        ) : null}
+
+        <div ref={tableContainerRef} className="min-h-0 flex-1">
           <InquiryManageTable
             inquiries={inquiries}
             isLoading={isLoading}
@@ -337,24 +343,89 @@ export function InquiryManagePage() {
             onManageTypeChange={handleManageTypeChange}
             onStatusChange={handleStatusChange}
             selectedRequestType={selectedRequestType}
-            onSelectRequestType={(value) =>
-              setSelectedRequestType(value as RequestType | "")
-            }
+            onSelectRequestType={(value) => {
+              setSelectedRequestType(value as RequestType | "");
+              setPage(0);
+            }}
             selectedStatus={selectedStatus}
-            onSelectStatus={(value) =>
-              setSelectedStatus(value as InquiryStatus | "")
-            }
-            isSqmOrPyeong={isSqmOrPyeong}
+            onSelectStatus={(value) => {
+              setSelectedStatus(value as InquiryStatus | "");
+              setPage(0);
+            }}
+            isSqmOrPyeong={areaUnit}
           />
         </div>
+
+        <Pagination
+          page={inquiriesResponse?.currentPage ?? 0}
+          totalPages={inquiriesResponse?.totalPages ?? 1}
+          totalItems={inquiriesResponse?.totalElements ?? 0}
+          onChange={setPage}
+        />
       </div>
 
-      {/* 문의 추가 모달 */}
       <AddInquiryModal
         isOpen={isAddModalOpen}
-        onClose={handleCloseAddModal}
+        onClose={() => setIsAddModalOpen(false)}
         onSave={handleSaveInquiry}
       />
     </SlidingSidebarLayout>
   );
+}
+
+function Pagination({
+  page,
+  totalPages,
+  totalItems,
+  onChange,
+}: {
+  page: number;
+  totalPages: number;
+  totalItems: number;
+  onChange: (page: number) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 text-sm text-[#6F7789]">
+      <span>총 {totalItems}건</span>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          aria-label="이전 페이지"
+          disabled={page <= 0}
+          onClick={() => onChange(page - 1)}
+          className="rounded-lg border border-[#D9DEEB] bg-white p-2 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+        </button>
+        <span className="min-w-20 text-center font-semibold text-[#37405A]">
+          {page + 1} / {totalPages}
+        </span>
+        <button
+          type="button"
+          aria-label="다음 페이지"
+          disabled={page >= totalPages - 1}
+          onClick={() => onChange(page + 1)}
+          className="rounded-lg border border-[#D9DEEB] bg-white p-2 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <ChevronRight aria-hidden="true" className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function createInquirerInfo(
+  name: string,
+  relation: string,
+  phone: string,
+): InquirerInfo | null {
+  return name || phone
+    ? { inquirerName: name, inquirerRelation: relation, contractPhone: phone }
+    : null;
+}
+
+function toNumber(value: string): number {
+  if (!value.trim()) return 0;
+  const parsed = Number(value.replaceAll(",", ""));
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
 }

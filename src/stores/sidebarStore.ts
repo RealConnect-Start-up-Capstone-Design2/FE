@@ -22,6 +22,6 @@ export const useSidebarStore = create<SidebarState>()(
       partialize: (state) => ({
         isSidebarCollapsed: state.isSidebarCollapsed,
       }),
-    }
-  )
+    },
+  ),
 );

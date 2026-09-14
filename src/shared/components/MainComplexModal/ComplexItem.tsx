@@ -17,7 +17,7 @@ interface ComplexItemProps {
     field: keyof ComplexData,
     value: string,
     apartmentComplexId?: number,
-    apartmentName?: string
+    apartmentName?: string,
   ) => void;
   onSave: (id: number) => void;
   onDelete: (id: number) => void;
@@ -53,12 +53,10 @@ export function ComplexItem({
         const data = await fetchSigunguList(item.sido);
         if (!isMounted) return;
 
-        const options = data.map(
-          (sigungu: Sigungu): RegionOption => ({
-            label: sigungu.name_kr,
-            value: sigungu.sigunguCode,
-          })
-        );
+        const options = data.map((sigungu: Sigungu): RegionOption => ({
+          label: sigungu.name_kr,
+          value: sigungu.sigunguCode,
+        }));
         setSigunguOptions(options);
       } catch (error) {
         console.error("시/군/구 목록을 조회하는데 실패했습니다:", error);
@@ -86,12 +84,10 @@ export function ComplexItem({
         const data = await fetchEmdList(item.sigungu);
         if (!isMounted) return;
 
-        const options = data.map(
-          (emd: Emd): RegionOption => ({
-            label: emd.name_kr,
-            value: emd.emdCode,
-          })
-        );
+        const options = data.map((emd: Emd): RegionOption => ({
+          label: emd.name_kr,
+          value: emd.emdCode,
+        }));
         setEupmyeondongOptions(options);
       } catch (error) {
         console.error("읍/면/동 목록을 조회하는데 실패했습니다:", error);
@@ -119,12 +115,10 @@ export function ComplexItem({
         const data = await fetchApartmentComplexList(item.eupmyeondong);
         if (!isMounted) return;
 
-        const options = data.map(
-          (complex: ApartmentComplex): RegionOption => ({
-            label: complex.apartmentName,
-            value: String(complex.id),
-          })
-        );
+        const options = data.map((complex: ApartmentComplex): RegionOption => ({
+          label: complex.apartmentName,
+          value: String(complex.id),
+        }));
         setComplexOptions(options);
       } catch (error) {
         console.error("아파트 단지 목록을 조회하는데 실패했습니다:", error);
@@ -150,7 +144,7 @@ export function ComplexItem({
         <h3
           className={cn(
             "text-xl font-medium",
-            isFilled ? "text-[#1C2882]" : "text-[#1C2882]"
+            isFilled ? "text-[#1C2882]" : "text-[#1C2882]",
           )}
         >
           주거래 단지 {item.id}
@@ -222,14 +216,14 @@ export function ComplexItem({
                   }
                   onChange={(value) => {
                     const selectedComplex = complexOptions.find(
-                      (opt) => opt.value === value
+                      (opt) => opt.value === value,
                     );
                     onFieldChange(
                       item.id,
                       "complex",
                       selectedComplex?.label || value,
                       Number(value),
-                      selectedComplex?.label
+                      selectedComplex?.label,
                     );
                   }}
                   disabled={!item.eupmyeondong}
@@ -253,7 +247,7 @@ export function ComplexItem({
               "w-[94px] h-[38px] rounded-md text-[15px] font-medium",
               isSaveButtonEnabled
                 ? "bg-[#1B1B1B] text-white"
-                : "bg-[#EDEDED] text-[#8D8D8D]"
+                : "bg-[#EDEDED] text-[#8D8D8D]",
             )}
           >
             {isSaving ? "저장중..." : "저장"}
@@ -266,7 +260,7 @@ export function ComplexItem({
               item.isExisting
                 ? "bg-[#1B1B1B] text-white"
                 : "border border-[#D9D9D9] bg-white text-[#8D8D8D]",
-              !item.isExisting && "cursor-not-allowed opacity-60"
+              !item.isExisting && "cursor-not-allowed opacity-60",
             )}
           >
             삭제

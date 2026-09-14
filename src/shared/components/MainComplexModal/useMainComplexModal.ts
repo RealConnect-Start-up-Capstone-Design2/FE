@@ -33,7 +33,7 @@ const createEmptyItem = (id: number): ExtendedMainComplexItem => ({
 
 const createItemFromPreferredComplex = (
   index: number,
-  preferredComplex?: PreferredComplex
+  preferredComplex?: PreferredComplex,
 ): ExtendedMainComplexItem => {
   const base = createEmptyItem(index + 1);
 
@@ -54,10 +54,10 @@ const createItemFromPreferredComplex = (
 const isItemComplete = (item: ExtendedMainComplexItem) =>
   Boolean(
     item.sido &&
-      item.sigungu &&
-      item.eupmyeondong &&
-      item.complex &&
-      item.apartmentComplexId
+    item.sigungu &&
+    item.eupmyeondong &&
+    item.complex &&
+    item.apartmentComplexId,
   );
 
 export function useMainComplexModal({
@@ -67,11 +67,11 @@ export function useMainComplexModal({
   initialData: _initialData,
 }: UseMainComplexModalParams) {
   const [complexItems, setComplexItems] = useState<ExtendedMainComplexItem[]>(
-    []
+    [],
   );
   const [isSaving, setIsSaving] = useState(false);
   const [savingItemMap, setSavingItemMap] = useState<Record<number, boolean>>(
-    {}
+    {},
   );
   const [sidoOptions, setSidoOptions] = useState<RegionOption[]>([]);
 
@@ -96,7 +96,8 @@ export function useMainComplexModal({
         return prev;
       }
 
-      const { [id]: _removed, ...rest } = prev;
+      const rest = { ...prev };
+      delete rest[id];
       return rest;
     });
 
@@ -122,7 +123,7 @@ export function useMainComplexModal({
         if (!isMounted) return;
 
         const items = Array.from({ length: MAX_COMPLEX_ITEMS }, (_, index) =>
-          createItemFromPreferredComplex(index, preferredComplexes[index])
+          createItemFromPreferredComplex(index, preferredComplexes[index]),
         );
 
         setComplexItems(items);
@@ -130,7 +131,7 @@ export function useMainComplexModal({
         console.error("주거래 단지 목록 조회 실패:", error);
 
         const items = Array.from({ length: MAX_COMPLEX_ITEMS }, (_, index) =>
-          createEmptyItem(index + 1)
+          createEmptyItem(index + 1),
         );
         setComplexItems(items);
       }
@@ -179,7 +180,7 @@ export function useMainComplexModal({
       field: keyof ComplexData,
       value: string,
       apartmentComplexId?: number,
-      apartmentName?: string
+      apartmentName?: string,
     ) => {
       setComplexItems((prev) =>
         prev.map((item) => {
@@ -214,10 +215,10 @@ export function useMainComplexModal({
           }
 
           return updated;
-        })
+        }),
       );
     },
-    []
+    [],
   );
 
   const handleSaveItem = useCallback(
@@ -252,7 +253,7 @@ export function useMainComplexModal({
         };
 
         setComplexItems((prev) =>
-          prev.map((c) => (c.id === id ? updatedItem : c))
+          prev.map((c) => (c.id === id ? updatedItem : c)),
         );
 
         alert(`주거래 단지 ${id}이(가) 저장되었습니다.`);
@@ -263,7 +264,7 @@ export function useMainComplexModal({
         setItemSavingState(id, false);
       }
     },
-    [complexItems, setItemSavingState]
+    [complexItems, setItemSavingState],
   );
 
   const handleDeleteItem = useCallback(
@@ -276,7 +277,7 @@ export function useMainComplexModal({
       }
 
       const confirmDelete = window.confirm(
-        `주거래 단지 ${id}을(를) 삭제하시겠습니까?`
+        `주거래 단지 ${id}을(를) 삭제하시겠습니까?`,
       );
       if (!confirmDelete) return;
 
@@ -286,7 +287,7 @@ export function useMainComplexModal({
         const emptyItem = createEmptyItem(item.id);
 
         setComplexItems((prev) =>
-          prev.map((c) => (c.id === id ? emptyItem : c))
+          prev.map((c) => (c.id === id ? emptyItem : c)),
         );
 
         alert(`주거래 단지 ${id}이(가) 삭제되었습니다.`);
@@ -295,7 +296,7 @@ export function useMainComplexModal({
         alert("삭제에 실패했습니다.");
       }
     },
-    [complexItems]
+    [complexItems],
   );
 
   const handleFinalSave = useCallback(async () => {
@@ -309,7 +310,7 @@ export function useMainComplexModal({
     }
 
     const incompleteItem = complexItems.find(
-      (item) => item.isDirty && !isItemComplete(item)
+      (item) => item.isDirty && !isItemComplete(item),
     );
 
     if (incompleteItem) {
@@ -321,7 +322,7 @@ export function useMainComplexModal({
     setIsSaving(true);
     try {
       const itemsToPersist = complexItems.filter(
-        (item) => item.isDirty && isItemComplete(item)
+        (item) => item.isDirty && isItemComplete(item),
       );
       const savedItemMap: Record<number, ExtendedMainComplexItem> = {};
       let hasError = false;

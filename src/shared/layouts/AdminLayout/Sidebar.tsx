@@ -27,7 +27,7 @@ export function Sidebar({ className, onLogout }: SidebarProps) {
     <div
       className={cn(
         "fixed left-0 top-0 h-screen w-[270px] bg-white border-r border-[rgba(177,182,199,0.4)] shadow-[0px_0px_25px_-10px_rgba(177,182,199,1)] z-50",
-        className
+        className,
       )}
     >
       {/* Header */}

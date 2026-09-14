@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { SidebarBlock } from "@/shared/components/detail-sidebar";
 import type { ApartmentWithProperty } from "../../../types";
@@ -23,7 +23,9 @@ interface CustomerConsultationBlockProps {
   apartment?: ApartmentWithProperty;
   isOpen: boolean;
   consultation?: PropertyConsultationUpdatePayload;
-  onConsultationChange?: (consultation: PropertyConsultationUpdatePayload) => void;
+  onConsultationChange?: (
+    consultation: PropertyConsultationUpdatePayload,
+  ) => void;
 }
 
 const customerTypeOptions: Array<{
@@ -69,7 +71,8 @@ const getConsultationPayload = (
     apartment?.property?.ownerPhone ??
     "",
   tenantName: consultation?.tenantName ?? fetchedConsultation?.tenantName ?? "",
-  tenantPhone: consultation?.tenantPhone ?? fetchedConsultation?.tenantPhone ?? "",
+  tenantPhone:
+    consultation?.tenantPhone ?? fetchedConsultation?.tenantPhone ?? "",
   etcName: consultation?.etcName ?? fetchedConsultation?.etcName ?? "",
   etcPhone: consultation?.etcPhone ?? fetchedConsultation?.etcPhone ?? "",
 });
@@ -117,12 +120,6 @@ export function CustomerConsultationBlock({
       alert("상담 내용 등록에 실패했습니다.");
     },
   });
-
-  useEffect(() => {
-    if (fetchedConsultation) {
-      onConsultationChange?.(getConsultationPayload(undefined, fetchedConsultation));
-    }
-  }, [fetchedConsultation, onConsultationChange]);
 
   if (!apartment) {
     return (

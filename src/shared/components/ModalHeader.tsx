@@ -9,8 +9,12 @@ interface ModalHeaderProps {
 export function ModalHeader({ title, description, onClose }: ModalHeaderProps) {
   return (
     <div>
-      <div className={`flex items-center justify-between ${description ? "mb-[7px]" : "mb-[48px]"}`}>
-        <h2 className={`${description ? "text-[28px]" : "text-[24px]"} font-semibold text-black ${description ? "leading-[1.19] tracking-[-0.025em]" : ""}`}>
+      <div
+        className={`flex items-center justify-between ${description ? "mb-[7px]" : "mb-[48px]"}`}
+      >
+        <h2
+          className={`${description ? "text-[28px]" : "text-[24px]"} font-semibold text-black ${description ? "leading-[1.19] tracking-[-0.025em]" : ""}`}
+        >
           {title}
         </h2>
         <button
@@ -36,4 +40,3 @@ export function ModalHeader({ title, description, onClose }: ModalHeaderProps) {
     </div>
   );
 }
-

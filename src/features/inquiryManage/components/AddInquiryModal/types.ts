@@ -28,6 +28,7 @@ export interface AddInquiryFormData {
   sigungu: string;
   eupmyeondong: string;
   complexName: string; // 단지명 직접 입력
+  moveInBy: string; // 입주 희망일 (YYYY-MM-DD)
 
   // 문의자 주소
   inquirerAddress: string;

@@ -12,7 +12,7 @@
  */
 export const formatNumber = (
   value: number | null | undefined,
-  options?: { allowZero?: boolean; returnEmptyString?: boolean }
+  options?: { allowZero?: boolean; returnEmptyString?: boolean },
 ): string | undefined => {
   const { allowZero = false, returnEmptyString = false } = options || {};
 
@@ -40,7 +40,7 @@ export const formatNumber = (
  * parseNumber("") // undefined
  */
 export const parseNumber = (
-  value: string | number | null | undefined
+  value: string | number | null | undefined,
 ): number | undefined => {
   if (value === null || value === undefined || value === "") {
     return undefined;
@@ -67,7 +67,7 @@ export const parseNumber = (
  * 10자리 → "010-123-4567"
  */
 export const formatPhoneNumber = (
-  value: string | number | null | undefined
+  value: string | number | null | undefined,
 ): string | undefined => {
   if (value === null || value === undefined || value === "") {
     return undefined;
