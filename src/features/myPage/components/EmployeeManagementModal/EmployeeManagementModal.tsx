@@ -112,8 +112,8 @@ export function EmployeeManagementModal({
     setIsPhoneVerified(false);
     setIsCodeSent(false);
     setCountdown(60);
-      setVerificationCode("");
-      setIsVerifying(false);
+    setVerificationCode("");
+    setIsVerifying(false);
   };
 
   const handleSendVerificationCode = async () => {
@@ -205,7 +205,7 @@ export function EmployeeManagementModal({
         formData.password,
         formData.password,
         formData.name,
-        formData.phone
+        formData.phone,
       );
       alert("직원이 성공적으로 추가되었습니다.");
       handleCancel();

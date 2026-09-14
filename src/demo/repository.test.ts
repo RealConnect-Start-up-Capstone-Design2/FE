@@ -23,7 +23,10 @@ class MemoryStorage implements DemoStorage {
 
 describe("demo repository", () => {
   it("works without window/localStorage and protects persisted data from mutation", () => {
-    const repository = createDemoRepository({ storage: null, eventTarget: null });
+    const repository = createDemoRepository({
+      storage: null,
+      eventTarget: null,
+    });
     const first = repository.getState();
 
     expect(first.properties).toHaveLength(18);
@@ -39,7 +42,9 @@ describe("demo repository", () => {
     const repository = createDemoRepository({ storage, eventTarget: null });
 
     expect(repository.getState().properties).toHaveLength(18);
-    const recovered = JSON.parse(storage.getItem(DEMO_STORAGE_KEY) ?? "null") as {
+    const recovered = JSON.parse(
+      storage.getItem(DEMO_STORAGE_KEY) ?? "null",
+    ) as {
       schemaVersion: number;
       state: { seedId: string };
     };
@@ -108,7 +113,10 @@ describe("demo repository", () => {
   });
 
   it("cascades property and inquiry deletions to dependent demo records", () => {
-    const repository = createDemoRepository({ storage: null, eventTarget: null });
+    const repository = createDemoRepository({
+      storage: null,
+      eventTarget: null,
+    });
 
     expect(repository.getContractByPropertyId("property-006")).not.toBeNull();
     expect(
@@ -185,7 +193,10 @@ describe("demo repository", () => {
   });
 
   it("resets edited state back to a fresh seed while advancing revision", () => {
-    const repository = createDemoRepository({ storage: null, eventTarget: null });
+    const repository = createDemoRepository({
+      storage: null,
+      eventTarget: null,
+    });
     repository.deleteInquiry("inquiry-001");
     expect(repository.getState().inquiries).toHaveLength(7);
 

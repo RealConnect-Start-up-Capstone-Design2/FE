@@ -6,9 +6,7 @@ import { createDemoSeed } from "./seed";
 describe("demo matching engine", () => {
   const state = createDemoSeed();
   const inquiry = state.inquiries.find((item) => item.id === "inquiry-001")!;
-  const complex = state.complexes.find(
-    (item) => item.id === "complex-hanbit",
-  )!;
+  const complex = state.complexes.find((item) => item.id === "complex-hanbit")!;
 
   it("awards 100 points when request type, complex, area, and price all match", () => {
     const property = state.properties.find(
@@ -101,9 +99,7 @@ describe("demo matching engine", () => {
   });
 
   it("ranks equal scores deterministically by property id", () => {
-    const source = state.properties.find(
-      (item) => item.id === "property-001",
-    )!;
+    const source = state.properties.find((item) => item.id === "property-001")!;
     const results = rankPropertyMatches(
       inquiry,
       [

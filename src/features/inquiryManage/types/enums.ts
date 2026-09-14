@@ -4,7 +4,7 @@ import FilledStar from "@/assets/FilledStar.svg";
 import Caution from "@/assets/Caution.svg";
 
 export const createDropdownOptions = <T extends Record<string, string>>(
-  labels: T
+  labels: T,
 ): DropdownOption[] => {
   return Object.entries(labels).map(([value, label]) => ({ value, label }));
 };

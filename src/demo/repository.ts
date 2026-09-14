@@ -182,7 +182,10 @@ export function createDemoRepository(
     const eventTarget = resolveEventTarget();
     const onStorage = (event: Event) => {
       const storageEvent = event as StorageEvent;
-      if (storageEvent.key !== DEMO_STORAGE_KEY || storageEvent.newValue === null) {
+      if (
+        storageEvent.key !== DEMO_STORAGE_KEY ||
+        storageEvent.newValue === null
+      ) {
         return;
       }
       const state = deserializeState(storageEvent.newValue);
@@ -252,7 +255,9 @@ export function createDemoRepository(
     },
     deleteProperty(propertyId) {
       const state = readState();
-      const index = state.properties.findIndex((item) => item.id === propertyId);
+      const index = state.properties.findIndex(
+        (item) => item.id === propertyId,
+      );
       if (index < 0) return false;
       state.properties.splice(index, 1);
       state.consultations = state.consultations.filter(
@@ -304,8 +309,7 @@ export function createDemoRepository(
       if (index < 0) return false;
       state.inquiries.splice(index, 1);
       state.consultations = state.consultations.filter(
-        (log) =>
-          !(log.targetType === "INQUIRY" && log.targetId === inquiryId),
+        (log) => !(log.targetType === "INQUIRY" && log.targetId === inquiryId),
       );
       state.contracts = state.contracts.map((contract) => {
         if (contract.inquiryId !== inquiryId) return contract;
@@ -324,7 +328,8 @@ export function createDemoRepository(
         { action: "CONSULTATION_UPSERTED", entityId: input.id },
         (state): DemoConsultationLog => {
           assertConsultationTargetExists(state, input);
-          const id = input.id?.trim() || nextId("consultation", state.consultations);
+          const id =
+            input.id?.trim() || nextId("consultation", state.consultations);
           const index = state.consultations.findIndex((item) => item.id === id);
           const existing = index >= 0 ? state.consultations[index] : undefined;
           const consultation: DemoConsultationLog = {
@@ -414,9 +419,8 @@ export const listDemoProperties = (
 ): DemoPage<DemoProperty> => defaultRepository.listProperties(query);
 export const getDemoProperty = (propertyId: string): DemoProperty | null =>
   defaultRepository.getProperty(propertyId);
-export const upsertDemoProperty = (
-  input: DemoPropertyUpsert,
-): DemoProperty => defaultRepository.upsertProperty(input);
+export const upsertDemoProperty = (input: DemoPropertyUpsert): DemoProperty =>
+  defaultRepository.upsertProperty(input);
 export const deleteDemoProperty = (propertyId: string): boolean =>
   defaultRepository.deleteProperty(propertyId);
 export const listDemoInquiries = (
@@ -469,7 +473,10 @@ function deserializeState(raw: string): DemoState | null {
 
 function isDemoState(value: unknown): value is DemoState {
   if (!isRecord(value)) return false;
-  if (typeof value.seedId !== "string" || !isNonNegativeInteger(value.revision)) {
+  if (
+    typeof value.seedId !== "string" ||
+    !isNonNegativeInteger(value.revision)
+  ) {
     return false;
   }
   if (!isOffice(value.office)) return false;
@@ -482,7 +489,8 @@ function isDemoState(value: unknown): value is DemoState {
   const complexIds = new Set(value.complexes.map((item) => item.id));
   const propertyIds = new Set(value.properties.map((item) => item.id));
   const inquiryIds = new Set(value.inquiries.map((item) => item.id));
-  if (value.properties.some((item) => !complexIds.has(item.complexId))) return false;
+  if (value.properties.some((item) => !complexIds.has(item.complexId)))
+    return false;
   if (
     value.inquiries.some((item) =>
       item.desiredComplexIds.some((id) => !complexIds.has(id)),
@@ -527,11 +535,7 @@ function isComplex(value: unknown): value is DemoComplex {
   return (
     isRecord(value) &&
     hasStrings(value, ["id", "name", "address", "district", "legalDong"]) &&
-    hasNumbers(value, [
-      "builtYear",
-      "totalHouseholds",
-      "parkingPerHousehold",
-    ])
+    hasNumbers(value, ["builtYear", "totalHouseholds", "parkingPerHousehold"])
   );
 }
 
@@ -657,24 +661,20 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function hasStrings(
-  value: Record<string, unknown>,
-  keys: string[],
-): boolean {
+function hasStrings(value: Record<string, unknown>, keys: string[]): boolean {
   return keys.every((key) => typeof value[key] === "string");
 }
 
-function hasNumbers(
-  value: Record<string, unknown>,
-  keys: string[],
-): boolean {
+function hasNumbers(value: Record<string, unknown>, keys: string[]): boolean {
   return keys.every(
     (key) => typeof value[key] === "number" && Number.isFinite(value[key]),
   );
 }
 
 function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === "string");
+  return (
+    Array.isArray(value) && value.every((item) => typeof item === "string")
+  );
 }
 
 function isEntityArray<T extends { id: string }>(

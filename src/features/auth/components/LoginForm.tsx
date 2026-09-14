@@ -55,7 +55,7 @@ export function LoginForm() {
       const { accessToken, username } = await login(
         form.username,
         form.password,
-        form.stayIn
+        form.stayIn,
       );
 
       // 계정 전환 시 이전 계정의 프로필·선호단지 캐시(staleTime 5분)가 남아
@@ -90,7 +90,10 @@ export function LoginForm() {
               <span className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-semibold tracking-[0.12em]">
                 PORTFOLIO DEMO
               </span>
-              <ShieldCheck aria-hidden="true" className="h-6 w-6 text-[#AFC0FF]" />
+              <ShieldCheck
+                aria-hidden="true"
+                className="h-6 w-6 text-[#AFC0FF]"
+              />
             </div>
             <h2 className="text-[26px] font-bold leading-tight tracking-[-0.025em] sm:text-[30px]">
               공인중개사의 하루 업무를
@@ -98,8 +101,8 @@ export function LoginForm() {
               하나의 CRM에서 관리합니다
             </h2>
             <p className="mt-3 text-[15px] leading-6 text-[#DCE3FF] sm:text-base">
-              별도 가입 없이 준비된 샘플 데이터로 핵심 업무 흐름을 바로
-              확인해 보세요.
+              별도 가입 없이 준비된 샘플 데이터로 핵심 업무 흐름을 바로 확인해
+              보세요.
             </p>
           </div>
 
@@ -158,111 +161,106 @@ interface ApiLoginFormProps {
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }
 
-function ApiLoginForm({
-  form,
-  error,
-  onChange,
-  onSubmit,
-}: ApiLoginFormProps) {
+function ApiLoginForm({ form, error, onChange, onSubmit }: ApiLoginFormProps) {
   return (
     <div className="w-[586px] max-w-[calc(100vw-2rem)] rounded-xl bg-white p-8 shadow-[0_0_25px_-10px_#B1B6C7] sm:p-10">
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-        <h2 className="mb-2 text-left text-[28px] font-bold text-[#222A3A]">
-          로그인
-        </h2>
+          <h2 className="mb-2 text-left text-[28px] font-bold text-[#222A3A]">
+            로그인
+          </h2>
           <p className="text-left text-lg text-[#8D8D8D]">
-          계정 정보를 입력하여 로그인하세요
-        </p>
+            계정 정보를 입력하여 로그인하세요
+          </p>
         </div>
         <span className="mt-1 rounded-full bg-[#EEF1FF] px-3 py-1 text-xs font-semibold text-[#1C2882]">
           API MODE
         </span>
       </div>
 
-        {error && (
+      {error && (
         <div
           role="alert"
           className="mb-5 rounded-lg bg-red-50 px-4 py-3 text-center text-sm text-red-600"
         >
-            {error}
-          </div>
-        )}
+          {error}
+        </div>
+      )}
 
       <form onSubmit={onSubmit}>
-          <div className="mb-5 flex flex-col">
-            <Label
-              htmlFor="username"
-              className="mb-2 text-base font-semibold text-[#222A3A]"
-            >
-              아이디
-            </Label>
-            <div className="flex items-center gap-2 rounded-xl border border-[#B1B6C7] bg-white px-4 py-3 transition-all focus-within:border-blue-600 focus-within:shadow-[0_0_0_1.5px_#2563EB]">
-              <img
-                src={userIcon}
-                alt="아이디"
-                className="h-5 w-5 flex-shrink-0 text-[#8D8D8D]"
-              />
-              <Input
-                type="text"
-                id="username"
-                name="username"
-                value={form.username}
-              onChange={onChange}
-                placeholder="아이디를 입력해주세요"
-                autoComplete="username"
-                className="h-auto border-0 bg-transparent p-0 text-base shadow-none focus-visible:ring-0"
-              />
-            </div>
-          </div>
-
-          <div className="mb-5 flex flex-col">
-            <Label
-              htmlFor="password"
-              className="mb-2 text-base font-semibold text-[#222A3A]"
-            >
-              비밀번호
-            </Label>
-            <div className="flex items-center gap-2 rounded-xl border border-[#B1B6C7] bg-white px-4 py-3 transition-all focus-within:border-blue-600 focus-within:shadow-[0_0_0_1.5px_#2563EB]">
-              <img
-                src={lockIcon}
-                alt="비밀번호"
-                className="h-5 w-5 flex-shrink-0 text-[#8D8D8D]"
-              />
-              <Input
-                type="password"
-                id="password"
-                name="password"
-                value={form.password}
-              onChange={onChange}
-                placeholder="비밀번호를 입력해주세요"
-                autoComplete="current-password"
-                className="h-auto border-0 bg-transparent p-0 text-base shadow-none focus-visible:ring-0"
-              />
-            </div>
-          </div>
-
-          <div className="mb-5 flex items-center justify-between">
-            <label className="flex items-center gap-1 text-lg text-black">
-              <input
-                type="checkbox"
-                name="stayIn"
-                checked={form.stayIn}
-              onChange={onChange}
-                className="h-4 w-4"
-              />
-              로그인 상태 유지
-            </label>
-          </div>
-
-          <Button
-            type="submit"
-            className="mt-5 h-[42px] w-full rounded-md bg-brand text-lg font-semibold text-white hover:bg-[#151F65]"
+        <div className="mb-5 flex flex-col">
+          <Label
+            htmlFor="username"
+            className="mb-2 text-base font-semibold text-[#222A3A]"
           >
-            로그인
-          </Button>
-        </form>
-      </div>
+            아이디
+          </Label>
+          <div className="flex items-center gap-2 rounded-xl border border-[#B1B6C7] bg-white px-4 py-3 transition-all focus-within:border-blue-600 focus-within:shadow-[0_0_0_1.5px_#2563EB]">
+            <img
+              src={userIcon}
+              alt="아이디"
+              className="h-5 w-5 flex-shrink-0 text-[#8D8D8D]"
+            />
+            <Input
+              type="text"
+              id="username"
+              name="username"
+              value={form.username}
+              onChange={onChange}
+              placeholder="아이디를 입력해주세요"
+              autoComplete="username"
+              className="h-auto border-0 bg-transparent p-0 text-base shadow-none focus-visible:ring-0"
+            />
+          </div>
+        </div>
+
+        <div className="mb-5 flex flex-col">
+          <Label
+            htmlFor="password"
+            className="mb-2 text-base font-semibold text-[#222A3A]"
+          >
+            비밀번호
+          </Label>
+          <div className="flex items-center gap-2 rounded-xl border border-[#B1B6C7] bg-white px-4 py-3 transition-all focus-within:border-blue-600 focus-within:shadow-[0_0_0_1.5px_#2563EB]">
+            <img
+              src={lockIcon}
+              alt="비밀번호"
+              className="h-5 w-5 flex-shrink-0 text-[#8D8D8D]"
+            />
+            <Input
+              type="password"
+              id="password"
+              name="password"
+              value={form.password}
+              onChange={onChange}
+              placeholder="비밀번호를 입력해주세요"
+              autoComplete="current-password"
+              className="h-auto border-0 bg-transparent p-0 text-base shadow-none focus-visible:ring-0"
+            />
+          </div>
+        </div>
+
+        <div className="mb-5 flex items-center justify-between">
+          <label className="flex items-center gap-1 text-lg text-black">
+            <input
+              type="checkbox"
+              name="stayIn"
+              checked={form.stayIn}
+              onChange={onChange}
+              className="h-4 w-4"
+            />
+            로그인 상태 유지
+          </label>
+        </div>
+
+        <Button
+          type="submit"
+          className="mt-5 h-[42px] w-full rounded-md bg-brand text-lg font-semibold text-white hover:bg-[#151F65]"
+        >
+          로그인
+        </Button>
+      </form>
+    </div>
   );
 }
 

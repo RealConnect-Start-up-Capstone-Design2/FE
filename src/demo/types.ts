@@ -13,16 +13,9 @@ export type DemoDirection =
   | "NORTHEAST"
   | "NORTHWEST";
 export type DemoOccupancyStatus =
-  | "OWNER_OCCUPIED"
-  | "JEONSE"
-  | "MONTHLY"
-  | "VACANT";
+  "OWNER_OCCUPIED" | "JEONSE" | "MONTHLY" | "VACANT";
 export type DemoPropertyStatus =
-  | "AVAILABLE"
-  | "CONSULTING"
-  | "CONTRACTING"
-  | "COMPLETED"
-  | "HOLD";
+  "AVAILABLE" | "CONSULTING" | "CONTRACTING" | "COMPLETED" | "HOLD";
 export type DemoInquiryStatus =
   | "NEW"
   | "CONTACTED"
@@ -31,10 +24,7 @@ export type DemoInquiryStatus =
   | "COMPLETED"
   | "ON_HOLD";
 export type DemoContractStatus =
-  | "DRAFT"
-  | "IN_PROGRESS"
-  | "SIGNED"
-  | "CANCELLED";
+  "DRAFT" | "IN_PROGRESS" | "SIGNED" | "CANCELLED";
 
 export interface DemoOffice {
   id: string;
@@ -133,11 +123,7 @@ export interface DemoInquiry {
 }
 
 export type DemoConsultationTargetType = "PROPERTY" | "INQUIRY";
-export type DemoConsultationChannel =
-  | "PHONE"
-  | "VISIT"
-  | "MESSAGE"
-  | "EMAIL";
+export type DemoConsultationChannel = "PHONE" | "VISIT" | "MESSAGE" | "EMAIL";
 
 export interface DemoConsultationLog {
   id: string;
@@ -290,11 +276,7 @@ export interface DemoDashboardMetrics {
   consultationCount: number;
 }
 
-export type DemoMatchCriterion =
-  | "REQUEST_TYPE"
-  | "LOCATION"
-  | "AREA"
-  | "PRICE";
+export type DemoMatchCriterion = "REQUEST_TYPE" | "LOCATION" | "AREA" | "PRICE";
 
 export interface DemoMatchReason {
   criterion: DemoMatchCriterion;

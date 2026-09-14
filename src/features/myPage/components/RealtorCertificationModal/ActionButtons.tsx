@@ -6,7 +6,11 @@ interface ActionButtonsProps {
   isSubmitting?: boolean;
 }
 
-export function ActionButtons({ onClose, onSubmit, isSubmitting = false }: ActionButtonsProps) {
+export function ActionButtons({
+  onClose,
+  onSubmit,
+  isSubmitting = false,
+}: ActionButtonsProps) {
   return (
     <div className="flex gap-[10px] mt-[40px]">
       <Button
@@ -26,4 +30,3 @@ export function ActionButtons({ onClose, onSubmit, isSubmitting = false }: Actio
     </div>
   );
 }
-

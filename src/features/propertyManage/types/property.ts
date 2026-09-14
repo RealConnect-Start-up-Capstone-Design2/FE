@@ -91,15 +91,9 @@ export type PropertyDetailDirectionBase = "LIVING_ROOM" | "BEDROOM";
 export type PropertyDetailFloorLevel = "LOW" | "MIDDLE" | "HIGH";
 export type PropertyDetailStructureType = "SINGLE" | "DUPLEX";
 export type PropertyDetailEntranceType =
-  | "NONE"
-  | "STAIR"
-  | "CORRIDOR"
-  | "MIXED";
+  "NONE" | "STAIR" | "CORRIDOR" | "MIXED";
 export type PropertyDetailMainUsage =
-  | "NONE"
-  | "RESIDENTIAL"
-  | "ACCOMMODATION"
-  | "OFFICE";
+  "NONE" | "RESIDENTIAL" | "ACCOMMODATION" | "OFFICE";
 
 export interface PropertyDetailInfo {
   direction: PropertyDetailDirection;

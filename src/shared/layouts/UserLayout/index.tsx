@@ -17,8 +17,7 @@ export function UserLayout({ showSidebar = true }: UserLayoutProps) {
       <main
         className={cn(
           "h-screen min-w-0 overflow-hidden bg-gray-50 transition-[margin] duration-300",
-          showSidebar &&
-            (isSidebarCollapsed ? "ml-20" : "ml-20 lg:ml-[208px]"),
+          showSidebar && (isSidebarCollapsed ? "ml-20" : "ml-20 lg:ml-[208px]"),
         )}
       >
         <div className="flex h-full min-w-0 flex-col">

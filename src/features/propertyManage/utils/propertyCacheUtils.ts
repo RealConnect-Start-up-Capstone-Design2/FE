@@ -7,7 +7,7 @@ import type { PropertiesResponse } from "../types";
  * @returns Infinite Query 데이터면 true
  */
 export const isInfinitePropertiesData = (
-  data: unknown
+  data: unknown,
 ): data is InfiniteData<PropertiesResponse> => {
   if (typeof data !== "object" || data === null) {
     return false;
@@ -26,7 +26,7 @@ export const isInfinitePropertiesData = (
  * @returns 단일 페이지 응답이면 true
  */
 export const isPropertiesResponse = (
-  data: unknown
+  data: unknown,
 ): data is PropertiesResponse => {
   if (typeof data !== "object" || data === null) {
     return false;

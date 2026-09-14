@@ -15,15 +15,17 @@ export { refreshAccessToken };
 export const login = async (
   username: string,
   password: string,
-  stayIn: boolean
+  stayIn: boolean,
 ): Promise<AuthResponse> => {
-  const response = await apiClient.post("/login", {
-    username,
-    password,
-    stayIn,
-  } as LoginRequest,
-  { withCredentials: true }
-);
+  const response = await apiClient.post(
+    "/login",
+    {
+      username,
+      password,
+      stayIn,
+    } as LoginRequest,
+    { withCredentials: true },
+  );
 
   // 액세스 토큰은 Authorization 헤더에서 추출
   const accessToken = response.headers["authorization"]?.replace("Bearer ", "");
@@ -51,13 +53,13 @@ export const sendVerifyCode = async (phone: string): Promise<void> => {
     {
       phone,
     } as SendVerifyCodeRequest,
-    { withCredentials: true }
+    { withCredentials: true },
   );
 };
 
 export const verifyCode = async (
   phone: string,
-  authCode: string
+  authCode: string,
 ): Promise<void> => {
   await apiClient.post(
     "/api/verify/verifyCode",
@@ -65,7 +67,7 @@ export const verifyCode = async (
       phone,
       authCode,
     } as VerifyCodeRequest,
-    { withCredentials: true }
+    { withCredentials: true },
   );
 };
 

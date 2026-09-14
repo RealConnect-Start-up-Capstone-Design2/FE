@@ -14,7 +14,7 @@ export const pyeongToSqm = (pyeong: number): number => {
 /** 포맷팅된 면적 문자열 반환 */
 export const formatArea = (
   value: number,
-  unit: "pyeong" | "sqm" = "sqm"
+  unit: "pyeong" | "sqm" = "sqm",
 ): string => {
   if (unit === "pyeong") {
     return `${value.toFixed(0)}평`;

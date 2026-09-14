@@ -12,12 +12,12 @@ describe("demo seed", () => {
     expect(state.consultations).toHaveLength(12);
     expect(state.contracts).toHaveLength(4);
     expect(state.office.address).toContain("샘플구");
-    expect(state.properties.every((item) => item.owner.phone.includes("-0000-"))).toBe(
-      true,
-    );
-    expect(state.inquiries.every((item) => item.customer.name.includes("(데모)"))).toBe(
-      true,
-    );
+    expect(
+      state.properties.every((item) => item.owner.phone.includes("-0000-")),
+    ).toBe(true);
+    expect(
+      state.inquiries.every((item) => item.customer.name.includes("(데모)")),
+    ).toBe(true);
   });
 
   it("returns a fresh deep copy on every call", () => {

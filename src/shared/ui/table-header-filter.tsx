@@ -53,7 +53,7 @@ export function TableHeaderFilter({
     <th
       className={cn(
         "h-12 px-1 text-center align-middle font-medium text-muted-foreground",
-        className
+        className,
       )}
     >
       <div ref={containerRef} className="relative inline-block">
@@ -65,7 +65,7 @@ export function TableHeaderFilter({
           }}
           className={cn(
             "flex items-center justify-center gap-1 px-2 py-1 rounded transition-colors",
-            hasActiveFilter && "text-blue-600 font-semibold"
+            hasActiveFilter && "text-blue-600 font-semibold",
           )}
         >
           <span>{title}</span>
@@ -76,7 +76,7 @@ export function TableHeaderFilter({
           <ChevronDown
             className={cn(
               "h-4 w-4 transition-transform duration-150",
-              isOpen && "rotate-180"
+              isOpen && "rotate-180",
             )}
           />
         </button>
@@ -86,7 +86,7 @@ export function TableHeaderFilter({
             className={cn(
               "absolute left-1/2 -translate-x-1/2 z-[101] mt-1",
               "flex flex-col max-h-48 overflow-y-auto",
-              "rounded-md border border-grayscale-300 bg-white shadow-lg"
+              "rounded-md border border-grayscale-300 bg-white shadow-lg",
             )}
           >
             {options.map((option) => (
@@ -103,7 +103,7 @@ export function TableHeaderFilter({
                     "hover:bg-gray-100 transition-colors",
                     value === option.value
                       ? "bg-blue-50 text-blue-600 font-medium"
-                      : "text-gray-700"
+                      : "text-gray-700",
                   )}
                 >
                   {option.icon && (

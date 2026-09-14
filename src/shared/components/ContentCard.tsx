@@ -42,14 +42,14 @@ export function ContentCard({
 }: ContentCardProps) {
   const titleContainerClassName = cn(
     "flex items-center",
-    titleExtra ? "gap-2" : undefined
+    titleExtra ? "gap-2" : undefined,
   );
 
   return (
     <div
       className={cn(
         "w-full rounded-lg border border-[#DDE2F2] bg-white shadow-[0_12px_24px_-12px_rgba(15,23,42,0.25)]",
-        className
+        className,
       )}
     >
       <div className={cn("flex flex-col gap-4 p-6", contentClassName)}>
@@ -103,7 +103,7 @@ export function ContentCard({
                         >
                           {text}
                         </Fragment>
-                      )
+                      ),
                     )}
                   </div>
                 ) : null}

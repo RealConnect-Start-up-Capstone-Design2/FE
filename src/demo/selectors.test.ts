@@ -41,9 +41,7 @@ describe("demo selectors", () => {
       maxArea: 85,
     });
 
-    expect(result.items.map((inquiry) => inquiry.id)).toEqual([
-      "inquiry-005",
-    ]);
+    expect(result.items.map((inquiry) => inquiry.id)).toEqual(["inquiry-005"]);
   });
 
   it("sorts consultation logs newest first without mutating seed order", () => {

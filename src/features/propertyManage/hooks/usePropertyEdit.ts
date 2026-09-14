@@ -68,7 +68,7 @@ export function usePropertyEdit() {
   // 즐겨찾기 토글
   const handleToggleFavorite = (
     apartmentId: number,
-    currentFavorite: boolean
+    currentFavorite: boolean,
   ) => {
     toggleFavoriteMutation.mutate({
       apartmentId,
@@ -79,7 +79,7 @@ export function usePropertyEdit() {
   // 매물 정보 일괄 업데이트 (새로운 방식)
   const handlePropertyBatchUpdate = async (
     requestData: PropertyMutationPayload,
-    isNewProperty: boolean
+    isNewProperty: boolean,
   ) => {
     return new Promise((resolve, reject) => {
       updatePropertyMutation.mutate(
@@ -94,7 +94,7 @@ export function usePropertyEdit() {
           onError: (error) => {
             reject(error);
           },
-        }
+        },
       );
     });
   };

@@ -475,7 +475,11 @@ const inquiries: DemoInquiry[] = [
   inquiry({
     id: "inquiry-001",
     title: "한빛 84㎡ 남향 매매 문의",
-    customer: { name: "고은별(데모)", phone: "010-0000-1001", relation: "본인" },
+    customer: {
+      name: "고은별(데모)",
+      phone: "010-0000-1001",
+      relation: "본인",
+    },
     transactionType: "SALE",
     status: "VISIT_SCHEDULED",
     priority: "ATTENTION",
@@ -497,7 +501,11 @@ const inquiries: DemoInquiry[] = [
   inquiry({
     id: "inquiry-002",
     title: "샘플동 59㎡ 전세 문의",
-    customer: { name: "김로운(데모)", phone: "010-0000-1002", relation: "본인" },
+    customer: {
+      name: "김로운(데모)",
+      phone: "010-0000-1002",
+      relation: "본인",
+    },
     transactionType: "JEONSE",
     status: "CONTACTED",
     priority: "NORMAL",
@@ -518,7 +526,11 @@ const inquiries: DemoInquiry[] = [
   inquiry({
     id: "inquiry-003",
     title: "가람동 소형 월세 문의",
-    customer: { name: "이새봄(데모)", phone: "010-0000-1003", relation: "본인" },
+    customer: {
+      name: "이새봄(데모)",
+      phone: "010-0000-1003",
+      relation: "본인",
+    },
     transactionType: "MONTHLY",
     status: "NEW",
     priority: "NORMAL",
@@ -540,7 +552,11 @@ const inquiries: DemoInquiry[] = [
   inquiry({
     id: "inquiry-004",
     title: "샘플구 100㎡ 이상 매매",
-    customer: { name: "박도하(데모)", phone: "010-0000-1004", relation: "배우자" },
+    customer: {
+      name: "박도하(데모)",
+      phone: "010-0000-1004",
+      relation: "배우자",
+    },
     transactionType: "SALE",
     status: "NEGOTIATING",
     priority: "ATTENTION",
@@ -562,7 +578,11 @@ const inquiries: DemoInquiry[] = [
   inquiry({
     id: "inquiry-005",
     title: "푸른뜰 84㎡ 전세 문의",
-    customer: { name: "최라온(데모)", phone: "010-0000-1005", relation: "본인" },
+    customer: {
+      name: "최라온(데모)",
+      phone: "010-0000-1005",
+      relation: "본인",
+    },
     transactionType: "JEONSE",
     status: "VISIT_SCHEDULED",
     priority: "ATTENTION",
@@ -583,7 +603,11 @@ const inquiries: DemoInquiry[] = [
   inquiry({
     id: "inquiry-006",
     title: "한빛 59㎡ 월세 문의",
-    customer: { name: "정하람(데모)", phone: "010-0000-1006", relation: "자녀" },
+    customer: {
+      name: "정하람(데모)",
+      phone: "010-0000-1006",
+      relation: "자녀",
+    },
     transactionType: "MONTHLY",
     status: "CONTACTED",
     priority: "NORMAL",
@@ -604,7 +628,11 @@ const inquiries: DemoInquiry[] = [
   inquiry({
     id: "inquiry-007",
     title: "샘플동 59㎡ 실거주 매매",
-    customer: { name: "송이안(데모)", phone: "010-0000-1007", relation: "본인" },
+    customer: {
+      name: "송이안(데모)",
+      phone: "010-0000-1007",
+      relation: "본인",
+    },
     transactionType: "SALE",
     status: "ON_HOLD",
     priority: "CAUTION",
@@ -625,7 +653,11 @@ const inquiries: DemoInquiry[] = [
   inquiry({
     id: "inquiry-008",
     title: "샘플구 84㎡ 전세 비교",
-    customer: { name: "장유나(데모)", phone: "010-0000-1008", relation: "본인" },
+    customer: {
+      name: "장유나(데모)",
+      phone: "010-0000-1008",
+      relation: "본인",
+    },
     transactionType: "JEONSE",
     status: "COMPLETED",
     priority: "NORMAL",

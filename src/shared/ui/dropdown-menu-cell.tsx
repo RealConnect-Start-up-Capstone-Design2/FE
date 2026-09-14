@@ -61,7 +61,7 @@ export function DropdownMenuCell({
 
     // 가장 가까운 스크롤 가능한 부모 요소를 찾는 함수
     const findScrollableParent = (
-      element: HTMLElement | null
+      element: HTMLElement | null,
     ): HTMLElement | null => {
       if (!element || element === document.body) {
         return null;
@@ -84,7 +84,7 @@ export function DropdownMenuCell({
 
         // 스크롤 가능한 부모 찾기 (테이블 컨테이너 등)
         const scrollableParent = findScrollableParent(
-          containerRef.current.parentElement
+          containerRef.current.parentElement,
         );
 
         let spaceBelow: number;
@@ -108,7 +108,7 @@ export function DropdownMenuCell({
           listRef.current?.getBoundingClientRect().height ?? 0;
         const estimatedHeight = Math.min(
           options.length * itemHeight,
-          maxDropdownHeight
+          maxDropdownHeight,
         );
         const dropdownHeight = measuredHeight || estimatedHeight;
 
@@ -131,7 +131,7 @@ export function DropdownMenuCell({
 
     // 스크롤 시 위치 재계산
     const scrollableParent = findScrollableParent(
-      containerRef.current?.parentElement || null
+      containerRef.current?.parentElement || null,
     );
     if (scrollableParent) {
       scrollableParent.addEventListener("scroll", updatePosition);
@@ -181,7 +181,7 @@ export function DropdownMenuCell({
         }}
         className={cn(
           "relative flex min-w-15 items-center justify-between rounded-full border border-grayscale-400 whitespace-nowrap bg-[#EDEDED] px-2 py-1 text-left text-[13px] font-medium text-[#1B1B1B] focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 z-10",
-          buttonClassName
+          buttonClassName,
         )}
       >
         <div className="flex items-center gap-2">
@@ -203,7 +203,7 @@ export function DropdownMenuCell({
         <ChevronDown
           className={cn(
             "h-4 w-4 text-grayscale-black transition-transform duration-150 flex-shrink-0",
-            isOpen && "rotate-180"
+            isOpen && "rotate-180",
           )}
         />
       </button>
@@ -214,7 +214,7 @@ export function DropdownMenuCell({
           aria-label={ariaLabel}
           className={cn(
             "fixed z-[90] max-h-48 overflow-y-auto rounded-xl bg-[#FFFFFF] shadow-[0px_0px_25px_-10px_rgba(177,182,199,1)]",
-            listClassName
+            listClassName,
           )}
           style={{
             top: `${listPosition.top}px`,
@@ -235,7 +235,7 @@ export function DropdownMenuCell({
                 }}
                 className={cn(
                   "mx-1 flex h-6 min-w-15 w-full gap-2 items-center rounded-full bg-[#FFFFFF] px-2 text-center font-medium text-[#1B1B1B]",
-                  optionClassName
+                  optionClassName,
                 )}
               >
                 {iconPosition === "left" && option.icon && (

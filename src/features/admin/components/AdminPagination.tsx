@@ -96,7 +96,7 @@ export function AdminPagination({
           "w-[25px] h-[25px] flex items-center justify-center",
           currentPage === 1
             ? "opacity-30 cursor-not-allowed"
-            : "hover:opacity-70"
+            : "hover:opacity-70",
         )}
       >
         <DoubleChevronLeft />
@@ -110,7 +110,7 @@ export function AdminPagination({
           "w-[25px] h-[25px] flex items-center justify-center",
           currentPage === 1
             ? "opacity-30 cursor-not-allowed"
-            : "hover:opacity-70"
+            : "hover:opacity-70",
         )}
       >
         <ChevronLeft />
@@ -127,7 +127,7 @@ export function AdminPagination({
               "text-[13px] font-semibold leading-[1.193] tracking-[-0.025em]",
               pageNum === currentPage
                 ? "bg-[#1C2882] text-white"
-                : "bg-white text-[#B1B6C7] hover:bg-gray-100"
+                : "bg-white text-[#B1B6C7] hover:bg-gray-100",
             )}
           >
             {pageNum}
@@ -143,7 +143,7 @@ export function AdminPagination({
           "w-[25px] h-[25px] flex items-center justify-center",
           currentPage === totalPages
             ? "opacity-30 cursor-not-allowed"
-            : "hover:opacity-70"
+            : "hover:opacity-70",
         )}
       >
         <ChevronRight />
@@ -157,7 +157,7 @@ export function AdminPagination({
           "w-[25px] h-[25px] flex items-center justify-center",
           currentPage === totalPages
             ? "opacity-30 cursor-not-allowed"
-            : "hover:opacity-70"
+            : "hover:opacity-70",
         )}
       >
         <DoubleChevronRight />

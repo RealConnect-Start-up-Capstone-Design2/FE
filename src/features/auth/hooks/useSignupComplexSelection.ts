@@ -31,7 +31,7 @@ const createInitialSelection = (): ComplexSelectionState => ({
 });
 
 const clearSigunguTrail = (
-  state: ComplexSelectionState
+  state: ComplexSelectionState,
 ): ComplexSelectionState => ({
   ...state,
   sigunguCode: "",
@@ -43,7 +43,7 @@ const clearSigunguTrail = (
 });
 
 const clearEupmyeondongTrail = (
-  state: ComplexSelectionState
+  state: ComplexSelectionState,
 ): ComplexSelectionState => ({
   ...state,
   emdCode: "",
@@ -53,19 +53,25 @@ const clearEupmyeondongTrail = (
 });
 
 const clearComplexSelection = (
-  state: ComplexSelectionState
+  state: ComplexSelectionState,
 ): ComplexSelectionState => ({
   ...state,
   apartmentComplexId: undefined,
   apartmentName: "",
 });
 
-const buildSelectedComplexLabel = (selection: ComplexSelectionState): string => {
+const buildSelectedComplexLabel = (
+  selection: ComplexSelectionState,
+): string => {
   if (!selection.apartmentComplexId) {
     return "";
   }
 
-  const hierarchy = [selection.sidoName, selection.sigunguName, selection.emdName]
+  const hierarchy = [
+    selection.sidoName,
+    selection.sigunguName,
+    selection.emdName,
+  ]
     .filter(Boolean)
     .join(" ");
 
@@ -97,23 +103,23 @@ export interface UseSignupComplexSelectionResult {
 }
 
 export const useSignupComplexSelection = (
-  options?: UseSignupComplexSelectionOptions
+  options?: UseSignupComplexSelectionOptions,
 ): UseSignupComplexSelectionResult => {
-  const [selection, setSelection] = useState<ComplexSelectionState>(
-    () => createInitialSelection()
+  const [selection, setSelection] = useState<ComplexSelectionState>(() =>
+    createInitialSelection(),
   );
   const [sidoOptions, setSidoOptions] = useState<RegionOption[]>([]);
   const [sigunguOptions, setSigunguOptions] = useState<RegionOption[]>([]);
-  const [eupmyeondongOptions, setEupmyeondongOptions] = useState<RegionOption[]>(
-    []
-  );
+  const [eupmyeondongOptions, setEupmyeondongOptions] = useState<
+    RegionOption[]
+  >([]);
   const [complexOptions, setComplexOptions] = useState<RegionOption[]>([]);
 
   const notifySelectionChange = useCallback(
     (apartmentComplexId?: number, apartmentName = "") => {
       options?.onSelect?.({ apartmentComplexId, apartmentName });
     },
-    [options]
+    [options],
   );
 
   const notifySelectionCleared = useCallback(() => {
@@ -136,12 +142,10 @@ export const useSignupComplexSelection = (
         const data = await fetchSidoList();
         if (!isMounted) return;
 
-        const options = data.map(
-          (sido: Sido): RegionOption => ({
-            label: sido.name_kr,
-            value: sido.sidoCode,
-          })
-        );
+        const options = data.map((sido: Sido): RegionOption => ({
+          label: sido.name_kr,
+          value: sido.sidoCode,
+        }));
         setSidoOptions(options);
       } catch (error) {
         console.error("시/도 목록을 조회하는데 실패했습니다:", error);
@@ -170,12 +174,10 @@ export const useSignupComplexSelection = (
         const data = await fetchSigunguList(selection.sidoCode);
         if (!isMounted) return;
 
-        const options = data.map(
-          (sigungu: Sigungu): RegionOption => ({
-            label: sigungu.name_kr,
-            value: sigungu.sigunguCode,
-          })
-        );
+        const options = data.map((sigungu: Sigungu): RegionOption => ({
+          label: sigungu.name_kr,
+          value: sigungu.sigunguCode,
+        }));
         setSigunguOptions(options);
       } catch (error) {
         console.error("시/군/구 목록을 조회하는데 실패했습니다:", error);
@@ -203,12 +205,10 @@ export const useSignupComplexSelection = (
         const data = await fetchEmdList(selection.sigunguCode);
         if (!isMounted) return;
 
-        const options = data.map(
-          (emd: Emd): RegionOption => ({
-            label: emd.name_kr,
-            value: emd.emdCode,
-          })
-        );
+        const options = data.map((emd: Emd): RegionOption => ({
+          label: emd.name_kr,
+          value: emd.emdCode,
+        }));
         setEupmyeondongOptions(options);
       } catch (error) {
         console.error("읍/면/동 목록을 조회하는데 실패했습니다:", error);
@@ -235,12 +235,10 @@ export const useSignupComplexSelection = (
         const data = await fetchApartmentComplexList(selection.emdCode);
         if (!isMounted) return;
 
-        const options = data.map(
-          (complex: ApartmentComplex): RegionOption => ({
-            label: complex.apartmentName,
-            value: String(complex.id),
-          })
-        );
+        const options = data.map((complex: ApartmentComplex): RegionOption => ({
+          label: complex.apartmentName,
+          value: String(complex.id),
+        }));
         setComplexOptions(options);
       } catch (error) {
         console.error("아파트 단지 목록을 조회하는데 실패했습니다:", error);
@@ -272,7 +270,7 @@ export const useSignupComplexSelection = (
       setComplexOptions([]);
       notifySelectionCleared();
     },
-    [notifySelectionCleared, resetSelection, sidoOptions]
+    [notifySelectionCleared, resetSelection, sidoOptions],
   );
 
   const selectSigungu = useCallback(
@@ -284,7 +282,9 @@ export const useSignupComplexSelection = (
           return cleared;
         }
 
-        const selected = sigunguOptions.find((option) => option.value === value);
+        const selected = sigunguOptions.find(
+          (option) => option.value === value,
+        );
         return {
           ...cleared,
           sigunguCode: value,
@@ -295,7 +295,7 @@ export const useSignupComplexSelection = (
       setComplexOptions([]);
       notifySelectionCleared();
     },
-    [notifySelectionCleared, sigunguOptions]
+    [notifySelectionCleared, sigunguOptions],
   );
 
   const selectEupmyeondong = useCallback(
@@ -308,7 +308,7 @@ export const useSignupComplexSelection = (
         }
 
         const selected = eupmyeondongOptions.find(
-          (option) => option.value === value
+          (option) => option.value === value,
         );
         return {
           ...cleared,
@@ -319,7 +319,7 @@ export const useSignupComplexSelection = (
       setComplexOptions([]);
       notifySelectionCleared();
     },
-    [notifySelectionCleared, eupmyeondongOptions]
+    [notifySelectionCleared, eupmyeondongOptions],
   );
 
   const selectComplex = useCallback(
@@ -331,7 +331,9 @@ export const useSignupComplexSelection = (
           return cleared;
         }
 
-        const selected = complexOptions.find((option) => option.value === value);
+        const selected = complexOptions.find(
+          (option) => option.value === value,
+        );
         const apartmentComplexId = Number(value);
 
         if (Number.isNaN(apartmentComplexId)) {
@@ -360,12 +362,12 @@ export const useSignupComplexSelection = (
 
       notifySelectionChange(apartmentComplexId, selected?.label ?? "");
     },
-    [complexOptions, notifySelectionChange, notifySelectionCleared]
+    [complexOptions, notifySelectionChange, notifySelectionCleared],
   );
 
   const selectedComplexLabel = useMemo(
     () => buildSelectedComplexLabel(selection),
-    [selection]
+    [selection],
   );
   const hasSelectedComplex = Boolean(selection.apartmentComplexId);
 

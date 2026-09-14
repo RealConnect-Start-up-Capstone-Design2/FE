@@ -5,17 +5,10 @@ import {
   InputGroupInput,
   InputGroupText,
 } from "@/shared/ui/input-group";
-import {
-  DropdownMenu,
-  type DropdownOption,
-} from "@/shared/ui/dropdown-menu";
+import { DropdownMenu, type DropdownOption } from "@/shared/ui/dropdown-menu";
 
 export type CertificationStatus =
-  | "all"
-  | "approved"
-  | "pending"
-  | "rejected"
-  | "not_certified";
+  "all" | "approved" | "pending" | "rejected" | "not_certified";
 
 interface AdminFiltersProps {
   searchQuery: string;

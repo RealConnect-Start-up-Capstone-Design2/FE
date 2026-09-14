@@ -26,7 +26,9 @@ export function selectPropertyById(
   state: DemoState,
   propertyId: string,
 ): DemoProperty | null {
-  return state.properties.find((property) => property.id === propertyId) ?? null;
+  return (
+    state.properties.find((property) => property.id === propertyId) ?? null
+  );
 }
 
 export function selectInquiryById(
@@ -41,7 +43,8 @@ export function selectContractByPropertyId(
   propertyId: string,
 ): DemoContract | null {
   return (
-    state.contracts.find((contract) => contract.propertyId === propertyId) ?? null
+    state.contracts.find((contract) => contract.propertyId === propertyId) ??
+    null
   );
 }
 
@@ -87,7 +90,8 @@ export function selectPropertiesPage(
       ) {
         return false;
       }
-      if (query.complexId && property.complexId !== query.complexId) return false;
+      if (query.complexId && property.complexId !== query.complexId)
+        return false;
       if (
         query.transactionType &&
         property.transactionType !== query.transactionType
@@ -147,16 +151,10 @@ export function selectInquiriesPage(
       ) {
         return false;
       }
-      if (
-        query.minArea !== undefined &&
-        inquiry.area.max < query.minArea
-      ) {
+      if (query.minArea !== undefined && inquiry.area.max < query.minArea) {
         return false;
       }
-      if (
-        query.maxArea !== undefined &&
-        inquiry.area.min > query.maxArea
-      ) {
+      if (query.maxArea !== undefined && inquiry.area.min > query.maxArea) {
         return false;
       }
       return true;
@@ -297,7 +295,11 @@ function paginate<T>(
   };
 }
 
-function positiveInteger(value: number, fallback: number, maximum: number): number {
+function positiveInteger(
+  value: number,
+  fallback: number,
+  maximum: number,
+): number {
   if (!Number.isFinite(value)) return fallback;
   return Math.min(maximum, Math.max(1, Math.trunc(value)));
 }

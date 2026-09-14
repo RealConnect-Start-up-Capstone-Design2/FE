@@ -84,13 +84,13 @@ export function DropdownMenu({
         }}
         className={cn(
           "flex w-full items-center justify-between rounded-md border border-grayscale-400 whitespace-nowrap bg-primary px-4 py-3 gap-1 text-left text-primary-foreground text-body-1 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60",
-          buttonClassName
+          buttonClassName,
         )}
       >
         <span
           className={cn(
             "flex items-center gap-2",
-            selectedOption ? selectedTextColor : placeholderTextColor
+            selectedOption ? selectedTextColor : placeholderTextColor,
           )}
         >
           {iconPosition === "left" && selectedOption?.icon && (
@@ -104,7 +104,7 @@ export function DropdownMenu({
         <ChevronDown
           className={cn(
             "h-6 w-6 text-primary-foreground transition-transform duration-150",
-            isOpen && "rotate-180"
+            isOpen && "rotate-180",
           )}
         />
       </button>
@@ -112,7 +112,7 @@ export function DropdownMenu({
         <ul
           className={cn(
             "absolute z-[101] mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-grayscale-300 bg-primary shadow-md",
-            listClassName
+            listClassName,
           )}
         >
           {options.map((option) => (
@@ -128,7 +128,7 @@ export function DropdownMenu({
                   value === option.value
                     ? "bg-primary text-primary-foreground"
                     : "text-primary-foreground",
-                  optionClassName
+                  optionClassName,
                 )}
               >
                 {iconPosition === "left" && option.icon && (
@@ -144,7 +144,7 @@ export function DropdownMenu({
           {footerAction && (
             <li
               className={cn(
-                options.length > 0 && "border-t border-grayscale-300"
+                options.length > 0 && "border-t border-grayscale-300",
               )}
             >
               <button
@@ -155,7 +155,7 @@ export function DropdownMenu({
                 }}
                 className={cn(
                   "flex w-full items-center justify-between gap-2 px-4 py-2 text-left text-primary-foreground",
-                  optionClassName
+                  optionClassName,
                 )}
               >
                 {iconPosition === "left" && footerAction.icon && (

@@ -56,7 +56,9 @@ export function PropertySidebarHeader({
 
       <div className="flex flex-wrap items-center gap-2 text-[15px] tracking-[-0.025em] text-[#1B1B1B]">
         {type && <span className="font-semibold">{type}</span>}
-        {type && exclusiveArea && <span className="h-3 border-l border-[#B1B6C7]" />}
+        {type && exclusiveArea && (
+          <span className="h-3 border-l border-[#B1B6C7]" />
+        )}
         {exclusiveArea && (
           <span className="flex items-center gap-2">
             <span className="font-medium">전용면적</span>

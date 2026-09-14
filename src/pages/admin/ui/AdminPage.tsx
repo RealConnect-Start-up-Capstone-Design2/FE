@@ -43,7 +43,7 @@ export function AdminPage() {
     useState<CertificationStatus>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedMember, setSelectedMember] = useState<RealtorMember | null>(
-    null
+    null,
   );
   const itemsPerPage = 20;
 

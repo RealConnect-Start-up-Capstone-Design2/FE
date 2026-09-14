@@ -36,9 +36,7 @@ export function CertificationFormSection({
       </div>
 
       <div className="flex flex-col gap-[12px]">
-        <label className={`${LABEL_STYLE} text-black`}>
-          중개사무소 주소
-        </label>
+        <label className={`${LABEL_STYLE} text-black`}>중개사무소 주소</label>
         <div className="flex flex-col gap-[10px]">
           <div className="flex gap-[10px]">
             <input
@@ -50,7 +48,10 @@ export function CertificationFormSection({
                   onInputChange("address1", data.roadAddress);
                   onInputChange("address2", data.jibunAddress);
                   onInputChange("sigunguCode", data.sigunguCode || "");
-                  onInputChange("roadNameAddressCode", data.roadNameAddressCode || data.roadAddress || "");
+                  onInputChange(
+                    "roadNameAddressCode",
+                    data.roadNameAddressCode || data.roadAddress || "",
+                  );
                 });
               }}
               placeholder="도로명주소"
@@ -62,7 +63,10 @@ export function CertificationFormSection({
                   onInputChange("address1", data.roadAddress);
                   onInputChange("address2", data.jibunAddress);
                   onInputChange("sigunguCode", data.sigunguCode || "");
-                  onInputChange("roadNameAddressCode", data.roadNameAddressCode || data.roadAddress || "");
+                  onInputChange(
+                    "roadNameAddressCode",
+                    data.roadNameAddressCode || data.roadAddress || "",
+                  );
                 });
               }}
               className="w-[138px] h-[48px] rounded-lg bg-[#1B1B1B] text-white text-[15px] font-semibold hover:bg-[#1B1B1B]"
@@ -79,7 +83,10 @@ export function CertificationFormSection({
                 onInputChange("address1", data.roadAddress);
                 onInputChange("address2", data.jibunAddress);
                 onInputChange("sigunguCode", data.sigunguCode || "");
-                onInputChange("roadNameAddressCode", data.roadNameAddressCode || "");
+                onInputChange(
+                  "roadNameAddressCode",
+                  data.roadNameAddressCode || "",
+                );
               });
             }}
             placeholder="지번주소"
@@ -107,7 +114,9 @@ export function CertificationFormSection({
       </div>
 
       <div className="flex flex-col gap-[12px]">
-        <label className={`${LABEL_STYLE} text-black`}>사업장 대표 전화번호</label>
+        <label className={`${LABEL_STYLE} text-black`}>
+          사업장 대표 전화번호
+        </label>
         <input
           type="text"
           value={formData.officePhone}
@@ -132,7 +141,9 @@ export function CertificationFormSection({
       </div>
 
       <div className="flex flex-col gap-[12px]">
-        <label className={`${LABEL_STYLE} text-black`}>중개사무소 개설 등록번호</label>
+        <label className={`${LABEL_STYLE} text-black`}>
+          중개사무소 개설 등록번호
+        </label>
         <input
           type="text"
           value={formData.registrationNumber}
@@ -144,4 +155,3 @@ export function CertificationFormSection({
     </div>
   );
 }
-

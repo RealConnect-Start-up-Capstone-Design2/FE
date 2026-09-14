@@ -13,10 +13,7 @@ export const refreshAccessToken = async (): Promise<string> => {
   const response = await apiClient.post("/api/refresh-token", undefined, {
     withCredentials: true,
   });
-  const accessToken = response.headers["authorization"]?.replace(
-    "Bearer ",
-    "",
-  );
+  const accessToken = response.headers["authorization"]?.replace("Bearer ", "");
 
   if (!accessToken) {
     throw new Error("새로운 액세스 토큰이 없습니다.");
@@ -72,7 +69,7 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // 응답 인터셉터: 401 에러 시 토큰 재발급 시도
@@ -137,7 +134,7 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

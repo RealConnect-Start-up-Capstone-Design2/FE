@@ -75,11 +75,7 @@ export function Sidebar({ className }: SidebarProps) {
 
   const handleLogout = async () => {
     try {
-      if (
-        !isDemoRuntime() &&
-        accessToken &&
-        !isDemoAccessToken(accessToken)
-      ) {
+      if (!isDemoRuntime() && accessToken && !isDemoAccessToken(accessToken)) {
         await logout(accessToken);
       }
     } catch (error) {
@@ -186,10 +182,7 @@ export function Sidebar({ className }: SidebarProps) {
               )}
               title={item.label}
             >
-              <MenuIcon
-                icon={item.icon}
-                isActive={isActive}
-              />
+              <MenuIcon icon={item.icon} isActive={isActive} />
               {!isCollapsed && (
                 <span className="hidden whitespace-nowrap font-pretendard text-[17px] font-medium leading-[1.193] tracking-[-0.025em] lg:block">
                   {item.label}

@@ -42,9 +42,7 @@ export function useInquirySidebar({ inquiries }: { inquiries: Inquiry[] }) {
     }
     const target =
       selectedInquiryId ??
-      (inquiries.some(
-        (inquiry) => inquiry.inquiryId === lastViewedInquiryId,
-      )
+      (inquiries.some((inquiry) => inquiry.inquiryId === lastViewedInquiryId)
         ? lastViewedInquiryId
         : inquiries[0]?.inquiryId);
     if (target !== undefined) selectInquiry(target);
@@ -62,8 +60,7 @@ export function useInquirySidebar({ inquiries }: { inquiries: Inquiry[] }) {
 
   useEffect(() => {
     const exists = (id: number | undefined) =>
-      id !== undefined &&
-      inquiries.some((inquiry) => inquiry.inquiryId === id);
+      id !== undefined && inquiries.some((inquiry) => inquiry.inquiryId === id);
     if (selectedInquiryId !== undefined && !exists(selectedInquiryId)) {
       setSelectedInquiryId(undefined);
       setIsSidebarOpen(false);

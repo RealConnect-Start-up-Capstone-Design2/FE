@@ -564,10 +564,13 @@ export function PropertyManagePage() {
   );
 
   // 테이블 헤더 필터용 핸들러 (ALL 선택 시 undefined로 변환)
-  const handleSelectManageTypeForTable = useCallback((value: string) => {
-    if (!prepareForPropertyFilterChange()) return;
-    setSelectedManageType(value === "ALL" ? undefined : value);
-  }, [prepareForPropertyFilterChange]);
+  const handleSelectManageTypeForTable = useCallback(
+    (value: string) => {
+      if (!prepareForPropertyFilterChange()) return;
+      setSelectedManageType(value === "ALL" ? undefined : value);
+    },
+    [prepareForPropertyFilterChange],
+  );
 
   const handlePhoneFilterChange = useCallback(
     (value: string) => {

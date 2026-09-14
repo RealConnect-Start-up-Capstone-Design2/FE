@@ -1,1 +1,1 @@
-export const DEFAULT_FONT_FAMILY = "Pretendard"
+export const DEFAULT_FONT_FAMILY = "Pretendard";

@@ -61,7 +61,8 @@ export function rankPropertyMatches(
     .filter((result) => result.score >= minimumScore)
     .sort(
       (left, right) =>
-        right.score - left.score || left.propertyId.localeCompare(right.propertyId),
+        right.score - left.score ||
+        left.propertyId.localeCompare(right.propertyId),
     )
     .slice(0, limit);
 }
@@ -261,7 +262,9 @@ function reason(
   return { criterion, code, score, maxScore, message };
 }
 
-function transactionLabel(transactionType: DemoInquiry["transactionType"]): string {
+function transactionLabel(
+  transactionType: DemoInquiry["transactionType"],
+): string {
   if (transactionType === "SALE") return "매매";
   if (transactionType === "JEONSE") return "전세";
   return "월세";

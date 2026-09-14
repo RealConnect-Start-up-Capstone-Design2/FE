@@ -18,7 +18,7 @@ export function PaymentManageCard({ className }: PaymentManageCardProps) {
     <div
       className={cn(
         "w-full rounded-lg border border-[#DDE2F2] bg-white shadow-[0_12px_24px_-12px_rgba(15,23,42,0.25)]",
-        className
+        className,
       )}
     >
       <div className="flex flex-col p-[30px]">
