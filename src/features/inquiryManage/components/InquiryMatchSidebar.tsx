@@ -99,6 +99,7 @@ export function InquiryMatchSidebar({
                 value={
                   data.desiredComplexNames.join(", ") ||
                   data.inquiry.desiredDongs.join(", ") ||
+                  data.inquiry.desiredDistricts.join(", ") ||
                   "제한 없음"
                 }
               />

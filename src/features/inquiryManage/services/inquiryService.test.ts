@@ -56,6 +56,15 @@ describe("demo inquiry service adapter", () => {
     expect(detail.matches[0]?.reasons).toHaveLength(4);
   });
 
+  it("keeps a district-only location visible in list and detail views", async () => {
+    const list = await fetchInquiries({ keyword: "샘플구 100㎡" });
+    const detail = await fetchInquiryDetail(4);
+
+    expect(list.content[0]?.dong).toBe("샘플구");
+    expect(detail.inquiry.desiredDongs).toEqual([]);
+    expect(detail.inquiry.desiredDistricts).toEqual(["샘플구"]);
+  });
+
   it("persists create, status, priority, and delete operations", async () => {
     const created = await createInquiry(validInquiryPayload);
 

@@ -264,7 +264,8 @@ function toInquiryView(inquiry: DemoInquiry): Inquiry {
     inquiryStatus: inquiry.status,
     createdDate: inquiry.createdAt,
     manageType: inquiry.priority === "NORMAL" ? "NONE" : inquiry.priority,
-    dong: inquiry.desiredDongs.join(", "),
+    dong:
+      inquiry.desiredDongs.join(", ") || inquiry.desiredDistricts.join(", "),
     title: inquiry.title,
     specs: {
       minArea: inquiry.area.min,
